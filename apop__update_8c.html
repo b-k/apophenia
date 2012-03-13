@@ -35,7 +35,7 @@ Functions</h2>
 <ul>
 <li><a class="anchor" id="a10fab0239a9eb6c764bdfe674a4a4bbd"></a><!-- doxytag: member="apop_update.c::Apop_settings_init" ref="a10fab0239a9eb6c764bdfe674a4a4bbd" args="(Apop_settings_copy(apop_update, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(method, 'd');)" -->
 <b>Apop_settings_init</b> (Apop_settings_copy(apop_update, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(method, 'd');)
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *prior, <a class="el" href="struct__apop__model.html">apop_model</a> *likelihood, gsl_rng *rng)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *prior, <a class="el" href="structapop__model.html">apop_model</a> *likelihood, gsl_rng *rng)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The <code>apop_update</code> function. The header is in <a class="el" href="asst_8h.html">asst.h</a>. </p>
@@ -45,21 +45,21 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__model.html">apop_model</a>* apop_update </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* apop_update </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>prior</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>likelihood</em>, </td>
         </tr>
         <tr>
@@ -103,13 +103,13 @@ Functions</h2>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The input data, that will be used by the likelihood function (default = <code>NULL</code>.) </td></tr>
-    <tr><td class="paramname">prior</td><td>The prior <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>draw</code> method. (No default, must not be <code>NULL</code>.) </td></tr>
-    <tr><td class="paramname">likelihood</td><td>The likelihood <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>log_likelihood</code> or <code>p</code> method (ll preferred). (No default, must not be <code>NULL</code>.) </td></tr>
+    <tr><td class="paramname">prior</td><td>The prior <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>draw</code> method. (No default, must not be <code>NULL</code>.) </td></tr>
+    <tr><td class="paramname">likelihood</td><td>The likelihood <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>log_likelihood</code> or <code>p</code> method (ll preferred). (No default, must not be <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, already initialized (e.g., via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). (default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
 <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000006">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
 <p>Here is a test function that compares the output via conjugate gradient table and via Gibbs sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_updating(gsl_rng *r){
@@ -119,30 +119,30 @@ Functions</h2>
     <span class="keywordtype">int</span> i, draws = 1500;
     <span class="keywordtype">double</span> n = 4000;
     <span class="comment">//First, the easy estimation using the conjugate distribution table.</span>
-    <a class="code" href="struct__apop__model.html">apop_model</a> *bin = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *beta = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
+    <a class="code" href="structapop__model.html">apop_model</a> *bin = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
+    <a class="code" href="structapop__model.html">apop_model</a> *beta = apop_model_set_parameters(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
+    <a class="code" href="structapop__model.html">apop_model</a> *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
 
     <span class="comment">//Now estimate via Gibbs sampling. </span>
     <span class="comment">//Requires a one-parameter binomial, with n fixed,</span>
     <span class="comment">//and a data set of n data points with the right p.</span>
-    <a class="code" href="struct__apop__model.html">apop_model</a> *bcopy = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *bin_draws = <a class="code" href="types_8h.html#a4ed914f400ade913970ebbe698176218">apop_data_fill</a>(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2), n*(1-binom_start), n*binom_start);
+    <a class="code" href="structapop__model.html">apop_model</a> *bcopy = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
+    <a class="code" href="structapop__data.html">apop_data</a> *bin_draws = apop_data_fill(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2), n*(1-binom_start), n*binom_start);
     bin = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
     apop_model_add_group(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
+    <a class="code" href="structapop__model.html">apop_model</a> *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
 
     <span class="comment">//We now have a histogram of values for p. What&#39;s the closest beta</span>
     <span class="comment">//distribution?</span>
-    <a class="code" href="struct__apop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, draws, 1);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, draws, 1);
     <span class="keywordflow">for</span>(i=0; i &lt; draws; i ++)
         <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(d, i, 0), r, out_h);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
+    <a class="code" href="structapop__model.html">apop_model</a> *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
     <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
-    <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
-    <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(out_beta-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
-    <span class="keywordtype">double</span> error = <a class="code" href="group__convenience__fns.html#gac3b9f35ed990dd35f34ba1f072da3dd5">apop_vector_grid_distance</a>(updated-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector, out_beta-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
-    <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(updated-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
+    <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
+    <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
+    <span class="keywordtype">double</span> error = <a class="code" href="group__convenience__fns.html#gac3b9f35ed990dd35f34ba1f072da3dd5">apop_vector_grid_distance</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
+    <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
     <a class="code" href="asst_8h.html#aa6760fa3f2e261b93aaf25d80a11375c">Apop_assert</a>(error/updated_size &lt; 0.01, <span class="stringliteral">&quot;The error is %g, which is too big.&quot;</span>, error/updated_size);
 }
 </pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
@@ -151,4 +151,4 @@ Functions</h2>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

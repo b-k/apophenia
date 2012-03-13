@@ -43,12 +43,12 @@ Defines</h2>
 Functions</h2>
 <ul>
 <li>int <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> (const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a> (const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> (const char *fmt,...)
 <li>gsl_matrix * <a class="el" href="group__queries.html#ga8a1da4d925dbafdd2b3318672eac751f">apop_query_to_matrix</a> (const char *fmt,...)
 <li>gsl_vector * <a class="el" href="group__queries.html#ga830703db838855b8abd636069c7145de">apop_query_to_vector</a> (const char *fmt,...)
 <li>double <a class="el" href="group__queries.html#ga1ad75f9dfba696a3741e28896ed5b75d">apop_query_to_float</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a> (const char *typelist, const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a> (const char *typelist, const char *fmt,...)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>These functions query the database, and most return a value for use on the C-side.</p>
@@ -85,13 +85,14 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Send a query to the database, return nothing </p>
+<p>Send a query to the database that returns no data. </p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>0 on success, 1 on failure. </dd></dl>
 
 </div>
 </div>
@@ -100,7 +101,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_query_to_data </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_query_to_data </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>fmt</em>, </td>
@@ -198,7 +199,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_query_to_mixed_data </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_query_to_mixed_data </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>typelist</em>, </td>
@@ -223,7 +224,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Query data to an <code>apop_data</code> set, but a mix of names, vectors, matrix elements, and text.</p>
+<p>Query data to an <code><a class="el" href="structapop__data.html">apop_data</a></code> set, but a mix of names, vectors, matrix elements, and text.</p>
 <p>If you are querying to a matrix and maybe a name, use <code>apop_query_to_data</code> (and set <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> if desired). But if your data is a mix of text and numbers, use this.</p>
 <p>The first argument is a character string consisting of the letters <code>nvmtw</code>, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one n, v, and w.</p>
 <p>If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).</p>
@@ -237,7 +238,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_query_to_text </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_query_to_text </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>fmt</em>, </td>
@@ -263,7 +264,7 @@ Functions</h2>
 
 <span class="keywordtype">void</span> print_table_list(<span class="keywordtype">char</span> *db_file){
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(db_file);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name from sqlite_master where type==\&quot;table\&quot;;&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name from sqlite_master where type==\&quot;table\&quot;;&quot;</span>);
     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; tab_list-&gt;textsize[0]; i++)
         printf(<span class="stringliteral">&quot;%s\n&quot;</span>, tab_list-&gt;text[i][0]);
 }
@@ -314,4 +315,4 @@ Functions</h2>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

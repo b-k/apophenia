@@ -47,27 +47,26 @@ void <b>xprintf</b> (char **q, char *format,...)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a> (const double **in, const int rows, const int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> (const double **in, const int rows, const int cols)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> (const double **in, const int rows, const int cols)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> (double *line, int rows, int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> (char *tabname, char *r1, char *r2, char *datacol)
-<li>void <a class="el" href="apop__conversions_8c.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, char *tabname, char *row_col_name, char *col_col_name, char *data_col_name)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> (char *tabname, char *r1, char *r2, char *datacol)
+<li>void <a class="el" href="apop__conversions_8c.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, char *tabname, char *row_col_name, char *col_col_name, char *data_col_name)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
 <li>gsl_vector * <a class="el" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a> (const gsl_vector *in)
 <li>gsl_matrix * <a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a> (const gsl_matrix *in)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
-<li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="struct__apop__data.html">apop_data</a> *d, char use_info_pages)
-<li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
+<li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
+<li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
 <li><a class="anchor" id="a65a20082f0b120016f673e7d2ad899a8"></a><!-- doxytag: member="apop_conversions.c::apop_data_fill_base" ref="a65a20082f0b120016f673e7d2ad899a8" args="(apop_data *in, double ap[])" -->
-<a class="el" href="struct__apop__data.html">apop_data</a> * <b>apop_data_fill_base</b> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, double ap[])
+<a class="el" href="structapop__data.html">apop_data</a> * <b>apop_data_fill_base</b> (<a class="el" href="structapop__data.html">apop_data</a> *in, double ap[])
 <li><a class="anchor" id="a68210ee2c87e9cbb7733a14eb907b6cd"></a><!-- doxytag: member="apop_conversions.c::apop_vector_fill_base" ref="a68210ee2c87e9cbb7733a14eb907b6cd" args="(gsl_vector *in, double ap[])" -->
 gsl_vector * <b>apop_vector_fill_base</b> (gsl_vector *in, double ap[])
 <li><a class="anchor" id="a30fca967b854f3c5a47e3f8aff2726fb"></a><!-- doxytag: member="apop_conversions.c::apop_matrix_fill_base" ref="a30fca967b854f3c5a47e3f8aff2726fb" args="(gsl_matrix *in, double ap[])" -->
 gsl_matrix * <b>apop_matrix_fill_base</b> (gsl_matrix *in, double ap[])
-<li>void <a class="el" href="apop__conversions_8c.html#ae8eca5bb4fb4ebf7e384d47b585b9484">apop_data_set_row</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *d, <a class="el" href="struct__apop__data.html">apop_data</a> *row, int row_number)
 <li>char * <a class="el" href="apop__conversions_8c.html#ac6114b6a2be902c83a75d4367db4371f">prep_string_for_sqlite</a> (int prepped_statements, char const *astring)
-<li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="struct__apop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
+<li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
@@ -85,7 +84,7 @@ sqlite3 * <b>db</b>
         <tr>
           <td class="memname">void apop_crosstab_to_db </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
         </tr>
         <tr>
@@ -151,9 +150,9 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_rank_compress </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_data_rank_compress </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
           <td></td>
         </tr>
@@ -183,16 +182,16 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 
 <span class="keywordtype">void</span> rank_round_trip(gsl_rng *r){
     <span class="keywordtype">int</span> i, length = 1e4;
-    <a class="code" href="struct__apop__model.html">apop_model</a> *a_zipf = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea">apop_zipf</a>, 3.2);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *draws = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(length);
+    <a class="code" href="structapop__model.html">apop_model</a> *a_zipf = apop_model_set_parameters(<a class="code" href="group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea">apop_zipf</a>, 3.2);
+    <a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(length);
     <span class="keywordflow">for</span> (i=0; i&lt; length; i++)
         <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(draws, i, -1), r, a_zipf);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *by_rankings = <a class="code" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>(draws);
+    <a class="code" href="structapop__data.html">apop_data</a> *by_rankings = <a class="code" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>(draws);
     <span class="comment">//The first row of the matrix is suitable for plotting.</span>
     <span class="comment">//apop_data_show(by_rankings);</span>
     assert(<a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(by_rankings-&gt;matrix) == length);
 
-    <a class="code" href="struct__apop__data.html">apop_data</a> *re_expanded = <a class="code" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>(by_rankings);
+    <a class="code" href="structapop__data.html">apop_data</a> *re_expanded = <a class="code" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>(by_rankings);
     gsl_sort_vector(draws-&gt;vector);
     gsl_sort_vector(re_expanded-&gt;vector);
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(draws-&gt;vector, re_expanded-&gt;vector) &lt; 1e-5);
@@ -205,9 +204,9 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_rank_expand </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_data_rank_expand </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
           <td></td>
         </tr>
@@ -219,54 +218,12 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 
 </div>
 </div>
-<a class="anchor" id="ae8eca5bb4fb4ebf7e384d47b585b9484"></a><!-- doxytag: member="apop_conversions.c::apop_data_set_row" ref="ae8eca5bb4fb4ebf7e384d47b585b9484" args="(apop_data *d, apop_data *row, int row_number)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void apop_data_set_row </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>d</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>row</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>row_number</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Now that you've used <a class="el" href="stats_8h.html#a2a1bc770d6631e85359acb8b665439b3">Apop_data_row</a> to pull a row from an <a class="el" href="gentle.html#apop_data">apop_data</a> set, this function lets you write that row to another position in the same data set or a different data set entirely.</p>
-<p>The set written to must have the same form as the original: </p>
-<ul>
-<li>a vector element has to be present if one existed in the original, </li>
-<li>same for the weights vector, </li>
-<li>the matrix in the destination has to have as many columns as in the original, and </li>
-<li>the text has to have a row long enough to hold the original</li>
-</ul>
-<p>If any of the source elements are <code>NULL</code>, I won't bother to check that element in the destination. </p>
-
-</div>
-</div>
 <a class="anchor" id="aebe17fe6f2b0c49c0c90824b7a68ff90"></a><!-- doxytag: member="apop_conversions.c::apop_db_to_crosstab" ref="aebe17fe6f2b0c49c0c90824b7a68ff90" args="(char *tabname, char *r1, char *r2, char *datacol)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_db_to_crosstab </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_db_to_crosstab </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>tabname</em>, </td>
@@ -313,11 +270,14 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <ul>
 <li>This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple <code>select</code> query to generate the data. One is to specify an ad hoc table to pull from:</li>
 </ul>
-<div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;(select row, col, count(*) ct from base_data group by row, col)&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>,  <span class="stringliteral">&quot;ct&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;(select row, col, count(*) ct from base_data group by row, col)&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>,  <span class="stringliteral">&quot;ct&quot;</span>);
 </pre></div><p>The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;base_data group by row, col&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>, <span class="stringliteral">&quot;count(*)&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;base_data group by row, col&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>, <span class="stringliteral">&quot;count(*)&quot;</span>);
 <span class="comment">//which will expand to &quot;select row, col, count(*) from base_data group by row, col&quot;</span>
-</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> </dd></dl>
+</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a></dd></dl>
+<ul>
+<li>If something fails along the way, return <code>NULL</code>. </li>
+</ul>
 
 </div>
 </div>
@@ -351,4 +311,4 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

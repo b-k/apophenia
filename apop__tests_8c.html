@@ -33,11 +33,11 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a> (gsl_vector *a, gsl_vector *b)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a> (gsl_vector *a, gsl_vector *b)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *est, <a class="el" href="struct__apop__data.html">apop_data</a> *contrast)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *d)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a> (char *table, char *data, char *grouping1, char *grouping2)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a> (gsl_vector *a, gsl_vector *b)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a> (gsl_vector *a, gsl_vector *b)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="el" href="structapop__model.html">apop_model</a> *est, <a class="el" href="structapop__data.html">apop_data</a> *contrast)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> (<a class="el" href="structapop__data.html">apop_data</a> *d)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a> (char *table, char *data, char *grouping1, char *grouping2)
 <li>double <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> (double statistic, char *distribution, double p1, double p2, char tail)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -47,7 +47,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_anova </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_anova </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>table</em>, </td>
@@ -96,15 +96,15 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_f_test </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_f_test </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>est</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>contrast</em>&#160;</td>
         </tr>
         <tr>
@@ -122,12 +122,12 @@ Functions</h2>
 <p> and that's what this function is based on.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">est</td><td>an <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> that you have already calculated. (No default) </td></tr>
-    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_79.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_80.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code>apop_data</code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_81.png"/> are zero.) </td></tr>
+    <tr><td class="paramname">est</td><td>an <a class="el" href="structapop__model.html">apop_model</a> that you have already calculated. (No default) </td></tr>
+    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_79.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_80.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_81.png"/> are zero.) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <code>apop_data</code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
 <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_82.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_83.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_84.png"/>.</dd></dl>
 <ul>
 <li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_72.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
@@ -243,4 +243,4 @@ Functions</h2>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

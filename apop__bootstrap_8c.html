@@ -34,8 +34,8 @@ urchinTracker();
 Functions</h2>
 <ul>
 <li>gsl_rng * <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a> (int seed)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, <a class="el" href="struct__apop__model.html">apop_model</a> model)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, <a class="el" href="structapop__model.html">apop_model</a> model)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Copyright (c) 2006--2007 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
@@ -45,15 +45,15 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_bootstrap_cov </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_bootstrap_cov </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a>&#160;</td>
           <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
@@ -91,12 +91,12 @@ Functions</h2>
 <p>Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>The data set. An <code>apop_data</code> set where each row is a single data point. (No default) </td></tr>
-    <tr><td class="paramname">model</td><td>An <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a>, whose <code>estimate</code> method will be used here. (No default) </td></tr>
+    <tr><td class="paramname">data</td><td>The data set. An <code><a class="el" href="structapop__data.html">apop_data</a></code> set where each row is a single data point. (No default) </td></tr>
+    <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, whose <code>estimate</code> method will be used here. (No default) </td></tr>
     <tr><td class="paramname">iterations</td><td>How many bootstrap draws should I make? (default: 1,000) </td></tr>
     <tr><td class="paramname">rng</td><td>An RNG that you have initialized, probably with <code>apop_rng_alloc</code>. (Default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
-    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__data.html">apop_data</a> *boot_output = <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);
-<a class="code" href="struct__apop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop__data_8c.html#ab7e7e7ca41b68af571d61b874ea388be">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);
+    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *boot_output = <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);
+<a class="code" href="structapop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop__data_8c.html#ab7e7e7ca41b68af571d61b874ea388be">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);
 
 <a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(boot_stats, 27, row_27)
 <span class="comment">//If the output statistic is not just a vector, you&#39;ll need to use apop_data_unpack to put</span>
@@ -108,7 +108,7 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <code>apop_data</code> set whose matrix element is the estimated covariance matrix of the parameters.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set whose matrix element is the estimated covariance matrix of the parameters.</dd></dl>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 <dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#a95162a0f5c4879201bfd5bb98d20f7b2">apop_jackknife_cov</a> </dd></dl>
 
@@ -119,15 +119,15 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_jackknife_cov </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_jackknife_cov </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a>&#160;</td>
           <td class="paramname"><em>model</em>&#160;</td>
         </tr>
         <tr>
@@ -146,15 +146,15 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 </pre></div><dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>The data set. An <a class="el" href="gentle.html#apop_data">apop_data</a> set where each row is a single data point. </td></tr>
-    <tr><td class="paramname">model</td><td>An <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a>, that will be used internally by <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>.</td></tr>
+    <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, that will be used internally by <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <code>apop_data</code> set whose matrix element is the estimated covariance matrix of the parameters. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set whose matrix element is the estimated covariance matrix of the parameters. </dd></dl>
 <dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> </dd></dl>
 
 </div>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

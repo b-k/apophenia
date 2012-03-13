@@ -86,42 +86,23 @@ apop_varad_head( <span class="keywordtype">void</span> , <a class="code" href="g
 <p>The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the plain C preprocessor.</p>
 <p>Thus, in Apophenia's code base (the one you'll get from checking out the git repository, not the gzipped distribution that has already been post-processed) you will find a pre-preprocessing script that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:</p>
 <div class="fragment"><pre class="fragment"><span class="comment">//header file</span>
-<span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<span class="preprocessor"></span> <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
-<span class="preprocessor">#else</span>
-<span class="preprocessor"></span> <span class="keywordtype">void</span> apop_vector_increment_base(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
- apop_varad_declare(<span class="keywordtype">void</span>, <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>, gsl_vector * v; <span class="keywordtype">int</span> i; <span class="keywordtype">double</span> amt);
-<span class="preprocessor">#define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)</span>
-<span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<span class="preprocessor"></span>
+APOP_VAR_DECLARE <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
+
 <span class="comment">//code file</span>
-<span class="preprocessor">#ifdef APOP_NO_VARIADIC </span>
-<span class="preprocessor"></span> <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
-<span class="preprocessor">#else</span>
-<span class="preprocessor"></span>apop_varad_head( <span class="keywordtype">void</span> , <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>){
+APOP_VAR_HEAD <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
     gsl_vector * apop_varad_var(v, NULL);
     <a class="code" href="asst_8h.html#aa6760fa3f2e261b93aaf25d80a11375c">Apop_assert</a>(v, <span class="stringliteral">&quot;You sent me a NULL vector.&quot;</span>);
     <span class="keywordtype">int</span> apop_varad_var(i, 0);
     <span class="keywordtype">double</span> apop_varad_var(amt, 1);
-     apop_vector_increment_base(v, i, amt);
+APOP_VAR_END_HEAD
+     v-&gt;data[i * v-&gt;stride]   += amt;
 }
-
- <span class="keywordtype">void</span> apop_vector_increment_base(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
-<span class="preprocessor">#endif</span>
-<span class="preprocessor"></span>     v-&gt;data[i * v-&gt;stride]   += amt;
-}
-</pre></div><p>It is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>#ifdef</code> APOP_NO_VARIADIC preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the <code>APOP_VAR_END_HEAD</code> line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability. It is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>#else</code> preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the <code>APOP_VAR_END_HEAD</code> line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability. It is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>apop_varad_declare</code>(preface; so you don't have to remember when to use semicolons. The function itself looks like a single function; but there is again a marker before the declaration line; and the introductory material is separated from the main matter by the <code>APOP_VAR_END_HEAD</code> line. Done right; drawing a line between the introductory checks or initializations and the main function can really improve readability. return is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>APOP_VAR_DECLARE</code> preface, function, line, right, drawing a line between the introductory checks or initializations and the main function can really improve readability.; It is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>APOP_VAR_DECLARE</code> preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the <code>APOP_VAR_END_HEAD</code> line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.</p>
+</pre></div><p>It is obviously much shorter. The declaration line is actually a C-standard declaration with the <code>APOP_VAR_DECLARE</code> preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the <code>APOP_VAR_END_HEAD</code> line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.</p>
 <p>The sed script inserts a <code>return function_base(...)</code> at the end of the header function, so you don't have to. If you want to call the funtion before the last line, you can do so explicitly, as in the expansion above, and add a bare <code>return;</code> to guarantee that the call to the base function that the sed script will insert won't ever be reached.</p>
 <p>One final detail: it is valid to have types with commas in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * f_of_f(<a class="code" href="struct__apop__data.html">apop_data</a> *in, <span class="keywordtype">void</span> *param, <span class="keywordtype">int</span> n, <span class="keywordtype">double</span> (*fn_d)(<span class="keywordtype">double</span> , <span class="keywordtype">void</span> * ,<span class="keywordtype">int</span>));
-<span class="preprocessor">#else</span>
-<span class="preprocessor"></span> <a class="code" href="struct__apop__data.html">apop_data</a> * f_of_f_base(<a class="code" href="struct__apop__data.html">apop_data</a> *in, <span class="keywordtype">void</span> *param, <span class="keywordtype">int</span> n, <span class="keywordtype">double</span> (*fn_d)(<span class="keywordtype">double</span> , <span class="keywordtype">void</span> * ,<span class="keywordtype">int</span>));
- apop_varad_declare(<a class="code" href="struct__apop__data.html">apop_data</a> *, f_of_f, <a class="code" href="struct__apop__data.html">apop_data</a> *in; <span class="keywordtype">void</span> *param; <span class="keywordtype">int</span> n; double (*fn_d)(double , <span class="keywordtype">void</span> * ,int));
-<span class="preprocessor">#define f_of_f(...) apop_varad_link(f_of_f, __VA_ARGS__)</span>
-<span class="preprocessor">#endif</span>
+<div class="fragment"><pre class="fragment">APOP_VAR_DECLARE <a class="code" href="structapop__data.html">apop_data</a> * f_of_f(<a class="code" href="structapop__data.html">apop_data</a> *in, <span class="keywordtype">void</span> *param, <span class="keywordtype">int</span> n, <span class="keywordtype">double</span> (*fn_d)(<span class="keywordtype">double</span> ! <span class="keywordtype">void</span> * !<span class="keywordtype">int</span>));
 </pre></div><p>Sed is POSIX standard, so even if you can't read the script, you have the program needed to run it. For example, if you name it <code>prep_variadics.sed</code>, then run </p>
 <div class="fragment"><pre class="fragment">./prep_variadics.sed &lt; myfile.pre.c &gt; myfile.c
 </pre></div> </div></div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

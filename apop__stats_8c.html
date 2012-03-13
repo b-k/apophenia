@@ -48,7 +48,7 @@ Functions</h2>
 <li>long double <a class="el" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a> (const gsl_matrix *m)
 <li>double <a class="el" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a> (const gsl_matrix *data)
 <li>void <a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *indata)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)
 <li>double <a class="el" href="apop__stats_8c.html#ad141d1bf48aaed451964fefe7dd2be55">apop_vector_weighted_mean</a> (const gsl_vector *v, const gsl_vector *w)
 <li>double <a class="el" href="apop__stats_8c.html#af287d7c166a17d35bcdce5e7c8515fce">apop_vector_weighted_var</a> (const gsl_vector *v, const gsl_vector *w)
 <li>double <a class="el" href="apop__stats_8c.html#ab2c0cb715352abd662783b6f1bb4d84e">apop_vector_weighted_skew</a> (const gsl_vector *v, const gsl_vector *w)
@@ -56,9 +56,9 @@ Functions</h2>
 <li>double <a class="el" href="apop__stats_8c.html#a8378b4ca18cefbae9c4234585e1e9b6b">apop_vector_weighted_cov</a> (const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w)
 <li>gsl_matrix * <a class="el" href="apop__stats_8c.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a> (gsl_matrix *in, const char normalize)
 <li>gsl_matrix * <a class="el" href="apop__stats_8c.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a> (gsl_matrix *in, const char normalize)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in)
-<li>double <a class="el" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *top, <a class="el" href="struct__apop__model.html">apop_model</a> *bottom, int draw_ct, gsl_rng *rng)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
+<li>double <a class="el" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> (<a class="el" href="structapop__model.html">apop_model</a> *top, <a class="el" href="structapop__model.html">apop_model</a> *bottom, int draw_ct, gsl_rng *rng)
 <li>double <a class="el" href="apop__stats_8c.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> (double a, double p)
 <li>double <a class="el" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> (double a, double p)
 <li>int <a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> (gsl_matrix *m, char semi)
@@ -74,9 +74,9 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_correlation </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_data_correlation </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
           <td></td>
         </tr>
@@ -100,9 +100,9 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_covariance </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_data_covariance </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
           <td></td>
         </tr>
@@ -128,13 +128,13 @@ void <b>vfabs</b> (double *x)
         <tr>
           <td class="memname">double apop_kl_divergence </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>top</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>bottom</em>, </td>
         </tr>
         <tr>
@@ -696,4 +696,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

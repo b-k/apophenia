@@ -46,12 +46,12 @@ Defines</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="apop__fix__params_8c.html#a7983920ba996157fc4e636ac25d1d173">apop_data_predict_fill</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__data.html">apop_data</a> *predict)
+<li>void <a class="el" href="apop__fix__params_8c.html#a7983920ba996157fc4e636ac25d1d173">apop_data_predict_fill</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__data.html">apop_data</a> *predict)
 <li><a class="anchor" id="adb52873568fd5cf5460f81af7e942448"></a><!-- doxytag: member="apop_fix_params.c::apop_predict_table_prep" ref="adb52873568fd5cf5460f81af7e942448" args="(apop_data *in, char fill_with_nans)" -->
-<a class="el" href="struct__apop__data.html">apop_data</a> * <b>apop_predict_table_prep</b> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, char fill_with_nans)
+<a class="el" href="structapop__data.html">apop_data</a> * <b>apop_predict_table_prep</b> (<a class="el" href="structapop__data.html">apop_data</a> *in, char fill_with_nans)
 <li><a class="anchor" id="a68cccab48e2c7fdabae8f2c49da9be74"></a><!-- doxytag: member="apop_fix_params.c::Apop_settings_init" ref="a68cccab48e2c7fdabae8f2c49da9be74" args="(Apop_settings_copy(apop_model_fixed_params, Apop_assert(in.base_model,&quot;I can't fix a NULL model's parameters.&quot;);)" -->
 <b>Apop_settings_init</b> (Apop_settings_copy(apop_model_fixed_params, Apop_assert(in.base_model,&quot;I can't fix a NULL model's parameters.&quot;);)
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *model_in)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Set some of the parameters of a model to fixed values. </p>
@@ -63,13 +63,13 @@ Functions</h2>
         <tr>
           <td class="memname">void apop_data_predict_fill </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>predict</em>&#160;</td>
         </tr>
         <tr>
@@ -97,9 +97,9 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__model.html">apop_model</a>* apop_model_fix_params </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* apop_model_fix_params </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model_in</em></td><td>)</td>
           <td></td>
         </tr>
@@ -108,7 +108,7 @@ Functions</h2>
 <div class="memdoc">
 <p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
-<p>The output is an <code>apop_model</code> that can be estimated, Bayesian updated, et cetera.</p>
+<p>The output is an <code><a class="el" href="structapop__model.html">apop_model</a></code> that can be estimated, Bayesian updated, et cetera.</p>
 <ul>
 <li>The <code>estimate</code> method always uses an MLE, and it never calls the base model's <code>estimate</code> method.</li>
 </ul>
@@ -132,12 +132,12 @@ Functions</h2>
     <span class="keywordtype">size_t</span> i, ct = 5e4;
 
     <span class="comment">//set up the model &amp; params</span>
-    <a class="code" href="struct__apop__data.html">apop_data</a> *d  = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(ct,2);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
-    <a class="code" href="types_8h.html#a4ed914f400ade913970ebbe698176218">apop_data_fill</a>(params, 8,  1, 0.5,
+    <a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(ct,2);
+    <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
+    apop_data_fill(params, 8,  1, 0.5,
                            2,  0.5, 1);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
-    pvm-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
+    <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
+    pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
 
     <span class="comment">//make random draws from the multivar. normal</span>
     <span class="comment">//this `pull a row view, fill its data element&#39; form works for rows but not cols.</span>
@@ -147,15 +147,15 @@ Functions</h2>
     }
 
     <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span>
-    gsl_vector_set_all(pvm-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector, GSL_NAN);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *mep1   = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *e1  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, *mep1);
+    gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);
+    <a class="code" href="structapop__model.html">apop_model</a> *mep1   = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
+    <a class="code" href="structapop__model.html">apop_model</a> *e1  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, *mep1);
     
     <span class="comment">//compare results</span>
     printf(<span class="stringliteral">&quot;original params: &quot;</span>);
     <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(params-&gt;vector);
     printf(<span class="stringliteral">&quot;estimated params: &quot;</span>);
-    <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(e1-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
+    <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(e1-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
     <span class="keywordflow">return</span> 0;
 }
 </pre></div><dl><dt><b>Parameters:</b></dt><dd>
@@ -170,4 +170,4 @@ Functions</h2>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

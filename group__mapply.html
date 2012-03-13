@@ -33,7 +33,7 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages)
 <li>gsl_vector * <a class="el" href="group__mapply.html#ga5da5091a11c37d3501d678b8ecec466f">apop_matrix_map</a> (const gsl_matrix *m, double(*fn)(gsl_vector *))
 <li>void <a class="el" href="group__mapply.html#ga5c4ae58b861199bbc1a460719942d98f">apop_matrix_apply</a> (gsl_matrix *m, void(*fn)(gsl_vector *))
 <li>gsl_vector * <a class="el" href="group__mapply.html#gaf30eadf8772ecb9a2689ddf104902ea4">apop_vector_map</a> (const gsl_vector *v, double(*fn)(double))
@@ -45,7 +45,7 @@ Functions</h2>
 <li>double <a class="el" href="group__mapply.html#ga4f0c51a046140b563c8e12a6032e9a16">apop_matrix_map_sum</a> (const gsl_matrix *in, double(*fn)(gsl_vector *))
 <li><a class="anchor" id="gab5f1167cdbb979e2594d58a9b5c20731"></a><!-- doxytag: member="mapply::apop_map_sum_for_threading" ref="gab5f1167cdbb979e2594d58a9b5c20731" args="(void *in)" -->
 void * <b>apop_map_sum_for_threading</b> (void *in)
-<li>double <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages)
+<li>double <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>These functions will pull each element of a vector or matrix, or each row of a matrix, and apply a function to the given element. See the data-&gt;map/apply section of the <a class="el" href="outline.html#outline_mapply">outline</a> for many examples.</p>
@@ -63,9 +63,9 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_map </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_map </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
         </tr>
         <tr>
@@ -198,7 +198,7 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
     <tr><td class="paramname">fn_ri</td><td>A function of the form <code>double your_fn(apop_data *in, int index)</code></td></tr>
     <tr><td class="paramname">in</td><td>The input data set. If <code>NULL</code>, I'll return <code>NULL</code> immediately. </td></tr>
     <tr><td class="paramname">param</td><td>A pointer to the parameters to be passed to those function forms taking a <code>*param</code>.</td></tr>
-    <tr><td class="paramname">part</td><td>Which part of the <code>apop_data</code> struct should I use?<br/>
+    <tr><td class="paramname">part</td><td>Which part of the <code><a class="el" href="structapop__data.html">apop_data</a></code> struct should I use?<br/>
  'v'==Just the vector<br/>
  'm'==Every element of the matrix, in turn<br/>
  'a'==Both 'v' and 'm'<br/>
@@ -232,7 +232,7 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
         <tr>
           <td class="memname">double apop_map_sum </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
         </tr>
         <tr>
@@ -676,4 +676,4 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

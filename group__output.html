@@ -39,12 +39,12 @@ Modules</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *print_me)
-<li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *est, Output_declares)
+<li>void <a class="el" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me)
+<li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
 <li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
-<li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in)
-<li>void <a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *d, Output_declares)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *indata)
+<li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
+<li>void <a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d, Output_declares)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>Most functions print only to the screen, but the <a class="el" href="group__apop__print.html">matrix and vector printing functions</a> will let you print to a text file as well. The presumption is that statistic estimates are for your own consumption, while you are printing a matrix for import into another program. </p>
@@ -56,14 +56,14 @@ Functions</h2>
         <tr>
           <td class="memname">void apop_data_show </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>This function prettyprints the <code>apop_data</code> set to a screen.</p>
+<p>This function prettyprints the <code><a class="el" href="structapop__data.html">apop_data</a></code> set to a screen.</p>
 <p>This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up. There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.</p>
 <p>So, I produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use <a class="el" href="group__apop__print.html">Assorted printing functions</a> to dump your data to a text file, and view the text file, or print subsets.</p>
 <p>For more machine-readable printing, see <a class="el" href="group__apop__print.html">Assorted printing functions</a>. </p>
@@ -75,9 +75,9 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_data_summarize </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_data_summarize </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>indata</em></td><td>)</td>
           <td></td>
         </tr>
@@ -93,7 +93,7 @@ Functions</h2>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> structure with one row for each column in the original table, and a column for each summary statistic. May have a <code>weights</code> element.</dd></dl>
 <ul>
-<li>This function gives more columns than you probably want; use <a class="el" href="types_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a> to pick the ones you want to see. <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>We should probably let this summarize rows as well. </dd></dl>
+<li>This function gives more columns than you probably want; use apop_data_prune_columns to pick the ones you want to see. <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>We should probably let this summarize rows as well. </dd></dl>
 </li>
 </ul>
 
@@ -106,7 +106,7 @@ Functions</h2>
         <tr>
           <td class="memname">void apop_model_print </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>print_me</em></td><td>)</td>
           <td></td>
         </tr>
@@ -115,7 +115,7 @@ Functions</h2>
 <div class="memdoc">
 <p>Print the results of an estimation. If your model has a <code>print</code> method, then I'll use that, else I'll use a default setup.</p>
 <p>Your <code>print</code> method can use both by masking itself for a second: </p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> print_method(<a class="code" href="struct__apop__model.html">apop_model</a> *in){
+<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> print_method(<a class="code" href="structapop__model.html">apop_model</a> *in){
   <span class="keywordtype">void</span> *temp = in-&gt;print;
   in-&gt;print = NULL;
   <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(in);
@@ -195,7 +195,7 @@ fclose(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc"
         <tr>
           <td class="memname">void apop_plot_lattice </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
         </tr>
         <tr>
@@ -238,13 +238,13 @@ A lattice showing three variables graphed against each other.</div></div>
         <tr>
           <td class="memname">void apop_plot_line_and_scatter </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>est</em>, </td>
         </tr>
         <tr>
@@ -267,7 +267,7 @@ A lattice showing three variables graphed against each other.</div></div>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <em>first</em> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one. </td></tr>
-    <tr><td class="paramname">est</td><td>The <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> structure your regression function gave you. (if <code>NULL</code>, I'll estimate an OLS model for you).</td></tr>
+    <tr><td class="paramname">est</td><td>The <a class="el" href="structapop__model.html">apop_model</a> structure your regression function gave you. (if <code>NULL</code>, I'll estimate an OLS model for you).</td></tr>
   </table>
   </dd>
 </dl>
@@ -275,8 +275,8 @@ A lattice showing three variables graphed against each other.</div></div>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-<a class="code" href="struct__apop__data.html">apop_data</a>   *data, *data_copy;
-<a class="code" href="struct__apop__model.html">apop_model</a>  *est;
+<a class="code" href="structapop__data.html">apop_data</a>   *data, *data_copy;
+<a class="code" href="structapop__model.html">apop_model</a>  *est;
 FILE        *f;
 <span class="keywordtype">char</span>        outfile[]   = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
 
@@ -309,4 +309,4 @@ FILE        *f;
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

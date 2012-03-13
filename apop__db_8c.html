@@ -43,7 +43,9 @@ Data Structures</h2>
 Defines</h2>
 <ul>
 <li><a class="anchor" id="a65ecb3cc386e0c837b2a84ca829e8a7e"></a><!-- doxytag: member="apop_db.c::ERRCHECK" ref="a65ecb3cc386e0c837b2a84ca829e8a7e" args="" -->
-#define <b>ERRCHECK</b>&#160;&#160;&#160;{Apop_assert_c(err==NULL, 0, 0, &quot;%s: %s&quot;,query, err);}
+#define <b>ERRCHECK</b>&#160;&#160;&#160;{Apop_assert_c(err==NULL, 1, 0, &quot;%s: %s&quot;,query, err);}
+<li><a class="anchor" id="a7ae9f2adfaf130062621be98ab895fe1"></a><!-- doxytag: member="apop_db.c::ERRCHECK_NR" ref="a7ae9f2adfaf130062621be98ab895fe1" args="" -->
+#define <b>ERRCHECK_NR</b>&#160;&#160;&#160;{Apop_assert_c(err==NULL, NULL, 0, &quot;%s: %s&quot;,query, err);}
 <li>#define <b>Fillin</b>(query, fmt)
 <li><a class="anchor" id="gaf28e7d098a9bae73f246186632a82faf"></a><!-- doxytag: member="apop_db.c::Store_settings" ref="gaf28e7d098a9bae73f246186632a82faf" args="" -->
 #define <b>Store_settings</b>&#160;&#160;&#160;int v = apop_opts.verbose; apop_opts.verbose=0;
@@ -58,15 +60,15 @@ Functions</h2>
 <li>int <a class="el" href="apop__db_8c.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> (char const *name, char remove)
 <li>int <a class="el" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> (char vacuum)
 <li>int <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> (const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a> (const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> (const char *fmt,...)
 <li>gsl_matrix * <a class="el" href="group__queries.html#ga8a1da4d925dbafdd2b3318672eac751f">apop_query_to_matrix</a> (const char *fmt,...)
 <li>gsl_vector * <a class="el" href="group__queries.html#ga830703db838855b8abd636069c7145de">apop_query_to_vector</a> (const char *fmt,...)
 <li>double <a class="el" href="group__queries.html#ga1ad75f9dfba696a3741e28896ed5b75d">apop_query_to_float</a> (const char *fmt,...)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a> (const char *typelist, const char *fmt,...)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a> (const char *typelist, const char *fmt,...)
 <li><a class="anchor" id="a5b2acb4c4f767a219b4443d63e65e5a8"></a><!-- doxytag: member="apop_db.c::qxprintf" ref="a5b2acb4c4f767a219b4443d63e65e5a8" args="(char **q, char *format,...)" -->
 void <b>qxprintf</b> (char **q, char *format,...)
-<li>void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
+<li>void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
 <li>void <a class="el" href="apop__db_8c.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> (char *db_file, char *tabname, char inout)
 <li>void <a class="el" href="apop__db_8c.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> (char *db_file, char inout)
 <li>double <a class="el" href="group__ttest.html#gaf6b4c155f970f1a63c9d9cfba6300189">apop_db_t_test</a> (char *tab1, char *col1, char *tab2, char *col2)
@@ -136,7 +138,7 @@ Variables</h2>
   </table>
   </dd>
 </dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>0 on OK, nonzero on error. This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </dd></dl>
 
 </div>
 </div>
@@ -319,6 +321,9 @@ Variables</h2>
 <ul>
 <li>In the SQLite engine, this function considers table views to be tables.</li>
 </ul>
+<ul>
+<li>If <code>apop_opts.stop_on_warn='n'</code>, returns -1 on errors.</li>
+</ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
@@ -341,6 +346,7 @@ Variables</h2>
             .db_name_column = <span class="stringliteral">&quot;row_names&quot;</span>, .db_nan = <span class="stringliteral">&quot;NaN&quot;</span>, 
             .db_engine = <span class="charliteral">&#39;\0&#39;</span>,             .db_user = <span class="stringliteral">&quot;\0&quot;</span>, 
             .db_pass = <span class="stringliteral">&quot;\0&quot;</span>,               .thread_count = 1,
+            .log_file = NULL,
             .rng_seed = 479901,            .version = 0.99 }
 </pre></div><p>Here are where the options are initially set. </p>
 
@@ -348,4 +354,4 @@ Variables</h2>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

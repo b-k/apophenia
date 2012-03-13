@@ -44,7 +44,7 @@ Data Structures</h2>
 Typedefs</h2>
 <ul>
 <li><a class="anchor" id="a5ba61c685298b6f4236d9db66745e536"></a><!-- doxytag: member="apop_mle.c::apop_fn_with_params" ref="a5ba61c685298b6f4236d9db66745e536" args=")(apop_data *, apop_model *)" -->
-typedef double(* <b>apop_fn_with_params</b> )(<a class="el" href="struct__apop__data.html">apop_data</a> *, <a class="el" href="struct__apop__model.html">apop_model</a> *)
+typedef double(* <b>apop_fn_with_params</b> )(<a class="el" href="structapop__data.html">apop_data</a> *, <a class="el" href="structapop__model.html">apop_model</a> *)
 <li><a class="anchor" id="ad49359d686094c4d703b70b5a6fa1f8a"></a><!-- doxytag: member="apop_mle.c::apop_df_with_void" ref="ad49359d686094c4d703b70b5a6fa1f8a" args=")(const gsl_vector *beta, void *d, gsl_vector *gradient)" -->
 typedef void(* <b>apop_df_with_void</b> )(const gsl_vector *beta, void *d, gsl_vector *gradient)
 <li><a class="anchor" id="ada7e9db6a6c75da55e12e812c9a5eb5c"></a><!-- doxytag: member="apop_mle.c::apop_fdf_with_void" ref="ada7e9db6a6c75da55e12e812c9a5eb5c" args=")(const gsl_vector *beta, void *d, double *f, gsl_vector *df)" -->
@@ -55,25 +55,25 @@ Functions</h2>
 <ul>
 <li><a class="anchor" id="aa1a5d5ac307679f87428389ed0b6dea7"></a><!-- doxytag: member="apop_mle.c::Apop_settings_copy" ref="aa1a5d5ac307679f87428389ed0b6dea7" args="(Apop_settings_free(apop_parts_wanted)" -->
 <b>Apop_settings_copy</b> (Apop_settings_free(apop_parts_wanted)
-<li>gsl_vector * <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *model, double delta)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *model, double delta)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *model, double delta)
+<li>gsl_vector * <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
 <li><a class="anchor" id="a58ca4d3f885902fd098164784933ca81"></a><!-- doxytag: member="apop_mle.c::get_desires" ref="a58ca4d3f885902fd098164784933ca81" args="(apop_model *m, infostruct *info)" -->
-void <b>get_desires</b> (<a class="el" href="struct__apop__model.html">apop_model</a> *m, <a class="el" href="structinfostruct.html">infostruct</a> *info)
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *dist)
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *e, <a class="el" href="struct__apop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
+void <b>get_desires</b> (<a class="el" href="structapop__model.html">apop_model</a> *m, <a class="el" href="structinfostruct.html">infostruct</a> *info)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
 <ul>
 <li><a class="anchor" id="ac1edb6b92c9ab09f0c9195796ff3bd9c"></a><!-- doxytag: member="apop_mle.c::default_delta" ref="ac1edb6b92c9ab09f0c9195796ff3bd9c" args="" -->
 double <b>default_delta</b> = 1e-3
-<li><a class="el" href="struct__apop__model.html">apop_model</a> <b>apop_model_for_infomatrix</b>
+<li><a class="el" href="structapop__model.html">apop_model</a> <b>apop_model_for_infomatrix</b>
 <li><a class="anchor" id="a8ad8c78475de735d471aae82741113b3"></a><!-- doxytag: member="apop_mle.c::anneal_jump" ref="a8ad8c78475de735d471aae82741113b3" args="" -->
 jmp_buf <b>anneal_jump</b>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<div class="textblock"><p>The MLE functions. Call them with an <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a>.</p>
+<div class="textblock"><p>The MLE functions. Call them with an <a class="el" href="structapop__model.html">apop_model</a>.</p>
 <p>This file includes a number of distributions and models whose parameters one would estimate using maximum likelihood techniques.</p>
 <p>It has (more-or-less) a single public function: <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>, and you don't even need to use that one, because the <code>apop_estimate</code> function defaults to using it if there is no model-specific estimation routine provided.</p>
 <p>At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine. </p>
@@ -83,15 +83,15 @@ jmp_buf <b>anneal_jump</b>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_model_hessian </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_model_hessian </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
@@ -129,15 +129,15 @@ jmp_buf <b>anneal_jump</b>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_model_numerical_covariance </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_model_numerical_covariance </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model</em>, </td>
         </tr>
         <tr>
@@ -175,7 +175,7 @@ jmp_buf <b>anneal_jump</b>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__model.html">apop_model</a> apop_model_for_infomatrix</td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a> apop_model_for_infomatrix</td>
         </tr>
       </table>
 </div>
@@ -187,4 +187,4 @@ jmp_buf <b>anneal_jump</b>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

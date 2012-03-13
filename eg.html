@@ -34,16 +34,16 @@ urchinTracker();
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){
     <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
+    <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
+    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
     <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
 }
 </pre></div><p>In the <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> page, a variant, demonstrating the use of optional, named arguments:</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){ 
-  <a class="code" href="struct__apop__data.html">apop_data</a> *data; 
-  <a class="code" href="struct__apop__model.html">apop_model</a> *est;
+  <a class="code" href="structapop__data.html">apop_data</a> *data; 
+  <a class="code" href="structapop__model.html">apop_model</a> *est;
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(NULL);
     <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="stringliteral">&quot;d&quot;</span>,.has_row_names= 0,.has_col_names=1);
     data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
@@ -87,7 +87,7 @@ result = apop_test_fisher_exact(adata)
 }
 
 <span class="keywordtype">int</span> main(){
-<a class="code" href="struct__apop__data.html">apop_data</a> *m;
+<a class="code" href="structapop__data.html">apop_data</a> *m;
 <span class="keywordtype">double</span>    p1, p2;
 <span class="keywordtype">int</span>       i;
 gsl_rng   *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(123);
@@ -114,8 +114,8 @@ gsl_rng   *r = <a class="code" href="group__convenience__fns.html#gada044cf02135
 
     <span class="comment">//Output a table of means/variances, and t-test results.</span>
     printf(<span class="stringliteral">&quot;\t   mean\t\t   var\n&quot;</span>);
-    printf(<span class="stringliteral">&quot;process 1: %f\t%f\n&quot;</span>, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(v1), <a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(v1));
-    printf(<span class="stringliteral">&quot;process 2: %f\t%f\n\n&quot;</span>, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(v2), <a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(v2));
+    printf(<span class="stringliteral">&quot;process 1: %f\t%f\n&quot;</span>, <a class="code" href="stats_8h.html#a0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(v1), apop_var(v1));
+    printf(<span class="stringliteral">&quot;process 2: %f\t%f\n\n&quot;</span>, <a class="code" href="stats_8h.html#a0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(v2), apop_var(v2));
     printf(<span class="stringliteral">&quot;t test\n&quot;</span>);
     <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(<a class="code" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a>(v1, v2));
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(m, <span class="stringliteral">&quot;the_data.txt&quot;</span>); <span class="comment">//does not overwrite; appends.</span>
@@ -125,8 +125,8 @@ gsl_rng   *r = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-<a class="code" href="struct__apop__data.html">apop_data</a>   *data, *data_copy;
-<a class="code" href="struct__apop__model.html">apop_model</a>  *est;
+<a class="code" href="structapop__data.html">apop_data</a>   *data, *data_copy;
+<a class="code" href="structapop__model.html">apop_model</a>  *est;
 FILE        *f;
 <span class="keywordtype">char</span>        outfile[]   = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
 
@@ -156,11 +156,11 @@ FILE        *f;
 gsl_rng *r;
 
 <span class="keywordtype">void</span> offset_rng(<span class="keywordtype">double</span> *v){*v = gsl_rng_uniform(r) + row_offset;}
-<span class="keywordtype">double</span> find_tstat(gsl_vector *in){ <span class="keywordflow">return</span> <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)/sqrt(<a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in));}
+<span class="keywordtype">double</span> find_tstat(gsl_vector *in){ <span class="keywordflow">return</span> <a class="code" href="stats_8h.html#a0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)/sqrt(apop_var(in));}
 <span class="keywordtype">double</span> conf(<span class="keywordtype">double</span> in, <span class="keywordtype">void</span> *df){ <span class="keywordflow">return</span> gsl_cdf_tdist_P(in, *(<span class="keywordtype">int</span> *)df);}
 
 <span class="keywordtype">int</span> main(){
-    <a class="code" href="struct__apop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, 10, 100);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, 10, 100);
     r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){
         row_offset = gsl_rng_uniform(r)*2 -1;
@@ -169,9 +169,9 @@ gsl_rng *r;
     }
 
     <span class="keywordtype">size_t</span> df = d-&gt;matrix-&gt;size2-1;
-    <a class="code" href="struct__apop__data.html">apop_data</a> *means = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = <a class="code" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>, .part =<span class="charliteral">&#39;r&#39;</span>);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *tstats = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = find_tstat, .part =<span class="charliteral">&#39;r&#39;</span>);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *confidences = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(tstats, .fn_dp = conf, .param = &amp;df);
+    <a class="code" href="structapop__data.html">apop_data</a> *means = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = <a class="code" href="stats_8h.html#a92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>, .part =<span class="charliteral">&#39;r&#39;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *tstats = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = find_tstat, .part =<span class="charliteral">&#39;r&#39;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *confidences = <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(tstats, .fn_dp = conf, .param = &amp;df);
 
     printf(<span class="stringliteral">&quot;means:\t\t&quot;</span>); <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(means);
     printf(<span class="stringliteral">&quot;t stats:\t&quot;</span>); <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(tstats);
@@ -182,7 +182,7 @@ gsl_rng *r;
 
 <span class="keywordtype">void</span> print_table_list(<span class="keywordtype">char</span> *db_file){
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(db_file);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name from sqlite_master where type==\&quot;table\&quot;;&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name from sqlite_master where type==\&quot;table\&quot;;&quot;</span>);
     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; tab_list-&gt;textsize[0]; i++)
         printf(<span class="stringliteral">&quot;%s\n&quot;</span>, tab_list-&gt;text[i][0]);
 }
@@ -202,12 +202,12 @@ gsl_rng *r;
     <span class="keywordtype">size_t</span> i, ct = 5e4;
 
     <span class="comment">//set up the model &amp; params</span>
-    <a class="code" href="struct__apop__data.html">apop_data</a> *d  = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(ct,2);
-    <a class="code" href="struct__apop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
-    <a class="code" href="types_8h.html#a4ed914f400ade913970ebbe698176218">apop_data_fill</a>(params, 8,  1, 0.5,
+    <a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(ct,2);
+    <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
+    apop_data_fill(params, 8,  1, 0.5,
                            2,  0.5, 1);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
-    pvm-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
+    <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
+    pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
 
     <span class="comment">//make random draws from the multivar. normal</span>
     <span class="comment">//this `pull a row view, fill its data element&#39; form works for rows but not cols.</span>
@@ -217,17 +217,17 @@ gsl_rng *r;
     }
 
     <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span>
-    gsl_vector_set_all(pvm-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector, GSL_NAN);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *mep1   = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
-    <a class="code" href="struct__apop__model.html">apop_model</a> *e1  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, *mep1);
+    gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);
+    <a class="code" href="structapop__model.html">apop_model</a> *mep1   = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
+    <a class="code" href="structapop__model.html">apop_model</a> *e1  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, *mep1);
     
     <span class="comment">//compare results</span>
     printf(<span class="stringliteral">&quot;original params: &quot;</span>);
     <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(params-&gt;vector);
     printf(<span class="stringliteral">&quot;estimated params: &quot;</span>);
-    <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(e1-&gt;<a class="code" href="struct__apop__model.html#a211b10fea629f6fa5c9e76bf5ed3b5f4">parameters</a>-&gt;vector);
+    <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(e1-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
     <span class="keywordflow">return</span> 0;
 }
 </pre></div> </div></div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

@@ -33,8 +33,8 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="struct__apop__data.html">apop_data</a> *data, <a class="el" href="struct__apop__model.html">apop_model</a> *dist)
-<li><a class="el" href="struct__apop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="struct__apop__model.html">apop_model</a> *e, <a class="el" href="struct__apop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
 </ul>
 
 
@@ -56,15 +56,15 @@ An ML search, tracing out the surface of the function</div></div>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__model.html">apop_model</a>* apop_estimate_restart </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* apop_estimate_restart </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>e</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>copy</em>, </td>
         </tr>
         <tr>
@@ -88,28 +88,28 @@ An ML search, tracing out the surface of the function</div></div>
 </div>
 <div class="memdoc">
 <p>The simplest use of this function is to restart a model at the latest parameter estimates.</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, model_using_an_MLE_search);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, model_using_an_MLE_search);
 <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++)
     m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
 </pre></div><p>By adding a line to reduce the tolerance each round [e.g., <code>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</code>], you can start broad and hone in on a precise optimum.</p>
 <p>You may have a new estimation method, such as first doing a coarse simulated annealing search, then a fine conjugate gradient search. When reading this example, recall that the form for adding a new settings group differs from the form for modifying existing settings: </p>
 <div class="fragment"><pre class="fragment">Apop_model_add_settings(your_base_model, apop_mle, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);
-<a class="code" href="struct__apop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, your_base_model);
+<a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, your_base_model);
 <a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(m, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223">APOP_CG_PR</a>);
 m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
 </pre></div><p>Only one estimate is returned, either the one you sent in or a new one. The loser (which may be the one you sent in) is freed. That is, there is no memory leak in the above loop.</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">e</td><td>An <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> that is the output from a prior MLE estimation. (No default, must not be <code>NULL</code>.) </td></tr>
+    <tr><td class="paramname">e</td><td>An <a class="el" href="structapop__model.html">apop_model</a> that is the output from a prior MLE estimation. (No default, must not be <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">copy</td><td>Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <code>starting_pt</code> as per the next setting (probably to the parameters of <code>e</code>). If this is <code>NULL</code>, then copy <code>e</code>. (Default = <code>NULL</code>) </td></tr>
     <tr><td class="paramname">starting_pt</td><td>"ep"=last estimate of the first model (i.e., its current parameter estimates); "es"= starting point originally used by the first model; "np"=current parameters of the new (second) model; "ns"=starting point specified by the new model's MLE settings. (default = "ep") </td></tr>
     <tr><td class="paramname">boundary</td><td>I test whether the starting point you give me is outside this certain bound, so I can warn you if there's divergence in your sequence of re-estimations. (default: 1e8)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>At the end of this procedure, we'll have two <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> structs: the one you sent in, and the one produced using the new method/scale. If the new estimate includes any NaNs/Infs, then the old estimate is returned (even if the old estimate included NaNs/Infs). Otherwise, the estimate with the largest log likelihood is returned.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>At the end of this procedure, we'll have two <a class="el" href="structapop__model.html">apop_model</a> structs: the one you sent in, and the one produced using the new method/scale. If the new estimate includes any NaNs/Infs, then the old estimate is returned (even if the old estimate included NaNs/Infs). Otherwise, the estimate with the largest log likelihood is returned.</dd></dl>
 <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -121,15 +121,15 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__model.html">apop_model</a>* apop_maximum_likelihood </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* apop_maximum_likelihood </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>dist</em>&#160;</td>
         </tr>
         <tr>
@@ -144,17 +144,17 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data matrix (an <a class="el" href="gentle.html#apop_data">apop_data</a> set). </td></tr>
-    <tr><td class="paramname">dist</td><td>The <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> object: waring, probit, zipf, &amp;c. You can add an <code><a class="el" href="structapop__mle__settings.html">apop_mle_settings</a></code> struct to it (<code>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</code>). So, see the <code><a class="el" href="structapop__mle__settings.html">apop_mle_settings</a></code> documentation for the many options, such as choice of method and tuning parameters.</td></tr>
+    <tr><td class="paramname">dist</td><td>The <a class="el" href="structapop__model.html">apop_model</a> object: waring, probit, zipf, &amp;c. You can add an <code><a class="el" href="structapop__mle__settings.html">apop_mle_settings</a></code> struct to it (<code>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</code>). So, see the <code><a class="el" href="structapop__mle__settings.html">apop_mle_settings</a></code> documentation for the many options, such as choice of method and tuning parameters.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="types_8h.html#aadd13f6aa6f5f17d48d9b7d2b606bdd4">apop_model</a> with the parameter estimates, &amp;c.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> with the parameter estimates, &amp;c.</dd></dl>
 <ul>
 <li>I only look at the first page of your parameter set. If you need more, perhaps use <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> .</li>
 </ul>
 <ul>
-<li>Get auxiliary info via, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="struct__apop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, <a class="code" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>);
-<span class="keywordtype">int</span> status = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="struct__apop__model.html#a9eefb73c2c6c5c1e3e3f230f1a2be9f6">info</a>, .rowname=<span class="stringliteral">&quot;status&quot;</span>);
+<li>Get auxiliary info via, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, <a class="code" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>);
+<span class="keywordtype">int</span> status = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#aeba2b05a99d67db4ba658115ee5f9780">info</a>, .rowname=<span class="stringliteral">&quot;status&quot;</span>);
 <span class="keywordflow">if</span> (status)
     <span class="comment">//trouble</span>
 <span class="keywordflow">else</span>
@@ -166,4 +166,4 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>

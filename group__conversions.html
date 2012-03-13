@@ -37,14 +37,14 @@ Functions</h2>
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a> (const double **in, const int rows, const int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> (const double **in, const int rows, const int cols)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> (const double **in, const int rows, const int cols)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> (double *line, int rows, int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
-<li><a class="el" href="struct__apop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
-<li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="struct__apop__data.html">apop_data</a> *d, char use_info_pages)
-<li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
-<li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="struct__apop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
-<li>void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> (const <a class="el" href="struct__apop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
+<li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
+<li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
+<li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
+<li>void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays. </p>
@@ -57,7 +57,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_array_to_data </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_array_to_data </td>
           <td>(</td>
           <td class="paramtype">const double **&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -92,7 +92,7 @@ Functions</h2>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the <a class="el" href="gentle.html#apop_data">apop_data</a> set, allocated for you and ready to use.</dd></dl>
 <p>usage: </p>
-<div class="fragment"><pre class="fragment"> <a class="code" href="struct__apop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a>(indata, 34, 4); 
+<div class="fragment"><pre class="fragment"> <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a>(indata, 34, 4); 
 </pre></div><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>. </p>
 
 </div>
@@ -175,6 +175,9 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> (which I will allocate for you).</dd></dl>
+<ul>
+<li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>.</li>
+</ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
@@ -186,7 +189,7 @@ Functions</h2>
         <tr>
           <td class="memname">gsl_vector* apop_data_pack </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
         </tr>
         <tr>
@@ -221,7 +224,7 @@ Functions</h2>
 </pre></div><p> will return the original data set (stripped of text and names).</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">in</td><td>an <code>apop_data</code> set. No default; if <code>NULL</code>, return <code>NULL</code>. </td></tr>
+    <tr><td class="paramname">in</td><td>an <code><a class="el" href="structapop__data.html">apop_data</a></code> set. No default; if <code>NULL</code>, return <code>NULL</code>. </td></tr>
     <tr><td class="paramname">out</td><td>If this is not <code>NULL</code>, then put the output here. The dimensions must match exactly. If <code>NULL</code>, then allocate a new data set. Default = <code>NULL</code>. </td></tr>
     <tr><td class="paramname">all_pages</td><td>If <code>'y'</code>, then follow the <code> -&gt;more</code> pointer to fill subsequent pages; else fill only the first page. Informational pages will still be ignored, unless you set <code>.use_info_pages='y'</code> as well. Default = <code>'n'</code>. </td></tr>
     <tr><td class="paramname">use_info_pages</td><td>Pages in HTML-style brackets, such as <code>&lt;Covariance&gt;</code> will be ignored unless you set <code>.use_info_pages='y'</code>. Be sure that this is set to the same thing when you both pack and unpack. Default: <code>'n'</code>.</td></tr>
@@ -240,7 +243,7 @@ Functions</h2>
         <tr>
           <td class="memname">void apop_data_to_db </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>set</em>, </td>
         </tr>
         <tr>
@@ -301,7 +304,7 @@ Functions</h2>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
         </tr>
         <tr>
@@ -318,7 +321,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>This is the complement to <code>apop_data_pack</code>, qv. It writes the <code>gsl_vector</code> produced by that function back to the <code>apop_data</code> set you provide. It overwrites the data in the vector and matrix elements and, if present, the <code>weights</code> (and that's it, so names or text are as before).</p>
+<p>This is the complement to <code>apop_data_pack</code>, qv. It writes the <code>gsl_vector</code> produced by that function back to the <code><a class="el" href="structapop__data.html">apop_data</a></code> set you provide. It overwrites the data in the vector and matrix elements and, if present, the <code>weights</code> (and that's it, so names or text are as before).</p>
 <dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A <code>gsl_vector</code> of the form produced by <code>apop_data_pack</code>. No default; must not be <code>NULL</code>. </td></tr>
@@ -339,7 +342,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_line_to_data </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_line_to_data </td>
           <td>(</td>
           <td class="paramtype">double *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -376,7 +379,7 @@ Functions</h2>
   <table class="params">
     <tr><td class="paramname">in</td><td>The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example, <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> params[] = {0, 1, 2
                    3, 4, 5};
-<a class="code" href="struct__apop__data.html">apop_data</a> *out = <a class="code" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>(params, 2, 2, 2);
+<a class="code" href="structapop__data.html">apop_data</a> *out = <a class="code" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>(params, 2, 2, 2);
 </pre></div> will produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with a vector <img class="formulaInl" alt="$\left[\matrix{0 \cr 3}\right]$" src="form_5.png"/> and a matrix <img class="formulaInl" alt="$\left[\matrix{1 &amp; 2 \cr 4 &amp; 5}\right]$" src="form_6.png"/>. </td></tr>
     <tr><td class="paramname">vsize</td><td>The vector size. If there are also rows/cols, I expect this to equal the number or rows. </td></tr>
     <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
@@ -437,7 +440,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct__apop__data.html">apop_data</a>* apop_text_to_data </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* apop_text_to_data </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>text_file</em>, </td>
@@ -486,7 +489,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>Returns an apop_data set.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>Returns an <a class="el" href="structapop__data.html">apop_data</a> set.</dd></dl>
 <p><b>example:</b> See <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>.</p>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
@@ -535,7 +538,7 @@ Functions</h2>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="struct__apop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>field_params</em>, </td>
         </tr>
         <tr>
@@ -564,8 +567,8 @@ Functions</h2>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){ 
-  <a class="code" href="struct__apop__data.html">apop_data</a> *data; 
-  <a class="code" href="struct__apop__model.html">apop_model</a> *est;
+  <a class="code" href="structapop__data.html">apop_data</a> *data; 
+  <a class="code" href="structapop__model.html">apop_model</a> *est;
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(NULL);
     <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="stringliteral">&quot;d&quot;</span>,.has_row_names= 0,.has_col_names=1);
     data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
@@ -588,7 +591,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>Returns the number of rows.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>Returns the number of rows on success, -1 on error.</dd></dl>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
@@ -614,7 +617,10 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>double*</code>, which will be <code>malloc</code>ed inside the function. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>double*</code>, which will be <code>malloc</code>ed inside the function.</dd></dl>
+<ul>
+<li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>. </li>
+</ul>
 
 </div>
 </div>
@@ -652,10 +658,14 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>a newly-allocated <code>gsl_matrix</code> with one column.</dd></dl>
+<ul>
+<li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>. </li>
+<li>If <code>gsl_matrix_alloc</code> fails and <code>apop_opts.stop_on_warn=='n'</code>, you get a <code>NULL</code> pointer in return.</li>
+</ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
 </div>
 </div>
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Mar 13 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon May 14 2012.</div></body></html>
