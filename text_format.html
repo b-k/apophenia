@@ -28,8 +28,8 @@ urchinTracker();
 <div class="title">Notes on input text file formatting </div>  </div>
 </div>
 <div class="contents">
-<div class="textblock"><p>Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters.</p>
-<p>By default, the delimiters are set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. Please use an argument to <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> or <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> like <code>.delimiters=" \t"</code> or <code>.delimiters="|"</code>. <code>apop_opts.input_delimiters</code> is deprecated.</p>
+<div class="textblock"><p>Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters. Fixed-width input is also OK; see below.</p>
+<p>By default, the delimiters are set to "|,\t", meaning that a pipe, comma, or tab will delimit separate entries. To change the default, please use an argument to <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> or <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> like <code>.delimiters=" \t"</code> or <code>.delimiters="|"</code>. <code>apop_opts.input_delimiters</code> is deprecated.</p>
 <p>The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. If your data is in another encoding, try the POSIX-standard <code>iconv</code> program to filter the data to UTF-8.</p>
 <ul>
 <li>The character after a backslash is read as a normal character, even if it is a delimiter, <code>#</code>, <code>'</code>, or <code>"</code>.</li>
@@ -51,21 +51,16 @@ urchinTracker();
 </pre></div> beforehand.</li>
 </ul>
 <ul>
-<li>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.</li>
+<li>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then a NaN is inserted.</li>
 </ul>
 <p>If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data point. E.g., try: </p>
 <div class="fragment"><pre class="fragment">          perl -pi.bak -e <span class="stringliteral">&#39;s/,,/,NaN,/g&#39;</span> data_file
-</pre></div><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to a regular expression that matches the given format. This will be a case insensitive ERE (extended regular expression). Some examples:</p>
+</pre></div><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to text that matches the given format. E.g.,</p>
 <div class="fragment"><pre class="fragment"><span class="comment">//Apophenia&#39;s default NaN string, matching NaN, nan, or NAN, but not Nancy:</span>
 strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;NaN&quot;</span>);
-<span class="comment">//Literal text:</span>
 strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;Missing&quot;</span>);
-<span class="comment">//Matches two periods. Periods are special in regexes, so they need backslashes.</span>
-<span class="comment">//If you forget the backslashes, this will match any two-character item.</span>
-strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;\\.\\.&quot;</span>);
-<span class="comment">//Matches a period or NaN:</span>
-strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;(NaN|\\.\\.)&quot;</span>);
-</pre></div><p>SQLite stores these NaN-type values internally as <code>NULL</code>; that means that functions like <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> will convert both your db_nan regex and <code>NULL</code> to an <code>NaN</code> value.</p>
+strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;.&quot;</span>);
+</pre></div><p>SQLite stores these NaN-type values internally as <code>NULL</code>; that means that functions like <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> will convert both your db_nan string and <code>NULL</code> to an <code>NaN</code> value.</p>
 <ul>
 <li>The system uses the standards for C's <code>atof()</code> function for floating-point numbers: INFINITY, -INFINITY, and NaN work as expected. I use some tricks to get SQLite to accept these values, but they work.</li>
 </ul>
