@@ -236,7 +236,7 @@ apop_data * apop_sqlite_query_to_text(char *query){
   apop_data *out        = apop_data_alloc();
     firstcall = 1;
     if (db==NULL) apop_db_open(NULL);
-    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK
+    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK_NR
     if (out->textsize[0]==0){
         apop_data_free(out);
         return NULL;
@@ -346,6 +346,6 @@ apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
   apop_qt   info = { };
     count_types(&info, intypes);
 	if (!db) apop_db_open(NULL);
-    sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK
+    sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK_NR
 	return info.d;
 }

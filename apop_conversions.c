@@ -439,12 +439,15 @@ static int  use_names_in_file;
 
 /** \page text_format Notes on input text file formatting
 
-Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters.
+Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters. Fixed-width input is also OK; see below.
 
-By default, the delimiters are set to "| ,\t", meaning that a pipe, space, comma, or tab will delimit separate entries. 
-Please use an argument to \ref apop_text_to_db or \ref apop_text_to_data like <tt>.delimiters=" \t"</tt> or  <tt>.delimiters="|"</tt>. \c apop_opts.input_delimiters is deprecated. 
+By default, the delimiters are set to "|,\t", meaning that a pipe, comma, or tab
+will delimit separate entries.  To change the default, please use an argument to
+\ref apop_text_to_db or \ref apop_text_to_data like <tt>.delimiters=" \t"</tt> or
+<tt>.delimiters="|"</tt>. \c apop_opts.input_delimiters is deprecated.
 
-The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters.
+The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. 
+If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
 
 \li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, \c ', or \c ".
 
@@ -459,29 +462,30 @@ E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
 
 \li If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
 
-\li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then an NAN is inserted.
+\li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
+like this, the user typically means that there is a missing value and the system should
+insert an NAN; when it is two tabs in a row, this is typically just a formatting
+glitch. Thus, if there are multiple delimiters in a row, I check whether the second
+(and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any
+other delimiter (including the end of the line) then a NaN is inserted.
 
 If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data
 point. E.g., try: \code
 		perl -pi.bak -e 's/,,/,NaN,/g' data_file
 \endcode
 
-If you have missing data delimiters, you will need to set \ref apop_opts_type "apop_opts.db_nan" to a regular expression that matches the given format. This will be a case insensitive ERE (extended regular expression). Some examples:
+If you have missing data delimiters, you will need to set \ref apop_opts_type
+"apop_opts.db_nan" to text that matches the given format. E.g.,
 
 \code
 //Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
 strcpy(apop_opts.db_nan, "NaN");
-//Literal text:
 strcpy(apop_opts.db_nan, "Missing");
-//Matches two periods. Periods are special in regexes, so they need backslashes.
-//If you forget the backslashes, this will match any two-character item.
-strcpy(apop_opts.db_nan, "\\.\\.");
-//Matches a period or NaN:
-strcpy(apop_opts.db_nan, "(NaN|\\.\\.)");
+strcpy(apop_opts.db_nan, ".");
 \endcode
 
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
-\ref apop_query_to_data will convert both your db_nan regex and \c NULL to an \c NaN value.
+\ref apop_query_to_data will convert both your db_nan string and \c NULL to an \c NaN value.
 
 \li The system uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.

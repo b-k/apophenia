@@ -79,6 +79,8 @@ time (and thus, log likelihood(x)=0).  It has zero parameters. It is
 useful, for example, as an input to Bayesian updating, to represent a
 fully neutral prior.
 
+\li See also the \ref apop_uniform model.
+
 \adoc    Input_format      Ignored.
 \adoc    Parameter_format  \c NULL 
 \adoc    estimated_parameters   \c NULL

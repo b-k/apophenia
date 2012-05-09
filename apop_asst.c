@@ -121,19 +121,16 @@ far, is just to ask whether two strings are equal. This function directly addres
 that question. It differs from <tt>strcmp()</tt> in three ways, one
 especially important.
 
-Tests for equality: I answer the question {\em Is string one == string
-two?}, so if two strings are identical, I return 1; if they differ, I
-return 0. {\em This is the opposite of strcmp}, which returns zero when
+Tests for equality: I answer the question <em>Is string one == string
+two?</em>, so if two strings are identical, I return 1; if they differ, I
+return 0. <em>This is the opposite of strcmp</em>, which returns zero when
 two strings are identical (and are thus zero distance apart). It is common for
 people to think strcmp answers the equality question, and then wind up writing the wrong
 thing. If that's you, consider using this function (or one like it) and
 never touching strcmp. If you think the fact that it's confusing that \c apop_strcmp and \c strcmp return opposite
 outputs, feel free to never use this function.
 
-Faster: as soon as I determine a difference, I leave. That is, I'll step
-through both strings until I find a character that differs, and will
-leave at that point. <tt>strcmp</tt> will always step through the whole of both
-strings.
+Slightly faster: as soon as I determine a difference, I leave, because I don't have to calculate a positive or negative distance.
 
 Accepts <tt>NULL</tt>s: 
 If one string is <tt>NULL</tt> and the other isn't I return 0 (because a

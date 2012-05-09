@@ -337,10 +337,12 @@ Here are a few technical details of usage:
 
   \return A \c gsl_vector with the corresponding value for each row.
 
-  See \ref mapply "the map/apply page" for details.
+  \li If you input a \c NULL matrix, I return \c NULL.
+  \li See \ref mapply "the map/apply page" for details.
  */
 gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
-  gsl_vector    *out        = gsl_vector_alloc(m->size1);
+    if (!m) return NULL;
+    gsl_vector *out = gsl_vector_alloc(m->size1);
     return mapply_core((gsl_matrix*) m, NULL, fn, out, 0, 0, NULL, 0);
 }
 
@@ -349,9 +351,11 @@ gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
   \param m  The matrix
   \param fn A function of the form <tt>void fn(gsl_vector* in)</tt>
 
-  See \ref mapply "the map/apply page" for details.
+  \li If the matrix is \c NULL, this is a no-op and returns immediately.
+  \li See \ref mapply "the map/apply page" for details.
  */
 void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
+    if (!m) return;
     mapply_core(m, NULL, fn, NULL, 0, 0, NULL, 0);
 }
 
@@ -362,10 +366,12 @@ void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
 
   \return A \c gsl_vector (allocated by this function) with the corresponding value for each row.
 
-  See \ref mapply "the map/apply page" for details.
+  \li If you input a \c NULL vector, I return \c NULL.
+  \li See \ref mapply "the map/apply page" for details.
  */
 gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
-  gsl_vector    *out        = gsl_vector_alloc(v->size);
+    if (!v) return NULL;
+    gsl_vector *out = gsl_vector_alloc(v->size);
     return mapply_core(NULL, (gsl_vector*) v, fn, out, 0, 0, NULL, 0);
 }
 
@@ -375,9 +381,11 @@ gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
   \param v  The input vector
   \param fn A function of the form <tt>void fn(double in)</tt>
 
-  See \ref mapply "the map/apply page" for details.
+  \li If the vector is \c NULL, this is a no-op and returns immediately.
+  \li See \ref mapply "the map/apply page" for details.
  */
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
+    if (!v) return;
     mapply_core(NULL, v, fn, NULL, 0, 0, NULL, 0); }
 
 static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *outv, double (*fn)(double)){
@@ -389,11 +397,13 @@ static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *o
   \param fn A function with a form like <tt>double f(double in)</tt>.
   \return a matrix of the same size as the original, with the function applied.
 
-  See \ref mapply "the map/apply page" for details.
+  \li If you input a \c NULL matrix, I return \c NULL.
+  \li See \ref mapply "the map/apply page" for details.
   */
 
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
-  gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+    if (!in) return NULL;
+    gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     for (size_t i=0; i< in->size1; i++){
         gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
         Apop_matrix_row(out, i, v);
@@ -406,9 +416,12 @@ gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
 
   \param in The matrix whose elements will be inputs to the function
   \param fn A function with a form like <tt>void f(double *in)</tt> which will modify the data at the in-pointer in place.
-  See \ref mapply "the map/apply page" for details.
+
+  \li If the matrix is \c NULL, this is a no-op and returns immediately.
+  \li See \ref mapply "the map/apply page" for details.
   */
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
+    if (!in) return;
     for (size_t i=0; i< in->size1; i++){
         Apop_matrix_row(in, i, v);
         apop_vector_apply(v, fn);
@@ -417,8 +430,10 @@ void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
 
 /** Like \c apop_vector_map, but returns the sum of the resulting mapped function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
 
-  See \ref mapply "the map/apply page" for details.  */
+  \li If you input a \c NULL vector, I return the sum of zero items: zero.
+  \li See \ref mapply "the map/apply page" for details.  */
 double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
+    if (!in) return 0;
     gsl_vector *m = apop_vector_map (in, fn);
     double out = apop_vector_sum(m);
     gsl_vector_free(m);
@@ -427,8 +442,10 @@ double apop_vector_map_sum(const gsl_vector *in, double(*fn)(double)){
 
 /** Like \c apop_matrix_map_all, but returns the sum of the resulting mapped function. For example, <tt>apop_matrix_map_all_sum(v, isnan)</tt> returns the number of elements of <tt>m</tt> that are \c NaN.
 
-  See \ref mapply "the map/apply page" for details.  */
+  \li If you input a \c NULL matrix, I return the sum of zero items: zero.
+  \li See \ref mapply "the map/apply page" for details.  */
 double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
+    if (!in) return 0;
     gsl_matrix *m = apop_matrix_map_all (in, fn);
     double out = apop_matrix_sum(m);
     gsl_matrix_free(m);
@@ -437,8 +454,10 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double)){
 
 /** Like \c apop_matrix_map, but returns the sum of the resulting mapped vector. For example, let \c log_like be a function that returns the log likelihood of an input vector; then <tt>apop_matrix_map_sum(m, log_like)</tt> returns the total log likelihood of the rows of \c m.
 
-  See \ref mapply "the map/apply page" for details.  */
+  \li If you input a \c NULL matrix, I return the sum of zero items: zero.
+  \li See \ref mapply "the map/apply page" for details.  */
 double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
+    if (!in) return 0;
     gsl_vector *v = apop_matrix_map (in, fn);
     double out = apop_vector_sum(v);
     gsl_vector_free(v);

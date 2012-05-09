@@ -13,13 +13,15 @@ apop_opts_type apop_opts	=
             .db_name_column = "row_names", .db_nan = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,
-            .rng_seed = 479901,            .version = 2.22 };
+            .log_file = NULL,
+            .rng_seed = 479901,            .version = X.XX };
 
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"
 #endif
 
-#define ERRCHECK {Apop_assert_c(err==NULL, 0, 0, "%s: %s",query, err);}
+#define ERRCHECK {Apop_assert_c(err==NULL, 1, 0, "%s: %s",query, err);}
+#define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -198,8 +200,9 @@ are filled with <tt>NAN</tt>s in the matrix.
   \{
   */
 
-/** Send a query to the database, return nothing 
+/** Send a query to the database that returns no data.
 \param fmt A <tt>printf</tt>-style SQL query.
+\return 0 on success, 1 on failure.
 */
 int apop_query(const char *fmt, ...){
   char 		*err=NULL;
@@ -217,7 +220,7 @@ int apop_query(const char *fmt, ...){
 	    ERRCHECK
         }
 	free(query);
-	return 1;
+	return 0;
 }
 
 /** Dump the results of a query into an array of strings.
@@ -302,7 +305,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	if (db==NULL) apop_db_open(NULL);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
     regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE+REG_NOSUB);
-    sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK
+    sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK_NR
     regfree(qinfo.regex);
     free(qinfo.regex);
     free (query);

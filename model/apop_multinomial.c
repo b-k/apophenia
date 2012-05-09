@@ -4,8 +4,9 @@ Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the modified 
  \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 This differs from the \ref apop_multinomial only in the input data format.
 
-It is implemented as an alias of the \ref apop_multinomial model, except that it has a CDF, {\tt
-.vbase==2} and {\tt .dsize==1} (i.e., we know it has two parameters and a draw returns a scalar).
+It is implemented as an alias of the \ref apop_multinomial model, except that it has
+a CDF, <tt>.vbase==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
+and a draw returns a scalar).
 
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
   The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, 

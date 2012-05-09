@@ -847,7 +847,7 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 \pi^{p(p-1)/4}\prod_{j=1}^p
 \Gamma\left[ a+(1-j)/2\right]. \f]
 
-Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this function returns {\tt GSL_NAN} when \f$a+(1-j)/2\f$ takes on one of those values.
+Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this function returns \c GSL_NAN when \f$a+(1-j)/2\f$ takes on one of those values.
 
 See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
 */

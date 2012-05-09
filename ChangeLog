@@ -8,6 +8,7 @@
 --bug fix in apop_text_to_data when input file has no names.
 --probit dlog likelihood isn't implemented for N>2; now acknowledging this.
 --added apop_data_get_factor_names
+--apop_(vector|matrix)_(map|apply) now accepts NULL input.
 
 	January 2012
 **Removed apop_matrix_var_m, which nobody was using.

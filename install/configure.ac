@@ -82,7 +82,8 @@ AX_CREATE_PKGCONFIG_INFO
 
 ACX_PTHREAD
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_SUBDIRS([tests])
+AC_CONFIG_FILES([Makefile tests/Makefile])
 AC_OUTPUT
 
 echo \

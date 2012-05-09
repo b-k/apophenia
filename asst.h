@@ -46,8 +46,9 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 */
 #define Apop_notify(verbosity, ...) {\
     if (apop_opts.verbose >= verbosity) {  \
-        fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
-        fflush(stderr); \
+        if (!apop_opts.log_file) apop_opts.log_file = stderr; \
+        fprintf(apop_opts.log_file, "%s: ", __func__); fprintf(apop_opts.log_file, __VA_ARGS__); fprintf(apop_opts.log_file, "\n");   \
+        fflush(apop_opts.log_file); \
 } }
 
 /** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
@@ -66,8 +67,9 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 #define Apop_assert_c(test, returnval, level, ...) {\
      if (!(test)) {  \
         Apop_notify(level,  __VA_ARGS__);   \
-        if ((apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
-            || (apop_opts.stop_on_warning && apop_opts.stop_on_warning !='v') ) \
+        if ((level == -5 && apop_opts.stop_on_warning!='n')  \
+            || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
+            || (apop_opts.stop_on_warning=='w') ) \
                 abort(); \
         return returnval;  \
     } }
@@ -85,11 +87,7 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 \see \ref Apop_assert_c, which continues with a message rather than shutting down.
 
   */
-#define Apop_assert(test, ...)  {\
-    if (!(test)) {  \
-        fprintf(stderr, "%s: ", __func__); fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n");   \
-        abort();   \
-} }
+#define Apop_assert(test, ...) Apop_assert_c((test), 0, -5, __VA_ARGS__)
 
 #define apop_assert_s Apop_assert
 #define apop_assert Apop_assert

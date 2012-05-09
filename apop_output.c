@@ -212,8 +212,9 @@ void apop_data_show(const apop_data *in){
     Get_vmsizes(in) //vsize, msize1, msize2, tsize
   size_t i, j;
 //Take inventory and get sizes
-  size_t hasrownames = in->names->rowct ? 1 : 0;
-  size_t hascolnames = (in->names->vector || in->names->colct || in->names->textct);
+  size_t hasrownames = (in->names && in->names->rowct) ? 1 : 0;
+  size_t hascolnames = in->names && 
+                    (in->names->vector || in->names->colct || in->names->textct);
   size_t hasweights = (in->weights != NULL);
 
     size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
@@ -247,10 +248,10 @@ void apop_data_show(const apop_data *in){
     if (hascolnames){
         if (vsize && in->names->vector)
             apop_text_add(printout, 0 , hasrownames,  in->names->vector);
-        if (msize2)
+        if (msize2 && in->names)
             for(i=0; i < in->names->colct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
-        if (in->textsize[1])
+        if (in->textsize[1] && in->names)
             for(i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
         if (hasweights)
@@ -266,7 +267,7 @@ void apop_data_show(const apop_data *in){
     }
 
 //Finally, print
-    if (strlen(in->names->title))
+    if (in->names && strlen(in->names->title))
         printf("\t%s\n\n", in->names->title);
     for(j=0; j < outsize_r; j ++){
         for(i=0; i < outsize_c; i ++){

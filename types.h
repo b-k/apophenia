@@ -42,19 +42,19 @@ for (j = 0; j< data->matrix->size1; j++){
 
 We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
 */
-//typedef struct _apop_data apop_data;
+//typedef struct apop_data apop_data;
 
-typedef struct _apop_data{
+typedef struct apop_data{
     gsl_vector  *vector;
     gsl_matrix  *matrix;
     apop_name   *names;
     char        ***text;
     size_t      textsize[2];
     gsl_vector  *weights;
-    struct _apop_data   *more;
+    struct apop_data   *more;
 } apop_data;
 
-/** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c _apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
+/** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
 */
 
 typedef struct {
@@ -65,10 +65,10 @@ typedef struct {
 } apop_settings_type;
 
 /** A statistical model. */
-typedef struct _apop_model apop_model;
+typedef struct apop_model apop_model;
 
 /** The elements of the \ref apop_model type. */
-struct _apop_model{
+struct apop_model{
     char        name[101]; 
     int         vbase, m1base, m2base, dsize; /**< The size of the parameter set.
                      If a dimension is -1, then use yourdata->matrix->size2. For
@@ -110,7 +110,7 @@ struct _apop_model{
   \ingroup global_vars */
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
-    char stop_on_warning; /**< If nonzero, warnings become errors. Useful when running via debugger. */
+    char stop_on_warning; /**< See outline page on error handling. */
     char output_type;
            /**< 's'   = to screen
                 'f'   = to file
@@ -127,6 +127,8 @@ typedef struct{
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
+    FILE *log_file;  /**< The file handle for the log. Defaults to \c stderr, but change it with, e.g.,
+                           <tt>apop_opts.log_file = fopen("outlog", "w");<tt> */
     int  thread_count; /**< Threads to use internally. See \ref apop_map and family.  */
     int  rng_seed;
     float version;

@@ -576,6 +576,7 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
     \li\ref apop_matrix_stack()
     \li\ref apop_text_add()
     \li\ref apop_text_paste()
+    \li\ref apop_text_to_data()
     \li\ref apop_vector_bounded()
     \li\ref apop_vector_copy()
     \li\ref apop_vector_fill()
@@ -597,6 +598,17 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
 \li <tt>void gsl_vector_set_zero (gsl_vector * v)</tt>
 \li <tt>int gsl_vector_set_basis (gsl_vector * v, size_t i)</tt>: set all elements to zero, but set item \f$i\f$ to one.
 \li <tt>gsl_vector_reverse (gsl_vector * v)</tt>: reverse the order of your vector's elements
+
+Outlineheader readin Reading from text files
+
+The \ref apop_text_to_data() function takes in the name of a text file with a grid of data in (comma|tab|pipe|whatever)-delimited format and reads it to a matrix. If there are names in the text file, they are copied in to the data set. See \ref text_format for the full range and details of what can be read in.
+
+If you have any columns of text, then you will need to go through the database: use
+\ref apop_text_to_db() to convert your text file to a database table, 
+do any database-appropriate cleaning of the input data, then use \ref
+apop_query_to_data() or \ref apop_query_to_mixed_data() to pull the data to a \ref apop_data set.
+
+endofdiv
 
 Outlineheader datalloc Alloc/free
 

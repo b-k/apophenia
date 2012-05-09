@@ -211,6 +211,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     if (in->names){
         apop_name_free(out->names);
         out->names = apop_name_alloc();
+        apop_name_stack(out->names, in->names, 'v');
         apop_name_stack(out->names, in->names, 'r');
         apop_name_stack(out->names, in->names, 'c');
         apop_name_stack(out->names, in->names, 't');
@@ -1309,7 +1310,7 @@ APOP_VAR_ENDHEAD
         apop_matrix_realloc(in->matrix, GSL_MIN(in->matrix->size1, outlength), in->matrix->size2);
     if (in->text)
         apop_text_alloc(in, GSL_MIN(outlength, in->textsize[0]), in->textsize[1]);
-    if (in->names->rowct > outlength){
+    if (in->names && in->names->rowct > outlength){
         for (int k=outlength; k< in->names->rowct; k++)
             free(in->names->row[k]);
         in->names->rowct = outlength;

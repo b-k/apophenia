@@ -1,8 +1,6 @@
-
-AM_LDFLAGS = 
 AM_CFLAGS = -g -Wall -O3
-
 CC = $(PTHREAD_CC)
+
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = \
             apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
@@ -35,9 +33,12 @@ libapophenia_la_SOURCES = \
             model/apop_zipf.c 
 
 pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
+include_HEADERS = apop.h
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
+
+SUBDIRS=. tests
 
 #SWIG
 
@@ -74,14 +75,15 @@ apop_db_to_crosstab_LDADD = libapophenia.la
 apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 
-EXTRA_DIST = apophenia.pc docs/doxyconfig docs/triangle.png docs/right.png docs/down.png \
-        docs/flake.gif docs/edit_group docs/foot.html docs/structs.png rpm.spec \
-		docs/head.html docs/search.gif docs/typical.css docs/make_model_doc.awk docs/documentation.h \
-		tests/Makefile tests/test.py tests/Readme tests/nist_tests.c tests/numacc4.dat \
-		tests/pontius.dat tests/test.c tests/rake_test.c tests/test_data_mixed tests/test_data tests/test_data2 \
-		tests/data-mixed tests/test_data_nans tests/wampler1.dat tests/printing_sample \
-		eg/* \
-		apop_db_mysql.c apop_db_sqlite.c apop.h apop.i apop_internal.h internal.h COPYING2
+VPATH= @srcdir@
+
+EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
+		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
+		docs/make_model_doc.awk docs/documentation.h rpm.spec \
+		eg apop_db_mysql.c apop_db_sqlite.c apop.i \
+		apop_internal.h internal.h COPYING2
+
+DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
@@ -99,12 +101,7 @@ doc:
 	cp docs/*js html/
 	sudo cp man/man3/* /usr/share/man/man3/
 
-test:
-	cd tests; rm test.o; make; ./test;
-
 install-data-local:
-	test -z "$(DESTDIR)$(includedir)" || $(mkdir_p) "$(DESTDIR)$(includedir)"
-	cp apop.h $(DESTDIR)$(includedir)/
 	@echo 
-	@echo "OK. If you'd like to generate documentation, run make doc; to test, run make test."
+	@echo "OK. If you'd like to generate documentation via Doxygen, run make doc; to test, run make check."
 	@echo 

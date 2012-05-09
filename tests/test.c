@@ -189,6 +189,8 @@ apop_system("cp %s xxx", outfile);
     int has_diffs = apop_system("diff -b printing_sample %s", outfile);
     assert(!has_diffs);
     //apop_system("rm %s", outfile);
+    unlink(outfile);
+    unlink("xxx");
 }
 
 void v_pow10(double *in){ *in = pow(10,*in);}
@@ -391,6 +393,7 @@ void test_nan_data(){
     apop_text_to_db("test_data_fixed_width", .tabname="fww", .field_names=(char*[]){"number", "text", "float"}, .field_ends=(int[]){3,6});
     assert(apop_query_to_float("select number from fww where number<0")==-21);
     assert(apop_query_to_float("select float from fww where text=' BC'")==2.71828);
+    unlink("nantest");
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
@@ -948,6 +951,7 @@ void db_to_text(){
     assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
     assert(apop_data_get_it(de, 5, "ab")==201);
     apop_opts.output_type = oldtype;
+    unlink("mixedtest");
 }
 
 void test_blank_db_queries(){
@@ -1171,6 +1175,7 @@ void test_data_to_db() {
     for (i=0; i< d2->textsize[0]; i++)
         for (j=0; j< d2->textsize[1]; j++)
             assert(!strcmp(d->text[i][j],d2->text[i][j]));  
+    unlink("snps2");
 }
 
 void test_default_rng(gsl_rng *r) {
@@ -1519,6 +1524,8 @@ void test_ols_offset(gsl_rng *r){
                             {if (verbose) printf(" passed.\n");} 
 
 int main(int argc, char **argv){
+    if (getenv("srcdir")) //if defined, this is probably via an automake rule.
+    apop_system("cp %s/*dat* %s/printing_sample .", getenv("srcdir"), getenv("srcdir")); //needed for make distcheck. No-op in many cases.
   int  slow_tests = 0;
   char c, opts[]  = "sqt:";
     if (argc==1)
