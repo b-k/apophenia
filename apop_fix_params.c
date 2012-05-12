@@ -126,7 +126,7 @@ and then tries to recover the means given a var/covar matrix fixed at the correc
  \return a model that can be used like any other, with the given params fixed or free.
   */
 apop_model * apop_model_fix_params(apop_model *model_in){
-    Nullcheck_mp(model_in)
+    Nullcheck_mp(model_in, NULL)
     apop_model *model_out  = apop_model_copy(fixed_param_model);
     apop_model *base = apop_model_copy(*model_in);
     Apop_model_add_group(model_out, apop_model_fixed_params, .base_model = base);

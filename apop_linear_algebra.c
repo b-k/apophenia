@@ -20,7 +20,7 @@ See also the printing functions, \ref apop_print, and the
 
 void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errno){
     Apop_notify(1, "%s: %s", file, reason);
-    if (apop_opts.stop_on_warning) abort();
+    Apop_maybe_abort(1);
 }
 #define Checkgsl(...) if (__VA_ARGS__) {goto done;}
 #define Check_gsl_with_out(...) if (__VA_ARGS__) {apop_data_free(out); goto done;}
@@ -116,7 +116,7 @@ The data set's vector will be the largest eigenvalues, scaled by the total of al
 \ingroup linear_algebra */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
-    Nullcheck_d(data);
+    Nullcheck_d(data, NULL);
     int apop_varad_var(dimensions_we_want, data->size2);
     if (!data) return NULL;
 APOP_VAR_ENDHEAD
@@ -164,7 +164,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     gsl_vector * apop_varad_var(v, NULL);
-    apop_assert(v, "You sent me a NULL vector.");
+    Apop_assert_n(v, "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
 APOP_VAR_END_HEAD
@@ -188,7 +188,7 @@ APOP_VAR_END_HEAD
  */
 APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
     gsl_matrix * apop_varad_var(m, NULL);
-    apop_assert(m, "You sent me a NULL matrix.");
+    Apop_assert_n(m, "You sent me a NULL matrix.");
     int apop_varad_var(i, 0);
     int apop_varad_var(j, 0);
     double apop_varad_var(amt, 1);
@@ -198,34 +198,40 @@ APOP_VAR_END_HEAD
 
 
 /** Take the log (base ten) of every element in a vector.
+
+\li If the input vector is \c NULL, do nothing. 
 \ingroup convenience_fns
  */
 void apop_vector_log10(gsl_vector *v){
-  double  *d;
+    if (!v) return;
     for (size_t i=0; i< v->size; i++){
-        d  = gsl_vector_ptr(v, i);
+        double *d = gsl_vector_ptr(v, i);
 	    *d = log10(*d);
     }
 }
 
 /** Take the natural log of every element in a vector.
+
+\li If the input vector is \c NULL, do nothing. 
 \ingroup convenience_fns
  */
 void apop_vector_log(gsl_vector *v){
-  double  *d;
+    if (!v) return;
     for (size_t i=0; i< v->size; i++){
-        d  = gsl_vector_ptr(v, i);
+        double *d  = gsl_vector_ptr(v, i);
 	    *d = gsl_sf_log(*d);
     }
 }
 
 /** Replace every vector element \f$v_i\f$ with exp(\f$v_i\f$).
+
+\li If the input vector is \c NULL, do nothing. 
 \ingroup convenience_fns
  */
 void apop_vector_exp(gsl_vector *v){
-  double  *d;
+    if (!v) return;
     for (size_t i=0; i< v->size; i++){
-        d = gsl_vector_ptr(v, i);
+        double *d = gsl_vector_ptr(v, i);
         *d = exp(*d);
     }
 }
@@ -245,8 +251,8 @@ APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, cha
     gsl_vector * apop_varad_var(v2, NULL);
     char apop_varad_var(inplace, 0);
 APOP_VAR_ENDHEAD
-  gsl_vector      *out;
-  gsl_vector      t;
+    gsl_vector *out;
+    gsl_vector t;
     if (!v1  && v2){
         out = gsl_vector_alloc(v2->size);
         gsl_vector_memcpy(out, v2);
@@ -304,9 +310,8 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, cha
     char apop_varad_var(posn, 'r');
     char apop_varad_var(inplace, 0);
 APOP_VAR_ENDHEAD
-  gsl_matrix      *out;
-  gsl_vector_view tmp_vector;
-  int             i;
+    gsl_matrix      *out;
+    gsl_vector_view tmp_vector;
     if (!m1 && m2){
         out = gsl_matrix_alloc(m2->size1, m2->size2);
         gsl_matrix_memcpy(out, m2);
@@ -327,12 +332,12 @@ APOP_VAR_ENDHEAD
             out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
-            for (i=0; i< m1size; i++){
+            for (int i=0; i< m1size; i++){
                     tmp_vector  = gsl_matrix_row(m1, i);
                     gsl_matrix_set_row(out, i, &(tmp_vector.vector));
             }
         }
-        for (i=m1size; i< m1size + m2->size1; i++){
+        for (int i=m1size; i< m1size + m2->size1; i++){
             tmp_vector  = gsl_matrix_row(m2, i- m1size);
             gsl_matrix_set_row(out, i, &(tmp_vector.vector));
         }
@@ -346,12 +351,12 @@ APOP_VAR_ENDHEAD
             out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
-            for (i=0; i< m1size; i++){
+            for (int i=0; i< m1size; i++){
                 tmp_vector  = gsl_matrix_column(m1, i);
                 gsl_matrix_set_col(out, i, &(tmp_vector.vector));
             }
         }
-        for (i=0; i< m2->size2; i++){
+        for (int i=0; i< m2->size2; i++){
             tmp_vector  = gsl_matrix_column(m2, i);
             gsl_matrix_set_col(out, i+ m1size, &(tmp_vector.vector));
         }
@@ -370,8 +375,8 @@ APOP_VAR_ENDHEAD
 \param drop an array of <tt>int</tt>s. If use[7]==1, then column seven will be cut from the output. 
 */
 gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-  int        ct  = 0,  //how many columns will not be dropped?
-             j   = 0;
+    int ct  = 0,  //how many columns will not be dropped?
+        j   = 0;
     for (size_t i=0; i < in->size2; i++)
         if (drop[i]==0)
             ct++;
@@ -397,18 +402,18 @@ Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether al
 
  \param in  A <tt>gsl_vector</tt>
  \param max An upper and lower bound to the elements of the vector. (default: GSL_POSINF)
- \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise. A \c NULL vector has no unbounded elements, so \c NULL input returns 1.
-
-This function uses the \ref designated syntax for inputs.
-
- \ingroup convenience_fns
+ \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise. 
+ 
+\li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=1</tt>.
+\li This function uses the \ref designated syntax for inputs.
+\ingroup convenience_fns
  */
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
     apop_assert_c(in, 0, 1, "You sent in a NULL vector; returning 1.");
     long double apop_varad_var(max, GSL_POSINF)
 APOP_VAR_END_HEAD
-  double x;
+    double x;
     for (size_t i=0; i< in->size; i++){
         x   = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)

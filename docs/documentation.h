@@ -363,44 +363,65 @@ Order matters in the linking list: the files a package depends on should be list
 
 endofdiv
 
-Outlineheader debugging  Debugging
+Outlineheader debugging  Errors, logging, debugging and stopping
 
-The global variable <tt>apop_opts.verbose</tt> turns on some diagnostics, such as printing the query sent to the database engine (which is useful if you are substituting in many <tt>\%s</tt>es). There are several levels to the verbosity:
+First, let us distinguish between an <tt>error</tt> and a <tt>warning</tt>. An error,
+like setting the (10,10)th element of a 10 x 10 matrix, is a clear indication that the
+calculation is somehow failing, and any numbers that might be output will be wrong,
+and any subsequent calculations based on those numbers will also be wrong.
 
--1: silent <br>
+A warning, such as converting a \c NULL data set to a different format, might actually
+make sense in some context. It's probably not what most authors meant, but if you
+knew that the input was \c NULL and know how to handle a \c NULL output, then this
+step won't cause you to calculate bad values.
+
+<h5>Verbosity level and logging</h5> 
+
+As well as the error and warning messages, some functions also print diagnostics, using the \c Apop_notify macro.
+For example, \c apop_query and friends will print the query sent to the database engine (which is useful if you are substituting
+in many <tt>\%s</tt>es). 
+
+The global variable <tt>apop_opts.verbose</tt> determines how many notifications and warnings get printed:
+
+-1: turn off logging, print nothing (ill-advised) <br>
 0: notify only of failures and clear danger <br>
 1: warn of technically correct but odd situations that might indicate, e.g., numeric instability <br>
 2: debugging-type information; print queries  <br>
-3: give me everything
+3: give me everything, such as the state of the data at each iteration of a loop.
 
 These levels are of course subjective, but should give you some idea of where to place the
 verbosity level. The default is 1.
 
+The messages are printed to the \c FILE handle at <tt>apop_opts.log_file</tt>. If
+this is blank (which happens at startup), then this is set to \c stderr. This is the
+typical behavior for a console program. Use
 
-The global variable <tt>apop_opts.stop_on_warning</tt> turns any warning into a halt via \c abort(). Use this to get your debugger to stop on the warning. If the verbosity level is too low to show the warning, the halt happens anyway.
-
-
-If you use \c gdb, you can define macros to use the pretty-printing functions on your data, which can be a significant help. Add these to your \c .gdbinit:
 \code
-
-define pv
-    p apop_vector_show($arg0)
-end
-
-define pm
-    p apop_matrix_show($arg0)
-end
-
-define pd
-    p apop_data_show($arg0)
-end
-
-define pa
-    p *($arg0)@$arg1
-end
+apop_opts.log_file = fopen("mylog", "w");
 \endcode
 
-Then just <tt>pd mydata</tt> to see all components of your data set neatly displayed, or <tt>pa myarray 5</tt> to see the first five elements of your array. 
+to write to the \c mylog file instead of \c stderr.
+
+<h5>Stopping</h5> 
+
+The default is for Apophenia to halt via \c abort() on errors, and continue on
+warnings. This is ideal for relatively standalone numeric analyses, which you can
+run under a debugger. When something breaks, there is no point in having the system
+continue using spurious numbers, and \c abort() will put your debugger in exactly the
+spot where the error happened.
+
+The global variable <tt>apop_opts.stop_on_warning</tt> changes when the system halts:
+
+\c 'n': never halt. If you were using Apophenia to support a user-friendly GUI, for example, you would use this mode.<br>
+The default: as above, if the variable is not set, halt on all errors, continue on all warnings.<br>
+\c 'v': Halt on all errors. If the verbosity level of the warning is such that the warning would print to screen, then halt;
+if the warning message would be filtered out by your verbosity level, continue.<br>
+\c 'w': Halt on all errors; halt on all warnings.
+
+Each function has its own means of telling you that an error occurred, so see the documentation for usage.
+
+The end of <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em>Modeling with Data</em> offers some GDB 
+macros which can make dealing with Apophenia from the GDB command line much more pleasant.
 
 endofdiv
 

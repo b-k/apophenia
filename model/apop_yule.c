@@ -23,7 +23,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 #include "apop_internal.h"
 
 static double yule_constraint(apop_data *returned_beta, apop_model *m){
-  Nullcheck_mp(m);
+  Nullcheck_mp(m, GSL_NAN);
     //constraint is 1 < beta_1
   Staticdef(apop_data *, constraint, apop_data_fill(apop_data_alloc(1,1,1),
                                                      1, 1));
@@ -41,7 +41,7 @@ static double  apply_me(double pt, void *bb){
 static double  dapply_me(double pt, void *bb){ return -gsl_sf_psi(pt+*(double*)bb); }
 
 static double yule_log_likelihood(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
     double bb = gsl_vector_get(m->parameters->vector, 0);
     long double ln_bb        = gsl_sf_lngamma(bb),
@@ -51,7 +51,7 @@ static double yule_log_likelihood(apop_data *d, apop_model *m){
 }
 
 static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, );
   Get_vmsizes(d) //tsize
 	//Psi is the derivative of the log gamma function.
     double bb  = gsl_vector_get(m->parameters->vector, 0);

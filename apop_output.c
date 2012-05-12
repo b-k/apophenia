@@ -166,7 +166,7 @@ will print directly to Gnuplot.
 */
 APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, Output_declares){
       gsl_vector * apop_varad_var(data, NULL);
-      Apop_assert(data, "Input vector is NULL.");
+      Apop_assert_n(data, "Input vector is NULL.");
       size_t apop_varad_var(bin_count, 0);
       char * apop_varad_var(with, "boxes");
       Dispatch_output
@@ -537,7 +537,7 @@ static void printone(FILE *f, double width, double height, double margin, int xp
 */
 APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
     const apop_data * apop_varad_var(d, NULL);
-    apop_assert_s(d, "Input data set is NULL.\n");
+    Apop_assert_n(d, "Input data set is NULL.\n");
     Dispatch_output
 APOP_VAR_ENDHEAD
   double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
@@ -582,7 +582,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
     static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
-    Apop_assert(v, "Input vector is NULL.");
+    Apop_assert_n(v, "Input vector is NULL.");
     apop_model  *apop_varad_var(m, NULL);
     if (!m){
         free_m++;
@@ -637,11 +637,11 @@ APOP_VAR_ENDHEAD
 */
 APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
     apop_data *apop_varad_var(in, NULL);
-    apop_assert_s(in, "You sent me a NULL data set.");
+    Apop_assert_n(in, "You sent me a NULL data set.");
     Dispatch_output
 APOP_VAR_ENDHEAD 
     FILE *f=output_pipe;
-    apop_assert_s(f, "Error opening file %s for writing.", output_file);
+    Apop_assert_n(f, "Error opening file %s for writing.", output_file);
     if (in->names && in->names->colct>=3){
         fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->column[0]);
         fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->column[1]);

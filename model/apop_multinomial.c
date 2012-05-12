@@ -26,7 +26,7 @@ and a draw returns a scalar).
   matrix, your pick) be $L$; then I return the sum of the odds of a draw from the given
   Binomial distribution returning $0, 1, \dots, L$ hits.  */
 static double binomial_cdf(apop_data *d, apop_model *est){
-    Nullcheck_mpd(d, est)
+    Nullcheck_mpd(d, est, GSL_NAN)
     Get_vmsizes(d); //firstcol
     double hitcount = apop_data_get(d, .col=firstcol);
     double n = gsl_vector_get(est->parameters->vector, 0);
@@ -75,7 +75,7 @@ double multinomial_ll(gsl_vector *v, void *params){
 }
 
 static double multinomial_log_likelihood(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params);
+    Nullcheck_mpd(d, params, GSL_NAN);
     double *pv = params->parameters->vector->data;
     double n = pv[0]; 
     if (n==2)
@@ -102,7 +102,7 @@ static apop_model *multinomial_paramdist(apop_data *d, apop_model *m){
 */
 
 static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
-    Nullcheck_mp(est);
+    Nullcheck_mp(est, );
     double * p = est->parameters->vector->data;
     //the trick where we turn the params into a p-vector
     int N = p[0];
@@ -147,7 +147,7 @@ double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 \adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est);
+    Nullcheck_mpd(data, est, NULL);
     Get_vmsizes(data); //vsize, msize1
     est->parameters= apop_map(data, .fn_v=avs, .part='c');
     gsl_vector *v = est->parameters->vector;

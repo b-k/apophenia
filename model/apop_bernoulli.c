@@ -18,7 +18,7 @@ static double bernie_ll(double x, void * pin){
 }
 
 static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params);
+    Nullcheck_mpd(d, params, GSL_NAN);
     double p   = apop_data_get(params->parameters,0,-1);
 	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }
@@ -30,7 +30,7 @@ static double nonzero (double in) { return in !=0; }
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */
 static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est); Get_vmsizes(data); //tsize;
+    Nullcheck_mpd(data, est, NULL); Get_vmsizes(data); //tsize;
     double n       = tsize;
     double p       = apop_map_sum(data, nonzero)/n;
     apop_name_add(est->parameters->names, "p", 'r');
@@ -58,7 +58,7 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
 //One of those functions that just fills out the form.
 //CDF to zero = 1-p
 //CDF to one = 1
-  Nullcheck_mpd(d, params); Get_vmsizes(d)  //vsize
+  Nullcheck_mpd(d, params, GSL_NAN); Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double p = params->parameters->vector->data[0];
     return val ? 1 : 1-p;

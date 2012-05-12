@@ -43,7 +43,7 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \see apop_bootstrap_cov
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-    Nullcheck_d(in)
+    Nullcheck_d(in, NULL)
     Get_vmsizes(in); //msize1, msize2, vsize
     apop_model *e              = apop_model_copy(model);
     int         i, n           = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));

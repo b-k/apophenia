@@ -330,7 +330,7 @@ APOP_VAR_END_HEAD
 	}
 	else if ((normalization_type == 'p')){
 		long double sum	= apop_sum(in);
-        Apop_assert(sum, "The vector sums to zero, so I can't normalize it to sum to one.");
+        Apop_assert_n(sum, "The vector sums to zero, so I can't normalize it to sum to one.");
 		gsl_vector_scale(*out, 1/sum);	
 	}
 	else if ((normalization_type == 'm')){

@@ -20,17 +20,29 @@
 #define Staticdef(type, name, def) static type (name) = NULL; if (!(name)) (name) = (def);
 
 // Check for NULL and complain if so.
-#define Nullcheck(in) Apop_assert(in, "%s is NULL.", #in)
-#define Nullcheck_m(in) Apop_assert(in, "%s is a NULL model.", #in)
-#define Nullcheck_mp(in) Nullcheck_m(in); Apop_assert((in)->parameters, "%s is a model with NULL parameters. Please set the parameters and try again.", #in)
-#define Nullcheck_d(in) Apop_assert(in, "%s is a NULL data set.", #in)
+#define Nullcheck(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is NULL.", #in)
+#define Nullcheck_m(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL model.", #in)
+#define Nullcheck_mp(in, errval) Nullcheck_m(in, errval); Apop_assert_c((in)->parameters, errval, apop_errorlevel, "%s is a model with NULL parameters. Please set the parameters and try again.", #in)
+#define Nullcheck_d(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL data set.", #in)
 //And because I do them all so often:
-#define Nullcheck_mpd(data, model) Nullcheck_m(model); Nullcheck_p(model); Nullcheck_d(data);
+#define Nullcheck_mpd(data, model, errval) Nullcheck_m(model, errval); Nullcheck_p(model, errval); Nullcheck_d(data, errval);
 //deprecated:
-#define Nullcheck_p(in) Nullcheck_mp(in) 
+#define Nullcheck_p(in, errval) Nullcheck_mp(in, errval) 
 
 //in apop_conversions.c Extend a string.
 void xprintf(char **q, char *format, ...);
 #define XN(in) ((in) ? (in) : "")
 
 char *prep_string_for_sqlite(int prepped_statements, char const *astring);//apop_conversions.c
+void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errno); //apop_linear_algebra.c
+
+
+//For when we're forced to use a global variable.
+#undef threadlocal
+#ifdef _ISOC11_SOURCE 
+    #define threadlocal _Thread_local
+#elif defined(__GNUC__) && !defined(threadlocal)
+    #define threadlocal __thread
+#else
+    #define threadlocal
+#endif

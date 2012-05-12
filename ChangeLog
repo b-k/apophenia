@@ -4,6 +4,17 @@
 !!Big.
 ]
 
+	May 2012
+--Autotools improvements. Use the standard 'make check' instead of the ad hoc 'make test'.
+!!Set apop_opts.stop_on_warning='n' to never abort() on any type of error. E.g., GUIs that
+	should never halt will use this. Default is still to halt on errors, because that's
+	most useful for interactively developing numeric analyses.
+--Use apop_opts.log_file=fopen("yourlog", "w") to divert the warnings/errors from stderr into yourlog.
+--Some formerly void functions now return an int, to return an error code. E.g.,
+	apop_opts.stop_on_warning='n';
+	if (apop_data_set(data, row, col)) printf("Error! Nothing was set.\n");
+--Fixed a memory leak in simulated annealing.
+
 	March 2012
 --bug fix in apop_text_to_data when input file has no names.
 --probit dlog likelihood isn't implemented for N>2; now acknowledging this.

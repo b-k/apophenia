@@ -6,12 +6,12 @@
 #include <regex.h>
 
 /** Allocates a name structure
-\return	An allocated, empty name structure.
+\return	An allocated, empty name structure.  In the very unlikely event that \c malloc fails, return \c NULL.
 \ingroup names
 */
 apop_name * apop_name_alloc(void){
     apop_name	* init_me = malloc(sizeof(apop_name));
-    apop_assert(init_me, "malloc failed. Probably out of memory.");
+    Apop_assert(init_me, "malloc failed. Probably out of memory.");
     *init_me = (apop_name){ };
 	init_me->title[0]   = '\0';
 	return init_me;
@@ -67,11 +67,10 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 }
 
 /** Prints the given list of names to STDOUT
-\param n	the \ref apop_name structure
+\param n	The \ref apop_name structure
 \ingroup names
 */
-void  apop_name_print(apop_name * n){
-    int		i;
+void apop_name_print(apop_name * n){
     if (!n) {
         printf("NULL");
         return;
@@ -83,19 +82,19 @@ void  apop_name_print(apop_name * n){
 	}
 	if (n->colct > 0){
 		printf("\t\t\tcolumn:");
-		for (i=0; i < n->colct; i++)
+		for (int i=0; i < n->colct; i++)
 			printf("\t%s", n->column[i]);
 		printf("\n");
 	}
 	if (n->textct > 0){
 		printf("\t\t\ttext:");
-		for (i=0; i < n->textct; i++)
+		for (int i=0; i < n->textct; i++)
 			printf("\t%s", n->text[i]);
 		printf("\n");
 	}
 	if (n->rowct > 0){
 		printf("\t\t\trow:");
-		for (i=0; i < n->rowct; i++)
+		for (int i=0; i < n->rowct; i++)
 			printf("\t%s", n->row[i]);
 		printf("\n");
 	}
@@ -137,8 +136,8 @@ APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1,
     char  apop_varad_var(type1, 'r');
     char  apop_varad_var(typeadd, type1);
 APOP_VAR_ENDHEAD
-  int     i;
-    apop_name counts = (apop_name) { .rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct };//Necessary when stacking onto self.;
+    int i;
+    apop_name counts = (apop_name){.rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct};//Necessary when stacking onto self.;
     if (typeadd == 'v')
         apop_name_add(n1, nadd->vector, 'v');
     else if (typeadd == 'r')
@@ -184,12 +183,16 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \param in       the name you seek; see above.
 \param type     'c', 'r', or 't'. Default is 'c'.
 \return         The position of \c findme. If 'c', then this may be -1, meaning the vector name. If not found, returns -2.
+
+\li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
+
 \ingroup names
   */
 int  apop_name_find(const apop_name *n, const char *in, const char type){
-  regex_t   re;
-  char      **list;
-  int       listct;
+    Apop_assert_negone(in, "Searching for NULL.");
+    regex_t re;
+    char    **list;
+    int     listct;
     if (type == 'r' || type == 'R'){
         list    = n->row;
         listct  = n->rowct;
@@ -202,7 +205,8 @@ int  apop_name_find(const apop_name *n, const char *in, const char type){
         list    = n->column;
         listct  = n->colct;
     }
-    regcomp(&re, in, REG_EXTENDED + REG_ICASE);
+    int compiled_ok = !regcomp(&re, in, REG_EXTENDED + REG_ICASE);
+    Apop_assert_negone(compiled_ok, "Regular expression \"%s\" didn't compile.", in);
     for (int i = 0; i < listct; i++)
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);

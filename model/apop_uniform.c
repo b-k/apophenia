@@ -24,7 +24,7 @@ static void getminmax(apop_data *d, double *min, double *max){
 }
 
 static double unif_ll(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
   double min, max;
     getminmax(d, &min, &max);
@@ -34,7 +34,7 @@ static double unif_ll(apop_data *d, apop_model *m){
 }
 
 static double unif_p(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
   double min, max;
     getminmax(d, &min, &max);
@@ -45,7 +45,7 @@ static double unif_p(apop_data *d, apop_model *m){
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_d(data);
+    Nullcheck_d(data, NULL);
     apop_name_add(est->parameters->names, "min", 'r');
     apop_name_add(est->parameters->names, "max", 'r');
     getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
@@ -54,7 +54,7 @@ static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
 }
 
 static double unif_cdf(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
     double min = m->parameters->vector->data[0];
     double max = m->parameters->vector->data[1];
@@ -99,7 +99,7 @@ static double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
 static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
-    apop_assert_s(0, "It doesn't make sense to make random draws from an improper Uniform.");
+    Apop_assert_n(0, "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
 apop_model apop_improper_uniform = {"Improper uniform distribution", 2, 0, 0,  .dsize=1,

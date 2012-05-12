@@ -75,7 +75,7 @@ static double unordered(double in){ return in == val; }
 
 // This is just a for loop that runs a probit on each column.
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
-    Nullcheck_mpd(d, p)
+    Nullcheck_mpd(d, p, GSL_NAN)
     gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2)
         return biprobit_log_likelihood(d, p);
@@ -103,7 +103,7 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
 }
 
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-    Nullcheck_mp(p)
+    Nullcheck_mp(p, )
     gsl_vector *val_vector = get_category_table(p->data)->vector;
     if (val_vector->size!=2){
         gsl_vector * numeric_default = apop_numerical_gradient(d, p);
@@ -139,7 +139,7 @@ apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood
 /////////  Multinomial Logit (plain logit is a special case)
 
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
-    Nullcheck_mpd(in, m)
+    Nullcheck_mpd(in, m, NULL)
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
@@ -196,7 +196,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
 }
 
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
-    Nullcheck_mpd(d, p)
+    Nullcheck_mpd(d, p, GSL_NAN)
     //Find X\beta_i for each row of X and each column of \beta.
     apop_data  *xbeta = apop_dot(d, p->parameters);
     double* factor_list = get_category_table(p->data)->vector->data;
@@ -247,7 +247,7 @@ static double dlogit_foreach(gsl_vector *x, void *gin){
 
 //buggy!
 static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-    Nullcheck_mpd(d, p);
+    Nullcheck_mpd(d, p, );
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data_unpack(gradient, gradient_matrix);
     gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.

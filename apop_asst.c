@@ -75,6 +75,8 @@ APOP_VAR_ENDHEAD
 
 \li There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation. 
 
+\li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=1</tt>
+
 For example: \include test_harmonic.c
 */
 double apop_generalized_harmonic(int N, double s){
@@ -83,6 +85,7 @@ Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\d
 
 When reading the code, remember that the zeroth element holds the value for N=1, and so on.
 */
+    Apop_assert_c(N>0, GSL_NAN, 1, "N is %i, but most be greater than 0.", N);
     static double *  eses	= NULL;
     static int * 	 lengths= NULL;
     static int		 count	= 0;
@@ -107,7 +110,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 		old_len		= lengths[i];
 	}
 	if (N-1 >= old_len){	//It's there, but you need to extend what you have.
-		precalced[i]	= realloc(precalced[i],sizeof(double) * N);
+		precalced[i]	= realloc(precalced[i], sizeof(double) * N);
 		for (j=old_len; j<N; j++)
 			precalced[i][j] = precalced[i][j-1] + 1/pow((j+1),s);
 	}
@@ -355,6 +358,9 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \return         1 == match; 0 == no match. \c substrings may be allocated and filled if needed.
 \ingroup names
 
+
+\li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
+
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[0][1]</tt>.
@@ -364,18 +370,18 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
     const char * apop_varad_var(string, NULL);
     if (!string) return 0;
     const char * apop_varad_var(regex, NULL);
-    Apop_assert(regex, "You gave me a NULL regex.");
+    Apop_assert_negone(regex, "You gave me a NULL regex.");
     apop_data **apop_varad_var(substrings, NULL);
     const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
-    regex_t    re;
-    int        matchcount=count_parens(regex);
-    int        found;
+    regex_t re;
+    int     matchcount=count_parens(regex);
+    int     found;
     regmatch_t result[matchcount];
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
-    Apop_assert(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
+    Apop_assert_negone(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
 
     int matchrow = 0;
     if (substrings) *substrings = apop_data_alloc();
@@ -407,9 +413,11 @@ APOP_VAR_ENDHEAD
 
  Devroye uses this as the base for many of his
  distribution-generators, including the Waring.
+
+\li If one of the inputs is <=0, error. Returns \c GSL_NAN if the function doesn't stop.
 */  //Header in stats.h
 double apop_rng_GHgB3(gsl_rng * r, double* a){
-    apop_assert_s((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
+    Apop_assert_nan((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
 double		aa	= gsl_ran_gamma(r, a[0], 1),
 		b	= gsl_ran_gamma(r, a[1], 1),
 		c	= gsl_ran_gamma(r, a[2], 1);

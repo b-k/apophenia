@@ -34,7 +34,7 @@ static double apply_for_gamma(double x, void *abin) {
 }
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_mpd(d, p) 
+  Nullcheck_mpd(d, p, GSL_NAN) 
   Get_vmsizes(d)
   abstruct ab = {
       .a    = gsl_vector_get(p->parameters->vector, 0),
@@ -56,7 +56,7 @@ static double b_callback(double x, void *abv){
 }
 
 static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-    Nullcheck_mp(p) 
+    Nullcheck_mp(p, ) 
     double  a = gsl_vector_get(p->parameters->vector, 0),
         	b = gsl_vector_get(p->parameters->vector, 1);
     double psi_a_ln_b  = gsl_sf_psi(a) + log(b);
@@ -73,7 +73,7 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
 }
 
 static double gamma_cdf(apop_data *d, apop_model *params){
-  Nullcheck_mpd(d, params)
+  Nullcheck_mpd(d, params, GSL_NAN)
   Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double alpha = gsl_vector_get(params->parameters->vector, 0);

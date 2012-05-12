@@ -45,11 +45,17 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
  \param ... The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
 */
 #define Apop_notify(verbosity, ...) {\
-    if (apop_opts.verbose >= verbosity) {  \
+    if (apop_opts.verbose != -1 && apop_opts.verbose >= verbosity) {  \
         if (!apop_opts.log_file) apop_opts.log_file = stderr; \
         fprintf(apop_opts.log_file, "%s: ", __func__); fprintf(apop_opts.log_file, __VA_ARGS__); fprintf(apop_opts.log_file, "\n");   \
         fflush(apop_opts.log_file); \
 } }
+
+#define Apop_maybe_abort(level) \
+            {if ((level == -5 && apop_opts.stop_on_warning!='n')  \
+            || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
+            || (apop_opts.stop_on_warning=='w') ) \
+                abort();} \
 
 /** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
   exits the function. 
@@ -67,12 +73,11 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 #define Apop_assert_c(test, returnval, level, ...) {\
      if (!(test)) {  \
         Apop_notify(level,  __VA_ARGS__);   \
-        if ((level == -5 && apop_opts.stop_on_warning!='n')  \
-            || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
-            || (apop_opts.stop_on_warning=='w') ) \
-                abort(); \
+        Apop_maybe_abort(level)  \
         return returnval;  \
     } }
+
+#define apop_errorlevel -5
 
 /** This is just a slightly more user-friendly version of the C-standard \c assert(). The
   program halts if the first argument evaluates to false, and the remaining arguments are
@@ -87,7 +92,12 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 \see \ref Apop_assert_c, which continues with a message rather than shutting down.
 
   */
-#define Apop_assert(test, ...) Apop_assert_c((test), 0, -5, __VA_ARGS__)
+#define Apop_assert(test, ...) Apop_assert_c((test), 0, apop_errorlevel, __VA_ARGS__)
+
+//For things that return void. I consider this to be transitional and deprecated at birth.
+#define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)
+#define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
+#define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
 
 #define apop_assert_s Apop_assert
 #define apop_assert Apop_assert

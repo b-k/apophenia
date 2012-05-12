@@ -23,13 +23,13 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 
 static double zipf_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, GSL_NAN);
     Staticdef(apop_data *, constraint, apop_data_fill(apop_data_calloc(1,1,1), 1, 1));
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
     long double   bb      = gsl_vector_get(m->parameters->vector, 0);
     double like = -apop_map_sum(d, log);
@@ -46,9 +46,9 @@ a great deal of twos, and so on.
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
-    Nullcheck_mp(param);
+    Nullcheck_mp(param, );
     double a  = gsl_vector_get(param->parameters->vector, 0);
-    Apop_assert(a >= 1, "Zipf needs a parameter >=1. Stopping."); 
+    Apop_assert_n(a >= 1, "Zipf needs a parameter >=1. Stopping."); 
     int     x;
     double  u, v, t, 
             b       = pow(2, a-1), 

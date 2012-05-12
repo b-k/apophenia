@@ -7,9 +7,9 @@ double * apop_data_ptr_tt(apop_data *in,const  char *row,const  char* col);
 double apop_data_get_it(const apop_data *in,const  size_t row,const  char* col);
 double apop_data_get_ti(const apop_data *in,const  char* row,const  int col);
 double apop_data_get_tt(const apop_data *in,const  char *row,const  char* col);
-void apop_data_set_ti(apop_data *in,const  char* row,const  int col,const  double data);
-void apop_data_set_it(apop_data *in,const  size_t row,const  char* col,const  double data);
-void apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  double data);
+int apop_data_set_ti(apop_data *in,const  char* row,const  int col,const  double data);
+int apop_data_set_it(apop_data *in,const  size_t row,const  char* col,const  double data);
+int apop_data_set_tt(apop_data *in,const  char *row,const  char* col,const  double data);
 
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol);//use apop_data_to_factors
 

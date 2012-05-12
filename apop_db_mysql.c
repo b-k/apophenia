@@ -47,7 +47,7 @@ static int apop_mysql_db_open(char const *in){
 }
 
 static void apop_mysql_db_close(int ignoreme){
-        mysql_close (mysql_db);
+    mysql_close (mysql_db);
 }
 
     //Cut & pasted & cleaned from the mysql manual.

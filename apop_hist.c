@@ -301,7 +301,7 @@ void apop_histogram_normalize(apop_model *m){
     gsl_histogram *h = Apop_settings_get(m, apop_histogram, pdf);
     int           i;
     long double   sum = 0;
-    Apop_assert(h, "You sent me a model which is not a histogram or which is unparametrized.");
+    Apop_assert_n(h, "You sent me a model which is not a histogram or which is unparametrized.");
     for (i=0; i< h->n; i++)
         sum       += h->bin[i];
     Apop_assert_c(sum, ,0, "You sent me a histogram with a total density of zero. Returning same.");

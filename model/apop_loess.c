@@ -84,7 +84,6 @@ typedef long int logical;
 typedef long int integer;
 
 #define Calloc(n,t)	(t *)calloc((unsigned)(n),sizeof(t))   // From #include "S.h"
-#define Recover(msg) Apop_assert(0, "%s", msg)
 #define Warning(msg) Apop_assert_c(0, , 0 , "%s", msg)
 
 static integer c__0 = 0;
@@ -881,7 +880,7 @@ case 195: mess="only constant, linear, or quadratic local models allowed"; break
 case 196: mess="degree must be at least 1 for vertex influence matrix"; break;
 default: sprintf(mess=mess2,"Assert failed; error code %d\n",i); break;
     }
-    Recover(mess); 
+    Apop_assert_n(0, "%s", mess)
 }
 
 static void ehg183_(char *s, integer *i, integer n, integer inc) {
@@ -3149,11 +3148,11 @@ static void loess_(double *y, double *x_, long *size_info, double *weights,
         for(j = 0; j < N; j++)
             x[k + j] = x_tmp[p + j];
     }
-    Apop_assert(!((*degree) == 1 && sum_drop_sqr), 
+    Apop_assert_n(!((*degree) == 1 && sum_drop_sqr), 
                 "Specified the square of a factor predictor to be dropped when degree = 1");
-	Apop_assert(!(D == 1 && sum_drop_sqr), 
+	Apop_assert_n(!(D == 1 && sum_drop_sqr), 
                 "Specified the square of a predictor to be dropped with only one numeric predictor");
-	Apop_assert(sum_parametric != D, "Specified parametric for all predictors");
+	Apop_assert_n(sum_parametric != D, "Specified parametric for all predictors");
 	for(j = 0; j <= (*iterations); j++) {
 		new_stat = j ? "none" : *statistics;
 		for(i = 0; i < N; i++)

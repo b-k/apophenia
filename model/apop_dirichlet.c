@@ -22,12 +22,12 @@ static double dirichletlnmap(gsl_vector *v, void *pin) {
 }
 
 static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
-    Nullcheck_mpd(d, p);
+    Nullcheck_mpd(d, p, GSL_NAN);
 	return apop_map_sum(d, .fn_vp = dirichletlnmap, .param=p->parameters->vector, .part='r');
 }
 
 static void dirichlet_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, );
     double param_sum = apop_sum(m->parameters->vector);
     int n = d->matrix->size1;
     for(size_t i=0; i < m->parameters->vector->size; i ++){

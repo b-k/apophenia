@@ -222,7 +222,7 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 \ingroup models
 */
 double apop_p(apop_data *d, apop_model *m){
-    Nullcheck_m(m);
+    Nullcheck_m(m, GSL_NAN);
     if (m->p)
         return m->p(d, m);
     else if (m->log_likelihood)
@@ -238,7 +238,7 @@ double apop_p(apop_data *d, apop_model *m){
 \ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
-    Nullcheck_m(m); //Nullcheck_p(m); //Too many models don't use the params.
+    Nullcheck_m(m, GSL_NAN); //Nullcheck_p(m); //Too many models don't use the params.
     if (m->log_likelihood)
         return m->log_likelihood(d, m);
     else if (m->p)
@@ -255,7 +255,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
-    Nullcheck_m(m); // Nullcheck_p(m);
+    Nullcheck_m(m, );
     if (m->score){
         m->score(d, out, m);
         return;

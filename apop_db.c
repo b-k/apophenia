@@ -118,19 +118,21 @@ Recreating a table which already exists can cause errors, so it is good practice
 
 \li In the SQLite engine, this function considers table views to be tables.
 
+\li If <tt>apop_opts.stop_on_warn='n'</tt>, returns -1 on errors.
+
 This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
     char const *apop_varad_var(name, NULL)
-    Apop_assert(name, "You gave me a NULL table name.");
+    Apop_assert_negone(name, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(name, remove);
 #else
-        Apop_assert(0, "Apophenia was compiled without mysql support.");
+        Apop_assert_negone(0, "Apophenia was compiled without mysql support.");
 #endif
   char 		*err=NULL, *q2;
   tab_exists_t te = { .name = name };
@@ -159,6 +161,7 @@ Closes the database on disk. If you opened the database with \c apop_db_open(NUL
 'v': vacuum---do clean-up to minimize the size of the database on disk.<br>
 'q': Don't bother; just close the database. (default = 'q')
 
+\return 0 on OK, nonzero on error.
 This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_db_close(char vacuum){
@@ -169,17 +172,19 @@ APOP_VAR_END_HEAD
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        Apop_assert(0, "Apophenia was compiled without mysql support.")
+        {Apop_assert_negone(0, "Apophenia was compiled without mysql support.");}
 #endif
-    else{
-      char		*err;
-        if (vacuum==1 || vacuum=='v') 
+    else {
+        char *err, *query = "db close";//for errcheck.
+        if (vacuum==1 || vacuum=='v') {
             sqlite3_exec(db, "VACUUM", NULL, NULL, &err);
-    //	ERRCHECK
+            ERRCHECK
+        }
         sqlite3_close(db);
+    	//ERRCHECK
         db  = NULL;
-        return 0;
     }
+    return 0;
 }
 
 /** \defgroup queries Queries
@@ -634,7 +639,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_db_merge_table(char *db_file, char *tabname, char inout){
     char * apop_varad_var(tabname, NULL);
-    Apop_assert_s(tabname, "I need a non-NULL tabname");
+    Apop_assert_n(tabname, "I need a non-NULL tabname");
     char * apop_varad_var(db_file, NULL);
     char apop_varad_var(inout, 'i');
 APOP_VAR_ENDHEAD
@@ -671,7 +676,7 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_db_merge(char *db_file, char inout){
     char * apop_varad_var(db_file, NULL);
-    Apop_assert_s(db_file, "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
+    Apop_assert_n(db_file, "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
     char apop_varad_var(inout, 'i');
 APOP_VAR_ENDHEAD
   apop_data	*tab_list;

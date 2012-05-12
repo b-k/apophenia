@@ -27,15 +27,16 @@ The functions to shunt data between text files, database tables, GSL matrices, a
 /** Converts a \c gsl_vector to an array.
 
 \param in A \c gsl_vector
-
 \return A \c double*, which will be <tt>malloc</tt>ed inside the function.
+
+\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 
 \ingroup conversions
 */
 double * apop_vector_to_array(const gsl_vector *in){
 //Does not use memcpy, because we don't know the stride of the vector.
-  Apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
-  double	*out	= malloc(sizeof(double) * in->size);
+    Apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
+    double *out = malloc(sizeof(double) * in->size);
 	for (size_t i=0; i < in->size; i++)
 		out[i]	= gsl_vector_get(in, i);
 	return out;
@@ -49,6 +50,9 @@ guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick, which will
 work for most arrays allocated using <tt>double []</tt> and won't work
 for those allocated using <tt>double *</tt>. (default = auto-guess)
 \return         A <tt>gsl_vector</tt> (which I will allocate for you).
+
+\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
+
 \ingroup conversions
 This function uses the \ref designated syntax for inputs.
 
@@ -72,6 +76,9 @@ APOP_VAR_END_HEAD
 \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
 \return a newly-allocated <tt>gsl_matrix</tt> with one column.
 
+\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
+\li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
+
 This function uses the \ref designated syntax for inputs.
  \ingroup conversions
  */
@@ -84,7 +91,7 @@ APOP_VAR_ENDHEAD
         (row_col == 'r' || row_col == 'R') 
            ? gsl_matrix_alloc(1, in->size)
            : gsl_matrix_alloc(in->size, 1);
-    Apop_assert(out, "gsl_matrix_alloc failed; probably out of memory.");
+    Apop_assert(out,  "gsl_matrix_alloc failed; probably out of memory.");
     if (row_col == 'r' || row_col == 'R') 
         gsl_matrix_set_row(out, 0, in);
     else
@@ -190,7 +197,7 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
 		i	++;
 		i	%= size;	//loop around as necessary.
 	} while(i!=start_from); 
-    Apop_assert_c(0, 0, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
+    Apop_assert_c(0, -2, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
 /**Give the name of a table in the database, and names of three of its
@@ -220,13 +227,15 @@ apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col
 
 \see \ref apop_crosstab_to_db
 
+\li If something fails along the way, return \c NULL.
+
 \ingroup db
 */
-apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
-  gsl_matrix	*out;
-  int		    i, j=0;
-  apop_data     *pre_d1, *pre_d2, *datachars;
-  apop_data     *outdata    = apop_data_alloc(0,0,0);
+apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
+    gsl_matrix *out;
+    int		   i, j=0;
+    apop_data  *pre_d1, *pre_d2, *datachars;
+    apop_data  *outdata = apop_data_alloc();
 
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
@@ -249,6 +258,8 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 	for (size_t k =0; k< datachars->textsize[0]; k++){
 		i	= find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
 		j	= find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
+        Apop_assert_c(i!=-2 && j != -2, NULL, 0, "Something went wrong in the crosstabbing; "
+                                                 "couldn't find %s or %s.", datachars->text[k][0], datachars->text[k][1]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
 	}
     apop_data_free(pre_d1);
@@ -403,7 +414,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
  \endcode
 
   \param in    the input data
-  \return       a structure that this function will allocate and fill
+  \return       a structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL.
 \ingroup convenience_fns
   */
 gsl_vector *apop_vector_copy(const gsl_vector *in){
@@ -422,7 +433,7 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
  \endcode
 
   \param in    the input data
-  \return       a structure that this function will allocate and fill
+  \return       a structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
 \ingroup convenience_fns
   */
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
@@ -754,7 +765,7 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
-    Apop_assert(d, "the data set to be filled, d, must not be NULL");
+    Apop_assert_n(d, "the data set to be filled, d, must not be NULL");
     char apop_varad_var(use_info_pages, 'n');
 APOP_VAR_ENDHEAD
     int offset = 0;
@@ -978,48 +989,6 @@ gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
 }
 
 
-/** Now that you've used \ref Apop_data_row to pull a row from an \ref apop_data set,
-  this function lets you write that row to another position in the same data set or a
-  different data set entirely.  
-
-  The set written to must have the same form as the original: 
-  \li a vector element has to be present if one existed in the original, 
-  \li same for the weights vector,
-  \li the matrix in the destination has to have as many columns as in the original, and
-  \li the text has to have a row long enough to hold the original
-
-  If any of the source elements are \c NULL, I won't bother to check that element in the
-  destination.
-  */
-void apop_data_set_row(apop_data * d, apop_data *row, int row_number){
-    if (row->vector){
-        Apop_assert(d->vector, "You asked me to copy an apop_data_row with a vector element to "
-                "an apop_data set with no vector.");
-        gsl_vector_set(d->vector, row_number, row->vector->data[0]);
-    }
-    if (row->matrix && row->matrix->size2 > 0){
-        Apop_assert(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
-                "an apop_data set with no matrix.");
-        Apop_row(d, row_number, a_row); 
-        Apop_row(row, 0, row_to_copy); 
-        gsl_vector_memcpy(a_row, row_to_copy);
-    }
-    if (row->textsize[1]){
-        Apop_assert(d->textsize[1], "You asked me to copy an apop_data_row with text to "
-                "an apop_data set with no text element.");
-        for (int i=0; i < row->textsize[1]; i++){
-            free(d->text[row_number][i]);
-            d->text[row_number][i]= strdup(row->text[0][i]);
-        }
-    }
-    if (row->weights){
-        Apop_assert(d->weights, "You asked me to copy an apop_data_row with a weight to "
-                "an apop_data set with no weights vector.");
-        gsl_vector_set(d->weights, row_number, row->weights->data[0]);
-    }
-}
-
-
 
 ///////The rest of this file is for apop_text_to_db
 extern sqlite3 *db;
@@ -1049,7 +1018,7 @@ static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_
                                 , table_params? ", ": "", XN(table_params));
 apop_opts.verbose=2;
     apop_query("%s", q);
-    Apop_assert(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
+    Apop_assert_n(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
     free(q);
 }
 
@@ -1066,7 +1035,7 @@ static void tab_create_sqlite(char *tabname, int has_row_names, apop_data *field
     xprintf(&q, "%s' %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
     apop_query("%s", q);
-    apop_assert(apop_table_exists(tabname), "query \"%s\" failed.\n", q);
+    Apop_assert_n(apop_table_exists(tabname), "query \"%s\" failed.\n", q);
     free(q);
     apop_query("begin;");
 }
@@ -1154,7 +1123,7 @@ By the way, there is a begin/commit wrapper that bundles the process into bundle
 \param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 \param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
 
-\return Returns the number of rows.
+\return Returns the number of rows on success, -1 on error.
 
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
@@ -1207,7 +1176,7 @@ APOP_VAR_END_HEAD
         for (int i = 1; i < col_ct; i++)
             xprintf(&q, "%s, ?", q);
         xprintf(&q, "%s)", q);
-        Apop_assert_c(db, 0, 0, "Trouble opening the database; inserting no data.");
+        Apop_assert_c(db, -1, 0, "Trouble opening the database; inserting no data.");
         sqlite3_prepare_v2(db, q, -1, &statement, NULL);
         free(q);
     }
@@ -1224,10 +1193,10 @@ APOP_VAR_END_HEAD
         if (statement){
             int err = sqlite3_step(statement);
             if (err!=0 && err != 101) //0=ok, 101=done
-                printf("sqlite insert query gave error code %i.\n", err);
-            Apop_assert(!sqlite3_reset(statement), "SQLite error.");
+                Apop_notify(0, "sqlite insert query gave error code %i.\n", err);
+            Apop_assert_c(!sqlite3_reset(statement), -1, apop_errorlevel, "SQLite error.");
 #if SQLITE_VERSION_NUMBER >= 3003009
-            Apop_assert(!sqlite3_clear_bindings(statement), "SQLite error."); //needed for NULLs
+            Apop_assert_c(!sqlite3_clear_bindings(statement), -1, apop_errorlevel, "SQLite error."); //needed for NULLs
 #endif
         }
         L = parse_a_line(infile, add_this_line, field_ends, delimiters);
@@ -1235,7 +1204,7 @@ APOP_VAR_END_HEAD
     apop_data_free(add_this_line);
     apop_query("commit;");
 	if (use_sqlite_prepared_statements){
-        Apop_assert(sqlite3_finalize(statement) ==SQLITE_OK, "SQLite error.");
+        Apop_assert_c(sqlite3_finalize(statement) ==SQLITE_OK, -1, apop_errorlevel, "SQLite error.");
     }
     if (strcmp(text_file,"-"))
 	    fclose(infile);

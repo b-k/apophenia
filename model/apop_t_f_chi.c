@@ -55,19 +55,19 @@ static double one_t(double in, void *params){
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
 double apop_tdist_llike(apop_data *d, apop_model *m){ 
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, GSL_NAN);
     double *params = m->parameters->vector->data;
     return apop_map_sum(d, .fn_dp=one_t, .param=&params);
 }
 
 double apop_chisq_llike(apop_data *d, apop_model *m){ 
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, GSL_NAN);
     double df = m->parameters->vector->data[0];
     return apop_map_sum(d, .fn_dp=one_chisq, .param =&df);
 }
 
 double apop_fdist_llike(apop_data *d, apop_model *m){ 
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, GSL_NAN);
     double df[2];
     df[0] = m->parameters->vector->data[0];
     df[1] = m->parameters->vector->data[1];
@@ -75,7 +75,7 @@ double apop_fdist_llike(apop_data *d, apop_model *m){
 }
 
 void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, );
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
@@ -83,7 +83,7 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
 }
 
 double apop_t_dist_cdf(apop_data *in, apop_model *m){
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, GSL_NAN);
     double val = in->vector ? apop_data_get(in, 0, -1) : apop_data_get(in, 0, 0);
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
@@ -92,12 +92,12 @@ double apop_t_dist_cdf(apop_data *in, apop_model *m){
 }
 
 void apop_f_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, );
     *out = gsl_ran_fdist (r, m->parameters->vector->data[0], m->parameters->vector->data[1]);
 }
 
 void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, );
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
 }
 
@@ -142,7 +142,7 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
 }
 
 static double wishart_ll(apop_data *in, apop_model *m){
-    Nullcheck_mpd(in, m);
+    Nullcheck_mpd(in, m, GSL_NAN);
     wishartstruct_t ws = {
             .paramdet = apop_matrix_determinant(m->parameters->matrix),
             .wparams = m->parameters->matrix,
@@ -166,7 +166,7 @@ C     Wishart variate generator.  On output, SA is an upper-triangular
 C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
-    Nullcheck_mp(m);
+    Nullcheck_mp(m, );
     int DF, np = m->parameters->matrix->size1;
     int n = m->parameters->vector->data[0];
     if (!m->more) { 
@@ -234,7 +234,7 @@ static double fixed_wishart_ll(apop_data *in, apop_model *m){
 }
 
 apop_model *wishart_estimate(apop_data *d, apop_model *m){
-    Nullcheck_m(m);
+    Nullcheck_m(m, NULL);
     //apop_data_set(m->parameters, 0, -1, d->matrix->size1);
     //Start with cov matrix via mean of inputs; df=NaN
     apop_data_set(m->parameters, 0, -1, GSL_NAN);

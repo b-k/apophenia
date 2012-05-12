@@ -15,8 +15,6 @@ Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
    Heavily hand-edited by KH and MM.
  */
 
-/* <UTF8> chars are handled as whole strings */
-
 #include "apop_internal.h"
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
@@ -58,14 +56,16 @@ static double f9xact(int n, int ntot, int *ir, double *fact);
 static Rboolean f10act(int nrow, int *irow, int ncol, int *icol, double *val,
 		       double *fact, int *nd, int *ne, int *m);
 static void f11act(int *irow, int i1, int i2, int *new);
-static void prterr(int icode, const char *mes);
 static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 
- static void isort(int *n, int *ix);
- static double gammds(double *y, double *p, int *ifault);
+static void isort(int *n, int *ix);
+static double gammds(double *y, double *p, int *ifault);
 
-/* The only public function : */
-/* [OK, not any more. apop_test_fisher_exact is now a shell for this: */
+void prterr(int icode, const char *mes) {
+    Apop_notify(1, "FEXACT error %d.\n%s", icode, mes);
+}
+
+/* The interface to the original code, which apop_test_fisher_exact calls: */
 static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
        double *expect, double *percnt, double *emin, double *prt,
        double *pre, /* new in C : */ int *workspace,
@@ -185,22 +185,22 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 
     iwkpt = 0;
 
-    Apop_assert(*nrow <= *ldtabl, "NROW must be less than or equal to LDTABL.");
+    Apop_assert_n(*nrow <= *ldtabl, "NROW must be less than or equal to LDTABL.");
 
     ntot = 0;
     for (i = 0; i < *nrow; ++i) {
-	for (j = 0; j < *ncol; ++j) {
-	    if (table[i + j * *ldtabl] < 0)
-		prterr(2, "All elements of TABLE may not be negative.");
-	    ntot += table[i + j * *ldtabl];
- 	}
+        for (j = 0; j < *ncol; ++j) {
+            if (table[i + j * *ldtabl] < 0)
+            prterr(2, "All elements of TABLE may not be negative.");
+            ntot += table[i + j * *ldtabl];
+        }
     }
     if (ntot == 0) {
-	prterr(3, "All elements of TABLE are zero.\n"
-	       "PRT and PRE are set to missing values.");
-	*pre = *prt = amiss;
-    free(equiv);
-	return;
+        prterr(3, "All elements of TABLE are zero.\n"
+               "PRT and PRE are set to missing values.");
+        *pre = *prt = amiss;
+        free(equiv);
+        return;
     }
 
     /* nco := max(*nrow, *ncol)
@@ -296,7 +296,6 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 	   dwrk + irwk);
 
     free(equiv);
-    return;
 }
 
 #undef rwrk
@@ -367,8 +366,8 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
     --rwk;
 
     /* Check table dimensions */
-    Apop_assert(nrow <= ldtabl, "NROW must be less than or equal to LDTABL.");
-    Apop_assert(ncol > 1, "NCOL must be at least 2");
+    Apop_assert_n(nrow <= ldtabl, "NROW must be less than or equal to LDTABL.");
+    Apop_assert_n(ncol > 1, "NCOL must be at least 2");
 
     /* Initialize KEY array */
     for (i = 1; i <= *ldkey << 1; ++i) {
@@ -378,26 +377,24 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
 
     nr_gt_nc =  nrow > ncol;
     /* nco := max(nrow, ncol) : */
-    if(nr_gt_nc)
-	nco = nrow;
-    else
-	nco = ncol;
+    if (nr_gt_nc) nco = nrow;
+    else          nco = ncol;
     /* Compute row marginals and total */
     ntot = 0;
     for (i = 1; i <= nrow; ++i) {
-	iro[i] = 0;
-	for (j = 1; j <= ncol; ++j) {
-	    Apop_assert(table[i + j * ldtabl] >= 0., "All elements of TABLE must be non-negative.");
-	    iro[i] += table[i + j * ldtabl];
-	}
-	ntot += iro[i];
+        iro[i] = 0;
+        for (j = 1; j <= ncol; ++j) {
+            Apop_assert_n(table[i + j * ldtabl] >= 0., "All elements of TABLE must be non-negative.");
+            iro[i] += table[i + j * ldtabl];
+        }
+        ntot += iro[i];
     }
 
     if (ntot == 0) {
-	prterr(3, "All elements of TABLE are zero.\n"
-	       "PRT and PRE are set to missing values.");
-	*pre = *prt = amiss;
-	return;
+        prterr(3, "All elements of TABLE are zero.\n"
+               "PRT and PRE are set to missing values.");
+        *pre = *prt = amiss;
+        return;
     }
 
     /* Column marginals */
@@ -422,8 +419,7 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
         /* Swap marginals */
         for (i = 1; i <= nco; ++i) {
             ii = iro[i];
-            if (i <= nro)
-            iro[i] = ico[i];
+            if (i <= nro) iro[i] = ico[i];
             ico[i] = ii;
         }
     } else
@@ -739,32 +735,29 @@ L300:
 L310:
     /* Go get a new mother from stage K */
     do {
-	if(!f6xact(nro, &iro[1], &kyy[1], &key[ikkey + 1], ldkey, &last, &ipo))
-	    /* Update pointers */
-	    goto Outer_Loop;
+        if(!f6xact(nro, &iro[1], &kyy[1], &key[ikkey + 1], ldkey, &last, &ipo))
+            /* Update pointers */
+            goto Outer_Loop;
 
-	/* else : no additional nodes to process */
-	--k;
-	itop = 0;
-	ikkey = jkey - 1;
-	ikstp = jstp - 1;
-	ikstp2 = jstp2 - 1;
-	jkey = *ldkey - jkey + 2;
-	jstp = *ldstp - jstp + 2;
-	jstp2 = (*ldstp << 1) + jstp;
-	for (i = 1; i <= *ldkey << 1; ++i)
-	    key2[i] = -9999;
-
+        /* else : no additional nodes to process */
+        --k;
+        itop = 0;
+        ikkey = jkey - 1;
+        ikstp = jstp - 1;
+        ikstp2 = jstp2 - 1;
+        jkey = *ldkey - jkey + 2;
+        jstp = *ldstp - jstp + 2;
+        jstp2 = (*ldstp << 1) + jstp;
+        for (i = 1; i <= *ldkey << 1; ++i)
+            key2[i] = -9999;
     } while (k >= 2);
-
 }/* f2xact() */
 
 static double f3xact(int nrow, int *irow, int ncol, int *icol,
        int ntot, double *fact, int *ico, int *iro, int *it,
        int *lb, int *nr, int *nt, int *nu, int *itc, int *ist,
        double *stv, double *alen, const double *tol) {
-/*
- -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F3XACT
   Purpose:    Computes the longest path length for a given table.
 
@@ -1004,7 +997,7 @@ LoopNode: /* Generate a node */
 	}
 
 	/* this happens less, now that we check for negative key above: */
-	Apop_assert(0, "Stack length exceeded in f3xact. This problem should not occur.");
+	Apop_assert_nan(0, "Stack length exceeded in f3xact. This problem should not occur.");
 
 L180: /* Push onto stack */
 	ist[ii] = key;
@@ -1072,8 +1065,7 @@ L200: /* Pop item from stack */
 static double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
        double *fact, int *icstk, int *ncstk, int *lstk, int *mstk,
        int *nstk, int *nrstk, int *irstk, double *ystk, const double *tol) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F4XACT
   Purpose:    Computes the shortest path length for a given table.
 
@@ -1099,8 +1091,7 @@ static double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
   Return Value :
 
     SP	    - The shortest path for the table.			(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
 
     int i, j, k, l, m, n, ic1, ir1, ict, irt, istk, nco, nro;
     double y, amx, SP;
@@ -1270,8 +1261,7 @@ static double f4xact(int nrow, int *irow, int ncol, int *icol, double dspt,
 void f5xact(double *pastp, const double *tol, int *kval, int *key, int *ldkey,
        int *ipoin, double *stp, int *ldstp, int *ifrq, int *npoin,
        int *nr, int *nl, int *ifreq, int *itop, Rboolean psh) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F5XACT aka "PUT"
   Purpose:    Put node on stack in network algorithm.
 
@@ -1301,8 +1291,7 @@ void f5xact(double *pastp, const double *tol, int *kval, int *key, int *ldkey,
 	      table KEY.  Otherwise the location of the past path
 	      length is assumed known and to have been found in
 	      a previous call. ==>>>>> USING "static" variables
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
 
     static int itmp, ird, ipn, itp; /* << *need* static, see PSH above */
     double test1, test2;
@@ -1431,8 +1420,7 @@ L60:
 
 
 Rboolean f6xact(int nrow, int *irow, int *kyy, int *key, int *ldkey, int *last, int *ipn) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F6XACT  aka "GET"
   Purpose:    Pop a node off the stack.
 
@@ -1450,8 +1438,7 @@ Rboolean f6xact(int nrow, int *irow, int *kyy, int *key, int *ldkey, int *last, 
 
   Return value :
     TRUE if there are no additional nodes to process.           (Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     int kval, j;
 
     --key;
@@ -1480,8 +1467,7 @@ L10:
 
 
 void f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F7XACT
   Purpose:    Generate the new nodes for given marginal totals.
 
@@ -1494,8 +1480,7 @@ void f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag) {
     IFLAG   - Status indicator.					(Output)
 	      If IFLAG is zero, a new table was generated.  For
 	      IFLAG = 1, no additional tables could be generated.
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     int i, m, kk, mm;
 
     /* Parameter adjustments */
@@ -1578,8 +1563,7 @@ void f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag) {
 
 
 void f8xact(int *irow, int is, int i1, int izero, int *new) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F8XACT
   Purpose:    Routine for reducing a vector when there is a zero
 	      element.
@@ -1589,8 +1573,7 @@ void f8xact(int *irow, int is, int i1, int izero, int *new) {
      I1	    - Indicator.					(Input)
      IZERO  - Position of the zero.				(Input)
      NEW    - Vector of new row counts.				(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
 
     int i;
 
@@ -1600,27 +1583,24 @@ void f8xact(int *irow, int is, int i1, int izero, int *new) {
 
     /* Function Body */
     for (i = 1; i < i1; ++i)
-	new[i] = irow[i];
+        new[i] = irow[i];
 
     for (i = i1; i <= izero - 1; ++i) {
-	if (is >= irow[i + 1])
-	    break;
-	new[i] = irow[i + 1];
+        if (is >= irow[i + 1]) break;
+        new[i] = irow[i + 1];
     }
 
     new[i] = is;
 
     for(;;) {
-	++i;
-	if (i > izero)
-	    return;
-	new[i] = irow[i];
+        ++i;
+        if (i > izero) return;
+        new[i] = irow[i];
     }
 }
 
 static double f9xact(int n, int ntot, int *ir, double *fact) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F9XACT
   Purpose:    Computes the log of a multinomial coefficient.
 
@@ -1632,19 +1612,17 @@ static double f9xact(int n, int ntot, int *ir, double *fact) {
      FACT   - Table of log factorials.				(Input)
   Returns:
      	    - The log of the multinomal coefficient.		(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     double d = fact[ntot];
     for (int k = 0; k < n; k++)
-	d -= fact[ir[k]];
+        d -= fact[ir[k]];
     return d;
 }
 
 
 Rboolean f10act(int nrow, int *irow, int ncol, int *icol, double *val,
        double *fact, int *nd, int *ne, int *m) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	    F10ACT
   Purpose:  Computes the shortest path length for special tables.
 
@@ -1661,52 +1639,46 @@ Rboolean f10act(int nrow, int *irow, int ncol, int *icol, double *val,
 
   Returns (VAL and):
      XMIN   - Set to true if shortest path obtained.  		(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     int i, is, ix;
 
     for (i = 0; i < nrow - 1; ++i)
-	nd[i] = 0;
+        nd[i] = 0;
 
     is = icol[0] / nrow;
     ix = icol[0] - nrow * is;
     ne[0] = is;
     m[0] = ix;
-    if (ix != 0)
-	++nd[ix-1];
+    if (ix != 0) ++nd[ix-1];
 
     for (i = 1; i < ncol; ++i) {
-	ix = icol[i] / nrow;
-	ne[i] = ix;
-	is += ix;
-	ix = icol[i] - nrow * ix;
-	m[i] = ix;
-	if (ix != 0)
-	    ++nd[ix-1];
+        ix = icol[i] / nrow;
+        ne[i] = ix;
+        is += ix;
+        ix = icol[i] - nrow * ix;
+        m[i] = ix;
+        if (ix != 0) ++nd[ix-1];
     }
 
     for (i = nrow - 3; i >= 0; --i)
-	nd[i] += nd[i + 1];
+        nd[i] += nd[i + 1];
 
     ix = 0;
     for (i = nrow; i >= 2; --i) {
-	ix += is + nd[nrow - i] - irow[i-1];
-	if (ix < 0)
-	    return FALSE;
+        ix += is + nd[nrow - i] - irow[i-1];
+        if (ix < 0) return FALSE;
     }
 
     for (i = 0; i < ncol; ++i) {
-	ix = ne[i];
-	is = m[i];
-	*val +=  is * fact[ix + 1] + (nrow - is) * fact[ix];
+        ix = ne[i];
+        is = m[i];
+        *val +=  is * fact[ix + 1] + (nrow - is) * fact[ix];
     }
     return TRUE;
 }
 
-
 void f11act(int *irow, int i1, int i2, int *new) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      F11ACT
   Purpose:    Routine for revising row totals.
 
@@ -1715,29 +1687,10 @@ void f11act(int *irow, int i1, int i2, int *new) {
      I1	    - Indicator.			(Input)
      I2	    - Indicator.  			(Input)
      NEW    - Vector containing the row totals.	(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     int i;
-
     for (i = 0;  i < (i1 - 1); ++i)	new[i] = irow[i];
     for (i = i1; i <= i2; ++i)	      new[i-1] = irow[i];
-}
-
-
-void prterr(int icode, const char *mes) {
-/*
-  -----------------------------------------------------------------------
-  Name:	      prterr
-  Purpose:    Print an error message and stop.
-
-  Arguments:
-     icode  - Integer code for the error message.		(Input)
-     mes    - Character string containing the error message.	(Input)
-  -----------------------------------------------------------------------
-  */
-	if (apop_opts.verbose)
-	    printf("FEXACT error %d.\n%s", icode, mes);
-    return;
 }
 
 static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
@@ -1756,11 +1709,10 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
 		4    double
      iwork(): Index in rwrk, dwrk, or iwrk of the beginning of
               the first free element in the workspace array.	(Output)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     int i = *iwkpt;
     if (itype == 2 || itype == 3)
-	*iwkpt += number;
+        *iwkpt += number;
     else { /* double */
         if (i % 2 != 0)
             ++i;
@@ -1781,8 +1733,7 @@ void isort(int *n, int *ix) {
   Arguments:
      N	    - Lenth of vector IX.	(Input)
      IX	    - Vector to be sorted.	(in/out)
-  -----------------------------------------------------------------------
-  */
+  ----------------------------------------------------------------------- */
     static int ikey, i, j, m, il[10], kl, it, iu[10], ku;
 
     /* Parameter adjustments */
@@ -1838,7 +1789,7 @@ L30:
         ++m;
         goto L10;
     } else 
-        Apop_assert(0, "This should never occur.");
+        Apop_assert_n(0, "This should never occur.");
     /* Use another segment */
 L40:
     --m;
@@ -1850,8 +1801,7 @@ L40:
 }
 
 static double gammds(double *y, double *p, int *ifault) {
-/*
-  -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
   Name:	      GAMMDS
   Purpose:    Cumulative distribution for the gamma distribution.
   Usage:      PGAMMA (Q, ALPHA,IFAULT)
@@ -1916,9 +1866,9 @@ Not too necessary, but I needed it for the Fisher exact test.
 \ingroup conversions
 */
 static int *apop_data_to_int_array(apop_data *intab){
-int rowct   = intab->matrix->size1,
-    colct   = intab->matrix->size2,
-    *out    =malloc(sizeof(int)*(rowct* colct));
+  int rowct = intab->matrix->size1,
+      colct = intab->matrix->size2,
+      *out  = malloc(sizeof(int)*(rowct* colct));
     for (int i=0; i< rowct; i++)
         for (int j=0; j< colct; j++)
             out[j*rowct + i] = (int) gsl_matrix_get(intab->matrix, i, j);
@@ -1932,6 +1882,7 @@ int rowct   = intab->matrix->size1,
     "p value":  Table p-value.	The probability of a more extreme table,
 	      where `extreme' is in a probabilistic sense.
 
+\li If there are processing errors, these values will be NaN.
 For example: \include test_fisher.c
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
@@ -1944,7 +1895,7 @@ int     *intified   = apop_data_to_int_array(intab),
         mult        = 30,
         rowct       = intab->matrix->size1,
         colct       = intab->matrix->size2;
-fexact(&rowct, 
+    fexact(&rowct, 
        &colct,
        intified,
        &rowct,
@@ -1957,7 +1908,7 @@ fexact(&rowct,
        &workspace,
        &mult);
     free(intified);
-apop_data *out      = apop_data_alloc(0,2,1);
+apop_data *out      = apop_data_alloc(2,1);
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
     return out;

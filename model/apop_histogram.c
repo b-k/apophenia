@@ -103,7 +103,7 @@ static double one_histo_ll(double i, void *gpdf){
 }
 
 static double histogram_ll(apop_data *d, apop_model *in){
-    Nullcheck_mpd(d, in);
+    Nullcheck_mpd(d, in, GSL_NAN);
     apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
     if (!hp) apop_settings_get_group(in, apop_kernel_density);
     Apop_assert(hp, "you sent me an unparametrized model.");
@@ -111,10 +111,10 @@ static double histogram_ll(apop_data *d, apop_model *in){
 }
 
 static void histogram_rng(double *out, gsl_rng *r, apop_model* in){
-    Nullcheck_m(in);
+    Nullcheck_m(in, );
     apop_histogram_settings *hp = apop_settings_get_group(in, apop_histogram);
     if (!hp) apop_settings_get_group(in, apop_kernel_density);
-    Apop_assert(hp, "you sent me an unparametrized model.");
+    Apop_assert_n(hp, "you sent me an unparametrized model.");
     if (!hp->cdf){
         hp->cdf = gsl_histogram_pdf_alloc(hp->pdf->n); //darn it---this produces a CDF!
         gsl_histogram_pdf_init(hp->cdf, hp->pdf);
@@ -206,7 +206,7 @@ Apop_settings_free(apop_kernel_density,
 )
 
 static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
-    Nullcheck_d(d);
+    Nullcheck_d(d, NULL);
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
     return m;
@@ -214,8 +214,8 @@ static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
 
 static double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
-    Nullcheck_d(d);
-    Nullcheck_m(m);
+    Nullcheck_d(d, GSL_NAN);
+    Nullcheck_m(m, GSL_NAN);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;

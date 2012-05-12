@@ -28,7 +28,7 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
 }
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
-    Nullcheck_mpd(d, p);
+    Nullcheck_mpd(d, p, GSL_NAN);
     gsl_matrix	*data	    = d->matrix;
     double		mu		    = gsl_vector_get(p->parameters->vector, 0);
     double		llikelihood = -apop_matrix_sum(data)/ mu;
@@ -45,7 +45,7 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
 }
 
 static double expo_cdf(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params);
+    Nullcheck_mpd(d, params, GSL_NAN);
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double lambda = gsl_vector_get(params->parameters->vector, 0);
@@ -53,7 +53,7 @@ static double expo_cdf(apop_data *d, apop_model *params){
 }
 
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_mpd(d, p);
+  Nullcheck_mpd(d, p, );
   double		mu	    = gsl_vector_get(p->parameters->vector, 0);
   gsl_matrix	*data	= d->matrix;
   double 		d_likelihood;

@@ -2,6 +2,10 @@
 #include "nist_tests.c"
 #include "rake_test.c"
 
+//assertions never return a value.
+#undef Apop_assert
+#define Apop_assert(expr, ...) {if (!(expr)) {fprintf(stderr, __VA_ARGS__); abort();}}
+
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 //I'm using the test script an experiment to see if 

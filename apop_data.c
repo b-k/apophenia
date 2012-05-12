@@ -153,7 +153,7 @@ void apop_text_free(char ***freeme, int rows, int cols){
 void apop_data_free_base(apop_data *freeme){
     if (!freeme) return;
     if (freeme->more){
-        Apop_assert(freeme != freeme->more, "the ->more element of this data set equals the "
+        Apop_assert_n(freeme != freeme->more, "the ->more element of this data set equals the "
                                         "data set itself. This is not healthy.");
         apop_data_free(freeme->more);
     }
@@ -192,18 +192,18 @@ apop_data_memcpy(torow, fromrow);
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     Apop_assert_c(out, , 1, "you are copying to a NULL vector. Do you mean to use apop_data_copy instead?");
     if (in->matrix){
-        Apop_assert(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
+        Apop_assert_n(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
                 "you're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix.", 
                         in->matrix->size1, in->matrix->size2, out->matrix->size1, out->matrix->size2);
         gsl_matrix_memcpy(out->matrix, in->matrix);
     }
     if (in->vector){
-        Apop_assert(in->vector->size == out->vector->size, "You're trying to copy a %zu-elmt "
+        Apop_assert_n(in->vector->size == out->vector->size, "You're trying to copy a %zu-elmt "
                         "vector into a %zu-elmt vector.", in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
     if (in->weights){
-        Apop_assert(in->weights->size == out->weights->size, "Weight vector sizes don't match: "
+        Apop_assert_n(in->weights->size == out->weights->size, "Weight vector sizes don't match: "
                     "you're trying to copy a %zu-elmt vector into a %zu-elmt vector.", 
                                  in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
@@ -219,7 +219,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
     if (in->textsize[0] && in->textsize[1]){
-        Apop_assert(out->textsize[0] >= in->textsize[0] && out->textsize[1] >= in->textsize[1],
+        Apop_assert_n(out->textsize[0] >= in->textsize[0] && out->textsize[1] >= in->textsize[1],
                     "I am trying to copy a grid of (%zu, %zu) text elements into a grid of (%zu, %zu), and that won't work. "
                     "Please use apop_text_alloc to reallocate the right amount of data, or use apop_data_copy for automatic allocation.",
                     in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
@@ -710,7 +710,11 @@ double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
 }
 
 /** Get a pointer to an element of an \ref apop_data set. 
- See \ref data_set_get "the set/get page" for details. */
+
+\li If a \c NULL vector or matrix (as the case may be), stop (unless <tt>apop_opts.stop_on_warning='n'</tt>, then return \c NULL).
+\li If the row/column you requested is outside the bounds of the matrix (or the name isn't found), always return \c NULL.
+\li See \ref data_set_get "the set/get page" for details. 
+*/
 APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page){
     apop_data * apop_varad_var(data, NULL);
     Apop_assert(data, "You sent me a NULL data set.");
@@ -749,23 +753,23 @@ double apop_data_get_ti(const apop_data *in, const char* row, const int col){
   int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (col >= 0){
-        apop_assert(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
+        Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
         return gsl_matrix_get(in->matrix, rownum, col);
     } else {
-        apop_assert(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
+        Apop_assert_nan(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
         return gsl_vector_get(in->vector, rownum);
     }
 }
 
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
+    int colnum = apop_name_find(in->names, col, 'c');
     Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     if (colnum >= 0){
-        apop_assert(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
+        Apop_assert_nan(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
         return gsl_matrix_get(in->matrix, row, colnum);
     } else {
-        apop_assert(in->vector, "You asked me to get the %zuth element of a NULL vector.", row);
+        Apop_assert_nan(in->vector, "You asked me to get the %zuth element of a NULL vector.", row);
         return gsl_vector_get(in->vector, row);
     }
 }
@@ -777,15 +781,17 @@ double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
     Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (colnum >= 0){
-        apop_assert(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
+        Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
         return gsl_matrix_get(in->matrix, rownum, colnum);
     } else {
-        apop_assert(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
+        Apop_assert_nan(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
         return gsl_vector_get(in->vector, rownum);
     }
 }
 
 /** Returns the data element at the given point.
+ 
+  In case of error (probably that you asked for a data point out of bounds), returns \c GSL_NAN.
  See \ref data_set_get "the set/get page" for details. */
 APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page){
     const apop_data * apop_varad_var(data, NULL);
@@ -799,7 +805,7 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
     const apop_data *d;
     if (page){
         d = apop_data_get_page(data, page);
-        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
+        Apop_assert_nan(d, "I couldn't find a page with label '%s'.", page);
     } else d = data;
     if (rowname && colname)
         return apop_data_get_tt(d, rowname,colname);
@@ -809,44 +815,69 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
         return apop_data_get_it(d, row,colname);
     //else: row number, column number
     if (col>=0){
-        apop_assert(d->matrix, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        Apop_assert_nan(d->matrix, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
         return gsl_matrix_get(d->matrix, row, col);
     } else {
-        apop_assert(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
+        Apop_assert_nan(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
         return gsl_vector_get(d->vector, row);
     }
 APOP_VAR_ENDHEAD
 return 0;//the main function is blank.
 }
 
+/* The only hint the GSL gives that something failed is that the error-handler is called.
+   The error handling function won't let you set an output to the function. So all we
+   can do is use a global variable.
+*/
+
+static threadlocal int error_for_set; //see apop_internal.h
+
+void apop_gsl_error_for_set(const char *reason, const char *file, int line, int gsl_errno){
+    Apop_notify(1, "%s: %s", file, reason);
+    Apop_maybe_abort(1);
+    error_for_set = -1;
+}
+
+#define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error_for_set); error_for_set=0;
+#define Unset_gsl_handler gsl_set_error_handler(prior_handler);
+
 /* Set an element from an \ref apop_data set, using the row name but the column number 
   \deprecated Use \ref apop_data_set. 
  */
-void apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
-  int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(rownum != -2, , 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
-    return (col >= 0) ? gsl_matrix_set(in->matrix, rownum, col, data)
-                      : gsl_vector_set(in->vector, rownum, data);
+int apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
+    Set_gsl_handler
+    int rownum =  apop_name_find(in->names, row, 'r');
+    Apop_assert_c(rownum != -2, -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
+    if (col >= 0) gsl_matrix_set(in->matrix, rownum, col, data);
+    else          gsl_vector_set(in->vector, rownum, data);
+    Unset_gsl_handler
+    return error_for_set;
 }
 
 /* Set an element from an \ref apop_data set, using the column name but the row number
   \deprecated Use \ref apop_data_set.  */
-void apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
-  int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_assert_c(colnum != -2, , 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
-    return (colnum >= 0) ? gsl_matrix_set(in->matrix, row, colnum, data)
-                         : gsl_vector_set(in->vector, row, data);
+int apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
+    Set_gsl_handler
+    int colnum =  apop_name_find(in->names, col, 'c');
+    Apop_assert_c(colnum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
+    if (colnum >= 0)  gsl_matrix_set(in->matrix, row, colnum, data);
+    else              gsl_vector_set(in->vector, row, data);
+    Unset_gsl_handler
+    return error_for_set;
 }
 
 /* Set an element from an \ref apop_data set, using the row and column name.  
   \deprecated Use \ref apop_data_set.  */
-void apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
-  int colnum =  apop_name_find(in->names, col, 'c');
-  int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(colnum != -2, , 0, "Couldn't find '%s' amongst the column names.", col);
-    Apop_assert_c(rownum != -2, , 0, "Couldn't find '%s' amongst the column names.", row);
-    return (colnum >= 0) ? gsl_matrix_set(in->matrix, rownum, colnum, data)
-                         : gsl_vector_set(in->vector, rownum, data);
+int apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
+    Set_gsl_handler
+    int colnum =  apop_name_find(in->names, col, 'c');
+    int rownum =  apop_name_find(in->names, row, 'r');
+    Apop_assert_c(colnum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
+    Apop_assert_c(rownum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", row);
+    if (colnum >= 0) gsl_matrix_set(in->matrix, rownum, colnum, data);
+    else             gsl_vector_set(in->vector, rownum, data);
+    Unset_gsl_handler
+    return error_for_set;
 }
 
 /**  Set a data element.
@@ -864,12 +895,18 @@ void apop_data_set_tt(apop_data *in, const char *row, const char* col, const dou
   \endcode
 
   This differs somewhat from the deprecated \c _tt, \c _ti, and \c _tt functions, and to
-  the some extent, the GSL.
+  some extent, the GSL.
+
+  \return 0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).
+
+\li  The error codes for out-of-bounds errors are thread-safe iff you are have a
+C11-compliant compiler (thanks to the \c _Thread_local keyword) or GCC (thanks to its \c __thread
+extension).
 
  See \ref data_set_get "the set/get page" for details. */
-APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page){
+APOP_VAR_HEAD int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page){
     apop_data * apop_varad_var(data, NULL);
-    Apop_assert(data, "You sent me a NULL data set.");
+    Apop_assert_negone(data, "You sent me a NULL data set.");
     const size_t apop_varad_var(row, 0);
     const int apop_varad_var(col, 0);
     const double apop_varad_var(val, 0);
@@ -880,26 +917,81 @@ APOP_VAR_HEAD void apop_data_set(apop_data *data, const size_t row, const int co
     apop_data *d;
     if (page){
         d = apop_data_get_page((apop_data*)data, page);
-        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
+        Apop_assert_negone(d, "I couldn't find a page with label '%s'.", page);
     } else d = data;
-    if (rowname && colname)
-        return apop_data_set_tt(d, rowname, colname, val);
-    if (rowname && !colname)
-        return apop_data_set_ti(d, rowname, col, val);
-    if (!rowname && colname)
-        return apop_data_set_it(d, row, colname, val);
+    if (rowname && colname)  return apop_data_set_tt(d, rowname, colname, val);
+    if (rowname && !colname) return apop_data_set_ti(d, rowname, col, val);
+    if (!rowname && colname) return apop_data_set_it(d, row, colname, val);
     //else: row number, column number
+    Set_gsl_handler
     if (col>=0){
-        Apop_assert(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        return gsl_matrix_set(d->matrix, row, col, val);
+        Apop_assert_negone(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        gsl_matrix_set(d->matrix, row, col, val);
     } else {
-        Apop_assert(d->vector, "You're trying to set a vector element (row=-1) but the vector is NULL.");
-        return gsl_vector_set(d->vector, row, val);
+        Apop_assert_negone(d->vector, "You're trying to set a vector element (row=-1) but the vector is NULL.");
+        gsl_vector_set(d->vector, row, val);
     }
+    Unset_gsl_handler
+    return error_for_set;
 APOP_VAR_ENDHEAD
 //the main function is blank.
+    return 0;
 }
 /** \} //End data_set_get group */
+
+
+
+/** Now that you've used \ref Apop_data_row to pull a row from an \ref apop_data set,
+  this function lets you write that row to another position in the same data set or a
+  different data set entirely.  
+
+  The set written to must have the same form as the original: 
+  \li a vector element has to be present if one existed in the original, 
+  \li same for the weights vector,
+  \li the matrix in the destination has to have as many columns as in the original, and
+  \li the text has to have a row long enough to hold the original
+
+  If any of the source elements are \c NULL, I won't bother to check that element in the
+  destination.
+
+  \return 0=OK, -1=error (probably a source/destination size mismatch).
+
+  \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
+  C11-compliant compiler (thanks to the \c _Thread_local keyword) or GCC (thanks to its \c __thread extension).
+*/
+int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
+    Set_gsl_handler
+    if (row->vector){
+        Apop_assert_negone(d->vector, "You asked me to copy an apop_data_row with a vector element to "
+                "an apop_data set with no vector.");
+        gsl_vector_set(d->vector, row_number, row->vector->data[0]);
+    }
+    if (row->matrix && row->matrix->size2 > 0){
+        Apop_assert_negone(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
+                "an apop_data set with no matrix.");
+        Apop_row(d, row_number, a_row); 
+        Apop_row(row, 0, row_to_copy); 
+        gsl_vector_memcpy(a_row, row_to_copy);
+    }
+    if (row->textsize[1]){
+        Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data_row with text to "
+                "an apop_data set with no text element.");
+        for (int i=0; i < row->textsize[1]; i++){
+            free(d->text[row_number][i]);
+            d->text[row_number][i]= strdup(row->text[0][i]);
+        }
+    }
+    if (row->weights){
+        Apop_assert_negone(d->weights, "You asked me to copy an apop_data_row with a weight to "
+                "an apop_data set with no weights vector.");
+        gsl_vector_set(d->weights, row_number, row->weights->data[0]);
+    }
+    Unset_gsl_handler
+    return error_for_set;
+}
+
+
+
 
 /** A convenience function to add a named element to a data set.  Many of Apophenia's
 testing procedures use this to easily produce a column of named parameters. It is public
@@ -928,7 +1020,7 @@ double height = apop_data_get(list, .rowname="height");
 
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    Apop_assert(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc() to start.");
+    Apop_assert_n(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc() to start.");
     apop_name_add(d->names, name, 'r');
     if (!d->matrix)
         d->matrix = gsl_matrix_alloc(1, 1);
@@ -956,6 +1048,8 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 \param fmt The text to write.
 \param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
 
+\return 0=OK, -1=error (probably out-of-bounds)
+
 \li UTF-8 or ASCII text is correctly handled.
 \li Apophenia follows a general rule of not reallocating behind your back: if your text
 matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display
@@ -978,19 +1072,20 @@ for (int n=0; n < 10; n++){
 }
 \endcode
 */
-void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
-  va_list   argp;
-  Apop_assert((in->textsize[0] >= (int)row+1) && (in->textsize[1] >= (int)col+1), "You asked me to put the text "
+int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+    Apop_assert_negone((in->textsize[0] >= (int)row+1) && (in->textsize[1] >= (int)col+1), "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
     free (in->text[row][col]);
     if (!fmt){
-        asprintf(&(in->text[row][col]), "NaN");
-        return;
+        asprintf(&(in->text[row][col]), "%s", apop_opts.db_nan);
+        return 0;
     }
+    va_list argp;
 	va_start(argp, fmt);
     vasprintf(&(in->text[row][col]), fmt, argp);
 	va_end(argp);
+    return 0;
 }
 
 /** This allocates an array of strings and puts it in the \c text element of an \ref apop_data set. 
@@ -1273,7 +1368,7 @@ APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_dro
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
-    Apop_assert(drop || do_drop, "I need either a list of ints indicating which rows to drop, or a drop_fn I can use to test each row.");
+    Apop_assert_n(drop || do_drop, "I need either a list of ints indicating which rows to drop, or a drop_fn I can use to test each row.");
 APOP_VAR_ENDHEAD
     //First, shift columns down to the nearest not-freed row.
     int outlength = 0;

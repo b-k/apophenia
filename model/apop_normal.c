@@ -40,7 +40,7 @@ static double apply_me(double x, void *mu){ return x - *(double *)mu; }
 static double apply_me2(double x, void *mu){ return gsl_pow_2(x - *(double *)mu); }
 
 static double normal_log_likelihood(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params);
+    Nullcheck_mpd(d, params, GSL_NAN);
     Get_vmsizes(d)
     double mu = gsl_vector_get(params->parameters->vector,0);
     double sd = gsl_vector_get(params->parameters->vector,1);
@@ -53,7 +53,7 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
  A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
  \adoc estimated_info Reports the log likelihood.*/
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
-    Nullcheck_mpd(data, est);
+    Nullcheck_mpd(data, est, NULL);
     Get_vmsizes(data)
   double		mmean=0, mvar=0, vmean=0, vvar=0;
   apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
@@ -84,7 +84,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 }
 
 static double normal_cdf(apop_data *d, apop_model *params){
-  Nullcheck_mpd(d, params)
+  Nullcheck_mpd(d, params, GSL_NAN)
   Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double mu = gsl_vector_get(params->parameters->vector, 0);
@@ -93,7 +93,7 @@ static double normal_cdf(apop_data *d, apop_model *params){
 }
 
 static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
-    Nullcheck_mpd(d, params)
+    Nullcheck_mpd(d, params, )
     Get_vmsizes(d)
     double  mu = gsl_vector_get(params->parameters->vector,0),
             sd = gsl_vector_get(params->parameters->vector,1),
@@ -152,7 +152,7 @@ static double lnx_minus_mu_squared(double x, void *mu_in){
 }
 
 static double lognormal_log_likelihood(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params)
+    Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d) //tsize
     double mu = gsl_vector_get(params->parameters->vector, 0);
     double sd = gsl_vector_get(params->parameters->vector, 1);
@@ -184,7 +184,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
 }
 
 static double lognormal_cdf(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params)
+    Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double mu = gsl_vector_get(params->parameters->vector, 0);

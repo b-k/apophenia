@@ -42,7 +42,7 @@ static double apply_me(double val, void *in){
 }
 
 static double waring_log_likelihood(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m);
+  Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
   ab_type abstruct = {.bb = gsl_vector_get(m->parameters->vector, 0),
                       .a  = gsl_vector_get(m->parameters->vector, 1)};
@@ -70,7 +70,7 @@ static double dapply_b(double val, void *in){
 
 /*static*/ void waring_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
 	//Psi is the derivative of the log gamma function.
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, );
     Get_vmsizes(d) //tsize
     ab_type ab = {.bb = gsl_vector_get(m->parameters->vector, 0),
                   .a  = gsl_vector_get(m->parameters->vector, 1)};

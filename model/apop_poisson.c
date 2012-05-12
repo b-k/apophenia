@@ -17,7 +17,7 @@ static double apply_me(double x, void *in){
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
-  Nullcheck_mpd(d, p)
+  Nullcheck_mpd(d, p, GSL_NAN)
   Get_vmsizes(d) //tsize
   double lambda = gsl_vector_get(p->parameters->vector, 0);
   double ln_l 	= log(lambda);
@@ -38,7 +38,7 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
-  Nullcheck_mpd(data, est);
+  Nullcheck_mpd(data, est, NULL);
   double mean = data_mean(data);
 	gsl_vector_set(est->parameters->vector, 0, mean);
     apop_data_add_named_elmt(est->info, "log likelihood", poisson_log_likelihood(data, est));
@@ -65,7 +65,7 @@ static double positive_beta_constraint(apop_data *returned_beta, apop_model *v){
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Get_vmsizes(d) //tsize
-    Nullcheck_mpd(d, p)
+    Nullcheck_mpd(d, p, )
     double     lambda = gsl_vector_get(p->parameters->vector, 0);
     gsl_matrix *data = d->matrix;
     double     d_a = apop_matrix_sum(data)/lambda - tsize;

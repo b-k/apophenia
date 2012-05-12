@@ -119,7 +119,7 @@ errors are normally distributed.
 This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.  */
 static double ols_log_likelihood (apop_data *d, apop_model *p){ 
-    Nullcheck_mpd(d, p); Nullcheck(d->matrix);
+    Nullcheck_mpd(d, p, GSL_NAN); Nullcheck(d->matrix, GSL_NAN);
   long double ll  = 0; 
   long double sigma, actual, weight;
   double expected, x_prob;
@@ -156,7 +156,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
 
 /* $\partial {\cal N}(x\beta - y)/\partial \beta_i = \sum{x_i} \partial {\cal N}(K)/\partial K$ (at $K=x\beta -y$) */
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){ 
-    Nullcheck_mpd(d, p); Nullcheck(d->matrix);
+    Nullcheck_mpd(d, p, ); Nullcheck(d->matrix, );
   long double sigma, actual, weight;
   double expected;
   gsl_matrix *data	= d->matrix;
@@ -293,7 +293,7 @@ Given your estimate \c est, the zeroth element is one of <br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="residual").</tt><br>
 */
 static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    Nullcheck_mpd(inset, ep);
+    Nullcheck_mpd(inset, ep, NULL);
     apop_data *set;
     apop_lm_settings *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
@@ -344,7 +344,7 @@ filling the vector with \f$X\beta\f$. Like, the OLS estimation will shuffle a ma
 to insert a column of ones (see \ref dataprep).
  */
 apop_data *ols_predict (apop_data *in, apop_model *m){
-    Nullcheck_mpd(in, m);
+    Nullcheck_mpd(in, m, NULL);
     if (!in->vector)  ols_shuffle(in);  
 
     //find x dot y
@@ -353,7 +353,7 @@ apop_data *ols_predict (apop_data *in, apop_model *m){
 }
 
 apop_model *ols_param_models(apop_data *d, apop_model *m){
-    Nullcheck_mpd(d, m);
+    Nullcheck_mpd(d, m, NULL);
     apop_pm_settings *settings = Apop_settings_get_group(m, apop_pm);
     if (settings->index!=-1){
         int i = settings->index;
@@ -444,7 +444,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
 }
 
 static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
-  Nullcheck_mpd(inset, ep);
+  Nullcheck_mpd(inset, ep, NULL);
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) 

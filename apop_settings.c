@@ -68,7 +68,7 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
  You probably won't need this often---just use \ref apop_model_copy.
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
-  Apop_assert(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
+  Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
   void *g =  apop_settings_get_grp(inm, copyme, 'f');
   int i;
     for (i=0; inm->settings[i].name[0] !='\0'; i++)//retrieve the index.

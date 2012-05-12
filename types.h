@@ -42,8 +42,6 @@ for (j = 0; j< data->matrix->size1; j++){
 
 We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
 */
-//typedef struct apop_data apop_data;
-
 typedef struct apop_data{
     gsl_vector  *vector;
     gsl_matrix  *matrix;
@@ -197,9 +195,9 @@ void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
 APOP_VAR_DECLARE double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page);
 APOP_VAR_DECLARE double apop_data_get(const apop_data *data, const size_t row, const int  col, const char *rowname, const char *colname, const char *page);
-APOP_VAR_DECLARE void apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page);
+APOP_VAR_DECLARE int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page);
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
-void apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
+int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
 apop_data *apop_data_transpose(apop_data *in);
@@ -260,7 +258,7 @@ apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
 
-void apop_data_set_row(apop_data * row, apop_data *d, int row_number);
+int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
 
     // Models and model support functions

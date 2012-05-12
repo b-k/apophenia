@@ -75,7 +75,7 @@ Mass Function). For an especially large data set this may take a human-noticeabl
 of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
 draws will have no computational overhead. */
 static void draw (double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_m(m) Nullcheck_d(m->data)
+    Nullcheck_m(m, ) Nullcheck_d(m->data, )
     Get_vmsizes(m->data)
     size_t current; 
     if (!m->data->weights) //all rows are equiprobable
@@ -170,8 +170,8 @@ static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one 
     return -1;
 }
 double pmf_p(apop_data *d, apop_model *m){
-    Nullcheck_d(d) 
-    Nullcheck_m(m) 
+    Nullcheck_d(d, GSL_NAN) 
+    Nullcheck_m(m, GSL_NAN) 
     int model_pmf_length;
     {
         Get_vmsizes(m->data);

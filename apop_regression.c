@@ -19,7 +19,7 @@ Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a 
 
 */
 void apop_estimate_parameter_tests (apop_model *est){
-  Nullcheck_p(est)
+  Nullcheck_p(est, )
   if (!est->data)
       return;
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(est->parameters->vector->size, 2), "<test info>");

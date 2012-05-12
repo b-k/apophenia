@@ -111,8 +111,8 @@ This function uses the \ref designated syntax for inputs.
 
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
-    Nullcheck_m(est);
-    Nullcheck_d(est->data);
+    Nullcheck_m(est, NULL);
+    Nullcheck_d(est->data, NULL);
     apop_data * apop_varad_var(contrast, NULL);
     int free_data=0, free_matrix=0, free_vector=0;
     if (!contrast) contrast = apop_data_alloc(), free_data=1;
