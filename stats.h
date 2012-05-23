@@ -63,25 +63,34 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_COL(m, col, v) gsl_vector apop_vv_##v = (col < 0) ? *((m)->vector) : gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define Apop_data_rows(d, row, len, outd) \
-    gsl_vector apop_dd_##outd##_v = ((d)->vector && (d)->vector->size > (row)+(len)-1)  \
-                                    ? gsl_vector_subvector((d)->vector, (row), (len)).vector\
+#define Apop_data_rows(d, rownum, len, outd) \
+    gsl_vector apop_dd_##outd##_v = ((d)->vector && (d)->vector->size > (rownum)+(len)-1)  \
+                                    ? gsl_vector_subvector((d)->vector, (rownum), (len)).vector\
                                     : (gsl_vector) { };\
-    gsl_vector apop_dd_##outd##_w = ((d)->weights && (d)->weights->size > (row)+(len)-1)  \
-                                    ? gsl_vector_subvector((d)->weights, (row), (len)).vector\
+    gsl_vector apop_dd_##outd##_w = ((d)->weights && (d)->weights->size > (rownum)+(len)-1)  \
+                                    ? gsl_vector_subvector((d)->weights, (rownum), (len)).vector\
                                     : (gsl_vector) { };\
-    gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size1 > (row)+(len)-1)  \
-                                ? gsl_matrix_submatrix((d)->matrix, row, 0, (len), (d)->matrix->size2).matrix\
-                                : (gsl_matrix) { }; \
-    apop_data apop_dd_##outd = (apop_data){         \
-                .vector= apop_dd_##outd##_v.size ? &apop_dd_##outd##_v : NULL,    \
-                .weights=apop_dd_##outd##_w.size ? &apop_dd_##outd##_w : NULL ,   \
+    gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size1 > (rownum)+(len)-1)  \
+                                ? gsl_matrix_submatrix((d)->matrix, rownum, 0, (len), (d)->matrix->size2).matrix\
+                                : (gsl_matrix) { };             \
+    apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
+            (apop_name){                                                         \
+                .vector = (d)->names->vector,                                    \
+                .column = (d)->names->column,                                    \
+                .row = ((d)->names->row && (d)->names->rowct > rownum) ? &((d)->names->row[rownum]) : NULL,  \
+                .text = (d)->names->text,                                        \
+                .colct = (d)->names->colct,                                      \
+                .rowct = (d)->names->row ? (GSL_MIN(len, GSL_MAX((d)->names->rowct - rownum, 0)))      \
+                                          : 0,                                   \
+                .textct = (d)->names->textct };                                  \
+    apop_data apop_dd_##outd = (apop_data){                                      \
+                .vector= apop_dd_##outd##_v.size ? &apop_dd_##outd##_v : NULL,   \
+                .weights=apop_dd_##outd##_w.size ? &apop_dd_##outd##_w : NULL ,  \
                 .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
                 .textsize[0]=(d)->textsize[0] ? (len) : 0, .textsize[1]=(d)->textsize[1],   \
-                .text = (d)->text ? &((d)->text[row]) : NULL,   \
-                .names=d->names,  \
-                };               \
-    apop_data *outd = &apop_dd_##outd;
+                .text = (d)->text ? &((d)->text[rownum]) : NULL,                 \
+                .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
+    apop_data *outd =  &apop_dd_##outd;
 
 #define Apop_data_row(d, row, outd) Apop_data_rows(d, row, 1, outd)
 

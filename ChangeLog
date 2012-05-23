@@ -14,6 +14,7 @@
 	apop_opts.stop_on_warning='n';
 	if (apop_data_set(data, row, col)) printf("Error! Nothing was set.\n");
 --Fixed a memory leak in simulated annealing.
+--Apop_data_row and apop_data_set_row handle rownames
 
 	March 2012
 --bug fix in apop_text_to_data when input file has no names.

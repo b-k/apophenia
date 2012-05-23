@@ -950,6 +950,9 @@ APOP_VAR_ENDHEAD
   \li same for the weights vector,
   \li the matrix in the destination has to have as many columns as in the original, and
   \li the text has to have a row long enough to hold the original
+  \li If the row to be written to already has a rowname, it is overwritten.
+        If <tt>d->names->rowct == row_number</tt> (all rows up to \c row_number have row names), then extend the list of row names by one to add the new name. Else, don't add the row name. 
+  \li Column names (of all types) aren't touched. Maybe use \c apop_data_copy or \c apop_name_copy if you need to copy these names.
 
   If any of the source elements are \c NULL, I won't bother to check that element in the
   destination.
@@ -985,6 +988,13 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
         Apop_assert_negone(d->weights, "You asked me to copy an apop_data_row with a weight to "
                 "an apop_data set with no weights vector.");
         gsl_vector_set(d->weights, row_number, row->weights->data[0]);
+    }
+    if (row->names && row->names->rowct && d->names){
+        if (row_number < d->names->rowct){
+            free(d->names->row[row_number]);
+            d->names->row[row_number]=strdup(row->names->row[0]);
+        } else if (row_number == d->names->rowct)
+            apop_name_add(d->names, row->names->row[0], 'r');
     }
     Unset_gsl_handler
     return error_for_set;
