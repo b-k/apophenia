@@ -93,7 +93,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
  
  \param beta    The proposed vector about to be tested. No default, must not be \c NULL.
 
- \param constraint  See \ref apop_f_test on writing 
+ \param constraint  See  the outline page for detailed discussion on setting
  contrasts. To give a quick example, say your constraint is \f$3 < 2x +
  4y - 7z\f$; then the first row of your \c data->vector element would be 3, and the
  first row of the \c data->matrix element would be [2 4 -7]. Default: each elements is greater than zero

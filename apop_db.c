@@ -498,11 +498,11 @@ Column names are inserted if there are any. If there are, all dots are converted
 void apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
     Apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
     int	i,j; 
-    int	ctr		    = 0;
-    int	batch_size	= 100;
-    char	*q 		    = malloc(1000);
-    char  comma       = ' ';
-    int   use_row= strlen(apop_opts.db_name_column) 
+    int	ctr		   = 0;
+    int	batch_size = 100;
+    char *q 	   = malloc(1000);
+    char comma     = ' ';
+    int use_row    = strlen(apop_opts.db_name_column) 
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 

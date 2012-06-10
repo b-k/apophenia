@@ -744,7 +744,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   This function can take empirical histogram-type models---\ref apop_pmf and \ref apop_histogram ---or continuous models like \ref apop_loess
   or \ref apop_normal.
 
- If there is an empirical model (I'll try \c bottom first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step
+ If there is an empirical model (I'll try \c top first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step
 through it for the points in the summation.
 
 \li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
@@ -771,19 +771,22 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int
 APOP_VAR_ENDHEAD
     double div = 0;
     Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
-    if (apop_strcmp(bottom->name, "PDF or sparse matrix")){
-        apop_data *p = bottom->parameters;
+    if (apop_strcmp(top->name, "PDF or sparse matrix")){
+        apop_data *p = top->parameters;
         Get_vmsizes(p); //firstcol, vsize, msize1, msize2
         apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);
         for (int i=0; i < (vsize ? vsize : msize1); i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
+            if (!pi){
+                Apop_notify(3, "0\t--\t0");
+                continue;
+            } //else:
             get_one_row(p, a_row, i, firstcol, msize2);
             double qi = apop_p(a_row, bottom);
             Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
                                                 "top doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
-            if (pi) //else add zero.
-                div += pi * log(pi/qi);
+            div += pi * log(pi/qi);
         }
         apop_data_free(a_row);
     } else { //the version with the RNG.

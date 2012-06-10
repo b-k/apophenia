@@ -106,6 +106,7 @@ double apop_matrix_determinant(const gsl_matrix *in) {
 You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
 
 \param data The input matrix. (No default. If \c NULL, I'll return \c NULL.)
+I modify int in place so that each column has mean zero.
 
 \param dimensions_we_want  (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
 The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
@@ -114,10 +115,10 @@ The singular value decomposition will return this many of the eigenvectors with 
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 
 \ingroup linear_algebra */
-APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int dimensions_we_want) {
+APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
     Nullcheck_d(data, NULL);
-    int apop_varad_var(dimensions_we_want, data->size2);
+    int const apop_varad_var(dimensions_we_want, data->size2);
     if (!data) return NULL;
 APOP_VAR_ENDHEAD
     Set_gsl_handler

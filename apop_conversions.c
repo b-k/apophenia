@@ -700,14 +700,14 @@ APOP_VAR_END_HEAD
         apop_data *field_names = apop_data_alloc();
         get_field_names(1, NULL, infile, add_this_line, field_names, field_ends, delimiters);
         L.ct = add_this_line->textsize[0];
-        set = apop_data_alloc(0,1, L.ct);
+        set = apop_data_alloc(0,1, L.ct - hasrows);
 	    set->names->colct   = 0;
 	    set->names->column	= malloc(sizeof(char*));
-        for (int j=0; j< L.ct; j++)
+        for (int j=0; j< L.ct - hasrows; j++)
             apop_name_add(set->names, *field_names->text[j], 'c');
         apop_data_free(field_names);
     }
-    if(!set) set = apop_data_alloc(0,1, L.ct);
+    if(!set) set = apop_data_alloc(0,1, L.ct-hasrows);
 
     //Now do the body.
 	while(L.ct || !L.eof){
@@ -1076,6 +1076,7 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
 
 static void line_to_insert(line_parse_t L, apop_data const*addme, char const *tabname, 
                              sqlite3_stmt *p_stmt, int row){
+    if (!L.ct) return;
     int  field = 1;
     char comma = ' ';
     char *q  = NULL;
@@ -1142,7 +1143,7 @@ APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
 APOP_VAR_END_HEAD
     int  batch_size  = 10000,
-      	 col_ct, ct = 0, rows = 0;
+      	 col_ct, ct = 0, rows = 1;
     FILE *infile;
     apop_data *add_this_line = apop_data_alloc();
     sqlite3_stmt * statement = NULL;
@@ -1184,7 +1185,6 @@ APOP_VAR_END_HEAD
     //done with table & query setup.
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 	while(L.ct || !L.eof){
-        rows ++;
         line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
             if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
@@ -1199,7 +1199,10 @@ APOP_VAR_END_HEAD
             Apop_assert_c(!sqlite3_clear_bindings(statement), -1, apop_errorlevel, "SQLite error."); //needed for NULLs
 #endif
         }
-        L = parse_a_line(infile, add_this_line, field_ends, delimiters);
+        do {
+            L = parse_a_line(infile, add_this_line, field_ends, delimiters);
+            rows ++;
+        } while (!L.ct && !L.eof); //skip blank lines
 	}
     apop_data_free(add_this_line);
     apop_query("commit;");

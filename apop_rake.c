@@ -415,7 +415,7 @@ Default: if you specify \c init_count_col, the default is \c table_name; if you 
 
 \param nudge There is a common hack of adding a small value to every zero entry, because
 a zero entry will always scale to zero, while a small value could eventually scale
-to anything.  Recall that this function works on sparse sets, so I fisrt filter out
+to anything.  Recall that this function works on sparse sets, so I first filter out
 those cells that could possibly have a nonzero value given the observations, then I
 add <tt>nudge</tt> to any zero cells within that subset.
 

@@ -161,10 +161,9 @@ apop_name *out  = apop_name_copy(in);
  
     \param in    the input names
     \return       a structure that this function will allocate and fill
-    \ingroup names
-  */
+\ingroup names */
 apop_name * apop_name_copy(apop_name *in){
-  apop_name *out = apop_name_alloc();
+    apop_name *out = apop_name_alloc();
     apop_name_stack(out, in, 'v');
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
@@ -186,13 +185,12 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 
 \li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
 
-\ingroup names
-  */
-int  apop_name_find(const apop_name *n, const char *in, const char type){
+\ingroup names */
+int apop_name_find(const apop_name *n, const char *in, const char type){
     Apop_assert_negone(in, "Searching for NULL.");
     regex_t re;
-    char    **list;
-    int     listct;
+    char **list;
+    int  listct;
     if (type == 'r' || type == 'R'){
         list    = n->row;
         listct  = n->rowct;

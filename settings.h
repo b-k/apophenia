@@ -59,7 +59,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
  */
 #define Apop_settings_set(model, type, setting, data)  \
     do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
-    apop_assert_s(apop_tmp_settings, "You're trying to modify a setting in " \
+    Apop_assert(apop_tmp_settings, "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
     apop_tmp_settings->setting = (data);    \
     } while (0);

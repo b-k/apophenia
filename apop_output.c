@@ -360,7 +360,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
-    if (data->names->rowct)
+    if (data->names->rowct && (data->names->vector || data->names->colct || data->names->textct))
         fprintf(f, "%*s  ", L+2, " ");
     if (data->vector && data->names->vector){
         fprintf(f, "%s", data->names->vector);

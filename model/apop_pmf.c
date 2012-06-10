@@ -76,10 +76,10 @@ of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subseque
 draws will have no computational overhead. */
 static void draw (double *out, gsl_rng *r, apop_model *m){
     Nullcheck_m(m, ) Nullcheck_d(m->data, )
-    Get_vmsizes(m->data)
+    Get_vmsizes(m->data) //maxsize
     size_t current; 
     if (!m->data->weights) //all rows are equiprobable
-        current = gsl_rng_uniform(r)* (GSL_MAX(vsize,msize1)-1);
+        current = gsl_rng_uniform(r)* (maxsize-1);
     else {
         size_t size = m->data->weights->size;
         if (!m->more){
@@ -114,6 +114,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
                 else
                     current = (bottom + top)/2.;
             }
+            if (current==0 && cdf[0] >= draw) break;
         }
     }
     //Done searching. Current should now be the right row index.
