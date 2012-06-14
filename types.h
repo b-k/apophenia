@@ -207,7 +207,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 #define apop_data_prune_columns(in, ...) apop_data_prune_columns_base((in), (char *[]) {__VA_ARGS__, NULL})
 void apop_data_prune_columns_base(apop_data *d, char **colnames);
 
-APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title);
+APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title, const char match);
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
 APOP_VAR_DECLARE apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p);
 APOP_VAR_DECLARE void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter);

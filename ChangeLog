@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	June 2012
+--The sample kurtosis calculation is still more precise.
+
 	May 2012
 --Autotools improvements. Use the standard 'make check' instead of the ad hoc 'make test'.
 !!Set apop_opts.stop_on_warning='n' to never abort() on any type of error. E.g., GUIs that

@@ -137,18 +137,19 @@ static void skewFinalize(sqlite3_context *context){
 }
 
 static void kurtFinalize(sqlite3_context *context){
-  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
     if( p && p->cnt>1 ){
       double n = p->cnt;
       double kurtovern = p->avg4 - 4*p->avg3*p->avg
                         + 6 * p->avg2*gsl_pow_2(p->avg)
                         - 3* gsl_pow_4(p->avg);
       double var = p->avg2 - gsl_pow_2(p->avg);
-      double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
-      double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
-      sqlite3_result_double(context, coeff1 * kurtovern + coeff2 * gsl_pow_2(var));
+      long double coeff0= n*n/(gsl_pow_3(n)*(gsl_pow_2(n)-3*n+3));
+      long double coeff1= n*gsl_pow_2(n-1)+ (6*n-9);
+      long double coeff2= n*(6*n-9);
+      sqlite3_result_double(context, coeff0*(coeff1 * kurtovern + coeff2 * gsl_pow_2(var)));
     } else if (p->cnt == 1)
-      	sqlite3_result_double(context, 0);
+      sqlite3_result_double(context, 0);
 }
 
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){

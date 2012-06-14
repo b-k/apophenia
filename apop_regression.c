@@ -386,7 +386,7 @@ APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int 
 APOP_VAR_ENDHEAD
     if (intype=='t'){
         Apop_assert(incol < data->textsize[1], "You asked for the text column %i but the "
-                                            "data's text has only %i elements.", incol, data->textsize[1]);
+                                            "data's text has only %zu elements.", incol, data->textsize[1]);
     } else {
         Apop_assert((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
         Apop_assert((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
@@ -417,7 +417,7 @@ APOP_VAR_HEAD apop_data *apop_data_get_factor_names(apop_data *data, int col, ch
     char apop_varad_var(type, 'd')
 APOP_VAR_ENDHEAD
     char *name = make_catname (data, col, type);
-    apop_data *out = apop_data_get_page(data, name);
+    apop_data *out = apop_data_get_page(data, name, .match='e');
     free(name);
     return out;
 }

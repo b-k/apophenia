@@ -124,9 +124,12 @@ double apop_vector_kurtosis_pop(const gsl_vector *in){
 */
 double apop_vector_kurtosis(const gsl_vector *in){
     size_t n = in->size;
-    long double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
-    long double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
-    return  coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n);
+    long double coeff0= n*n/(gsl_pow_3(n)*(gsl_pow_2(n)-3*n+3));
+    long double coeff1= n*gsl_pow_2(n-1)+ (6*n-9);
+    long double coeff2= n*(6*n-9);
+//    long double coeff1 = gsl_pow_3(n)/(n-1)/(gsl_pow_2(n)-3*n+3);
+//    long double coeff2 = (6*n-9)/(gsl_pow_2(n)-3*n+3);
+    return  coeff0 *(coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n));
 }
 
 /** \def apop_vector_kurt(in)

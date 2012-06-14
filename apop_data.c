@@ -1255,22 +1255,29 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 
   \param data The \ref apop_data set to use. No default; if \c NULL,
       gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
+
   \param title The name of the page to retrieve. Default=\c "Info", which
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
-      I use \ref apop_regex, so this is really a case-insensitive regular expression.
+      
+  \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match (via \ref apop_strcmp), if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'r'.
 
     \return The page whose title matches what you gave me. If I don't
     find a match, return \c NULL.
 
 This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title){
+APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title, const char match){
     const apop_data * apop_varad_var(data, NULL);
     apop_assert_c(data, NULL, '1', "You requested a page from a NULL data set. Returning NULL");
     const char * apop_varad_var(title, "Info");
+    const char apop_varad_var(match, 'r');
 APOP_VAR_ENDHEAD
-    while (data && (!data->names || !apop_regex(data->names->title, title)))
+    while (data && (!data->names || 
+                (match!='e' && match!='c' && !apop_regex(data->names->title, title))
+                || (match=='c' && strcasecmp(data->names->title, title))
+                || (match=='e' && !apop_strcmp(data->names->title, title))
+                ))
         data = data->more;
     return (apop_data *) data; //de-const.
 }
