@@ -1,6 +1,6 @@
-check_PROGRAMS=test
-test_LDADD=../libapophenia.la
-test_SOURCES=test.c
+check_PROGRAMS=test_apop
+test_apop_LDADD=../libapophenia.la
+test_apop_SOURCES=test_apop.c
 TESTS=$(check_PROGRAMS)
 
 EXTRA_DIST = test.py Readme nist_tests.c numacc4.dat \

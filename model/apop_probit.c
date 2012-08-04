@@ -207,53 +207,52 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
-static double dlogit_foreach(gsl_vector *x, void *gin){
+static double dlogit_foreach(apop_data *x, void *gin){
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
-  apop_data *gmat = (apop_data*) gin;
-  gsl_matrix *beta = gmat->more->matrix;
-  apop_data* factor_list = gmat->more->more;
-    assert(gmat->matrix->size1 == x->size); //the j index---input vars
+    apop_data *gmat = gin;
+    gsl_matrix *beta = gmat->more->matrix;
+    apop_data* factor_list = gmat->more->more;
+    Apop_row(x, 0, xdata);
+    assert(gmat->matrix->size1 == x->matrix->size2);     //the j index---input vars (incl. 1 column)
     assert(gmat->matrix->size2 == beta->size2); //the i index---choices
-    assert(x->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)
-    for (int i=1; i< beta->size2; i++) {
-        gsl_vector *denom = gsl_vector_calloc(beta->size1);
-        //calloc means that column/row zero is already correctly set to zero.
-        Apop_matrix_col(beta, i, thisbeta);
-        for (int other=0; other < beta->size2+1; other++){
-            gsl_vector *diff = apop_vector_copy(thisbeta);
-            if (other-1 == i)
-                gsl_vector_set_all(diff, 0);
-            else if (other > 0) {
-                Apop_matrix_col(beta, other-1, otherbeta);
-                gsl_vector_sub(diff, otherbeta);
-            } //else: diff - 0 = diff.
-            gsl_vector_mul(diff, x);
-            apop_vector_exp(diff);
-            gsl_vector_sub(denom, diff);
-            gsl_vector_free(diff);
+    assert(xdata->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)
+    size_t choice = find_index(gsl_vector_get(x->vector, 0), factor_list->vector->data, factor_list->vector->size);
+    for (int i=0; i < beta->size2; i++) { //go through choices.
+        gsl_vector *denom = gsl_vector_alloc(beta->size1);
+        gsl_vector_set_all(denom, 1); //see below
+        for (int other=0; other < beta->size2; other++){
+            if (other != i) { //this block calculates exp(x (otherbeta-thisbeta))
+                Apop_matrix_col(beta, i, thisbeta); 
+                Apop_matrix_col(beta, other, otherbeta);
+                gsl_vector *diff = apop_vector_copy(thisbeta);
+                gsl_vector_scale(diff, -1);
+                gsl_vector_add(diff, otherbeta);
+                gsl_vector_mul(diff, xdata);
+                apop_vector_exp(diff);
+                gsl_vector_add(denom, diff);
+                gsl_vector_free(diff);
+            } //else, other==i, and \beta_i - \beta_i = 0, and e^{0x} = 1. Thus the gsl_vector_set_all(denom, 1).
         }
-        int choice  = find_index(gsl_vector_get(x, 0), factor_list->vector->data, beta->size2);
-        for (int j=0; j< x->size; j++){ 
-            double pick = (i == choice) ? gsl_vector_get(x,j) : 0;
+        for (int j=0; j< xdata->size; j++){ //add to each coefficient of the gradient matrix 
+            double pick = (choice-1 == i) ? gsl_vector_get(xdata,j) : 0; //numeraire has no betas.
             apop_matrix_increment(gmat->matrix, j, i, 
-                                    pick - gsl_vector_get(x, j)/gsl_vector_get(denom, j));
+                                            pick - gsl_vector_get(xdata, j)/gsl_vector_get(denom, j));
         }
         gsl_vector_free(denom);
     }
     return 0;
 }
 
-//buggy!
 static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Nullcheck_mpd(d, p, );
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data_unpack(gradient, gradient_matrix);
     gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
     gradient_matrix->more->more = get_category_table(d);
-    apop_data_free_base( //return from apop_map is useless.
-        apop_map(d, .fn_vp=dlogit_foreach, .param=gradient_matrix, .part='r', .all_pages='n')
+    apop_data_free_base( //return from apop_map is a vector of zeros.
+        apop_map(d, .fn_rp=dlogit_foreach, .param=gradient_matrix, .all_pages='n')
     );
     apop_data_pack(gradient_matrix, gradient);
     gradient_matrix->more=NULL;
@@ -261,7 +260,7 @@ static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
 }
 
 apop_model *logit_estimate(apop_data *d, apop_model *m){
-  apop_model *out = apop_maximum_likelihood(d, m);
+    apop_model *out = apop_maximum_likelihood(d, m);
 
     //That's the whole estimation. But now we need to add a row of zeros
     //for the numeraire. This is just tedious matrix-shunting.
@@ -285,15 +284,6 @@ Apophenia makes no distinction between the bivariate logit and the multinomial l
   so the log likelihood is 
   \f$x\beta_j  - ln(\sum_i{e^{x\beta_i}})\f$
 
-  A nice trick used in the implementation: let \f$y_i = x\beta_i\f$.
-  Then
-\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
-
-The elements of the sum are all now exp(something negative), so 
-overflow won't happen, and if there's underflow, then that term
-must not have been very important. [This trick is attributed to Tom
-Minka, who implemented it in his Lightspeed Matlab toolkit.]
-
 \adoc    Input_format  The first column of the data matrix this model expects is zeros,
 ones, ..., enumerating the factors; to get there, try \ref apop_data_to_factors; if
 you  forget to run it, I'll run it on the first data column for you.  The remaining
@@ -312,7 +302,18 @@ Also, if there is no vector, then I will move the first column of the matrix, an
 replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc    settings   None, but see above about seeking a factor page in the input data.
+
+
+\li PS: Here is a nice trick used in the implementation. let \f$y_i = x\beta_i\f$.
+  Then
+\f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
+
+The elements of the sum are all now exp(something negative), so 
+overflow won't happen, and if there's underflow, then that term
+must not have been very important. [This trick is attributed to Tom
+Minka, who implemented it in his Lightspeed Matlab toolkit.]
+
 */
 apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-/*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = probit_prep
+.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep
 };

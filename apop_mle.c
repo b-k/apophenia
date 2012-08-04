@@ -22,7 +22,6 @@ typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, 
 
 typedef struct {
 	gsl_vector	*beta;
-	apop_data	*d;
 	int		    dimension;
 } grad_params;
 
@@ -30,8 +29,7 @@ typedef struct {
     apop_model  *model;
     apop_data   *data;
     apop_fn_with_params   *f;
-    apop_df_with_void   *df;
-    grad_params *gp;
+    grad_params *gp; //Used only by apop_internal_numerical_gradient.
     gsl_vector  *beta;
     gsl_vector  *starting_pt;
     int         use_constraint;
@@ -81,7 +79,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-2);
     Apop_varad_set(max_iterations, 5000);
-    Apop_varad_set(method, (in.parent && in.parent->score) ? APOP_CG_PR : APOP_SIMPLEX_NM);
+    Apop_varad_set(method, (in.parent && in.parent->score) ? APOP_CG_FR : APOP_SIMPLEX_NM);
     Apop_varad_set(verbose, 0);
     Apop_varad_set(use_score, 'y');
     if (in.use_score == 1) out->use_score = 'y';
@@ -112,34 +110,31 @@ apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
 static apop_model * apop_annealing(infostruct*);                    //below.
 
 static double one_d(double b, void *in){
-  infostruct *i   = in;
-  double penalty  = 0;
+    infostruct *i  = in;
+    double penalty = 0;
     gsl_vector_set(i->gp->beta, i->gp->dimension, b);
     apop_data_unpack(i->gp->beta, i->model->parameters);
 	if (i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-	double out= (*(i->f))(i->gp->d, i->model) + penalty;
-    return out;
+	return (*(i->f))(i->data, i->model) + penalty;
 }
 
-//First, numeric first and second derivatives.
+//Numeric first and second derivatives.
 
 /* For each element of the parameter set, jiggle it to find its
  gradient. Return a vector as long as the parameter list. */
-static void apop_internal_numerical_gradient(apop_fn_with_params ll, infostruct* info, gsl_vector *out, double delta){
-  double		result, err;
-  infostruct    i;
-  gsl_vector    *beta   = apop_data_pack(info->model->parameters, NULL, .all_pages='y');
-  gsl_function	F = {  .function= one_d, 
-                       .params	= &i  };
-  grad_params 	gp = { .beta	= gsl_vector_alloc(beta->size),
-                       .d		= info->data, };
-    memcpy(&i, info, sizeof(i));
-    i.f         = &ll;
-    i.gp        = &gp;
+static void apop_internal_numerical_gradient(apop_fn_with_params ll, 
+                            infostruct* info, gsl_vector *out, double delta){
+    double result, err;
+    gsl_vector *beta = apop_data_pack(info->model->parameters, NULL, .all_pages='y');
+    infostruct i = *info;
+    i.f = &ll;
+    i.gp = &(grad_params){ .beta = gsl_vector_alloc(beta->size)};
+    gsl_function F = { .function= one_d, 
+                       .params	= &i };
 	for (size_t j=0; j< beta->size; j++){
-		gp.dimension	= j;
-		gsl_vector_memcpy(gp.beta, beta);
+		i.gp->dimension = j;
+		gsl_vector_memcpy(i.gp->beta, beta);
 		gsl_deriv_central(&F, gsl_vector_get(beta,j), delta, &result, &err);
 		gsl_vector_set(out, j, result);
 	}
@@ -647,11 +642,18 @@ void get_desires(apop_model *m, infostruct *info){
     info->want_predicted = (want && want->predicted =='y') ? 'y' : 'n';
 }
 
-/** The maximum likelihood calculations
+/** The maximum likelihood calculations. All of the settings are specified by adding a
+  \ref apop_mle_settings struct to your model, so see the many notes there. Notably,
+  the default method is the Fletcher-Reeves conjugate gradient method, and if your model
+  does not have a dlog likelihood function, then a numeric gradient will be calculated
+  via \ref apop_numerical_gradient. Add a \ref apop_mle_settings group to your model
+  for other methods, including the Nelder-Mead simplex and simulated annealing.
 
 \param data	The data matrix (an \ref apop_data set).
-\param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. You can add an \c apop_mle_settings 
-struct to it (<tt>Apop_model_add_group(your_model, apop_mle, .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings documentation for the many options, such as choice of method and tuning parameters.
+\param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. You can add
+    an \c apop_mle_settings struct to it (<tt>Apop_model_add_group(your_model, apop_mle,
+    .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings
+    documentation for the many options, such as choice of method and tuning parameters.
 
 \return	an \ref apop_model with the parameter estimates, &c. 
 
@@ -666,6 +668,8 @@ if (status)
 else
     //optimum found
 \endcode
+
+\li During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time.
  \ingroup mle */
 apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);

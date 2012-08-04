@@ -4,6 +4,11 @@
 !!Big.
 ]
 
+	July 2012
+--some MLE cleanup
+--fixes to apop_rake
+--apop_logit.score fixed
+
 	June 2012
 --The sample kurtosis calculation is still more precise.
 

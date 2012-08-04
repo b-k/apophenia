@@ -1,5 +1,6 @@
 //#define __USE_POSIX //for strtok_r
 #include "apop_internal.h"
+#include <stdbool.h>
 #include <gsl/gsl_sort_vector.h>
 void xprintf(char **q, char *format, ...); //in apop_conversions.c
 
@@ -39,17 +40,16 @@ mnode[i][j].margin_ptrs[k] = the kth item for the value.
 //// If the index part of this file were split into separate files, the next few lines would be index.h.
 typedef struct {
     double val;
-    int len;
-    int *margin_ptrs;
+    bool *margin_ptrs;
 } mnode_t;
 
-typedef void(*index_apply_f)(mnode_t**, int, void*);
+typedef void(*index_apply_f)(mnode_t * const * const, int, void*);
 
 mnode_t **index_generate(const apop_data *in);
 void index_free(mnode_t **in);
 void index_add_node(mnode_t **mnodes, size_t dim, size_t row, double val);
 void index_foreach(mnode_t *index[], index_apply_f f, void *args);
-void index_get_element_list(mnode_t **index, int *d);
+void index_get_element_list(mnode_t * const * const index, bool *d);
 
 //End index.h; begin index.c
 
@@ -78,8 +78,8 @@ mnode_t **index_generate(const apop_data *in){
 		gsl_sort_vector(vals);
         mnodes[i] = malloc(sizeof(mnode_t)*(vals->size+1));
         for(size_t j=0; j < vals->size; j ++)
-            mnodes[i][j] = (mnode_t) {.val = gsl_vector_get(vals, j), .len=0, 
-                        .margin_ptrs = calloc(size, sizeof(int))};
+            mnodes[i][j] = (mnode_t) {.val = gsl_vector_get(vals, j),
+                        .margin_ptrs = calloc(size, sizeof(bool))};
         mnodes[i][vals->size] = (mnode_t) {.val = GSL_POSINF}; //end-of-array sentinel
         gsl_vector_free(vals);
     }
@@ -147,8 +147,8 @@ void index_foreach(mnode_t *index[], index_apply_f f, void *args){
 \param d Should already be allocated to the right size, may be filled with garbage.
 \return d will be zero or one to indicate which rows of the indexed data set meet all criteria.
 */
-void index_get_element_list(mnode_t **index, int *d){
-    memcpy(d, index[0]->margin_ptrs, size *  sizeof(int));
+void index_get_element_list(mnode_t *const * const index, bool *d){
+    memcpy(d, index[0]->margin_ptrs, size *  sizeof(bool));
     for(int i=1; isfinite(index[i]->val); i++)
         for(int j=0; j < size; j++)
             //Next two lines are equivalent to d[j]=d[j] && index[i]->..., but clock in as faster.
@@ -192,7 +192,7 @@ static void rakeinfo_free(rake_t r){
 
 double overall_max_dev;
 
-static void scaling(const size_t *elmts, size_t n,  gsl_vector *weights, double in_sum){
+static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, double const in_sum){
     double fit_sum = 0;
     for(size_t i=0; i < n; i ++)
         fit_sum += weights->data[elmts[i]];
@@ -207,11 +207,11 @@ if (!fit_sum) return; //can happen if init table is very different from margins.
  On the first pass, this function takes notes on each margin's element list and total 
  in the original data. Later passes just read the notes and call the scaling() function above.
 */
-static void one_set_of_values(mnode_t **icon, const int ctr, void *in){
+static void one_set_of_values(mnode_t *const * const icon, const int ctr, void *in){
     rake_t *r = in;
     int size = r->indata->matrix->size1;
-    static int *t = NULL;
-    if (!t) t = malloc(size * sizeof(int));
+    static bool *t = NULL;
+    if (!t) t = malloc(size * sizeof(bool));
 	int first_pass = 0;
     double in_sum;
 	if (ctr < r->ct)

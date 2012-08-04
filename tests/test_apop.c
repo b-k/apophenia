@@ -1549,9 +1549,9 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test raking", test_raking());
     do_test("NaN handling", test_nan_data());
     do_test("test model transformation: scaling", test_transform());
-    do_test("test raking", test_raking());
     do_test("test data compressing", test_pmf_compress(r));
     do_test("test apop_update", test_updating(r));
     do_test("weighted regression", test_weighted_regression(d,e));
