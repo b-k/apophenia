@@ -490,6 +490,16 @@ apop_data   **splits, *dv2;
         apop_data_free(splits[1]);
         apop_data_free(dv2);
     }
+    //let's try a NULL data set 
+    apop_data *nulldata = apop_data_alloc();
+    apop_data *onespot = apop_data_alloc(1,1);
+    apop_data_set(onespot, 0, 0, 12);
+    apop_data_stack(nulldata, onespot, .posn='c', .inplace='y');
+    assert(nulldata->matrix->size1==1);
+    assert(nulldata->matrix->size2==1);
+    assert(apop_data_get(nulldata, 0, 0) == 12);
+    apop_data_free(nulldata);
+    apop_data_free(onespot);
 }
 
 /** I claim that the mean residual is near zero, and that the predicted

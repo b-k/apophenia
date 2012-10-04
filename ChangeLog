@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	September 2012
+--\0 in text files counts as white space
+--fixed counting bug for text files with ,<end-of-line> sequences.
+
 	July 2012
 --some MLE cleanup
 --fixes to apop_rake

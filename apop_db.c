@@ -5,7 +5,8 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 #include "apop_internal.h"
 #include <regex.h>
 
-/** Here are where the options are initially set. */
+/** Here are where the options are initially set. See the \ref apop_opts_type
+    documentation for details.*/
 apop_opts_type apop_opts	= 
           { .verbose=1,                    .output_type = 'f',
             .output_pipe = NULL,           .output_delimiter ="\t", 

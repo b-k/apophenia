@@ -504,13 +504,18 @@ I use some tricks to get SQLite to accept these values, but they work.
 
 \li If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
 
+\li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
+is eqivalent to <tt>1,2,3,4,5," six ",7</tt>.
+
+\li NUL characters are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string will probably break.
+
 \li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
 \code
 NUMLEOL
 123AABB
 456CCDD
 \endcode
-we have three colums, named NUL, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7.
+we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7.
 */
 
 static int prep_text_reading(char const *text_file, FILE **infile){
@@ -566,7 +571,7 @@ static apop_char_info parse_next_char(FILE *f, char const *delimiters){
     char c = fgetc(f);
     int is_delimiter = !!strchr(delimiters, c);
     return (apop_char_info){.c=c, 
-            .type = (c==' '||c=='\t')? (is_delimiter ? 'W'  : 'w')
+            .type = (c==' '||c=='\t' || c==0)? (is_delimiter ? 'W'  : 'w')
                     :is_delimiter    ? 'd'
                     :(c == '\n')     ? 'n'
                     :(c == '"')      ? '"'
@@ -613,7 +618,7 @@ static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_e
 
         if (!infield){
             if (ci.type=='w') continue; //eat leading spaces.
-            if (strchr("rd", ci.type)){ //new field; if 'd', blank field.
+            if (strchr("rdnE", ci.type)){ //new field; if 'dnE', blank field.
                 if (++ct > fn->textsize[0])
                     apop_text_alloc(fn, ct, 1);//realloc text portion.
                 *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
@@ -710,7 +715,7 @@ APOP_VAR_END_HEAD
     if(!set) set = apop_data_alloc(0,1, L.ct-hasrows);
 
     //Now do the body.
-	while(L.ct || !L.eof){
+	while(L.ct && !L.eof){
         if (!L.ct) { //skip blank lines
             L=parse_a_line(infile, add_this_line, field_ends, delimiters);
             continue;
@@ -1184,7 +1189,7 @@ APOP_VAR_END_HEAD
 #endif
     //done with table & query setup.
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
-	while(L.ct || !L.eof){
+	while(L.ct && !L.eof){
         line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
             if (apop_opts.db_engine != 'm') apop_query("commit; begin;");

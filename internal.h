@@ -41,6 +41,8 @@ void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errn
 #undef threadlocal
 #ifdef _ISOC11_SOURCE 
     #define threadlocal _Thread_local
+#elif defined(__APPLE__) 
+    #define threadlocal
 #elif defined(__GNUC__) && !defined(threadlocal)
     #define threadlocal __thread
 #else
