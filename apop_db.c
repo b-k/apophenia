@@ -278,7 +278,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 		for (int jj=0;jj<argc;jj++)
             if (jj != namecol){
                 double valor = 
-                    !argv[jj] || apop_strcmp(argv[jj], "NULL")|| !regexec(qi->regex, argv[jj], 1, qi->result, 0)
+                    !argv[jj] || !strcmp(argv[jj], "NULL")|| !regexec(qi->regex, argv[jj], 1, qi->result, 0)
 				     ? GSL_NAN : atof(argv[jj]);
                 gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
             } else {

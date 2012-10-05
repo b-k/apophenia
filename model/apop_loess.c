@@ -64,7 +64,7 @@ columns, which is probably what you were looking for.  Try:
 Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
 apop_data set named "Confidence" (i.e., 
 \code
-apop_strcmp(outdata->more->names->title, "Confidence") == 1.
+!strcmp(outdata->more->names->title, "Confidence") == 1.
 \endcode 
 
 This routine is in beta testing.
@@ -3528,17 +3528,17 @@ Apop_settings_init(apop_loess,
 
 	    lo_set(model.degree , 2),
 	    lo_set(model.normalize , 'y'),
-        .model.family = apop_strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian",
+        .model.family = !strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian",
         lo_set(model.span , 0.75),
         //.model.span = in.span ? in.span : 0.75,
 
-        .control.surface = apop_strcmp(in.lo_s.control.surface , "direct") ? "direct" : "interpolate",
-        .control.statistics = apop_strcmp(in.lo_s.control.statistics , "exact") ? "exact" : "approximate",
+        .control.surface = !strcmp(in.lo_s.control.surface , "direct") ? "direct" : "interpolate",
+        .control.statistics = !strcmp(in.lo_s.control.statistics , "exact") ? "exact" : "approximate",
         lo_set(control.cell , 0.2),
-        .control.trace_hat = apop_strcmp(in.lo_s.control.trace_hat , "exact") ? "exact" 
-                        : apop_strcmp(in.lo_s.control.trace_hat , "approximate") ? "approximate" 
+        .control.trace_hat = !strcmp(in.lo_s.control.trace_hat , "exact") ? "exact" 
+                        : !strcmp(in.lo_s.control.trace_hat , "approximate") ? "approximate" 
                         : "wait.to.decide",
-        lo_set(control.iterations, (apop_strcmp(in.lo_s.model.family , "symmetric") ? 4 : 0)),
+        lo_set(control.iterations, (!strcmp(in.lo_s.model.family , "symmetric") ? 4 : 0)),
 
         .out.fitted_values =  malloc(n * sizeof(double)),
         .out.fitted_residuals =  malloc(n * sizeof(double)),

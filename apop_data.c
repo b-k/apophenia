@@ -1260,7 +1260,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
       
-  \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match (via \ref apop_strcmp), if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'r'.
+  \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match, if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'r'.
 
     \return The page whose title matches what you gave me. If I don't
     find a match, return \c NULL.
@@ -1276,7 +1276,7 @@ APOP_VAR_ENDHEAD
     while (data && (!data->names || 
                 (match!='e' && match!='c' && !apop_regex(data->names->title, title))
                 || (match=='c' && strcasecmp(data->names->title, title))
-                || (match=='e' && !apop_strcmp(data->names->title, title))
+                || (match=='e' && strcmp(data->names->title, title))
                 ))
         data = data->more;
     return (apop_data *) data; //de-const.
@@ -1293,7 +1293,7 @@ APOP_VAR_ENDHEAD
   \li Some data is fundamentally multi-page; an optimization search over multi-page
   parameters would search the space given by all pages, for example. 
   Also, pages may be appended as output or auxiliary information, such as covariances---an
-  MLE would not search over these elements. Generally, any page with a name in HTML-ish
+  MLE would not search over these elements. Generally, any page with a name in XML-ish
   brackets, such as <tt>\<Covariance\></tt>, will be considered informational and ignored
   by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
   apop_data_pack and \ref apop_data_unpack.
@@ -1302,7 +1302,7 @@ APOP_VAR_ENDHEAD
   modifies it, and then later retrieves it.
   \code
   apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
-  apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(0,2,2), "new 2 x 2 page");
+  apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(2,2), "new 2 x 2 page");
   gsl_vector_set_all(a_new_page->matrix, 3);
 
   //later:
@@ -1371,7 +1371,7 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
   \param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
   \code
   int your_drop_function(apop_data *onerow, void *extra_param){
-    return gsl_isnan(apop_data_get(onerow)) || apop_strcmp(onerow->text[0][0], "Uninteresting data point");
+    return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it iwll be passed through.

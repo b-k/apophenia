@@ -329,8 +329,8 @@ apop_data **generate_list_of_contrasts(char **contras_in, int contrast_ct){
 }
 
 int get_var_index(apop_data *all_vars, char *findme){
-	for (int i=0; i< all_vars->textsize[0]; i++)
-		if (apop_strcmp(all_vars->text[i][0], findme))
+	for (int i=0; i< *all_vars->textsize; i++)
+		if (*all_vars->text[i] && !strcmp(*all_vars->text[i], findme))
 			return i;
 	Apop_assert_c(0, -1, 0, "I couldn't find %s in the full list of variables. Returning -1.", findme);
 }
@@ -465,8 +465,8 @@ APOP_VAR_ENDHEAD
         all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", table_name);
         int ctr=0;
         for (int i=0; i< all_vars_d->textsize[0]; i++)
-            if (!apop_strcmp(all_vars_d->text[i][1], count_col)
-                 &&!apop_strcmp(all_vars_d->text[i][1], init_count_col))
+            if (all_vars_d->text[i][1] && (count_col ? strcmp(all_vars_d->text[i][1], count_col) : 1)
+                 && (init_count_col ? strcmp(all_vars_d->text[i][1], init_count_col): 1))
                     apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
         apop_text_alloc(all_vars_d, ctr, 1);
     }

@@ -17,14 +17,12 @@ static size_t get_settings_ct(apop_model *model){
   If the model has no settings or your preferred settings group is not found, this function does nothing.
  */
 void apop_settings_remove_group(apop_model *m, char *delme){
-  //apop_assert_void(m->settings, 2, 'c', "The model had no settings, so nothing was removed.");
-  if (!m->settings)  
-      return;
-  int i = 0;
-  int ct = get_settings_ct(m);
+    if (!m->settings)  return;
+    int i = 0;
+    int ct = get_settings_ct(m);
  
     while (m->settings[i].name[0] !='\0'){
-        if (apop_strcmp(m->settings[i].name, delme)){
+        if (!strcmp(m->settings[i].name, delme)){
             ((void (*)(void*))m->settings[i].free)(m->settings[i].setting_group);
             for (int j=i+1; j< ct+1; j++) //don't forget the null sentinel.
                 m->settings[j-1] = m->settings[j];
@@ -54,7 +52,7 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
     if (!m->settings) return NULL;
     int i;
     for (i=0; m->settings[i].name[0] !='\0'; i++)
-       if (apop_strcmp(type, m->settings[i].name))
+       if (!strcmp(type, m->settings[i].name))
            return m->settings[i].setting_group;
     if (!strlen(type)) //requesting the blank sentinel.
        return m->settings[i].setting_group;
@@ -68,11 +66,11 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
  You probably won't need this often---just use \ref apop_model_copy.
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
-  Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
-  void *g =  apop_settings_get_grp(inm, copyme, 'f');
-  int i;
+    Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
+    void *g =  apop_settings_get_grp(inm, copyme, 'f');
+    int i;
     for (i=0; inm->settings[i].name[0] !='\0'; i++)//retrieve the index.
-       if (apop_strcmp(copyme, inm->settings[i].name))
+       if (!strcmp(copyme, inm->settings[i].name))
            break;
     void *gnew = (inm->settings[i].copy) 
                     ? ((void *(*)(void*))inm->settings[i].copy)(g)

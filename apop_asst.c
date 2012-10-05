@@ -117,49 +117,6 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 	return 	precalced[i][N-1];
 }
 
-/** Are two strings equal?
- 
-<tt>strcmp()</tt> is a distance function, but its most common use, by
-far, is just to ask whether two strings are equal. This function directly addresses
-that question. It differs from <tt>strcmp()</tt> in three ways, one
-especially important.
-
-Tests for equality: I answer the question <em>Is string one == string
-two?</em>, so if two strings are identical, I return 1; if they differ, I
-return 0. <em>This is the opposite of strcmp</em>, which returns zero when
-two strings are identical (and are thus zero distance apart). It is common for
-people to think strcmp answers the equality question, and then wind up writing the wrong
-thing. If that's you, consider using this function (or one like it) and
-never touching strcmp. If you think the fact that it's confusing that \c apop_strcmp and \c strcmp return opposite
-outputs, feel free to never use this function.
-
-Slightly faster: as soon as I determine a difference, I leave, because I don't have to calculate a positive or negative distance.
-
-Accepts <tt>NULL</tt>s: 
-If one string is <tt>NULL</tt> and the other isn't I return 0 (because a
-<tt>NULL</tt> string surely differs from a non-<tt>NULL</tt>). If both strings
-are <tt>NULL</tt>, that's equality, and I return 1. If you're looking for
-different behavior on <tt>NULL</tt>s, you're best off just testing your
-inputs.
-
-\param one The first string to compare
-\param two The other string to compare
-
-For example: \include test_strcmp.c
-*/
-int apop_strcmp(char const *one, char const *two){
-    if (!one && !two)
-        return 1;
-    if ((!one && two) || (one && !two))
-        return 0;
-    for ( ; *one && *two; one++, two++)
-        if(*one != *two)
-            return 0;
-    if (*one || *two) //different length strings.
-        return 0;
-    return 1;
-}
-
 /** Strip dots from a name.
 
 \param  in          A string

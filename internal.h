@@ -36,7 +36,6 @@ void xprintf(char **q, char *format, ...);
 char *prep_string_for_sqlite(int prepped_statements, char const *astring);//apop_conversions.c
 void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errno); //apop_linear_algebra.c
 
-
 //For when we're forced to use a global variable.
 #undef threadlocal
 #ifdef _ISOC11_SOURCE 

@@ -4,8 +4,8 @@ void test_regex(){
     apop_data *subs;
     apop_regex(string1, "(e).*I.*(xxx)*(am)", .substrings = &subs);
     //apop_data_show(subs);
-    assert(apop_strcmp(subs->text[0][0], "e"));
+    assert(!strcmp(subs->text[0][0], "e"));
     assert(!strlen(subs->text[0][1]));
-    assert(apop_strcmp(subs->text[0][2], "am"));
+    assert(!strcmp(subs->text[0][2], "am"));
     apop_data_free(subs);
 }

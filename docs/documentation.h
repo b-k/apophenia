@@ -1812,7 +1812,6 @@ General utilities:
     \li\ref Apop_assert_c
     \li\ref apop_opts
     \li\ref apop_strip_dots()
-    \li\ref apop_strcmp()
     \li\ref apop_regex()
     \li\ref apop_text_paste()
     \li\ref apop_system()

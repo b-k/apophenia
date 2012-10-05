@@ -353,7 +353,7 @@ APOP_VAR_ENDHEAD
         Get_vmsizes(fill_ins); //masxize
         int fillsize = maxsize ? maxsize : fill_ins->textsize[0];
         for (int i=0; i< fillsize; i++){
-            if (!(thisimpt && apop_strcmp(fill_ins->text[i][imputationcol], thisimpt))
+            if (!(thisimpt && fill_ins->text[i][imputationcol] && !strcmp(fill_ins->text[i][imputationcol], thisimpt))
                 && !(imps && thisimp==apop_data_get(fill_ins, i, imputationcol)))
                 continue;
             int thisrow = (rowtype=='d') ? 

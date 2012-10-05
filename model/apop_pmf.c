@@ -155,7 +155,7 @@ static int are_equal(apop_data *left, apop_data *right){
     if (left->textsize[1]){
         if (left->textsize[1] != right->textsize[1]) return 0;
         for (int i=0; i< left->textsize[1]; i++)
-            if (!apop_strcmp(left->text[0][i], right->text[0][i])) return 0;
+            if (strcmp(left->text[0][i], right->text[0][i])) return 0;
     }
     else if (right->textsize[1]) return 0;
     return 1;

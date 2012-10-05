@@ -519,7 +519,7 @@ we have three columns, named NUM, LE, and OL. The names can be read from the fir
 */
 
 static int prep_text_reading(char const *text_file, FILE **infile){
-    *infile = apop_strcmp(text_file, "-")
+    *infile = !strcmp(text_file, "-")
                     ? stdin
 	                : fopen(text_file, "r");
     Apop_assert_c(*infile, 1,  0, "Trouble opening %s. Returning NULL.", text_file);
@@ -757,7 +757,7 @@ APOP_VAR_END_HEAD
 
 \param in A \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
 \param d  That data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
-\param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
+\param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
@@ -778,19 +778,19 @@ APOP_VAR_ENDHEAD
     if(d->vector){
         vin = gsl_vector_subvector((gsl_vector *)in, 0, d->vector->size).vector;
         gsl_vector_memcpy(d->vector, &vin);
-        offset  += d->vector->size;
+        offset += d->vector->size;
     }
     if(d->matrix)
         for (size_t i=0; i< d->matrix->size1; i++){
-            vin     = gsl_vector_subvector((gsl_vector *)in, offset, d->matrix->size2).vector;
-            vout    = gsl_matrix_row(d->matrix, i).vector;
+            vin = gsl_vector_subvector((gsl_vector *)in, offset, d->matrix->size2).vector;
+            vout = gsl_matrix_row(d->matrix, i).vector;
             gsl_vector_memcpy(&vout, &vin);
-            offset  += d->matrix->size2;
+            offset += d->matrix->size2;
         }
     if(d->weights){
         vin = gsl_vector_subvector((gsl_vector *)in, offset, d->weights->size).vector;
         gsl_vector_memcpy(d->weights, &vin);
-        offset  += d->weights->size;
+        offset += d->weights->size;
     }
     if (offset != in->size && d->more){
         vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
@@ -803,8 +803,7 @@ APOP_VAR_ENDHEAD
 }
 
 static size_t sizecount(const apop_data *in, const int all_pp, const int use_info_pp){ 
-    if (!in)
-        return 0;
+    if (!in) return 0;
     if (use_info_pp=='n' && apop_regex(in->names->title, "^<.*>$"))
         return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
@@ -828,7 +827,7 @@ will return the original data set (stripped of text and names).
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
   \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
 pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'n'. 
-\param use_info_pages Pages in HTML-style brackets, such as <tt>\<Covariance\></tt> will
+\param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
@@ -844,19 +843,17 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(all_pages, 'n');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
-        Apop_assert(out->size == total_size, "The input data set has %i elements,"
-               " but the output vector you want to fill has size %zu. Please make these sizes equal."
-               , total_size, out->size);
+        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+        Apop_assert(out->size == total_size, "The input data set has %zu elements, "
+               "but the output vector you want to fill has size %zu. Please make "
+               "these sizes equal.", total_size, out->size);
     }
 APOP_VAR_ENDHEAD
-        int total_size    = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
-    if (!total_size)
-        return NULL;
-  int offset        = 0;
-  if (!out)
-        out   = gsl_vector_alloc(total_size);
-  gsl_vector vout, vin;
+        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+    if (!total_size) return NULL;
+    int offset = 0;
+    if (!out) out = gsl_vector_alloc(total_size);
+    gsl_vector vout, vin;
     if (in->vector){
         vout     = gsl_vector_subvector((gsl_vector *)out, 0, in->vector->size).vector;
         gsl_vector_memcpy(&vout, in->vector);
@@ -936,9 +933,8 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 /* In conversions.h, you'll find this header, which turns all but the first input into an array of doubles of indeterminate length:
 #define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
 */
-    if (!in) 
-        return NULL;
-  int  k=0, start=0, fin=0, height=0;
+    if (!in) return NULL;
+    int k=0, start=0, fin=0, height=0;
     if (in->vector){
         start   = -1;
         height  = in->vector->size;
@@ -966,8 +962,7 @@ Warning: I need as many arguments as the size of the vector, and can't count the
 \return     A pointer to the same vector that was input.
 */
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
-    if (!in) 
-        return NULL;
+    if (!in) return NULL;
     for (int i=0; i< in->size; i++)
         gsl_vector_set(in, i, ap[i]);
     return in;
@@ -1003,10 +998,7 @@ static char *get_field_conditions(char *var, apop_data *field_params){
         for(int i=0; i<field_params->textsize[0]; i++)
             if (apop_regex(var, field_params->text[i][0]))
                 return field_params->text[i][1];
-    if (apop_opts.db_engine == 'm')
-        return "varchar(100)";
-    else
-        return "numeric";
+    return (apop_opts.db_engine == 'm') ? "varchar(100)" : "numeric";
 }
 
 static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
@@ -1073,8 +1065,7 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
 			out = strdup("0.0/0.0");
         else if (astring[0]=='.')
 			asprintf(&out, "0%s",astring);
-		else
-            out = strdup(astring);
+		else out = strdup(astring);
 	}
     return out;
 }

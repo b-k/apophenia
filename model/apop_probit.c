@@ -47,7 +47,7 @@ static void probit_prep(apop_data *d, apop_model *m){
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
     //haven't yet implemented the score for probit && $N>2$
-    if (apop_strcmp(m->name, apop_probit.name) && count > 2) m->score = NULL;
+    if (!strcmp(m->name, apop_probit.name) && count > 2) m->score = NULL;
     char *tmp = strdup(m->name);
     snprintf(m->name, 100, "%s with %s as numeraire", tmp, factor_list->text[0][0]);
     free(tmp);

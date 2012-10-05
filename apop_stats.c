@@ -774,7 +774,7 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int
 APOP_VAR_ENDHEAD
     double div = 0;
     Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
-    if (apop_strcmp(top->name, "PDF or sparse matrix")){
+    if (top->name && !strcmp(top->name, "PDF or sparse matrix")){
         apop_data *p = top->parameters;
         Get_vmsizes(p); //firstcol, vsize, msize1, msize2
         apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);

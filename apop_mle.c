@@ -750,19 +750,19 @@ APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *cop
     double apop_varad_var(boundary, 1e8);
 APOP_VAR_ENDHEAD
     gsl_vector *v = NULL;
-  if (!copy) copy = apop_model_copy(*e);
-  apop_mle_settings* prm0 = apop_settings_get_group(e, apop_mle);
-  apop_mle_settings* prm = apop_settings_get_group(copy, apop_mle);
+    if (!copy) copy = apop_model_copy(*e);
+    apop_mle_settings* prm0 = apop_settings_get_group(e, apop_mle);
+    apop_mle_settings* prm = apop_settings_get_group(copy, apop_mle);
             //copy off the old params; modify the starting pt, method, and scale
-    if (apop_strcmp(starting_pt, "es"))
+    if (!strcmp(starting_pt, "es"))
         v = apop_array_to_vector(prm0->starting_pt);
-    else if (apop_strcmp(starting_pt, "ns")){
+    else if (!strcmp(starting_pt, "ns")){
         int size =sizeof(prm->starting_pt)/sizeof(double);
         v = apop_array_to_vector(prm->starting_pt, size);
         prm0->starting_pt	= malloc(sizeof(double)*size);
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
-    else if (apop_strcmp(starting_pt, "np")){
+    else if (!strcmp(starting_pt, "np")){
         v = apop_data_pack(copy->parameters, NULL, .all_pages='y'); 
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);

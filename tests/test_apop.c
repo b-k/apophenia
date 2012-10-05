@@ -22,12 +22,13 @@
 #include "../eg/test_updating.c" 
 #include "../eg/test_pruning.c"     // test_prune_cols()
 #include "../eg/apop_map_row.c" 
-#include "../eg/test_strcmp.c" 
 #include "../eg/test_fisher.c" 
 #include "../eg/test_ranks.c" 
 #include "../eg/test_regex.c" 
 #include "../eg/pmf_test.c" 
 
+//A NULL-tolerant strcmp, which used to be a fn and has been deleted.
+#define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
 
 /*
 Some of these tests are mechanical tests that data gets shunted to the right place and
@@ -1608,7 +1609,6 @@ int main(int argc, char **argv){
     do_test("multivariate gamma", test_mvn_gamma());
     do_test("apop_dot test", test_dot());
     do_test("apop_generalized_harmonic test", test_harmonic());
-    do_test("apop_strcmp test", test_apop_strcmp());
     do_test("apop_strip_dots test", test_strip_dots());
     do_test("Inversion test", test_inversion(r));
     do_test("apop_jackknife test", test_jackknife());
