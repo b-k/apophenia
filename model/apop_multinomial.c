@@ -8,6 +8,11 @@ It is implemented as an alias of the \ref apop_multinomial model, except that it
 a CDF, <tt>.vbase==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
 and a draw returns a scalar).
 
+\adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$\p_1\f$. Thus, \f$p_0\f$
+        isn't written down; see \ref apop_multinomial for further discussion.
+        If you input $v[1]>1$ and <tt>apop_opts.verbose >=1</tt>, the log likelihood
+        function will throw a warning.
+
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
   The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, 
   the number of draws of type one (`hits', `successes') in column one.
@@ -78,6 +83,8 @@ static double multinomial_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
     double *pv = params->parameters->vector->data;
     double n = pv[0]; 
+    Apop_assert_c(pv[1] <=1, GSL_NAN, 1, "The input parameters should be [n, p_1, (...)], but "
+        "element 1 of the parameter vector is >1.") //mostly makes sense for the binomial.
     if (n==2)
         return apop_map_sum(d, .fn_vp=binomial_ll, .param=params->parameters->vector);
 

@@ -6,60 +6,143 @@
 Copyright (c) 2007, 2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
-void apop_data_predict_fill(apop_data *data, apop_data *predict);
-apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans);
+
+//The model keeps a table of what the blanks should be filled in with.
+//This first section does the work for that part.
+static double find_nans(double in){ return isnan(in); }
+
+static void addin(apop_data *predict, size_t i, int j, size_t page){
+    int len;
+    if (!predict->matrix){
+        predict->matrix = gsl_matrix_alloc(1,5); 
+        len = 0;
+    } else 
+        len = predict->matrix->size1;
+    apop_matrix_realloc(predict->matrix, len + 1, predict->matrix->size2);
+    apop_data_set(predict, .row=len, .colname="row", .val=i);
+    apop_data_set(predict, .row=len, .colname="col", .val=j);
+    apop_data_set(predict, .row=len, .colname="page", .val=page);
+}
+
+static int find_missing(const apop_data *data, apop_data *predict, size_t page, int ct){
+    //generate a list of fixed-parameter positions, and their paramvals.
+   apop_data * mask = apop_map((apop_data*)data, find_nans, .all_pages='y');
+    //find out where the NaNs are
+    for (size_t i=0; mask->vector && i< mask->vector->size; i++)
+            if (apop_data_get(mask, i, -1))
+                addin(predict, i, -1, page);
+    for (size_t i=0; mask->matrix && i< mask->matrix->size1; i++)
+        for (int j=0; j <mask->matrix->size2; j++)
+            if (apop_data_get(mask, i, j))
+                addin(predict, i, j, page);
+    if (mask->more)
+        ct += mask->vector ? apop_sum(mask->vector) : 0
+              + mask->matrix ? apop_matrix_sum(mask->matrix) : 0
+              + find_missing(mask->more, predict, page+1, ct);
+    apop_data_free(mask);
+    return ct;
+}
+
+static apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
+    apop_data *out = apop_data_alloc( );
+    if (in)
+        apop_data_add_page(in, out, "<fillins>");
+    else 
+        sprintf(out->names->title, "<fillins>");
+    apop_name_add(out->names, "row", 'c');
+    apop_name_add(out->names, "col", 'c');
+    apop_name_add(out->names, "page", 'c');
+    apop_name_add(out->names, "value", 'c');
+    if (fill_with_nans == 'y')
+        find_missing(in, out, 0, 0);
+    return out;
+}
+
+/* Take a \c predict table and set the entries in the data set to the given predicted
+  value. Functions for prediction and imputation use this internally, and append to your
+  data a \c predict table of the right form.  For example, \c apop_ml_impute uses
+  this internally.
+  
+  I assume that the ordering of elements in the \c predict table include everything on the
+  first page, then everything on the second, et cetera. 
+
+\param data The data set to be filled in. It should have a page named \c
+\f$<\f$fillins\f$>\f$.
+\param predict If your data set doesn't have a \c \f$<\f$fillins\f$>\f$ page, then just
+provide one this way; else let this be \c NULL;
+*/
+static void apop_data_predict_fill(apop_data *data, apop_data *predict){
+    if (!predict)
+        predict = apop_data_get_page (data, "<fillins>");
+    if (!predict) return;
+    int this_page_ct = 0;
+    apop_data *this_page = data;
+    for (int i=0; i < predict->matrix->size1; i++){
+        int p = apop_data_get(predict, .row=i, .colname="page");
+        if (p != this_page_ct){
+            this_page_ct = p; 
+            this_page = this_page->more;
+        }
+        apop_data_set(this_page, .row= apop_data_get(predict, .row=i, .colname="row"),
+                                 .col= apop_data_get(predict, .row=i, .colname="col"),
+                                 .val= apop_data_get(predict, .row=i, .colname="value"));
+    }
+}
+
+/////////End predict table machinery.
+
 
 typedef struct {
     apop_model *base_model;
-    apop_data   *predict;
-    int         ct;
-} apop_model_fixed_params_settings;
+    apop_data *predict;
+    int ct;
+} apop_fix_params_settings;
 
 static void unpack(apop_data *out, apop_model *m){
     //real param set --> predict table 
-   apop_model_fixed_params_settings *mset = Apop_settings_get_group(m, apop_model_fixed_params);
-   Apop_col_t(mset->predict, "predict", p_in_tab);
+   apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
+   Apop_col_t(mset->predict, "value", p_in_tab);
    gsl_vector_memcpy(p_in_tab, m->parameters->vector);
    apop_data_predict_fill(out, mset->predict);
 }
 
 static void pack(apop_data *in, apop_model *m){
     //predict table --> real param set 
-   apop_model_fixed_params_settings *mset = Apop_settings_get_group(m, apop_model_fixed_params);
+   apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
    apop_data *predict = mset->predict;
     for(int i =0; i< predict->matrix->size1; i++){
-        apop_data_set(predict, .row =i, .colname="predict", .val=apop_data_get(in, 
+        apop_data_set(predict, .row =i, .colname="value", .val=apop_data_get(in, 
                                                         apop_data_get(predict, .row=i, .colname="row"),
                                                         apop_data_get(predict, .row=i, .colname="col")));
         if (i< mset->ct-1 && apop_data_get(predict, .row= i+1, .colname="page") 
                                 != apop_data_get(predict, .row= i, .colname="page"))
             in = in->more;
     }
-   Apop_col_t(mset->predict, "predict", p_in_tab);
+   Apop_col_t(mset->predict, "value", p_in_tab);
    gsl_vector_memcpy(m->parameters->vector, p_in_tab);
 }
 
 //The macros generating the fixed_param_settings group's init/copy/free functions:
-Apop_settings_init(apop_model_fixed_params, 
+Apop_settings_init(apop_fix_params, 
     Apop_assert(in.base_model, "I can't fix a NULL model's parameters.");
 )
-Apop_settings_copy(apop_model_fixed_params, )
-Apop_settings_free(apop_model_fixed_params, )
+Apop_settings_copy(apop_fix_params, )
+Apop_settings_free(apop_fix_params, )
 
 static double fix_params_ll(apop_data *d, apop_model *fixed_model){
-    apop_model *base_model = Apop_settings_get(fixed_model, apop_model_fixed_params, base_model);
+    apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
     return apop_log_likelihood(d, base_model);
 }
 
 static double fix_params_p(apop_data *d, apop_model *fixed_model){
-    apop_model *base_model = Apop_settings_get(fixed_model, apop_model_fixed_params, base_model);
+    apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
     return apop_p(d, base_model);
 }
 
 static double  fix_params_constraint(apop_data *data, apop_model *fixed_model){
-    apop_model *base_model = Apop_settings_get(fixed_model, apop_model_fixed_params, base_model);
+    apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
     double out = base_model->constraint(data, base_model);
     if (out) 
@@ -68,7 +151,7 @@ static double  fix_params_constraint(apop_data *data, apop_model *fixed_model){
 }
 
 static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
-    apop_model *base_model = Apop_settings_get(eps, apop_model_fixed_params, base_model);
+    apop_model *base_model = Apop_settings_get(eps, apop_fix_params, base_model);
     apop_data *tmp    = base_model->parameters;
     unpack(base_model->parameters, eps);
     base_model->draw(out, r, base_model);
@@ -76,22 +159,23 @@ static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
 }
 
 static apop_model *fixed_est(apop_data * data, apop_model *params){
-    apop_model *base_model = Apop_settings_get(params, apop_model_fixed_params, base_model);
+    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
     if (!data) data = params->data;
     apop_model *e = apop_maximum_likelihood(data, params);
     unpack(base_model->parameters, e);
-    apop_data_free(e->parameters);
-    e->parameters   = apop_data_copy(base_model->parameters);
     return e;
 }
 
 static void fixed_param_show(apop_model *m){
-    apop_model_fixed_params_settings *mset = Apop_settings_get_group(m, apop_model_fixed_params);
+    apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
     printf("The fill-in table:\n");
     apop_data_show(mset->predict);
-    printf("The base model, after unpacking:\n");
-    unpack(mset->base_model->parameters, m);
-    apop_model_print(mset->base_model);
+    if (!m->parameters) printf("This copy of the model has not yet been estimated.\n");
+    else {
+        printf("The base model, after unpacking:\n");
+        unpack(mset->base_model->parameters, m);
+    }
+        apop_model_print(mset->base_model);
 }
 
 static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = fix_params_p, 
@@ -105,17 +189,30 @@ You will send me the model whose parameters you want fixed, with the \c paramete
 set as follows. For the fixed parameters, simply give the values to which they will
 be fixed. Set the free parameters to \c NaN.
 
+For example, here is a Binomial distribution with a fixed \f$n=30\f$, but \f$p_1\f$ allowed to float freely:
+
+\code
+    apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, GSL_NAN));
+    Apop_model_add_group(bi30, apop_mle, .starting_pt=(double[]){.5}); // The Binomial doesn't like the default 
+                                                                       // starting point of 1.
+    apop_model *out = apop_estimate(your_data, bi30);
+\endcode
+
 The output is an \c apop_model that can be estimated, Bayesian updated, et cetera.
 
 \li The \c estimate method always uses an MLE, and it never calls the base model's \c estimate method.
 
 \li If the input model has MLE-style settings attached, I'll use them for the \c estimate method. Otherwise, I'll set my own.
 
-\li If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any search; else I'll start from <b>1</b> as usual.
+\li If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any search; else the defaults start from <b>1</b> as usual.
 
 \li I do check the \c more pointer of the \c parameters for additional pages and <tt>NaN</tt>s on those pages.
 
-\li If you need to do anything with the base model
+\li If you need to do anything with the base model, then get it from the \c apop_fix_params settings group:
+\code
+    //bi30 was the Binomial distribution above constrained to \f$n=30\f$. 
+    apop_model *unconstrained_full_model = Apop_settings_get(bi30, apop_fix_params, base_model);
+\endcode
 
 Here is a sample program. It produces a few thousand draws from a Multivariate Normal distribution,
 and then tries to recover the means given a var/covar matrix fixed at the correct variance.
@@ -129,10 +226,10 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     Nullcheck_mp(model_in, NULL)
     apop_model *model_out  = apop_model_copy(fixed_param_model);
     apop_model *base = apop_model_copy(*model_in);
-    Apop_model_add_group(model_out, apop_model_fixed_params, .base_model = base);
+    Apop_model_add_group(model_out, apop_fix_params, .base_model = base);
 
     apop_data *predict_tab; //Keep the predict tab on the data set and in the settings struct
-    if (!(predict_tab = apop_data_get_page(model_in->parameters, "<predict>")))
+    if (!(predict_tab = apop_data_get_page(model_in->parameters, "<fillins>")))
         predict_tab = apop_predict_table_prep(model_in->parameters, 'y');
     if (!predict_tab || !predict_tab->matrix|| !predict_tab->matrix->size2){
         apop_data_free(predict_tab);
@@ -140,7 +237,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
         Apop_assert_c(0, base, 1, "No free parameters (which would be marked with"
                 " an NaN). Returning a copy of the input model.");
     }
-    apop_settings_set(model_out, apop_model_fixed_params, predict, predict_tab);
+    apop_settings_set(model_out, apop_fix_params, predict, predict_tab);
 
     if (Apop_settings_get_group(base, apop_mle))
         apop_settings_copy_group(model_out, base, "apop_mle");

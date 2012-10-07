@@ -463,12 +463,14 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
 
   Internally allocates (and frees) a vector the size of your data set.
 
-\return: a \f$1 \times 5\f$ apop_data table with the following fields:
+\return: a \f$5 \times 1\f$ apop_data table with the following fields:
 \li "R_squared"
 \li "R_squared_adj"
 \li "SSE"
 \li "SST"
 \li "SSR"
+
+If the output is in \c sss, use <code>apop_data_get(sss, .rowname="SSE")</code> to get the SSE, and so on for the other items.
 
 \param m    A model. I use the pointer to the data set used for estimation and the info page named \c "<Predicted>". 
 The Predicted page should include observed, expected, and residual columns, which I use to
