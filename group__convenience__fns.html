@@ -53,7 +53,6 @@ Functions</h2>
 <li>int <a class="el" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a> (const gsl_vector *in, long double max)
 <li>long double <a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a> (const gsl_vector *in)
 <li>double <a class="el" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a> (const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm)
-<li>double <a class="el" href="group__convenience__fns.html#gac3b9f35ed990dd35f34ba1f072da3dd5">apop_vector_grid_distance</a> (const gsl_vector *ina, const gsl_vector *inb)
 <li>long double <a class="el" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a> (const gsl_matrix *m)
 <li>double <a class="el" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a> (const gsl_matrix *data)
 <li>void <a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)
@@ -499,14 +498,8 @@ Functions</h2>
 <p>Returns the distance between two vectors, where distance is defined based on the third (optional) parameter:</p>
 <ul>
 <li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_51.png"/> where <img class="formulaInl" alt="$i$" src="form_52.png"/> iterates over dimensions.</li>
-</ul>
-<ul>
 <li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_53.png"/> where <img class="formulaInl" alt="$i$" src="form_52.png"/> iterates over dimensions.</li>
-</ul>
-<ul>
 <li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_54.png"/>, return zero, else return one.</li>
-</ul>
-<ul>
 <li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_55.png"/> is largest, return the distance along that one dimension.</li>
 <li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_56.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_57.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_20.png"/> is set by the fourth (optional) argument.</li>
 </ul>
@@ -536,8 +529,7 @@ Functions</h2>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1, NULL, <span class="charliteral">&#39;m&#39;</span>) == 4.);  <span class="comment">//length of v1, Manhattan metric</span>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2) == 5.);          <span class="comment">//the hypotenuse of the 3-4-5 triangle</span>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v2, NULL, <span class="charliteral">&#39;s&#39;</span>) == 6);   <span class="comment">//length of v2, sup norm</span>
-    assert(<a class="code" href="group__convenience__fns.html#gac3b9f35ed990dd35f34ba1f072da3dd5">apop_vector_grid_distance</a>(v1,v2) == 7.);     <span class="comment">//distance v1 to v2 in Manhattan</span>
-    assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2, <span class="charliteral">&#39;m&#39;</span>) == 7.);     <span class="comment">//same</span>
+    assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2, <span class="charliteral">&#39;m&#39;</span>) == 7.);     <span class="comment">//distance v1 to v2 in Manhattan</span>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2, <span class="charliteral">&#39;L&#39;</span>, 2) == 5.);  <span class="comment">//L_2 norm == Euclidean</span>
 }
 </pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
@@ -562,35 +554,6 @@ Functions</h2>
 <ul>
 <li>If the input vector is <code>NULL</code>, do nothing. </li>
 </ul>
-
-</div>
-</div>
-<a class="anchor" id="gac3b9f35ed990dd35f34ba1f072da3dd5"></a><!-- doxytag: member="apop_stats.c::apop_vector_grid_distance" ref="gac3b9f35ed990dd35f34ba1f072da3dd5" args="(const gsl_vector *ina, const gsl_vector *inb)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double <a class="el" href="group__convenience__fns.html#gac3b9f35ed990dd35f34ba1f072da3dd5">apop_vector_grid_distance</a> </td>
-          <td>(</td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>ina</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>inb</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the scalar Manhattan metric distance between two vectors. Simply <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_53.png"/> where <img class="formulaInl" alt="$i$" src="form_52.png"/> iterates over dimensions.</p>
-<p>Equivalent to <a class="el" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a><code>(ina, inb, .metric='M')</code>. </p>
 
 </div>
 </div>

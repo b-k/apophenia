@@ -563,20 +563,8 @@ Functions</h2>
 <div class="memdoc">
 <p>Read a text file into a database table.</p>
 <p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
-<p>Using the data set from the example on the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> page, here's another way to do the regression:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
-
-<span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){ 
-  <a class="code" href="structapop__data.html">apop_data</a> *data; 
-  <a class="code" href="structapop__model.html">apop_model</a> *est;
-    <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(NULL);
-    <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="stringliteral">&quot;d&quot;</span>,.has_row_names= 0,.has_col_names=1);
-    data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
-    est  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
-    printf(<span class="stringliteral">&quot;The OLS coefficients:\n&quot;</span>);
-    <a class="code" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a>(est);
-} 
-</pre></div><p>By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.</p>
+<p>See the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> page for an example that uses this function to read in sample data (also listed on that page).</p>
+<p>By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">text_file</td><td>The name of the text file to be read in. If <code>"-"</code>, then read from <code>STDIN</code>. (default = "-") </td></tr>

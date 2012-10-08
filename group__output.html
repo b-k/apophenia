@@ -275,29 +275,24 @@ A lattice showing three variables graphed against each other.</div></div>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-<a class="code" href="structapop__data.html">apop_data</a>   *data, *data_copy;
-<a class="code" href="structapop__model.html">apop_model</a>  *est;
-FILE        *f;
-<span class="keywordtype">char</span>        outfile[]   = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
+    <span class="keywordtype">char</span> outfile[] = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
 
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
-    data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39;&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39;&quot;</span>);
     <a class="code" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
 
     <span class="comment">//The regression destroys your data, so copy it first.</span>
-    data_copy   = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
+    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
 
     <span class="comment">//Run OLS, display results on terminal</span>
-    est  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, apop_OLS);
+    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, apop_OLS);
     <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
 
     <span class="comment">//Prep the file with a header, then call the function.</span>
-    f    = fopen(outfile, <span class="stringliteral">&quot;w&quot;</span>);
+    FILE *f = fopen(outfile, <span class="stringliteral">&quot;w&quot;</span>);
     fprintf(f,<span class="stringliteral">&quot;set term postscript;\n set output \&quot;scatter.eps\&quot;\n set yrange [0:*]\n&quot;</span>);
     <a class="code" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a>(data_copy, est, .output_pipe=f);
     fclose(f);
-
-    <span class="keywordflow">return</span> 0;
 }
 </pre></div><ul>
 <li>See <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a> for more on how settings are set. </li>
