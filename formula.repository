@@ -144,10 +144,12 @@
 \form#143:$P(Y, X) = P(Y|X)P(X) = P(Y|X)$
 \form#144:$X\beta+\epsilon$
 \form#145:$\times$
-\form#146:$a$
-\form#147:$b$
-\form#148:$\in[0,1]$
-\form#149:$p(1-p)$
-\form#150:$>0$
-\form#151:$P(Y|X)$
-\form#152:$X'\beta$
+\form#146:$y_i = x\beta_i$
+\form#147:\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]
+\form#148:$a$
+\form#149:$b$
+\form#150:$\in[0,1]$
+\form#151:$p(1-p)$
+\form#152:$>0$
+\form#153:$P(Y|X)$
+\form#154:$X'\beta$

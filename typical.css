@@ -2,16 +2,14 @@
 
 .memitem {
 border: 2px solid #a6cb5e;
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 2px;
  } 
 
 .memproto table {
 white-space:nowrap;
 /*border: 1px solid #a6cb5e;*/
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 1px;
 bottom-margin= 2px;
  } =
@@ -26,8 +24,7 @@ border: 1px solid black; /* Change to suit your preferences */ }
 
 .altcolor {
 border: 1px solid #262b5e;
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 2px;
 }
 
@@ -49,7 +46,7 @@ margin-right: 10% }
 
 ul{line-height: 135%}
 
-H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
+H1,H2,H3,H4,H5,H6/*,P,CENTER,TD,TH,UL,DL,DIV */{
 	font-family: Geneva, Arial, Helvetica, sans-serif;
 	background-color: #FFFFDE;
 }
@@ -353,7 +350,7 @@ HR {/* height: 1px;
 width: 80%;
 }
 BODY {
-font-family: "Lucida Grande", "Lucida Sans Unicode", "Verdana", "Geneva", sans-serif;
+/*font-family: "Lucida Grande", "Lucida Sans Unicode", "Verdana", "Geneva", sans-serif;*/
 background-color: #FFFFDE;
 }
 
