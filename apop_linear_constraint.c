@@ -6,14 +6,14 @@ Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include "apop_internal.h"
 
 static double magnitude(gsl_vector *v){
- double out;
+    double out;
     gsl_blas_ddot(v, v, &out);
     return out;
 }
 
 static void find_nearest_point(gsl_vector *V, double k, gsl_vector *B, gsl_vector *out){
     /* Find X such that BX =K and there is an S such that X + SB=V. */
-  double S=0; //S = (BV-K)/B'B.
+    double S=0; //S = (BV-K)/B'B.
     gsl_blas_ddot(B, V, &S);
     S   -= k;
 assert(!gsl_isnan(S));
@@ -26,17 +26,17 @@ assert(!gsl_isnan(gsl_vector_get(out,0)));
 }
 
 static int binds(gsl_vector *v, double k, gsl_vector *b, double margin){
-  double d;
+    double d;
     gsl_blas_ddot(v, b, &d);
     return d < k + margin;
 }
 
 static double trig_bit(gsl_vector *dimv, gsl_vector *otherv, double off_by){
-  double    theta, costheta, dot, out;
+    double theta, costheta, dot, out;
     gsl_blas_ddot(dimv, otherv, &dot);
     costheta = dot/(magnitude(dimv)*magnitude(otherv));
-    theta   = acos(costheta);
-    out     = off_by/gsl_pow_2(sin(theta)); 
+    theta = acos(costheta);
+    out = off_by/gsl_pow_2(sin(theta)); 
     return out;
 }
 
@@ -49,12 +49,12 @@ static double trig_bit(gsl_vector *dimv, gsl_vector *otherv, double off_by){
    surface.
    */
 static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, gsl_vector *candidate, double margin){
-  double    k, ck, off_by, s;
-  gsl_vector *pseudobeta        = NULL;
-  gsl_vector *pseudocandidate   = NULL;
-  gsl_vector *pseudocandidate2  = NULL;
-  gsl_vector *fix               = NULL;
-  APOP_ROW(constraint, current, cc);
+    double k, ck, off_by, s;
+    gsl_vector *pseudobeta        = NULL;
+    gsl_vector *pseudocandidate   = NULL;
+    gsl_vector *pseudocandidate2  = NULL;
+    gsl_vector *fix               = NULL;
+    APOP_ROW(constraint, current, cc);
     ck  =gsl_vector_get(constraint->vector, current);
     find_nearest_point(beta, ck, cc, candidate);
     for (size_t i=0; i< constraint->vector->size; i++){
@@ -125,13 +125,13 @@ APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * const
         constraint = default_constraint;
     }
 APOP_VAR_ENDHEAD
-  static gsl_vector *closest_pt = NULL;
-  static gsl_vector *candidate  = NULL;
-  static gsl_vector *fix        = NULL;
-  gsl_vector        *base_beta  = apop_vector_copy(beta);
-  int               constraint_ct   = constraint->matrix->size1;
-  int               bindlist[constraint_ct];
-  int               i, bound     = 0;
+    static gsl_vector *closest_pt = NULL;
+    static gsl_vector *candidate  = NULL;
+    static gsl_vector *fix        = NULL;
+    gsl_vector *base_beta = apop_vector_copy(beta);
+    int constraint_ct = constraint->matrix->size1;
+    int bindlist[constraint_ct];
+    int i, bound = 0;
     /* For added efficiency, keep a scratch vector or two on hand. */
     if (closest_pt==NULL || closest_pt->size != constraint->matrix->size2){
         closest_pt  = gsl_vector_calloc(beta->size);

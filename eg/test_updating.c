@@ -27,7 +27,7 @@ void test_updating(gsl_rng *r){
     //Finally, we can compare the conjugate and Gibbs results:
     apop_vector_normalize(updated->parameters->vector);
     apop_vector_normalize(out_beta->parameters->vector);
-    double error = apop_vector_grid_distance(updated->parameters->vector, out_beta->parameters->vector);
+    double error = apop_vector_distance(updated->parameters->vector, out_beta->parameters->vector, .metric='m');
     double updated_size = apop_vector_sum(updated->parameters->vector);
     Apop_assert(error/updated_size < 0.01, "The error is %g, which is too big.", error/updated_size);
 }

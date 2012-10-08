@@ -20,11 +20,11 @@ int histobins   = 0;
 typedef enum {Beta, Binomial, F, Negbinom, Normal, Poisson, T} distlist ;
 
 int main(int argc, char **argv){
-  distlist      distribution = Normal;
-  char	        msg[10000], c;
-  int           pval = 0, qval = 0;
-  double        param1 = GSL_NAN, param2 =GSL_NAN, findme = GSL_NAN;
-  char          number[1000];
+    distlist distribution = Normal;
+    char	 msg[10000], c;
+    int      pval = 0, qval = 0;
+    double   param1 = GSL_NAN, param2 =GSL_NAN, findme = GSL_NAN;
+    char     number[1000];
 	sprintf(msg, "%s [opts] number_to_lookup\n\n"
     "Look up a probability or p-value for a given standard distribution.\n"
     "[This is still loosely written and counts as beta. Notably, negative numbers are hard to parse.]\n"

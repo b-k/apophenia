@@ -141,7 +141,8 @@ estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p 
 \todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
 Here is a test function that compares the output via conjugate gradient table and via
-Gibbs sampling: \include test_updating.c
+Gibbs sampling: 
+\include test_updating.c
 
 This function uses the \ref designated syntax for inputs.
 */

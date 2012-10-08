@@ -7,6 +7,9 @@
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:
     #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
+--clean up of parameter-fixing model transformation.
+--split off multiple imputation variance code.
+**Removed apop_vector_grid_distance. Use apop_vector_distance(v1, v2, .metric='M');
 
 	September 2012
 --\0 in text files counts as white space

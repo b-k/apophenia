@@ -211,13 +211,13 @@ typedef struct {
 } threadpass;
 
 static void *forloop(void *t){
-  threadpass      *tc = t;
-  apop_fn_v    *vtod=tc->fn;
-  apop_fn_vp  *fn_vp=tc->fn;
-  apop_fn_vpi *fn_vpi=tc->fn;
-  apop_fn_vi  *fn_vi=tc->fn;
-  gsl_vector    view;
-  double        val;
+    threadpass  *tc = t;
+    apop_fn_v   *vtod=tc->fn;
+    apop_fn_vp  *fn_vp=tc->fn;
+    apop_fn_vpi *fn_vpi=tc->fn;
+    apop_fn_vi  *fn_vi=tc->fn;
+    gsl_vector view;
+    double  val;
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         view    = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
         val     = 
@@ -227,12 +227,12 @@ static void *forloop(void *t){
                                      vtod(&view) );
         gsl_vector_set(tc->v, i, val);
     }
-  return NULL;
+    return NULL;
 }
 
 static void *oldforloop(void *t){
-  threadpass      *tc = t;
-  apop_fn_vtov    *vtov=tc->fn;
+    threadpass *tc = t;
+    apop_fn_vtov *vtov=tc->fn;
     if (tc->v){
         tc->rc = 'r';
         return forloop(t);
@@ -241,17 +241,17 @@ static void *oldforloop(void *t){
         Apop_matrix_row(tc->m, i, v);
         vtov(v);
     }
-  return NULL;
+    return NULL;
 }
 
 //if mapping to self, then set tc.v = in_v
 static void *vectorloop(void *t){
-  threadpass      *tc = t;
-  double          inval, outval;
-  apop_fn_d    *dtod=tc->fn;
-  apop_fn_dp  *fn_dp=tc->fn;
-  apop_fn_dpi *fn_dpi=tc->fn;
-  apop_fn_di  *fn_di=tc->fn;
+    threadpass  *tc = t;
+    double      inval, outval;
+    apop_fn_d   *dtod=tc->fn;
+    apop_fn_dp  *fn_dp=tc->fn;
+    apop_fn_dpi *fn_dpi=tc->fn;
+    apop_fn_di  *fn_di=tc->fn;
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_get(tc->vin, i);
         outval =
@@ -261,29 +261,28 @@ static void *vectorloop(void *t){
                                      dtod(inval));
         gsl_vector_set(tc->v, i, outval);
     }
-  return NULL;
+    return NULL;
 }
 
 static void *oldvectorloop(void *t){
-  threadpass      *tc = t;
-  double          *inval;
-  apop_fn_dtov    *dtov=tc->fn;
-    if (tc->v)
-        return vectorloop(t);
+    threadpass *tc = t;
+    double *inval;
+    apop_fn_dtov *dtov=tc->fn;
+    if (tc->v) return vectorloop(t);
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         inval   = gsl_vector_ptr(tc->vin, i);
         dtov(inval);
     }
-  return NULL;
+    return NULL;
 }
 
 static size_t *threadminmax(const int threadno, const int totalct, const int threadct){
-  int       segment_size        = totalct/threadct;
-  size_t    *out                = malloc(sizeof(int)*3);
-        out[0]  = threadno*segment_size;
-        out[1]  = (threadno==threadct-1) ? totalct : (threadno+1)*segment_size;
-        out[2]  = threadno;
-        return out;
+    int segment_size = totalct/threadct;
+    size_t *out = malloc(sizeof(int)*3);
+    out[0] = threadno*segment_size;
+    out[1] = (threadno==threadct-1) ? totalct : (threadno+1)*segment_size;
+    out[2] = threadno;
+    return out;
 }
 
 static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22){

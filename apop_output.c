@@ -24,7 +24,6 @@ function.
 
 \ingroup output
 */
-
  
 #define Output_vars output_file, output_pipe, output_type, output_append
 
@@ -82,11 +81,11 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
                         : stdout;
 }
 
-#define Dispatch_output \
-    char * apop_varad_var(output_file, NULL);                 \
-    FILE * apop_varad_var(output_pipe, NULL);                 \
-    char apop_varad_var(output_type, 0);                      \
-    char apop_varad_var(output_append, 0);                    \
+#define Dispatch_output                        \
+    char * apop_varad_var(output_file, NULL);  \
+    FILE * apop_varad_var(output_pipe, NULL);  \
+    char apop_varad_var(output_type, 0);       \
+    char apop_varad_var(output_append, 0);     \
     apop_prep_output(&output_file, &output_pipe, &output_type, &output_append);
 
 /** Prep for Gnuplot one of those cute scatterplots with a regression line through it.
@@ -129,8 +128,8 @@ APOP_VAR_HEAD void apop_plot_line_and_scatter(apop_data *data, apop_model *est, 
     apop_model_free(est);
     return;
 APOP_VAR_ENDHEAD
-  char  exdelimiter[100];
-  FILE *f = output_pipe;
+    char  exdelimiter[100];
+    FILE *f = output_pipe;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
 		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
@@ -165,11 +164,11 @@ will print directly to Gnuplot.
   \ingroup output
 */
 APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, Output_declares){
-      gsl_vector * apop_varad_var(data, NULL);
-      Apop_assert_n(data, "Input vector is NULL.");
-      size_t apop_varad_var(bin_count, 0);
-      char * apop_varad_var(with, "boxes");
-      Dispatch_output
+    gsl_vector * apop_varad_var(data, NULL);
+    Apop_assert_n(data, "Input vector is NULL.");
+    size_t apop_varad_var(bin_count, 0);
+    char * apop_varad_var(with, "boxes");
+    Dispatch_output
 APOP_VAR_ENDHEAD
     apop_data *histodata = apop_data_alloc();
     histodata->vector = apop_vector_copy(data);
@@ -182,10 +181,8 @@ APOP_VAR_ENDHEAD
     apop_data_print(histodata, .output_pipe=output_pipe);
     fprintf(output_pipe, "e\n");
 
-    if (output_type == 'p')
-        fflush(output_pipe);
-    else if (output_file)    
-        fclose(output_pipe);
+    if (output_type == 'p') fflush(output_pipe);
+    else if (output_file)   fclose(output_pipe);
     apop_data_free(histodata);
 }
 
@@ -210,12 +207,11 @@ For more machine-readable printing, see \ref apop_print.
 void apop_data_show(const apop_data *in){
     if (!in) {printf("NULL\n"); return;}
     Get_vmsizes(in) //vsize, msize1, msize2, tsize
-  size_t i, j;
 //Take inventory and get sizes
-  size_t hasrownames = (in->names && in->names->rowct) ? 1 : 0;
-  size_t hascolnames = in->names && 
+    size_t hasrownames = (in->names && in->names->rowct) ? 1 : 0;
+    size_t hascolnames = in->names && 
                     (in->names->vector || in->names->colct || in->names->textct);
-  size_t hasweights = (in->weights != NULL);
+    size_t hasweights = (in->weights != NULL);
 
     size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
     outsize_r   = GSL_MAX(outsize_r, in->textsize[0]);
@@ -229,19 +225,19 @@ void apop_data_show(const apop_data *in){
 //Write to the printout data set.
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
     if (hasrownames)
-        for(i=0; i < in->names->rowct; i ++)
+        for (size_t i=0; i < in->names->rowct; i ++)
             apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
-    for(i=0; i < vsize; i ++) //vsize may be zero.
+    for (size_t i=0; i < vsize; i ++) //vsize may be zero.
         apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
-    for(i=0; i < msize1; i ++) //msize1 may be zero.
-        for(j=0; j < msize2; j ++)
+    for (size_t i=0; i < msize1; i ++) //msize1 may be zero.
+        for (size_t j=0; j < msize2; j ++)
             apop_text_add(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
     if (in->textsize[0])
-        for(i=0; i < in->textsize[0]; i ++)
-            for(j=0; j < in->textsize[1]; j ++)
+        for (size_t i=0; i < in->textsize[0]; i ++)
+            for (size_t j=0; j < in->textsize[1]; j ++)
                 apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, in->text[i][j]);
     if (hasweights)
-        for(i=0; i < in->weights->size; i ++)
+        for (size_t i=0; i < in->weights->size; i ++)
             apop_text_add(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
 
 //column names
@@ -249,10 +245,10 @@ void apop_data_show(const apop_data *in){
         if (vsize && in->names->vector)
             apop_text_add(printout, 0 , hasrownames,  in->names->vector);
         if (msize2 && in->names)
-            for(i=0; i < in->names->colct; i ++)
+            for (size_t i=0; i < in->names->colct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
         if (in->textsize[1] && in->names)
-            for(i=0; i < in->names->textct; i ++)
+            for (size_t i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
         if (hasweights)
             apop_text_add(printout, 0 , outsize_c-1, "Weights");
@@ -260,17 +256,17 @@ void apop_data_show(const apop_data *in){
 
 //get column sizes
     int colsizes[outsize_c];
-    for(i=0; i < outsize_c; i ++){
+    for (size_t i=0; i < outsize_c; i ++){
         colsizes[i] = strlen(printout->text[0][i]);
-        for(j=1; j < outsize_r; j ++)
+        for (size_t j=1; j < outsize_r; j ++)
             colsizes[i] = GSL_MAX(colsizes[i], strlen(printout->text[j][i]));
     }
 
 //Finally, print
     if (in->names && strlen(in->names->title))
         printf("\t%s\n\n", in->names->title);
-    for(j=0; j < outsize_r; j ++){
-        for(i=0; i < outsize_c; i ++){
+    for (size_t j=0; j < outsize_r; j ++){
+        for (size_t i=0; i < outsize_c; i ++){
             white_pad(colsizes[i] - strlen(printout->text[j][i]) + 1);//one spare space.
             printf("%s", printout->text[j][i]);
             if (i > 0 && i< outsize_c-1) 
@@ -287,24 +283,21 @@ void apop_data_show(const apop_data *in){
 }
 
 void p_fn(FILE * f, double data){
-    if (data == (int) data)
-	    fprintf(f, "% 5i", (int) data); 
-    else
-        fprintf(f, "% 5f", data);
+    if (data == (int) data) fprintf(f, "% 5i", (int) data); 
+    else                    fprintf(f, "% 5f", data);
 }
 
 static void print_core_v(const gsl_vector *data, char *separator, Output_declares){
-FILE * 		f = output_pipe;
-    if (!data)
-        fprintf(f, "NULL\n");
+    FILE *f = output_pipe;
+    if (!data) fprintf(f, "NULL\n");
     else {
 	    for (size_t i=0; i<data->size; i++){
 		    p_fn(f, gsl_vector_get(data, i));
-		    if (i< data->size -1)	fprintf(f, "%s", separator);
+		    if (i< data->size -1) fprintf(f, "%s", separator);
 	    }
 	    fprintf(f,"\n");
     }
-	if (output_file)	fclose(f);
+	if (output_file) fclose(f);
 }
 
 /** Print a vector in float format.
@@ -333,7 +326,7 @@ void apop_vector_show(const gsl_vector *data){
 }
 
 static int get_max_strlen(char **names, size_t len){
-  int   max  = 0;
+    int max  = 0;
     for (int i=0; i< len; i++)
         max = GSL_MAX(max, strlen(names[i]));
     return max;
@@ -341,10 +334,8 @@ static int get_max_strlen(char **names, size_t len){
 
 //On screen, display a pipe, else use the usual output delimiter.
 static void a_pipe(FILE *f, char displaytype){
-    if (displaytype == 's')
-        fprintf(f, " | ");
-    else
-        fprintf(f, "%s", apop_opts.output_delimiter);
+    if (displaytype == 's') fprintf(f, " | ");
+    else                    fprintf(f, "%s", apop_opts.output_delimiter);
 }
 
 static void apop_data_print_core(const apop_data *data, FILE *f, char displaytype){
@@ -352,10 +343,10 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         fprintf(f, "NULL\n");
         return;
     }
-  int     i, j, L = 0, 
-          start   = (data->vector)? -1 : 0,
-          end     = (data->matrix)? data->matrix->size2 : 0,
-          rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
+    int i, j, L = 0, 
+        start   = (data->vector)? -1 : 0,
+        end     = (data->matrix)? data->matrix->size2 : 0,
+        rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
     if (strlen(data->names->title))
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names->rowct)
@@ -485,17 +476,17 @@ void apop_matrix_show(const gsl_matrix *data){
 /* the next function plots a single graph for the \ref apop_plot_lattice  fn */
 static void printone(FILE *f, double width, double height, double margin, int xposn, int yposn, const apop_data *d){
     //pull two columns
-  size_t count    = d->matrix->size2;
-  double nudge    = 0.08;
-  gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
-  gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
-  gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
+    size_t count    = d->matrix->size2;
+    double nudge    = 0.08;
+    gsl_vector  v1  = gsl_matrix_column(d->matrix, xposn).vector;
+    gsl_vector  v2  = gsl_matrix_column(d->matrix, yposn).vector;
+    gsl_matrix  *m  = gsl_matrix_alloc(d->matrix->size1, 2);
     gsl_matrix_set_col(m, 0, &v1);
     gsl_matrix_set_col(m, 1, &v2);
-  double sizex        = (double)(width - margin * (count -1))/count;
-  double sizey        = (double)(height - margin * (count -1))/count;
-  double offx        = width - (sizex +margin-nudge)* (count - xposn) - nudge*count;
-  double offy        = height - (sizey +margin-nudge)* (1 + yposn) - nudge*count;
+    double sizex    = (double)(width - margin * (count -1))/count;
+    double sizey    = (double)(height - margin * (count -1))/count;
+    double offx     = width - (sizex +margin-nudge)* (count - xposn) - nudge*count;
+    double offy     = height - (sizey +margin-nudge)* (1 + yposn) - nudge*count;
         fprintf(f, "unset y2tics; unset y2label; unset ytics; unset ylabel\n");
         fprintf(f, "unset x2tics; unset x2label; unset xtics; unset xlabel\n");
     fprintf(f, "set size   %g, %g\n"
@@ -540,10 +531,10 @@ APOP_VAR_HEAD void apop_plot_lattice(const apop_data *d, Output_declares){
     Apop_assert_n(d, "Input data set is NULL.\n");
     Dispatch_output
 APOP_VAR_ENDHEAD
-  double  width   = 1.2,//these used to be options, but who's ever gonna set them to something else.
-          height  = 1.2;
-  double  margin  = 0;
-  FILE    *f = output_pipe;
+    double  width  = 1.2,//these used to be options, but who's ever gonna set them to something else.
+            height = 1.2;
+    double  margin = 0;
+    FILE *f = output_pipe;
     fprintf(f, "set size %g, %g\n"
                 "set rmargin 5\n"
                 "set lmargin -1\n"

@@ -37,6 +37,7 @@ static double positive_sigma_constraint(apop_data *data, apop_model *v){
 //This just takes the sum of (x-mu)^2. Using gsl_ran_gaussian_pdf
 //would be to calculate log(exp((x-mu)^2)) == slow.
 static double apply_me(double x, void *mu){ return x - *(double *)mu; }
+
 static double apply_me2(double x, void *mu){ return gsl_pow_2(x - *(double *)mu); }
 
 static double normal_log_likelihood(apop_data *d, apop_model *params){
@@ -44,8 +45,8 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
     Get_vmsizes(d)
     double mu = gsl_vector_get(params->parameters->vector,0);
     double sd = gsl_vector_get(params->parameters->vector,1);
-    long double   ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
-    ll    -=  tsize*(M_LNPI+M_LN2+log(sd));
+    long double ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
+    ll -= tsize*(M_LNPI+M_LN2+log(sd));
 	return ll;
 }
 
@@ -55,16 +56,14 @@ static double normal_log_likelihood(apop_data *d, apop_model *params){
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     Get_vmsizes(data)
-  double		mmean=0, mvar=0, vmean=0, vvar=0;
-  apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
-    if (!p) 
-        p = Apop_model_add_group(est, apop_lm);
+    double mmean=0, mvar=0, vmean=0, vvar=0;
+    apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
+    if (!p) p = Apop_model_add_group(est, apop_lm);
     if (vsize){
         vmean = apop_mean(data->vector);
         vvar = apop_var(data->vector);
     }
-    if (msize1)
-        apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+    if (msize1) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
     double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     est->parameters->vector->data[0] = mean;
@@ -73,8 +72,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 	apop_name_add(est->parameters->names, "sigma",'r');
 	if (!p || p->want_cov=='y'){
         apop_data *cov = apop_data_get_page(est->parameters, "<Covariance>");
-        if (!cov)
-            cov = apop_data_add_page(est->parameters, apop_data_calloc(2, 2), "<Covariance>");
+        if (!cov) cov = apop_data_add_page(est->parameters, apop_data_calloc(2, 2), "<Covariance>");
         apop_data_set(cov, 0, 0, mean/tsize);
         apop_data_set(cov, 1, 1, 2*gsl_pow_2(var)/(tsize-1));
     }
@@ -84,8 +82,8 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 }
 
 static double normal_cdf(apop_data *d, apop_model *params){
-  Nullcheck_mpd(d, params, GSL_NAN)
-  Get_vmsizes(d)  //vsize
+    Nullcheck_mpd(d, params, GSL_NAN)
+    Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double mu = gsl_vector_get(params->parameters->vector, 0);
     double sd = gsl_vector_get(params->parameters->vector, 1);
@@ -95,9 +93,9 @@ static double normal_cdf(apop_data *d, apop_model *params){
 static void normal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *params){    
     Nullcheck_mpd(d, params, )
     Get_vmsizes(d)
-    double  mu = gsl_vector_get(params->parameters->vector,0),
-            sd = gsl_vector_get(params->parameters->vector,1),
-            dll, sll;
+    double mu = gsl_vector_get(params->parameters->vector,0),
+           sd = gsl_vector_get(params->parameters->vector,1),
+           dll, sll;
     dll = apop_map_sum(d, .fn_dp = apply_me, .param=&mu);
     sll = apop_map_sum(d, .fn_dp = apply_me2, .param=&mu);
     gsl_vector_set(gradient, 0, dll/gsl_pow_2(sd));
@@ -111,13 +109,11 @@ apop_data * normal_predict(apop_data *dummy, apop_model *m){
     out->matrix->data[0] = m->parameters->vector->data[0];
 
     apop_data *cov = apop_data_get_page(out, "<Covariance>");
-    if (!cov)
-        cov = apop_data_add_page(out, apop_data_alloc(1,1), "<Covariance>");
+    if (!cov) cov = apop_data_add_page(out, apop_data_alloc(1,1), "<Covariance>");
     if (m->data){
-        Get_vmsizes(m->data) //tsize
-        cov->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
-    } else
-        cov->matrix->data[0] = 0;
+           Get_vmsizes(m->data) //tsize
+           cov->matrix->data[0] = m->parameters->vector->data[1]/ sqrt(tsize);
+    } else cov->matrix->data[0] = 0;
     return out;
 }
 
@@ -165,15 +161,12 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
-    double mean = 0,
-           var  = 0; 
+    double mean = 0, var = 0; 
     apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
-    if (!p) 
-        p = Apop_model_add_group(est, apop_lm);
+    if (!p) p = Apop_model_add_group(est, apop_lm);
     apop_matrix_mean_and_var(data->matrix, &mean, &var);
-    if (!est->parameters)
-        est->parameters = apop_data_alloc(2);
-    double sigsq   = log(1+ var/gsl_pow_2(mean));
+    if (!est->parameters) est->parameters = apop_data_alloc(2);
+    double sigsq = log(1+ var/gsl_pow_2(mean));
     apop_name_add(est->parameters->names, "mu", 'r');
     apop_name_add(est->parameters->names, "sigma", 'r');
 	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);

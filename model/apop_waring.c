@@ -36,17 +36,17 @@ static double beta_zero_and_one_greater_than_x_constraint(apop_data *returned_be
 
 static double apply_me(double val, void *in){
     ab_type *ab = in;
-        double ln_a_k		 = gsl_sf_lngamma(val + ab->a);
-        double ln_bb_a_k	 = gsl_sf_lngamma(val + ab->a + ab->bb);
-        return  ln_a_k - ln_bb_a_k;
+    double ln_a_k = gsl_sf_lngamma(val + ab->a);
+    double ln_bb_a_k = gsl_sf_lngamma(val + ab->a + ab->bb);
+    return ln_a_k - ln_bb_a_k;
 }
 
 static double waring_log_likelihood(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m, GSL_NAN);
-  Get_vmsizes(d) //tsize
-  ab_type abstruct = {.bb = gsl_vector_get(m->parameters->vector, 0),
-                      .a  = gsl_vector_get(m->parameters->vector, 1)};
-  double ln_bb_a = gsl_sf_lngamma(abstruct.bb + abstruct.a),
+    Nullcheck_mpd(d, m, GSL_NAN);
+    Get_vmsizes(d) //tsize
+    ab_type abstruct = {.bb = gsl_vector_get(m->parameters->vector, 0),
+                        .a  = gsl_vector_get(m->parameters->vector, 1)};
+    double ln_bb_a = gsl_sf_lngamma(abstruct.bb + abstruct.a),
          ln_a_mas_1	= gsl_sf_lngamma(abstruct.a + 1),
          ln_bb_less_1= log(abstruct.bb - 1);
     double likelihood  = apop_map_sum(d, .fn_dp = apply_me, .param=&abstruct);
@@ -57,9 +57,9 @@ static double waring_log_likelihood(apop_data *d, apop_model *m){
 
 static double dapply_a(double val, void *in){
     ab_type *ab = in;
-        long double psi_a_k		 = gsl_sf_psi(val + ab->a);
-        long double psi_bb_a_k	 = gsl_sf_psi(val + ab->a + ab->bb);
-        return psi_a_k - psi_bb_a_k;
+    long double psi_a_k	   = gsl_sf_psi(val + ab->a);
+    long double psi_bb_a_k = gsl_sf_psi(val + ab->a + ab->bb);
+    return psi_a_k - psi_bb_a_k;
 }
 
 static double dapply_b(double val, void *in){
@@ -77,9 +77,9 @@ static double dapply_b(double val, void *in){
     apop_data_show(m->parameters);
     double d_bb = apop_map_sum(d, .fn_dp=dapply_b, .param=&ab);
     double d_a  = apop_map_sum(d, .fn_dp=dapply_a, .param=&ab);
-    double	bb_minus_one_inv= 1./(ab.bb-1),
-      	    psi_a_bb	    = gsl_sf_psi(ab.bb + ab.a),
-      	    psi_a_mas_one	= gsl_sf_psi(ab.a+1);
+    double	bb_minus_one_inv = 1./(ab.bb-1),
+      	    psi_a_bb	  = gsl_sf_psi(ab.bb + ab.a),
+      	    psi_a_mas_one = gsl_sf_psi(ab.a+1);
 	d_bb += (bb_minus_one_inv + psi_a_bb) *tsize;
 	d_a	 += (psi_a_bb- psi_a_mas_one) * tsize;
 	gsl_vector_set(gradient, 0, d_bb);
@@ -104,13 +104,13 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 // c = b - 1 
 // n = k - 1 , so if it returns 0, that's first rank.
 // OK, I hope that clears everything up.
-    double		x, u,
-                b   = gsl_vector_get(eps->parameters->vector, 0),
-                a   = gsl_vector_get(eps->parameters->vector, 1);
-    double		params[]	={a+1, 1, b-1};
+    double x, u,
+           b = gsl_vector_get(eps->parameters->vector, 0),
+           a = gsl_vector_get(eps->parameters->vector, 1);
+    double params[]	={a+1, 1, b-1};
 	do{
-		x	= apop_rng_GHgB3(r, params)+1;
-		u	= gsl_rng_uniform(r);
+		x = apop_rng_GHgB3(r, params)+1;
+		u = gsl_rng_uniform(r);
 	} while (u >= (x + a)/(GSL_MAX(a+1,1)*x));
     *out = x;
 }

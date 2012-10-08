@@ -424,13 +424,14 @@ APOP_VAR_END_HEAD
 }
 
 
-static apop_data *dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v, const CBLAS_TRANSPOSE_t flip){
-    #define Check_gslv(...) if (__VA_ARGS__) {gsl_vector_free(out); return NULL;}
+static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v, 
+                             const CBLAS_TRANSPOSE_t flip){
+    #define Check_gslv(...) if (__VA_ARGS__) {gsl_vector_free(out);}
     gsl_vector *out = (flip ==CblasNoTrans)
                         ? gsl_vector_calloc(m->size1)
                         : gsl_vector_calloc(m->size2);
     Check_gslv(gsl_blas_dgemv (flip, 1.0, m, v, 0.0, out))
-    return apop_vector_to_data(out);
+    return out;
 }
 
 static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
@@ -498,50 +499,43 @@ APOP_VAR_ENDHEAD
                 *rm = d2->matrix;
     gsl_vector  *lv = d1->vector, 
                 *rv = d2->vector;
-    CBLAS_TRANSPOSE_t   lt, rt;
-    apop_data   *out    = apop_data_alloc();
+    apop_data *out = apop_data_alloc();
 
-    if (d1->matrix && form1 != 'v')
-        uselm   = 1;
-    else if (d1->vector)
-        uselm   = 0;
+    if (d1->matrix && form1 != 'v') uselm = 1;
+    else if (d1->vector)            uselm = 0;
     else {
         Apop_assert_c(form1 != 'v',  NULL, 0,
-                    "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
-        Apop_assert_c(0, NULL, 0,
-                    "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
+                    "You asked for a vector from the left data set, but "
+                    "its vector==NULL. Returning NULL.");
+        Apop_assert_c(0, NULL, 0, "The left data set has neither non-NULL "
+                                  "matrix nor vector. Returning NULL.");
     }
-    if (d2->matrix && form2 != 'v')
-        userm   = 1;
-    else if (d2->vector)
-        userm   = 0;
+    if (d2->matrix && form2 != 'v') userm = 1;
+    else if (d2->vector)            userm = 0;
     else {
         Apop_assert_c (form2 != 'v',  NULL, 0, 
-                    "You asked for a vector from the right data set, but its vector==NULL. Returning NULL.");
-        Apop_assert_c(0, NULL, 0, 
-                    "The right data set has neither non-NULL matrix nor vector. Returning NULL.");
+                    "You asked for a vector from the right data set, but "
+                    "its vector==NULL. Returning NULL.");
+        Apop_assert_c(0, NULL, 0, "The right data set has neither non-NULL "
+                                  "matrix nor vector. Returning NULL.");
     }
 
+    CBLAS_TRANSPOSE_t lt, rt;
     lt  = (form1 == 't' || form1 == 1) ? CblasTrans: CblasNoTrans;
     rt  = (form2 == 't' || form2 == 1) ? CblasTrans: CblasNoTrans;
     if (uselm && userm){
         apop_check_dimensions(lm, rm, lt, rt);
-        gsl_matrix *outm    = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
-                                                (rt== CblasTrans)? rm->size1: rm->size2);
+        gsl_matrix *outm = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
+                                             (rt== CblasTrans)? rm->size1: rm->size2);
         Check_gsl_with_out(gsl_blas_dgemm (lt,rt, 1, lm, rm, 0, outm))
-        out->matrix         = outm;
+        out->matrix = outm;
     } else if (!uselm && userm){
         //If output vector has dimension matrix->size2, send CblasTrans
         //If output vector has dimension matrix->size1, send CblasNoTrans
-        if (rt == CblasNoTrans)
-            out = dot_for_apop_dot(rm, lv, CblasTrans);
-        else
-            out = dot_for_apop_dot(rm, lv, CblasNoTrans);
+        out->vector = dot_for_apop_dot(rm, lv
+                        , (rt == CblasNoTrans) ? CblasTrans : CblasNoTrans);
     } else if (uselm && !userm){
-        if (lt == CblasNoTrans)
-            out = dot_for_apop_dot(lm, rv, CblasNoTrans);
-        else
-            out = dot_for_apop_dot(lm, rv, CblasTrans);
+        out->vector = dot_for_apop_dot(lm, rv , lt);
     } else if (!uselm && !userm){ 
         double outd;
         Check_gsl_with_out(gsl_blas_ddot (lv, rv, &outd))
@@ -549,19 +543,14 @@ APOP_VAR_ENDHEAD
         gsl_vector_set(out->vector, 0, outd);
     }
 
-    //last step: names.
     //If using the vector, there's no meaningful name to assign.
     if (d1->names && uselm){
-        if (lt == CblasTrans)
-            apop_name_stack(out->names, d1->names, 'r', 'c');
-        else
-            apop_name_stack(out->names, d1->names, 'r');
+        if (lt == CblasTrans) apop_name_stack(out->names, d1->names, 'r', 'c');
+        else                  apop_name_stack(out->names, d1->names, 'r');
     }
     if (d2->names && userm){
-        if (rt == CblasTrans)
-            apop_name_stack(out->names, d2->names, 'c', 'r');
-        else
-            apop_name_stack(out->names, d2->names, 'c');
+        if (rt == CblasTrans) apop_name_stack(out->names, d2->names, 'c', 'r');
+        else                  apop_name_stack(out->names, d2->names, 'c');
     }
 
 done:

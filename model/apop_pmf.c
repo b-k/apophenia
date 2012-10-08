@@ -180,7 +180,7 @@ double pmf_p(apop_data *d, apop_model *m){
     }
     Get_vmsizes(d)//firstcol, vsize, vsize1, msize2
     long double p = 1;
-    for(int i=0; i< GSL_MAX(msize1, d->textsize[0]); i++){
+    for (int i=0; i< GSL_MAX(msize1, d->textsize[0]); i++){
         Apop_data_row(d, i, onerow);
         int elmt = find_in_data(m->data, onerow);
         if (elmt == -1) return 0; //Can't find one observation: prob=0;
@@ -264,4 +264,3 @@ apop_data *apop_data_pmf_compress(apop_data *in){
     free(cutme);
     return in;
 }
-

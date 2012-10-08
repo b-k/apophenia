@@ -69,7 +69,7 @@ static int strcmpwrap(const void *a, const void *b){
   \param v a vector of items
 
   \return a sorted vector of the distinct elements that appear in the input.
-  \see{apop_text_unique_elements}
+  \see apop_text_unique_elements 
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   double val;
@@ -99,7 +99,7 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
   \param d An \ref apop_data set with a text component
   \param col The text column you want me to use.
   \return An \ref apop_data set with a single sorted column of text, where each unique text input appears once.
-  \see{apop_vector_unique_elements}
+  \see apop_vector_unique_elements
 */
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
   char   **tval;

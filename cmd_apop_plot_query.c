@@ -10,11 +10,11 @@ int histobins   = 0;
 int histoplotting   = 0;
 
 FILE *open_output(char *outfile, int sf){
-  FILE  *f;
+    FILE  *f;
     if (sf && !strcmp (outfile, "-"))
         return stdout;
     if (sf && outfile){
-        f   = fopen(outfile, "w");
+        f = fopen(outfile, "w");
         if (!f){
             fprintf(stderr, "Trouble opening %s. Look into that.\n", outfile);
             exit(0);
@@ -30,10 +30,10 @@ FILE *open_output(char *outfile, int sf){
 }
 
 char *read_query(char *infile){
-  char in[1000];
-  char *q       = malloc(10);
-    q[0]        = '\0';
-  FILE  *inf    = fopen(infile, "r");
+    char in[1000];
+    char *q = malloc(10);
+    q[0] = '\0';
+    FILE  *inf = fopen(infile, "r");
     if (!inf){
         fprintf(stderr, "Trouble opening %s. Look into that.\n", infile);
         exit(0);
@@ -49,7 +49,7 @@ char *read_query(char *infile){
 
 gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
-apop_data *result 	= apop_query_to_data("%s", q);
+    apop_data *result = apop_query_to_data("%s", q);
 	apop_db_close(0);
     Apop_assert(result, "Your query returned a blank table. Quitting.");
     if (no_plot){
@@ -74,24 +74,22 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 }
 
 int main(int argc, char **argv){
-  char		    c, *q       = NULL, 
-                *d          = NULL,
-                *outfile    = NULL,
-		        msg[2000];
-  gsl_matrix	*m;
-  FILE          *f;
-  int           sf          = 0,
-                no_plot     = 0;
+    char c, *q    = NULL, 
+         *d       = NULL,
+         *outfile = NULL,
+         msg[2000];
+    int sf      = 0,
+        no_plot = 0;
 
-	sprintf(msg, "%s [opts] dbname query\n\n\
-Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout or a file.\n\
--d\tdatabase to use\t\t\t\t\tmandatory \n\
--q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n\
--Q\tfile from which to read the query\t\t\n\
--n\tno plot: just run the query and display results to stdout\t\t\n\
--t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n\
--H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n\
--f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n", argv[0]); 
+    sprintf(msg, "%s [opts] dbname query\n\n"
+"Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout or a file.\n"
+"-d\tdatabase to use\t\t\t\t\tmandatory \n"
+"-q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n"
+"-Q\tfile from which to read the query\t\t\n"
+"-n\tno plot: just run the query and display results to stdout\t\t\n"
+"-t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n"
+"-H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n"
+"-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n", argv[0]); 
 
 	if(argc<2){
 		printf("%s", msg);
@@ -147,7 +145,7 @@ Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout
         return 0;
     }
 
-    f   = open_output(outfile, sf);
-    m   = query(d, q, no_plot);
+    FILE *f = open_output(outfile, sf);
+    gsl_matrix *m = query(d, q, no_plot);
     print_out(f, outfile, m);
 }

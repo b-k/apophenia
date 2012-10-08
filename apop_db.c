@@ -29,20 +29,20 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 #include "apop_db_sqlite.c"
 
 //This macro declares the query string and fills it from the printf part of the call.
-#define Fillin(query, fmt)          \
-  char		*query;                 \
-  va_list   argp;                   \
-	va_start(argp, fmt);            \
-	vasprintf(&query, fmt, argp);   \
-	va_end(argp);                   \
+#define Fillin(query, fmt)        \
+    char *query;                  \
+    va_list argp;                 \
+	va_start(argp, fmt);          \
+	vasprintf(&query, fmt, argp); \
+	va_end(argp);                 \
 	Apop_notify(2, "%s", query);
 
 typedef struct {
-    int         firstcall;
-    size_t      currentrow;
-    regmatch_t  result[3];
-    regex_t     *regex;
-    apop_data   *outdata;
+    int        firstcall;
+    size_t     currentrow;
+    regmatch_t result[3];
+    regex_t    *regex;
+    apop_data  *outdata;
 } callback_t;
 
 /** Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
@@ -135,9 +135,9 @@ APOP_VAR_END_HEAD
 #else
         Apop_assert_negone(0, "Apophenia was compiled without mysql support.");
 #endif
-  char 		*err=NULL, *q2;
-  tab_exists_t te = { .name = name };
-  tab_exists_t tev = { .name = name };
+    char *err=NULL, *q2;
+    tab_exists_t te = { .name = name };
+    tab_exists_t tev = { .name = name };
 	if (db==NULL) return 0;
 	sqlite3_exec(db, "select name from sqlite_master where type='table'", tab_exists_callback, &te, &err); 
 	sqlite3_exec(db, "select name from sqlite_master where type='view'", tab_exists_callback, &tev, &err); 
@@ -211,8 +211,8 @@ are filled with <tt>NAN</tt>s in the matrix.
 \return 0 on success, 1 on failure.
 */
 int apop_query(const char *fmt, ...){
-  char 		*err=NULL;
-  Fillin(query, fmt)
+    char *err=NULL;
+    Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         {Apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
@@ -247,26 +247,25 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #else
         Apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.");
 #endif
-    } else
-        out = apop_sqlite_query_to_text(query);
+    } else out = apop_sqlite_query_to_text(query);
     free(query);
     return out;
 }
 
 //apop_query_to_data callback.
 static int db_to_table(void *qinfo, int argc, char **argv, char **column){
-  int		i, ncfound = 0;
-  callback_t *qi= qinfo ;
+    int i, ncfound = 0;
+    callback_t *qi= qinfo;
     if (qi->firstcall){
-        qi->firstcall   --;
-        namecol     = -1;
+        qi->firstcall--;
+        namecol = -1;
         for(i=0; i<argc; i++)
             if (!strcasecmp(column[i], apop_opts.db_name_column)){
                 namecol = i;
                 ncfound = 1;
                 break;
             }
-	    qi->outdata		= argc-ncfound ? apop_data_alloc(1, argc-ncfound) : apop_data_alloc( );
+	    qi->outdata = argc-ncfound ? apop_data_alloc(1, argc-ncfound) : apop_data_alloc( );
         for(i=0; i<argc; i++)
             if (namecol != i)
                 apop_name_add(qi->outdata->names, column[i], 'c');
@@ -304,9 +303,9 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #endif
 
     //else
-  char		    *err=NULL;
-  char        full_divider[103];
-  callback_t  qinfo = {.firstcall = 1,
+    char *err=NULL;
+    char full_divider[103];
+    callback_t  qinfo = {.firstcall = 1,
                        .regex = malloc(sizeof(regex_t))};
 	if (db==NULL) apop_db_open(NULL);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
@@ -371,8 +370,8 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #else
         Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
-  apop_data	*d=NULL;
-  gsl_vector  *out;
+    apop_data *d=NULL;
+    gsl_vector *out;
 	if (db==NULL) apop_db_open(NULL);
     Store_settings
 	d	= apop_query_to_data("%s", query);
@@ -384,7 +383,6 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 	apop_data_free(d);
     free(query);
 	return out;
-
 }
 
 /** Queries the database, and dumps the result into a single double-precision floating point number.
@@ -405,10 +403,10 @@ double apop_query_to_float(const char * fmt, ...){
         apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
 #endif
     } else {
-        apop_data	*d=NULL;
+        apop_data *d=NULL;
         if (db==NULL) apop_db_open(NULL);
         Store_settings
-        d	= apop_query_to_data("%s", query);
+        d = apop_query_to_data("%s", query);
         Restore_settings
         Apop_assert_c(d, GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
         out	= apop_data_get(d, 0, 0);

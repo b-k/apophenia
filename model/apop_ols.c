@@ -20,7 +20,7 @@ You can also use it for a lot of not-entirely linear models based on the form \f
 \adoc    settings  \ref apop_lm_settings 
 \adoc    Examples
 First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
-\verbatim
+\code
 Y, X_1, X_2, X_3
 2,3,4,5
 1,2,9,3
@@ -28,15 +28,15 @@ Y, X_1, X_2, X_3
 2,4,8,16
 1,4,2,9
 9,8,7,6
-\endverbatim
+\endcode
 
 The program:
-\include ols1.c
+\include ols.c
 
 If you saved this code to <tt>sample.c</tt>, then you can compile it with
-\verbatim
+\code
 gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
-\endverbatim
+\endcode
 
 and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
 
@@ -363,11 +363,11 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default
-        void *tmp = m->parameter_model;
-        m->parameter_model = NULL;
-        apop_model *out = apop_parameter_model(d, m);
-        m->parameter_model=tmp;
-        return out;
+    void *tmp = m->parameter_model;
+    m->parameter_model = NULL;
+    apop_model *out = apop_parameter_model(d, m);
+    m->parameter_model=tmp;
+    return out;
 }
 
 void ols_print(apop_model *m){
@@ -421,7 +421,7 @@ apop_model_show(est);
 \endcode */
 
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
-  apop_data *out    = apop_data_copy(x);
+    apop_data *out = apop_data_copy(x);
     if (instruments->vector)
         for (int i=0; i< instruments->vector->size; i++){
             APOP_COL(instruments, i, inv);
@@ -437,8 +437,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
             APOP_COL(out, rownumber, outv);
             gsl_vector_memcpy(outv, inv);
         }
-    else 
-        Apop_assert(0, "Your instrument matrix has data, but neither a vector element "
+    else Apop_assert(0, "Your instrument matrix has data, but neither a vector element "
                        "nor row names indicating what columns in the original data should be replaced.");
     return out;
 }
@@ -447,15 +446,13 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
   Nullcheck_mpd(inset, ep, NULL);
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
-    if (!olp) 
-        olp = Apop_model_add_group(ep, apop_lm);
-    olp->want_cov       = 'n';//not working yet.
+    if (!olp) olp = Apop_model_add_group(ep, apop_lm);
+    olp->want_cov = 'n';//not working yet.
     if (pwant) pwant->covariance=0;
     if (!olp->instruments || !(olp->instruments->matrix || olp->instruments->vector)) 
         return apop_estimate(inset, apop_ols);
     ep->data = inset;
-    if(ep->parameters)
-        apop_data_free(ep->parameters);
+    if(ep->parameters) apop_data_free(ep->parameters);
     ep->parameters = apop_data_alloc(inset->matrix->size2);
     apop_data *set = olp->destroy_data ? inset : apop_data_copy(inset); 
     apop_data *z   = prep_z(inset, olp->instruments);
@@ -467,7 +464,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
         for (int i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
-  apop_data    *y_data     = apop_data_alloc(set->matrix->size1); 
+    apop_data *y_data = apop_data_alloc(set->matrix->size1); 
     if ((pwant && pwant->predicted) || (!pwant && olp && olp->want_expected_value))
         apop_data_add_page(ep->info, apop_data_alloc(set->matrix->size1, 3), "<Predicted>");
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
@@ -493,9 +490,7 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     apop_data_free(zpxinv);
     apop_data_free(zpy);
 
-    if (!olp->destroy_data)
-        apop_data_free(set);
-//    apop_estimate_parameter_t_tests(epout); //the user can do this if s/he wants.
+    if (!olp->destroy_data) apop_data_free(set);
     return ep;
 }
 

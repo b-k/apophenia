@@ -16,7 +16,7 @@ For allocating the text part, see \ref apop_text_alloc.
 The \c weights vector is set to \c NULL. If you need it, allocate it via
 \code d->weights   = gsl_vector_alloc(row_ct); \endcode.
 
-\see{apop_data_calloc}
+\see apop_data_calloc
 
  \return    The \ref apop_data structure, allocated and ready.
 
@@ -28,7 +28,8 @@ APOP_VAR_HEAD apop_data * apop_data_alloc(const size_t size1, const size_t size2
     const size_t apop_varad_var(size2, 0);
     const int apop_varad_var(size3, 0);
 APOP_VAR_ENDHEAD
-    size_t vsize=0, msize1=0; int msize2=0;
+    size_t vsize=0, msize1=0; 
+    int msize2=0;
     if (size3){
         vsize = size1;
         msize1 = size2;
@@ -38,25 +39,24 @@ APOP_VAR_ENDHEAD
         msize1 = size1;
         msize2 = size2;
     }
-    else 
-        vsize = size1;
-  apop_data  *setme       = malloc(sizeof(apop_data));
+    else vsize = size1;
+    apop_data *setme = malloc(sizeof(apop_data));
     apop_assert(setme, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 > 0  && msize1 > 0){
-        setme->matrix   = gsl_matrix_alloc(msize1,msize2);
+        setme->matrix = gsl_matrix_alloc(msize1,msize2);
         apop_assert(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
-        setme->vector   = gsl_vector_alloc(vsize);
+        setme->vector = gsl_vector_alloc(vsize);
         apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
     else if (msize2==-1 && msize1>0){
-        setme->vector   = gsl_vector_alloc(msize1);
+        setme->vector = gsl_vector_alloc(msize1);
         apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
-    setme->names        = apop_name_alloc();
+    setme->names = apop_name_alloc();
     return setme;
 }
 
@@ -72,7 +72,8 @@ APOP_VAR_HEAD apop_data * apop_data_calloc(const size_t size1, const size_t size
     const size_t apop_varad_var(size2, 0);
     const int apop_varad_var(size3, 0);
 APOP_VAR_ENDHEAD
-    size_t vsize=0, msize1=0; int msize2=0;
+    size_t vsize=0, msize1=0; 
+    int msize2=0;
     if (size3){
         vsize = size1;
         msize1 = size2;
@@ -82,24 +83,23 @@ APOP_VAR_ENDHEAD
         msize1 = size1;
         msize2 = size2;
     }
-    else 
-        vsize = size1;
-  apop_data  *setme       = malloc(sizeof(apop_data));
+    else vsize = size1;
+    apop_data  *setme       = malloc(sizeof(apop_data));
     apop_assert(setme, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
-        setme->matrix   = gsl_matrix_calloc(msize1,msize2);
+        setme->matrix = gsl_matrix_calloc(msize1,msize2);
         apop_assert(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
-        setme->vector   = gsl_vector_calloc(vsize);
+        setme->vector = gsl_vector_calloc(vsize);
         apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     else if (msize2==-1 && msize1>0){
-        setme->vector   = gsl_vector_calloc(msize1);
+        setme->vector = gsl_vector_calloc(msize1);
         apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
     }
-    setme->names        = apop_name_alloc();
+    setme->names = apop_name_alloc();
     return setme;
 }
 
@@ -110,8 +110,8 @@ APOP_VAR_ENDHEAD
 \return      The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
-  Apop_assert_c(m, apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
-  apop_data  *setme   = apop_data_alloc();
+    Apop_assert_c(m, apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
+    apop_data *setme = apop_data_alloc();
     setme->matrix = m;
     return setme;
 }
@@ -123,8 +123,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 \return     an allocated, ready-to-use \ref apop_data structure.
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
-  Apop_assert_c(v, apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
-  apop_data  *setme   = apop_data_alloc();
+    Apop_assert_c(v, apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
+    apop_data  *setme = apop_data_alloc();
     setme->vector = v;
     return setme;
 }
@@ -157,12 +157,9 @@ void apop_data_free_base(apop_data *freeme){
                                         "data set itself. This is not healthy.");
         apop_data_free(freeme->more);
     }
-    if (freeme->vector)
-        gsl_vector_free(freeme->vector);
-    if (freeme->matrix)
-        gsl_matrix_free(freeme->matrix);
-    if (freeme->weights)
-        gsl_vector_free(freeme->weights);
+    if (freeme->vector)  gsl_vector_free(freeme->vector);
+    if (freeme->matrix)  gsl_matrix_free(freeme->matrix);
+    if (freeme->weights) gsl_vector_free(freeme->weights);
     apop_name_free(freeme->names);
     apop_text_free(freeme->text, freeme->textsize[0] , freeme->textsize[1]);
     free(freeme);
@@ -241,20 +238,16 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
  \ingroup data_struct
   */
 apop_data *apop_data_copy(const apop_data *in){
-    if (!in)
-        return NULL;
-    apop_data *out  = apop_data_alloc();
+    if (!in) return NULL;
+    apop_data *out = apop_data_alloc();
     if (in->more){
         Apop_assert(in != in->more, "the ->more element of this data set equals the "
                                         "data set itself. This is not healthy.");
         out->more = apop_data_copy(in->more);
     }
-    if (in->vector)
-        out->vector = gsl_vector_alloc(in->vector->size);
-    if (in->matrix)
-        out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
-    if (in->weights)
-        out->weights = gsl_vector_alloc(in->weights->size);
+    if (in->vector)  out->vector = gsl_vector_alloc(in->vector->size);
+    if (in->matrix)  out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
+    if (in->weights) out->weights = gsl_vector_alloc(in->weights->size);
     if (in->textsize[0] && in->textsize[1])
         apop_text_alloc(out, in->textsize[0], in->textsize[1]);
     apop_data_memcpy(out, in);
@@ -300,11 +293,9 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     char apop_varad_var(inplace, 'n')
     inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
 APOP_VAR_ENDHEAD
-    if (!m1)
-        return apop_data_copy(m2);
-    if (!m2)
-        return inplace ? m1 : apop_data_copy(m1);
-    apop_data   *out    = NULL;
+    if (!m1) return apop_data_copy(m2);
+    if (!m2) return inplace ? m1 : apop_data_copy(m1);
+    apop_data *out = NULL;
     if (inplace)
         out = m1;
     else {
@@ -355,7 +346,6 @@ APOP_VAR_ENDHEAD
 /** Split one input \ref apop_data structure into two.
 
  For the opposite operation, see \ref apop_data_stack.
-
  
 \param in  The \ref apop_data structure to split 
 \param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
@@ -372,18 +362,18 @@ APOP_VAR_ENDHEAD
  */
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a reasonable use of goto.
-  apop_data   **out   = malloc(2*sizeof(apop_data *));
-  out[0] = out[1] = NULL;
-  Apop_assert_c(in, out, 1, "input was NULL; output will be an array of two NULLs.");
-  gsl_vector  v1, v2, w1, w2;
-  gsl_matrix  m1, m2;
-  int       set_v1  = 1, set_v2  = 1,
-            set_m1  = 1, set_m2  = 1,
-            set_w1  = 1, set_w2  = 1,
-            namev0  = 0, namev1  = 0,
-            namer0  = 0, namer1  = 0,
-            namec0  = 0, namec1  = 0,
-            namersplit = -1, namecsplit = -1;
+    apop_data   **out   = malloc(2*sizeof(apop_data *));
+    out[0] = out[1] = NULL;
+    Apop_assert_c(in, out, 1, "input was NULL; output will be an array of two NULLs.");
+    gsl_vector v1, v2, w1, w2;
+    gsl_matrix m1, m2;
+    int set_v1 = 1, set_v2 = 1,
+        set_m1 = 1, set_m2 = 1,
+        set_w1 = 1, set_w2 = 1,
+        namev0 = 0, namev1 = 0,
+        namer0 = 0, namer1 = 0,
+        namec0 = 0, namec1 = 0,
+        namersplit = -1, namecsplit = -1;
      if (r_or_c == 'r' || r_or_c == 'R') {
         if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
@@ -478,8 +468,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_m2  = 0;
             goto allocation;
         }
-    } else 
-        Apop_assert_c(0, out, 0, "Please set r_or_c == 'r' or == 'c'. Returning two NULLs.");
+    } else Apop_assert_c(0, out, 0, "Please set r_or_c == 'r' or == 'c'. Returning two NULLs.");
     return out;
 
 allocation:
@@ -537,13 +526,11 @@ allocation:
 \ingroup names
  */
 static void apop_name_rm_columns(apop_name *n, int *drop){
-  apop_name   *newname    = apop_name_alloc();
-  size_t initial_colct = n->colct;
+    apop_name *newname = apop_name_alloc();
+    size_t initial_colct = n->colct;
     for (size_t i=0; i< initial_colct; i++){
-        if (drop[i]==0)
-            apop_name_add(newname, n->column[i],'c');
-        else
-            n->colct    --;
+        if (drop[i]==0) apop_name_add(newname, n->column[i],'c');
+        else            n->colct--;
         free(n->column[i]);
     }
     free(n->column);
@@ -567,7 +554,7 @@ quickly fill an array of ints with nonzero values.
  \ingroup data_struct
  */
 void apop_data_rm_columns(apop_data *d, int *drop){
-  gsl_matrix  *freeme = d->matrix;
+    gsl_matrix *freeme = d->matrix;
     d->matrix = apop_matrix_rm_columns(d->matrix, drop);
     gsl_matrix_free(freeme); 
     apop_name_rm_columns(d->names, drop);
@@ -685,7 +672,7 @@ These functions use the \ref designated syntax for inputs.
 
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
-  int rownum =  apop_name_find(in->names, row, 'r');
+    int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
                       : gsl_vector_ptr(in->vector, rownum);
@@ -693,7 +680,7 @@ double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
 
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
+    int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
                          : gsl_vector_ptr(in->vector, row);
@@ -701,8 +688,8 @@ double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
 
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
-  int rownum =  apop_name_find(in->names, row, 'r');
+    int colnum =  apop_name_find(in->names, col, 'c');
+    int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
     apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
@@ -745,12 +732,12 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
         return gsl_matrix_ptr(data->matrix, row,col);
     }
 APOP_VAR_ENDHEAD
-return NULL;//the main function is blank.
+    return NULL;//the main function is blank.
 }
 
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_ti(const apop_data *in, const char* row, const int col){
-  int rownum =  apop_name_find(in->names, row, 'r');
+    int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (col >= 0){
         Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
@@ -776,8 +763,8 @@ double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
 
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
-  int colnum =  apop_name_find(in->names, col, 'c');
-  int rownum =  apop_name_find(in->names, row, 'r');
+    int colnum =  apop_name_find(in->names, col, 'c');
+    int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (colnum >= 0){
@@ -822,7 +809,7 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
         return gsl_vector_get(d->vector, row);
     }
 APOP_VAR_ENDHEAD
-return 0;//the main function is blank.
+    return 0;//the main function is blank.
 }
 
 /* The only hint the GSL gives that something failed is that the error-handler is called.
@@ -934,11 +921,9 @@ APOP_VAR_HEAD int apop_data_set(apop_data *data, const size_t row, const int col
     Unset_gsl_handler
     return error_for_set;
 APOP_VAR_ENDHEAD
-//the main function is blank.
-    return 0;
+    return 0; //the main function is blank.
 }
 /** \} //End data_set_get group */
-
 
 
 /** Now that you've used \ref Apop_data_row to pull a row from an \ref apop_data set,
@@ -1001,8 +986,6 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
 }
 
 
-
-
 /** A convenience function to add a named element to a data set.  Many of Apophenia's
 testing procedures use this to easily produce a column of named parameters. It is public
 as a convenience.
@@ -1027,7 +1010,6 @@ apop_data_add_named_elmt(list, "weight", 60);
 
 double height = apop_data_get(list, .rowname="height");
 \endcode
-
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
     Apop_assert_n(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc() to start.");
@@ -1164,8 +1146,8 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
  \return  A newly alloced \ref apop_data set, with the appropriately transposed matrix. The vector and text elements will be \c NULL.
  */ 
 apop_data *apop_data_transpose(apop_data *in){
-  apop_assert_c(in->matrix, NULL, 0, "input data set has no matrix element, so I'm returning NULL.");
-  apop_data *out = apop_data_alloc(0, in->matrix->size2, in->matrix->size1);
+    apop_assert_c(in->matrix, NULL, 0, "input data set has no matrix element, so I'm returning NULL.");
+    apop_data *out = apop_data_alloc(0, in->matrix->size2, in->matrix->size1);
     gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
     apop_name_stack(out->names, in->names, 'r', 'c');
     apop_name_stack(out->names, in->names, 'c', 'r');
@@ -1238,12 +1220,11 @@ resizing a portion of a parent matrix makes no sense.]
 \return v, now resized
  */
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
-    if (!v)
-        return newheight ?  gsl_vector_alloc(newheight) : NULL;
+    if (!v) return newheight ? gsl_vector_alloc(newheight) : NULL;
     apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
                                     "I can't resize subvectors or other views.");
     v->block->size = newheight;
-    v->size     = newheight;
+    v->size = newheight;
     v->block->data = 
     v->data        = realloc(v->data, sizeof(double) * v->block->size);
     return v;
@@ -1358,8 +1339,7 @@ APOP_VAR_ENDHEAD
             return NULL;
         } //else:
         return tmp;
-    } else 
-        return NULL;
+    } else return NULL;
 }
 
 typedef int (*apop_fn_ir)(apop_data*, void*);
@@ -1414,14 +1394,10 @@ APOP_VAR_ENDHEAD
     }
 
     //now trim excess memory:
-    if (in->vector)
-        apop_vector_realloc(in->vector, GSL_MIN(in->vector->size, outlength));
-    if (in->weights)
-        apop_vector_realloc(in->weights, GSL_MIN(in->weights->size, outlength));
-    if (in->matrix)
-        apop_matrix_realloc(in->matrix, GSL_MIN(in->matrix->size1, outlength), in->matrix->size2);
-    if (in->text)
-        apop_text_alloc(in, GSL_MIN(outlength, in->textsize[0]), in->textsize[1]);
+    if (in->vector)  apop_vector_realloc(in->vector, GSL_MIN(in->vector->size, outlength));
+    if (in->weights) apop_vector_realloc(in->weights, GSL_MIN(in->weights->size, outlength));
+    if (in->matrix)  apop_matrix_realloc(in->matrix, GSL_MIN(in->matrix->size1, outlength), in->matrix->size2);
+    if (in->text)    apop_text_alloc(in, GSL_MIN(outlength, in->textsize[0]), in->textsize[1]);
     if (in->names && in->names->rowct > outlength){
         for (int k=outlength; k< in->names->rowct; k++)
             free(in->names->row[k]);

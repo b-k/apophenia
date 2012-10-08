@@ -6,23 +6,22 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 #include <unistd.h>
 
 int *break_down(char *in){
-  int *out = NULL;
-  int ctr = 0;
-  char *cp = strtok (in, ",");
-  while (cp != NULL) {
+    int *out = NULL;
+    int ctr = 0;
+    char *cp = strtok (in, ",");
+    while (cp != NULL) {
       out = realloc(out, sizeof(int)*(ctr+1));
       out[ctr++] = atoi(cp);
       cp = strtok (NULL, ",");
     }
-  return out;
+    return out;
 }
 
 int main(int argc, char **argv){
-char		c, 
-		msg[1000];
-int     colnames            = 1,
-        rownames            = 0,
-        tab_exists_check    = 0;
+    char c, msg[1000];
+    int colnames = 1,
+        rownames = 0,
+        tab_exists_check = 0;
 
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n"
                 "e.g.: %s -d\",|\" infile.txt a_table info.db\n"
@@ -86,7 +85,6 @@ int     colnames            = 1,
 		}
 	}
 	apop_db_open(argv[optind + 2]);
-    if (tab_exists_check)
-        apop_table_exists(argv[optind+1],1);
+    if (tab_exists_check) apop_table_exists(argv[optind+1],1);
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL, .field_ends=field_list);
 }

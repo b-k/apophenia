@@ -12,16 +12,16 @@
 #include "apop_internal.h"
 
 static double apply_me(double x, void *in){
-  double    *ln_l = in;
+    double    *ln_l = in;
     return x==0 ? 0 :  *ln_l *x - gsl_sf_lngamma(x+1);
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
-  Nullcheck_mpd(d, p, GSL_NAN)
-  Get_vmsizes(d) //tsize
-  double lambda = gsl_vector_get(p->parameters->vector, 0);
-  double ln_l 	= log(lambda);
-  double ll     = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
+    Nullcheck_mpd(d, p, GSL_NAN)
+    Get_vmsizes(d) //tsize
+    double lambda = gsl_vector_get(p->parameters->vector, 0);
+    double ln_l = log(lambda);
+    double ll = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
     return ll - tsize*lambda;
 }
 
@@ -38,22 +38,20 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
-  Nullcheck_mpd(data, est, NULL);
-  double mean = data_mean(data);
+    Nullcheck_mpd(data, est, NULL);
+    double mean = data_mean(data);
 	gsl_vector_set(est->parameters->vector, 0, mean);
     apop_data_add_named_elmt(est->info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the bootstrap needs to be flagged to not run itself. 
     apop_parts_wanted_settings *p = apop_settings_get_group(est, apop_parts_wanted);
     if (!p || p->covariance=='y'){
         if (!p) Apop_model_add_group(est, apop_parts_wanted);
-        else    p->covariance='n';
+        else p->covariance='n';
 
-        apop_data_add_page(est->parameters, 
-                apop_bootstrap_cov(data, *est), 
-                "<Covariance>");
+        apop_data_add_page(est->parameters, apop_bootstrap_cov(data, *est), "<Covariance>");
 
         if (!p) Apop_settings_rm_group(est, apop_parts_wanted);
-        else    p->covariance='y';
+        else p->covariance='y';
     }
 	return est;
 }

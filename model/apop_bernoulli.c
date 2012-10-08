@@ -19,7 +19,7 @@ static double bernie_ll(double x, void * pin){
 
 static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
-    double p   = apop_data_get(params->parameters,0,-1);
+    double p = apop_data_get(params->parameters,0,-1);
 	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }
 
@@ -31,8 +31,8 @@ static double nonzero (double in) { return in !=0; }
 */
 static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL); Get_vmsizes(data); //tsize;
-    double n       = tsize;
-    double p       = apop_map_sum(data, nonzero)/n;
+    double n = tsize;
+    double p = apop_map_sum(data, nonzero)/n;
     apop_name_add(est->parameters->names, "p", 'r');
 	gsl_vector_set(est->parameters->vector, 0, p);
     apop_data_add_named_elmt(est->info, "log likelihood", bernoulli_log_likelihood(data, est));
@@ -43,7 +43,7 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){
     //constraint is 0 < b and  1 > b
-  Staticdef(apop_data *, constraint, 
+    Staticdef(apop_data *, constraint, 
                 apop_data_fill(apop_data_calloc(2,2,1), 0., 1.,
                                                        -1., -1.));
     return apop_linear_constraint(inmodel->parameters->vector, constraint, 1e-3);
@@ -58,7 +58,7 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
 //One of those functions that just fills out the form.
 //CDF to zero = 1-p
 //CDF to one = 1
-  Nullcheck_mpd(d, params, GSL_NAN); Get_vmsizes(d)  //vsize
+    Nullcheck_mpd(d, params, GSL_NAN); Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double p = params->parameters->vector->data[0];
     return val ? 1 : 1-p;

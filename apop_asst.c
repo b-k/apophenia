@@ -77,7 +77,9 @@ APOP_VAR_ENDHEAD
 
 \li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=1</tt>
 
-For example: \include test_harmonic.c
+For example: 
+
+\include test_harmonic.c
 */
 double apop_generalized_harmonic(int N, double s){
 /* 
@@ -124,7 +126,10 @@ When reading the code, remember that the zeroth element holds the value for N=1,
                     'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot.
                     'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
 
-For example: \include test_strip_dots.c
+For example: 
+
+\include test_strip_dots.c
+
 \ingroup convenience_fns
  */
 char * apop_strip_dots(char const *in, char strip_type){
@@ -321,6 +326,7 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[0][1]</tt>.
+
 \include test_regex.c
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){

@@ -6,17 +6,17 @@ At the moment, the header for  apop_test_anova is in \c asst.h.
 #include "apop_internal.h"
 
 static apop_data * produce_t_test_output(int df, double stat, double diff){
-  apop_data *out    = apop_data_alloc();
-  double    pval, qval, two_tail;
-  if(!gsl_isnan(stat)){
+    double pval, qval, two_tail;
+    if (!gsl_isnan(stat)){
         pval    = gsl_cdf_tdist_P(stat, df);
         qval    = 1-pval;
         two_tail= 2*GSL_MIN(fabs(pval-.5),fabs(qval-0.5));
-  } else {
+    } else {
         pval    = GSL_NAN;
         qval    = GSL_NAN;
         two_tail= GSL_NAN;
-}
+    }
+    apop_data *out = apop_data_alloc();
     apop_data_add_named_elmt(out, "mean left - right", diff);
     apop_data_add_named_elmt(out, "t statistic", stat);
     apop_data_add_named_elmt(out, "df", df);
@@ -44,22 +44,22 @@ If \c apop_opts.verbose is >=1, then display some information to stdout, like th
     confidence, 2 tail: 1-p value
 */
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
-  int	a_count	= a->size,
-		b_count	= b->size;
-  double a_avg	= apop_vector_mean(a);
-double		a_var	= (a_count > 1) ? apop_vector_var(a) : 0,
-            b_avg	= apop_vector_mean(b),
-		    b_var	= b_count > 1 ? apop_vector_var(b): 0,
-            stat	= (a_avg - b_avg)/ sqrt(
+    int a_count = a->size,
+        b_count = b->size;
+    double a_avg = apop_vector_mean(a);
+    double a_var = (a_count > 1) ? apop_vector_var(a) : 0,
+           b_avg = apop_vector_mean(b),
+    b_var = b_count > 1 ? apop_vector_var(b): 0,
+    stat = (a_avg - b_avg)/ sqrt(
                         (b_count > 1 ? b_var/(b_count-1) : 0) 
                         + (a_count > 1 ? a_var/(a_count-1) : 0) 
                         );
-	if (apop_opts.verbose >=1){
-		printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
-		printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
-		printf("t-statistic: %g.\n", stat);
-	}
-    int df      = a_count+b_count-2;
+    if (apop_opts.verbose >=1){
+        printf("1st avg: %g; 1st std dev: %g; 1st count: %i.\n", a_avg, sqrt(a_var), a_count);
+        printf("2st avg: %g; 2st std dev: %g; 2nd count: %i.\n", b_avg, sqrt(b_var), b_count);
+        printf("t-statistic: %g.\n", stat);
+    }
+    int df = a_count+b_count-2;
     return produce_t_test_output(df, stat, a_avg - b_avg);
 }
 
@@ -79,17 +79,16 @@ If \c apop_opts.verbose is >=2, then display some information, like the mean/var
     confidence, 2 tail: 1-p value
 */
 apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
-gsl_vector	*diff	= gsl_vector_alloc(a->size);
-	gsl_vector_memcpy(diff, a);
-	gsl_vector_sub(diff, b);
-int	   count	= a->size; 
-double avg	= apop_vector_mean(diff),
-		var	= apop_vector_var(diff),
-		stat	= avg/ sqrt(var/(count-1));
-	gsl_vector_free(diff);
+    gsl_vector *diff = gsl_vector_alloc(a->size);
+    gsl_vector_memcpy(diff, a);
+    gsl_vector_sub(diff, b);
+    int count = a->size; 
+    double avg = apop_vector_mean(diff),
+    var = apop_vector_var(diff),
+    stat = avg/ sqrt(var/(count-1));
+    gsl_vector_free(diff);
     Apop_notify(2, "avg diff: %g; diff std dev: %g; count: %i; t-statistic: %g.\n", avg, sqrt(var), count, stat);
-int     df      = count-1;
-    return produce_t_test_output(df, stat, avg);
+    return produce_t_test_output(count-1, stat, avg);
 }
 
 /** Runs an F-test specified by \c q and \c c. Your best bet is to see
@@ -203,19 +202,18 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
  \ingroup asst_tests
  */
 apop_data * apop_test_anova_independence(apop_data *d){
-  apop_assert_c(d && d->matrix, NULL, 0, "You sent me data with no matrix element. Returning NULL.");
-  double total = 0;
-  size_t row, col;
-  //You can have a one-column or one-row matrix if you want; else df = (rows-1)*(cols-1)
-  double df    = d->matrix->size1==1 ? d->matrix->size2-1 : d->matrix->size2 == 1 ? d->matrix->size1 
-                            : (d->matrix->size1 - 1)* (d->matrix->size2 - 1);
-  apop_assert_c(df, NULL, 0, "You sent a degenerate matrix. Returning NULL.");
-  int n     = apop_matrix_sum(d->matrix);
-    for (row=0; row <d->matrix->size1; row++)
-        for (col=0; col <d->matrix->size2; col++)
+    apop_assert_c(d && d->matrix, NULL, 0, "You sent me data with no matrix element. Returning NULL.");
+    double total = 0;
+    //You can have a one-column or one-row matrix if you want; else df = (rows-1)*(cols-1)
+    double df = d->matrix->size1==1 ? d->matrix->size2-1 : d->matrix->size2 == 1 ? d->matrix->size1 
+                              : (d->matrix->size1 - 1)* (d->matrix->size2 - 1);
+    apop_assert_c(df, NULL, 0, "You sent a degenerate matrix. Returning NULL.");
+    int n = apop_matrix_sum(d->matrix);
+    for (size_t row=0; row <d->matrix->size1; row++)
+        for (size_t col=0; col <d->matrix->size2; col++)
             total += one_chi_sq(d, row, col, n);
     apop_data *out = apop_data_alloc();
-    double chisq   = gsl_cdf_chisq_Q(total, df);
+    double chisq = gsl_cdf_chisq_Q(total, df);
     apop_data_add_named_elmt(out, "chi squared statistic", total);
     apop_data_add_named_elmt(out, "df", df);
     apop_data_add_named_elmt(out, "p value", chisq);
@@ -227,7 +225,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
     //ANOVA has always just been a process of filling in a form, and
     //that's what this function does. I use apop_data_get instead of
     //apop_data_get_tt for efficiency reasons.
-  apop_data *out = apop_data_calloc(0, 3, 6);
+    apop_data *out = apop_data_calloc(3, 6);
     apop_name_add(out->names, "sum of squares", 'c');
     apop_name_add(out->names, "df", 'c');
     apop_name_add(out->names, "mean squares", 'c');
@@ -303,7 +301,6 @@ APOP_VAR_ENDHEAD
     apop_name_add(out->names, "residual", 'r');
     apop_name_add(out->names, "total", 'r');
 
-
     APOP_ROW(first, 0, firstrow);
     APOP_ROW(second, 0, secondrow);
     APOP_ROW(interaction, 0, interrow);
@@ -341,13 +338,11 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-
-/**
-This is a convenience function to do the lookup of a given statistic
-along a given distribution. You give me a statistic, its (hypothesized)
-distribution, and whether to use the
-upper tail, lower tail, or both. I will return the odds of a Type I error given the model---in statistician jargon, the \f$p\f$-value.
-[Type I error: odds of rejecting the null hypothesis when it is true.]
+/** This is a convenience function to do the lookup of a given statistic along a given
+distribution. You give me a statistic, its (hypothesized) distribution, and whether
+to use the upper tail, lower tail, or both. I will return the odds of a Type I error
+given the model---in statistician jargon, the \f$p\f$-value.  [Type I error: odds of
+rejecting the null hypothesis when it is true.]
 
    For example, 
    \code
@@ -425,8 +420,7 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
          p2 = 1;
 
     char apop_varad_var(tail, 0);
-    if (!tail) 
-        tail = is_chi ? 'u' : 'a';
+    if (!tail) tail = is_chi ? 'u' : 'a';
 APOP_VAR_ENDHEAD
     //This is a long and boring function. I am aware that there are
     //clever way to make it shorter.

@@ -30,26 +30,25 @@ typedef struct {double a, b, ln_ga_plus_a_ln_b;} abstruct;
 
 static double apply_for_gamma(double x, void *abin) { 
     abstruct *ab = abin;
-     return x ? ((ab->a-1)*log(x) - x/ab->b - ab->ln_ga_plus_a_ln_b) : 0; 
+    return x ? ((ab->a-1)*log(x) - x/ab->b - ab->ln_ga_plus_a_ln_b) : 0; 
 }
 
 static double gamma_log_likelihood(apop_data *d, apop_model *p){
-  Nullcheck_mpd(d, p, GSL_NAN) 
-  Get_vmsizes(d)
-  abstruct ab = {
-      .a    = gsl_vector_get(p->parameters->vector, 0),
-      .b    = gsl_vector_get(p->parameters->vector, 1)
-  };
-  double        llikelihood  = 0,
-        ln_ga 	= gsl_sf_lngamma(ab.a),
-        ln_b	= log(ab.b),
-        a_ln_b	= ab.a * ln_b;
+    Nullcheck_mpd(d, p, GSL_NAN) 
+    Get_vmsizes(d)
+    abstruct ab = {.a = gsl_vector_get(p->parameters->vector, 0),
+                   .b = gsl_vector_get(p->parameters->vector, 1) };
+    double llikelihood  = 0,
+        ln_ga  = gsl_sf_lngamma(ab.a),
+        ln_b   = log(ab.b),
+        a_ln_b = ab.a * ln_b;
     ab.ln_ga_plus_a_ln_b = ln_ga + a_ln_b;
-    llikelihood    = apop_map_sum(d, .fn_dp = apply_for_gamma, .param = &ab);
+    llikelihood = apop_map_sum(d, .fn_dp = apply_for_gamma, .param = &ab);
     return llikelihood;
 }
 
 static double a_callback(double x, void *ab){ return log(x)- *(double*)ab; }
+
 static double b_callback(double x, void *abv){ 
     double *ab = abv;
     return x/gsl_pow_2(ab[0]) - ab[1]; 
@@ -73,8 +72,8 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
 }
 
 static double gamma_cdf(apop_data *d, apop_model *params){
-  Nullcheck_mpd(d, params, GSL_NAN)
-  Get_vmsizes(d)  //vsize
+    Nullcheck_mpd(d, params, GSL_NAN)
+    Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
     double alpha = gsl_vector_get(params->parameters->vector, 0);
     double beta = gsl_vector_get(params->parameters->vector, 1);

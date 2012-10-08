@@ -40,7 +40,8 @@ Apop_settings_init(apop_arms,
     if ((in.xl || in.xr) && !in.xinit)
         out->xinit = (double []) {in.xl+GSL_DBL_EPSILON, (in.xl+in.xr)/2., in.xr-GSL_DBL_EPSILON};
     else{
-        Apop_varad_set(xinit, ((double []) {-1, 0, 1}));
+        Apop_varad_set(xinit, ((double []) {0, 0.5, 1}));
+        //Apop_varad_set(xinit, ((double []) {-1, 0, 1}));
     }
     Apop_varad_set(ninit, 3);
     Apop_varad_set(xl, GSL_MIN(out->xinit[0]/10., out->xinit[0]*10)-.1);
@@ -93,8 +94,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
   */
 void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     apop_arms_settings *params = Apop_settings_get_group(m, apop_arms);
-    if (!params)
-        params = Apop_model_add_group(m, apop_arms, .model=m);
+    if (!params) params = Apop_model_add_group(m, apop_arms, .model=m);
   POINT pwork;        /* a working point, not yet incorporated in envelope */
   int msamp=0;        /* the number of x-values currently sampled */
   arms_state *state = params->state; 

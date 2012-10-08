@@ -66,9 +66,8 @@ static apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
   I assume that the ordering of elements in the \c predict table include everything on the
   first page, then everything on the second, et cetera. 
 
-\param data The data set to be filled in. It should have a page named \c
-\f$<\f$fillins\f$>\f$.
-\param predict If your data set doesn't have a \c \f$<\f$fillins\f$>\f$ page, then just
+\param data The data set to be filled in. It should have a page named \c \<fillins\>.
+\param predict If your data set doesn't have a \c \<fillins\> page, then just
 provide one this way; else let this be \c NULL;
 */
 static void apop_data_predict_fill(apop_data *data, apop_data *predict){
@@ -189,7 +188,7 @@ You will send me the model whose parameters you want fixed, with the \c paramete
 set as follows. For the fixed parameters, simply give the values to which they will
 be fixed. Set the free parameters to \c NaN.
 
-For example, here is a Binomial distribution with a fixed \f$n=30\f$, but \f$p_1\f$ allowed to float freely:
+For example, here is a Binomial distribution with a fixed \f$n=30\f$ but \f$p_1\f$ allowed to float freely:
 
 \code
     apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, GSL_NAN));
@@ -207,12 +206,6 @@ The output is an \c apop_model that can be estimated, Bayesian updated, et ceter
 \li If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any search; else the defaults start from <b>1</b> as usual.
 
 \li I do check the \c more pointer of the \c parameters for additional pages and <tt>NaN</tt>s on those pages.
-
-\li If you need to do anything with the base model, then get it from the \c apop_fix_params settings group:
-\code
-    //bi30 was the Binomial distribution above constrained to \f$n=30\f$. 
-    apop_model *unconstrained_full_model = Apop_settings_get(bi30, apop_fix_params, base_model);
-\endcode
 
 Here is a sample program. It produces a few thousand draws from a Multivariate Normal distribution,
 and then tries to recover the means given a var/covar matrix fixed at the correct variance.
@@ -253,4 +246,8 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     model_out->vbase = predict_tab->matrix->size1;
     snprintf(model_out->name, 100, "%s, with some params fixed", model_in->name);
     return model_out;
+}
+
+apop_model * apop_model_fix_params_get_base(apop_model *model_in){
+    return Apop_settings_get(model_in, apop_fix_params, base_model);
 }

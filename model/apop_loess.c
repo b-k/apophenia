@@ -265,35 +265,25 @@ static void dqrsl_(double *x, integer *ldx, integer *n, integer * k, double *qra
     ju = min(*k,*n - 1);
 
     /*     special action when n=1. */
-    if (ju != 0)
-        goto L40;
-    if (cqy)
-        qy[1] = y[1];
-    if (cqty)
-        qty[1] = y[1];
-    if (cxb)
-        xb[1] = y[1];
-    if (! cb)
-        goto L30;
-    if (x[x_dim1 + 1] != 0.)
-        goto L10;
+    if (ju != 0) goto L40;
+    if (cqy)     qy[1] = y[1];
+    if (cqty)    qty[1] = y[1];
+    if (cxb)     xb[1] = y[1];
+    if (!cb)     goto L30;
+    if (x[x_dim1 + 1] != 0.) goto L10;
     *info = 1;
     goto L20;
 L10:
     b[1] = y[1] / x[x_dim1 + 1];
 L20:
 L30:
-    if (cr)
-        rsd[1] = 0.;
+    if (cr) rsd[1] = 0.;
     return;
 L40:
     /*        set up to compute qy or qty. */
-    if (cqy)
-        dcopy_(n, &y[1], 1, &qy[1], 1);
-    if (cqty)
-        dcopy_(n, &y[1], 1, &qty[1], 1);
-    if (! cqy)
-        goto L70;
+    if (cqy)  dcopy_(n, &y[1], 1, &qy[1], 1);
+    if (cqty) dcopy_(n, &y[1], 1, &qty[1], 1);
+    if (!cqy) goto L70;
 
     /*           compute qy. */
     for (jj = 1; jj <= ju; ++jj) {

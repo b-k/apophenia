@@ -36,13 +36,12 @@ But this can be used anywhere a model is needed, such as the inputs and outputs 
 #include <gsl/gsl_math.h>
 
 apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins){
-  Apop_assert_c(data, NULL, 0, "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
-  apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
-    size_t i, j;
-    double minv    = GSL_POSINF,
-           maxv    = GSL_NEGINF,
-           minm    = GSL_POSINF,
-           maxm    = GSL_NEGINF;
+    Apop_assert_c(data, NULL, 0, "You asked me to set up a histogram with NULL data. Returning a NULL settings group.");
+    apop_histogram_settings *hp  = malloc(sizeof(apop_histogram_settings));
+    double minv = GSL_POSINF,
+           maxv = GSL_NEGINF,
+           minm = GSL_POSINF,
+           maxm = GSL_NEGINF;
     if (data->vector) gsl_vector_minmax(data->vector, &minv, &maxv);
     if (data->matrix) gsl_matrix_minmax(data->matrix, &minm, &maxm);
     hp->data = data;
@@ -50,22 +49,22 @@ apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins
     gsl_histogram_set_ranges_uniform(hp->pdf, GSL_MIN(minv,minm), GSL_MAX(maxv,maxm));
    //add infinity bins.
     double  *newbins = malloc(sizeof(double)* (bins + 3));
-    newbins[0]                  = GSL_NEGINF;
+    newbins[0]      = GSL_NEGINF;
     memcpy((newbins + 1), hp->pdf->range, sizeof(double) * (bins+1));
-    newbins[bins+1]      += 2*GSL_DBL_EPSILON; //so max won't fall in the infinity bin.
-    newbins[bins+2]         = GSL_POSINF;
+    newbins[bins+1]+= 2*GSL_DBL_EPSILON; //so max won't fall in the infinity bin.
+    newbins[bins+2] = GSL_POSINF;
     gsl_histogram_free(hp->pdf);
     hp->pdf = gsl_histogram_alloc(bins+2);
     gsl_histogram_set_ranges(hp->pdf, newbins,bins+3);
 
     if (data->vector)
-        for (i=0; i< data->vector->size; i++)
+        for (size_t i=0; i< data->vector->size; i++)
             gsl_histogram_increment(hp->pdf, apop_data_get(data, i, -1));
     if (data->matrix)
-        for (i=0; i< data->matrix->size1; i++)
-            for (j=0; j< data->matrix->size2; j++)
+        for (size_t i=0; i< data->matrix->size1; i++)
+            for (size_t j=0; j< data->matrix->size2; j++)
                 gsl_histogram_increment(hp->pdf, apop_data_get(data, i, j));
-    hp->cdf        = NULL;
+    hp->cdf = NULL;
     hp->histobase  = NULL;
     return hp;
 }
@@ -85,8 +84,7 @@ Apop_settings_copy(apop_histogram,
 Apop_settings_free(apop_histogram,
     gsl_histogram_free(in->pdf);
     gsl_histogram_pdf_free(in->cdf);
-    if (in->ownerbase)
-        apop_model_free(in->histobase);
+    if (in->ownerbase) apop_model_free(in->histobase);
 )
 
 
@@ -177,8 +175,8 @@ This example sets up and uses KDEs based on a Normal and a Uniform distribution.
 */
 
 static void apop_set_first_param(apop_data *in, apop_model *m){
-    m->parameters->vector->data[0]  = in->vector ?
-            in->vector->data[0] : gsl_matrix_get(in->matrix, 0, 0);
+    m->parameters->vector->data[0]  = in->vector ? in->vector->data[0] 
+                                                 : gsl_matrix_get(in->matrix, 0, 0);
 }
 
 Apop_settings_init(apop_kernel_density, 
@@ -189,8 +187,7 @@ Apop_settings_init(apop_kernel_density,
     Apop_varad_set(set_fn, apop_set_first_param);
     out->own_pmf = !in.base_pmf;
     out->own_kernel = 1;
-    if (!out->kernel->parameters)
-        apop_prep(out->base_data, out->kernel);
+    if (!out->kernel->parameters) apop_prep(out->base_data, out->kernel);
 )
 
 Apop_settings_copy(apop_kernel_density,
@@ -199,10 +196,8 @@ Apop_settings_copy(apop_kernel_density,
 )
 
 Apop_settings_free(apop_kernel_density,
-    if (in->own_pmf)
-        apop_model_free(in->base_pmf);
-    if (in->own_kernel)
-        apop_model_free(in->kernel);
+    if (in->own_pmf)    apop_model_free(in->base_pmf);
+    if (in->own_kernel) apop_model_free(in->kernel);
 )
 
 static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){

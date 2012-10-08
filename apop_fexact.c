@@ -9,10 +9,10 @@
 Un-R-ifying modifications Copyright (c) 2006--2009 by Ben Klemens.
 Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
-        R version credits:
-   fexact.f -- translated by f2c (version 19971204).
-   Run through a slightly modified version of MM's f2c-clean.
-   Heavily hand-edited by KH and MM.
+R version credits:
+fexact.f -- translated by f2c (version 19971204).\\
+Run through a slightly modified version of MM's f2c-clean.\\
+Heavily hand-edited by KH and MM.
  */
 
 #include "apop_internal.h"
@@ -1714,8 +1714,7 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
     if (itype == 2 || itype == 3)
         *iwkpt += number;
     else { /* double */
-        if (i % 2 != 0)
-            ++i;
+        if (i % 2 != 0) ++i;
         *iwkpt += (number << 1);
         i /= 2;
     }
@@ -1788,8 +1787,7 @@ L30:
         }
         ++m;
         goto L10;
-    } else 
-        Apop_assert_n(0, "This should never occur.");
+    } else Apop_assert_n(0, "This should never occur.");
     /* Use another segment */
 L40:
     --m;
@@ -1883,18 +1881,20 @@ static int *apop_data_to_int_array(apop_data *intab){
 	      where `extreme' is in a probabilistic sense.
 
 \li If there are processing errors, these values will be NaN.
-For example: \include test_fisher.c
+For example: 
+
+\include test_fisher.c
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
-double  prt, pre,
-        expect      = -1,
-        percent     = 80,
-        emin        = 1;
-int     *intified   = apop_data_to_int_array(intab),
-        workspace   = 200000,
-        mult        = 30,
-        rowct       = intab->matrix->size1,
-        colct       = intab->matrix->size2;
+    double  prt, pre,
+            expect  = -1,
+            percent = 80,
+            emin    = 1;
+    int     *intified = apop_data_to_int_array(intab),
+            workspace = 200000,
+            mult      = 30,
+            rowct     = intab->matrix->size1,
+            colct     = intab->matrix->size2;
     fexact(&rowct, 
        &colct,
        intified,
@@ -1908,10 +1908,9 @@ int     *intified   = apop_data_to_int_array(intab),
        &workspace,
        &mult);
     free(intified);
-apop_data *out      = apop_data_alloc(2,1);
+    apop_data *out = apop_data_alloc(2,1);
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
     return out;
 }
-
 #endif /* not USING_R */

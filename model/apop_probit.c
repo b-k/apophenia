@@ -77,8 +77,7 @@ static double unordered(double in){ return in == val; }
 static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
     gsl_vector *val_vector = get_category_table(d)->vector;
-    if (val_vector->size==2)
-        return biprobit_log_likelihood(d, p);
+    if (val_vector->size==2) return biprobit_log_likelihood(d, p);
     //else, multinomial loop
     static apop_model *spare_probit = NULL;
     if (!spare_probit){
@@ -88,7 +87,7 @@ static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     Staticdef(apop_data *, working_data, apop_data_alloc());
     working_data->matrix = d->matrix;
     gsl_vector *original_outcome = d->vector;
-    double ll    = 0;
+    double ll = 0;
     double *vals = val_vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
         Apop_col(p->parameters, i, param);
@@ -146,8 +145,8 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
         Apop_row(in, i, observation);
         Apop_row(out, i, outrow);
         double oneterm;
-        int    bestindex  = 0;
-        double bestscore  = 0;
+        int bestindex = 0;
+        double bestscore = 0;
         gsl_vector_set(outrow, 0, 1);
         for (size_t j=0; j < params->size2+1; j ++){
             if (j == 0){
@@ -197,6 +196,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
 
 static double multilogit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
+    Nullcheck(d->matrix, GSL_NAN)
     //Find X\beta_i for each row of X and each column of \beta.
     apop_data  *xbeta = apop_dot(d, p->parameters);
     double* factor_list = get_category_table(p->data)->vector->data;

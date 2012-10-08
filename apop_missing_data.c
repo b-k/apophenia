@@ -136,6 +136,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
 //    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
     Apop_settings_set(fixed, apop_mle, want_cov, 'n');
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
-    apop_data_memcpy(d, m->parameters); //A bit inefficient.
+    apop_model *filled = apop_model_fix_params_get_base(m);
+    apop_data_memcpy(d, filled->parameters); //A bit inefficient.
     return m;
 }

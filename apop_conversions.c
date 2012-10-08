@@ -101,7 +101,7 @@ APOP_VAR_ENDHEAD
 
 static void convert_array_to_line(const double **in, double **out, const int rows, const int cols){
 	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
-	*out	= malloc(sizeof(double) * rows * cols);
+	*out = malloc(sizeof(double) * rows * cols);
 	for (size_t i=0; i<rows; i++)
 		for (size_t j=0; j<cols; j++)
 			(*out)[i * cols + j]	= in[i][j];
@@ -122,7 +122,7 @@ gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int c
     double *line;
     gsl_matrix  *out = gsl_matrix_alloc(rows, cols);
 	convert_array_to_line(in, &line, rows, cols);
-    gsl_matrix_view   m = gsl_matrix_view_array(line, rows,cols);
+    gsl_matrix_view m = gsl_matrix_view_array(line, rows,cols);
 	gsl_matrix_memcpy(out,&(m.matrix));
 	free(line);
     return out;
@@ -155,9 +155,9 @@ usage: \code gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); \endcode
 \ingroup conversions
 */
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
-    gsl_matrix    *out= gsl_matrix_alloc(rows, cols);
+    gsl_matrix *out= gsl_matrix_alloc(rows, cols);
     gsl_matrix_view	m = gsl_matrix_view_array(line, rows,cols);
-	gsl_matrix_memcpy(out,&(m.matrix));
+	gsl_matrix_memcpy(out, &(m.matrix));
     return out;
 }
 
@@ -190,13 +190,12 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
 
 static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
-  int	i	= start_from % size;	//i is probably the same or i+1.
+    int i = start_from % size;	//i is probably the same or i+1.
 	do {
-		if(!strcmp(d[i], r))
-			return i;
-		i	++;
-		i	%= size;	//loop around as necessary.
-	} while(i!=start_from); 
+		if(!strcmp(d[i], r)) return i;
+		i++;
+		i %= size;	//loop around as necessary.
+	} while (i!=start_from); 
     Apop_assert_c(0, -2, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
@@ -233,9 +232,9 @@ apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col
 */
 apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
     gsl_matrix *out;
-    int		   i, j=0;
-    apop_data  *pre_d1, *pre_d2, *datachars;
-    apop_data  *outdata = apop_data_alloc();
+    int	i, j=0;
+    apop_data *pre_d1, *pre_d2, *datachars;
+    apop_data *outdata = apop_data_alloc();
 
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
@@ -256,8 +255,8 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 
 	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
 	for (size_t k =0; k< datachars->textsize[0]; k++){
-		i	= find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
-		j	= find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
+		i = find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
+		j = find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
         Apop_assert_c(i!=-2 && j != -2, NULL, 0, "Something went wrong in the crosstabbing; "
                                                  "couldn't find %s or %s.", datachars->text[k][0], datachars->text[k][1]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
@@ -265,7 +264,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
     apop_data_free(pre_d1);
     apop_data_free(pre_d2);
     apop_data_free(datachars);
-    outdata->matrix   = out;
+    outdata->matrix = out;
     apop_opts.db_name_column[0]= p;
 	return outdata;
 }
@@ -419,7 +418,7 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
   */
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
-  gsl_vector *out = gsl_vector_alloc(in->size);
+    gsl_vector *out = gsl_vector_alloc(in->size);
     Apop_assert(out, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
@@ -438,7 +437,7 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
   */
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
-  gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+    gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     Apop_assert(out, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
@@ -560,7 +559,6 @@ static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *f
         fn->text[ct-1][0][thisflen] = '\0';
     }
     return (line_parse_t) {.ct=ct, .eof= (c == EOF)};
-
 }
 
 typedef struct{
@@ -692,11 +690,11 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char const*text_file, int has_row_na
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
 APOP_VAR_END_HEAD
     apop_data *set = NULL;
-    FILE  	  *infile = NULL;
-    char	  *str;
+    FILE *infile = NULL;
+    char *str;
     apop_data *add_this_line= apop_data_alloc();
-    int 	  row = 0,
-              hasrows = (has_row_names == 'y');
+    int row = 0,
+        hasrows = (has_row_names == 'y');
     if (prep_text_reading(text_file, &infile)) return NULL;
 
     line_parse_t L={ };
@@ -750,7 +748,6 @@ APOP_VAR_END_HEAD
     if (strcmp(text_file,"-")) fclose(infile);
 	return set;
 }
-
 
 /** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
     to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
@@ -849,7 +846,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
                "these sizes equal.", total_size, out->size);
     }
 APOP_VAR_ENDHEAD
-        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
     if (!total_size) return NULL;
     int offset = 0;
     if (!out) out = gsl_vector_alloc(total_size);
@@ -995,14 +992,14 @@ extern sqlite3 *db;
 
 static char *get_field_conditions(char *var, apop_data *field_params){
     if (field_params)
-        for(int i=0; i<field_params->textsize[0]; i++)
+        for (int i=0; i<field_params->textsize[0]; i++)
             if (apop_regex(var, field_params->text[i][0]))
                 return field_params->text[i][1];
     return (apop_opts.db_engine == 'm') ? "varchar(100)" : "numeric";
 }
 
 static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
-  char  *q = NULL;
+    char *q = NULL;
     asprintf(&q, "CREATE TABLE %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
         if (i==0) 	{
@@ -1020,7 +1017,7 @@ apop_opts.verbose=2;
 }
 
 static void tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data *fn){
-  char  *q = NULL;
+    char  *q = NULL;
     asprintf(&q, "create table %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
         if (i==0){
@@ -1103,9 +1100,7 @@ static void line_to_insert(line_parse_t L, apop_data const*addme, char const *ta
 
   See \ref text_format.
 
-Using the data set from the example on the \ref apop_ols page, here's another way to do the regression:
-
-\include ols.c
+See the \ref apop_ols page for an example that uses this function to read in sample data (also listed on that page).
 
 By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code. 
 
@@ -1205,7 +1200,6 @@ APOP_VAR_END_HEAD
 	if (use_sqlite_prepared_statements){
         Apop_assert_c(sqlite3_finalize(statement) ==SQLITE_OK, -1, apop_errorlevel, "SQLite error.");
     }
-    if (strcmp(text_file,"-"))
-	    fclose(infile);
+    if (strcmp(text_file,"-")) fclose(infile);
 	return rows;
 }

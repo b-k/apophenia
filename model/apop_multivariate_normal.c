@@ -13,8 +13,8 @@ If you had only one dimension, the mean would be a vector of size one, and the c
 #include "apop_internal.h"
 
 static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
-  gsl_vector *  sigma_dot_x = gsl_vector_calloc(x->size);
-  double        the_result;
+    gsl_vector * sigma_dot_x = gsl_vector_calloc(x->size);
+    double the_result;
     gsl_blas_dsymv(CblasUpper, 1, sigma, x, 0, sigma_dot_x); //sigma should be symmetric
     gsl_blas_ddot(x, sigma_dot_x, &the_result);
     gsl_vector_free(sigma_dot_x);
@@ -22,12 +22,12 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
 }
 
 static double apop_multinormal_ll(apop_data *data, apop_model * m){
-  Nullcheck_mpd(data, m, GSL_NAN);
-  double    determinant = 0;
-  gsl_matrix* inverse   = NULL;
-  int       i, dimensions  = data->matrix->size2;
-  gsl_vector* x_minus_mu= gsl_vector_alloc(data->matrix->size2);
-  double        ll      = 0;
+    Nullcheck_mpd(data, m, GSL_NAN);
+    double determinant = 0;
+    gsl_matrix* inverse = NULL;
+    int i, dimensions  = data->matrix->size2;
+    gsl_vector* x_minus_mu= gsl_vector_alloc(data->matrix->size2);
+    double ll = 0;
     determinant = apop_det_and_inv(m->parameters->matrix, &inverse, 1,1);
     if (determinant == 0) { //tell maximizers to look elsewhere.
         gsl_vector_free(x_minus_mu);
@@ -68,19 +68,18 @@ static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p
 
  The nice, easy method from Devroye, p 565 */
 static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
-  apop_data *params = eps->parameters;
-  int i, j;
-  gsl_vector *v     = gsl_vector_alloc(params->vector->size);
-  gsl_vector *dotted= gsl_vector_calloc(params->vector->size);
-    for (i=0; i< params->vector->size; i++)
+    apop_data *params = eps->parameters;
+    gsl_vector *v = gsl_vector_alloc(params->vector->size);
+    gsl_vector *dotted = gsl_vector_calloc(params->vector->size);
+    for (size_t i=0; i< params->vector->size; i++)
         gsl_vector_set(v, i, gsl_ran_gaussian(r, 1));
-  gsl_matrix *copy  = apop_matrix_copy(params ->matrix);
+    gsl_matrix *copy  = apop_matrix_copy(params ->matrix);
         gsl_linalg_cholesky_decomp(copy); //returns upper and lower triangle; we want just one.
-    for (i=0; i< copy->size1; i++)
-        for (j=i+1; j< copy->size2; j++)
+    for (size_t i=0; i< copy->size1; i++)
+        for (size_t j=i+1; j< copy->size2; j++)
             gsl_matrix_set(copy, i, j, 0);
     gsl_blas_dgemv(CblasNoTrans, 1, copy, v, 0, dotted);
-    for (i=0; i< params->vector->size; i++)
+    for (size_t i=0; i< params->vector->size; i++)
         out[i]  = gsl_vector_get(dotted, i) + gsl_vector_get(params->vector,i);
     gsl_vector_free(v);
     gsl_vector_free(dotted);
@@ -88,10 +87,8 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
 }
 
 static void mvn_prep(apop_data *d, apop_model *m){
-    if (d && d->matrix)
-        m->dsize = d->matrix->size2; 
-    else if (m->vbase > 0)
-        m->dsize = m->vbase;
+    if (d && d->matrix)    m->dsize = d->matrix->size2; 
+    else if (m->vbase > 0) m->dsize = m->vbase;
     apop_model_clear(d, m);
 }
 

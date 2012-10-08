@@ -53,13 +53,13 @@ static double expo_cdf(apop_data *d, apop_model *params){
 }
 
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-  Nullcheck_mpd(d, p, );
-  double		mu	    = gsl_vector_get(p->parameters->vector, 0);
-  gsl_matrix	*data	= d->matrix;
-  double 		d_likelihood;
-	d_likelihood	 = apop_matrix_sum(data);
-	d_likelihood	/= gsl_pow_2(mu);
-	d_likelihood	-= data->size1 * data->size2 /mu;
+    Nullcheck_mpd(d, p, );
+    double mu = gsl_vector_get(p->parameters->vector, 0);
+    gsl_matrix *data = d->matrix;
+    double d_likelihood;
+	d_likelihood  = apop_matrix_sum(data);
+	d_likelihood /= gsl_pow_2(mu);
+	d_likelihood -= data->size1 * data->size2 /mu;
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 

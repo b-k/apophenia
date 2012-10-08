@@ -24,9 +24,9 @@ static void getminmax(apop_data *d, double *min, double *max){
 }
 
 static double unif_ll(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m, GSL_NAN);
-  Get_vmsizes(d) //tsize
-  double min, max;
+    Nullcheck_mpd(d, m, GSL_NAN);
+    Get_vmsizes(d) //tsize
+    double min, max;
     getminmax(d, &min, &max);
     if (min> m->parameters->vector->data[0] && max < m->parameters->vector->data[1])
         return -log(m->parameters->vector->data[1] - m->parameters->vector->data[0]) * tsize;
@@ -34,9 +34,9 @@ static double unif_ll(apop_data *d, apop_model *m){
 }
 
 static double unif_p(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m, GSL_NAN);
-  Get_vmsizes(d) //tsize
-  double min, max;
+    Nullcheck_mpd(d, m, GSL_NAN);
+    Get_vmsizes(d) //tsize
+    double min, max;
     getminmax(d, &min, &max);
     if (min> m->parameters->vector->data[0] && max< m->parameters->vector->data[1])
         return pow(m->parameters->vector->data[1] - m->parameters->vector->data[0], -tsize);
@@ -54,15 +54,13 @@ static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
 }
 
 static double unif_cdf(apop_data *d, apop_model *m){
-  Nullcheck_mpd(d, m, GSL_NAN);
-  Get_vmsizes(d) //tsize
+    Nullcheck_mpd(d, m, GSL_NAN);
+    Get_vmsizes(d) //tsize
     double min = m->parameters->vector->data[0];
     double max = m->parameters->vector->data[1];
     double val = apop_data_get(d, 0, vsize ? -1: 0);
-    if (val <= min)
-        return 0;
-    if (val >=max)
-        return 1;
+    if (val <= min) return 0;
+    if (val >=max)  return 1;
     return (val-min)/(max-min);
 }
 

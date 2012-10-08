@@ -9,18 +9,18 @@ sqlite3	*db=NULL;	                //There's only one SQLite database handle. Her
 
 
 /** \page db_moments Database moments (plus pow()!)
-\verbatim
+\code
 select count(x), stddev(x), avg(x), var(x), variance(x), skew(x), kurt(x), kurtosis(x),
 std(x), stddev_samp(x), stddev_pop(x), var_samp(x), var_pop(x)
 from table
 group by whatever
-\endverbatim
+\endcode
 
-\verbatim
+\code
 select sqrt(x), pow(x,0.5), exp(x), log(x), 
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
-\endverbatim
+\endcode
 
 The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators, but statisticians are usually interested in higher moments as well---at least the variance. Therefore, SQL queries using the Apophenia library may include any of the moments above.
 
@@ -33,21 +33,19 @@ For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)<
 
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
-  double avg;     /* avg of terms */
-  double avg2;    /* avg of the squares of terms */
-  double avg3;    /* avg of the cube of terms */
-  double avg4;    /* avg of the fourth-power of terms */
-  int cnt;        /* Number of terms counted */
+    double avg;     /* avg of terms */
+    double avg2;    /* avg of the squares of terms */
+    double avg3;    /* avg of the cube of terms */
+    double avg4;    /* avg of the fourth-power of terms */
+    int cnt;        /* Number of terms counted */
 };
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-  StdDevCtx *p;
-  double 		x, ratio;
-    if( argc<1 ) return;
-    p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && argv[0] ){
-        x = sqlite3_value_double(argv[0]);
-        ratio	=  p->cnt/(p->cnt+1.0);
+    if (argc<1) return;
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    if (p && argv[0]){
+        double x = sqlite3_value_double(argv[0]);
+        double ratio = p->cnt/(p->cnt+1.0);
         p->cnt++;
         p->avg	*= ratio;
         p->avg2	*= ratio;
@@ -57,13 +55,11 @@ static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-  StdDevCtx 	*p;
-  double 		x, ratio;
-    if( argc<1 ) return;
-    p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && argv[0] ){
-        x = sqlite3_value_double(argv[0]);
-        ratio	=  p->cnt/(p->cnt+1.0);
+    if (argc<1) return;
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    if (p && argv[0]){
+        double x = sqlite3_value_double(argv[0]);
+        double ratio =  p->cnt/(p->cnt+1.0);
         p->cnt++;
         p->avg	*= ratio;
         p->avg2	*= ratio;
@@ -75,12 +71,10 @@ static void threeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
-  StdDevCtx 	*p;
-  double 		x;
     if( argc<1 ) return;
-    p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && argv[0] ){
-        x = sqlite3_value_double(argv[0]);
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    if (p && argv[0]){
+        double x = sqlite3_value_double(argv[0]);
         p->cnt++;
         p->avg = (x + p->avg * (p->cnt-1.))/p->cnt;
         p->avg2 = (gsl_pow_2(x)+ p->avg2 * (p->cnt-1.))/p->cnt;
@@ -91,7 +85,7 @@ static void fourStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 
 static void stdDevFinalizePop(sqlite3_context *context){
     StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
-    if( p && p->cnt>1 )
+    if (p && p->cnt>1)
       sqlite3_result_double(context, sqrt((p->avg2 - gsl_pow_2(p->avg))));
     else if (p->cnt == 1)
       	sqlite3_result_double(context, 0);
@@ -116,7 +110,7 @@ static void stdDevFinalize(sqlite3_context *context){
 }
 
 static void varFinalize(sqlite3_context *context){
-  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
     if( p && p->cnt>1 ){
       double rCnt = p->cnt;
       sqlite3_result_double(context,
@@ -126,7 +120,7 @@ static void varFinalize(sqlite3_context *context){
 }
 
 static void skewFinalize(sqlite3_context *context){
-  StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
+    StdDevCtx *p = sqlite3_aggregate_context(context, sizeof(*p));
     if( p && p->cnt>1 ){
       double rCnt = p->cnt;
       sqlite3_result_double(context,
@@ -153,14 +147,13 @@ static void kurtFinalize(sqlite3_context *context){
 }
 
 static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-  double  base    = sqlite3_value_double(argv[0]);
-  double  exp     = sqlite3_value_double(argv[1]);
+    double base = sqlite3_value_double(argv[0]);
+    double exp  = sqlite3_value_double(argv[1]);
     sqlite3_result_double(context, pow(base, exp));
 }
 
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    if (!db_rng)
-        apop_db_rng_init(0);
+    if (!db_rng) apop_db_rng_init(0);
     sqlite3_result_double(context, gsl_rng_uniform(db_rng));
 }
 
@@ -172,8 +165,8 @@ sqfn(cos) sqfn(tan) sqfn(asin) sqfn(acos) sqfn(atan)
 
 
 static int apop_sqlite_db_open(char const *filename){
-	if (!filename) 	sqlite3_open(":memory:",&db);
-	else			sqlite3_open(filename,&db);
+	if (!filename) sqlite3_open(":memory:",&db);
+	else		   sqlite3_open(filename,&db);
     apop_assert(db, "Not sure why, but the database didn't open.");
 	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
 	sqlite3_create_function(db, "std", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalizePop);
@@ -199,13 +192,13 @@ static int apop_sqlite_db_open(char const *filename){
 }
 
 //these are global for the apop_db_to_... callbacks.
-int     namecol;
+int namecol;
 static int firstcall;
 
 //This is the callback for apop_query_to_text.
 static int db_to_chars(void *o,int argc, char **argv, char **column){
-  int		addnames = 0, ncshift=0;
-  apop_data* d  = o;
+    int	addnames = 0, ncshift=0;
+    apop_data* d  = o;
     if (!d->names->textct)
         addnames    ++;
     if (firstcall){
@@ -233,8 +226,8 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
 }
 
 apop_data * apop_sqlite_query_to_text(char *query){
-  char		*err        = NULL;
-  apop_data *out        = apop_data_alloc();
+    char *err = NULL;
+    apop_data *out = apop_data_alloc();
     firstcall = 1;
     if (db==NULL) apop_db_open(NULL);
     sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK_NR
@@ -246,27 +239,22 @@ apop_data * apop_sqlite_query_to_text(char *query){
 }
 
 typedef struct {
-    apop_data   *d;
-    int         intypes[5];//names, vectors, mcols, textcols, weights.
-    int         current, thisrow, error_thrown;
-    const char  *instring;
+    apop_data  *d;
+    int        intypes[5];//names, vectors, mcols, textcols, weights.
+    int        current, thisrow, error_thrown;
+    const char *instring;
 } apop_qt;
 
 static void count_types(apop_qt *in, const char *intypes){
-  int   i   = 0;
-  char  c;
-    in->instring    = intypes;
+    int i = 0;
+    char c;
+    in->instring = intypes;
     while ((c=intypes[i++]))
-        if (c=='n'||c=='N')
-            in->intypes[0]++;
-        else if (c=='v'||c=='V')
-            in->intypes[1]++;
-        else if (c=='m'||c=='M')
-            in->intypes[2]++;
-        else if (c=='t'||c=='T')
-            in->intypes[3]++;
-        else if (c=='w'||c=='W')
-            in->intypes[4]++;
+        if (c=='n'||c=='N')      in->intypes[0]++;
+        else if (c=='v'||c=='V') in->intypes[1]++;
+        else if (c=='m'||c=='M') in->intypes[2]++;
+        else if (c=='t'||c=='T') in->intypes[3]++;
+        else if (c=='w'||c=='W') in->intypes[4]++;
     if (in->intypes[0]>1)
         Apop_notify(1, "You asked apop_query_to_mixed data for multiple row names. I'll ignore all but the last one.");
     if (in->intypes[1]>1)
@@ -276,17 +264,17 @@ static void count_types(apop_qt *in, const char *intypes){
 }
 
 static int multiquery_callback(void *instruct, int argc, char **argv, char **column){
-  apop_qt   *in         = instruct;
-  char      c;
-  int       thistcol    = 0, 
-            thismcol    = 0,
-            colct       = 0,
-            i, addnames = 0;
+    apop_qt *in = instruct;
+    char c;
+    int thistcol    = 0, 
+        thismcol    = 0,
+        colct       = 0,
+        i, addnames = 0;
     in->thisrow ++;
     if (!in->d) {
-        in->d             = in->intypes[2]
-                            ? apop_data_alloc(in->intypes[1], 1, in->intypes[2])
-                            : apop_data_alloc(in->intypes[1]);
+        in->d = in->intypes[2]
+                ? apop_data_alloc(in->intypes[1], 1, in->intypes[2])
+                : apop_data_alloc(in->intypes[1]);
         if (in->intypes[4])
             in->d->weights  = gsl_vector_alloc(1);
         if (in->intypes[3]){
@@ -296,11 +284,11 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         }
     }
     if (!(in->d->names->colct + in->d->names->textct + (in->d->names->vector!=NULL)))
-        addnames    ++;
+        addnames++;
     if (in->d->textsize[1]){
-        in->d->textsize[0]          = in->thisrow;
-        in->d->text                 = realloc(in->d->text, sizeof(char ***)*in->thisrow);
-        in->d->text[in->thisrow-1]  = malloc(sizeof(char**) * in->d->textsize[1]);
+        in->d->textsize[0]         = in->thisrow;
+        in->d->text                = realloc(in->d->text, sizeof(char ***)*in->thisrow);
+        in->d->text[in->thisrow-1] = malloc(sizeof(char**) * in->d->textsize[1]);
     }
     if (in->intypes[2])
         apop_matrix_realloc(in->d->matrix, in->thisrow, in->intypes[2]);
@@ -343,8 +331,8 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
 apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
     apop_assert(intypes, "You gave me NULL for the list of input types. I can't work with that.");
     apop_assert(query, "You gave me a NULL query. I can't work with that.");
-  char		*err = NULL;
-  apop_qt   info = { };
+    char *err = NULL;
+    apop_qt info = { };
     count_types(&info, intypes);
 	if (!db) apop_db_open(NULL);
     sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK_NR

@@ -42,7 +42,8 @@ as well.
 The Apophenia end-distribution attempts to be standards-compliant, but the package-making
 is a little looser. E.g., it uses sed -i, which is common but not POSIX-standard. You
 absolutely need GNU autotools (automake, autoconf, libtool), and if you want to make
-an RPM then you of course need rpmbuild, et cetera.
+an RPM then you of course need rpmbuild, et cetera. Also, I keep a copy of Doxygen 1.7.6.1
+on hand.
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 
