@@ -76,8 +76,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert a &lt;tt&gt;double **&lt;/tt&gt; array to an \ref apop_data set. It will
-</pre><p> have no names. Input data is copied.</p>
+<p>Convert a <code>double **</code> array to an <a class="el" href="gentle.html#apop_data">apop_data</a> set. It will have no names. Input data is copied.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the array to read in </td></tr>
@@ -87,8 +86,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>the <a class="el" href="gentle.html#apop_data">apop_data</a> set, allocated for you and ready to use.</dd></dl>
 <p>usage: </p>
-<div class="fragment"><div class="line"> <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a>(indata, 34, 4); </div>
-</div><!-- fragment --><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>. </p>
+<pre class="fragment">apop_data *d = apop_array_to_data(indata, 34, 4); </pre><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>. </p>
 
 </div>
 </div>
@@ -121,8 +119,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert a &lt;tt&gt;double **&lt;/tt&gt; array to a &lt;tt&gt;gsl_matrix&lt;/tt&gt;
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Convert a <code>double **</code> array to a <code>gsl_matrix</code></p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the array to read in </td></tr>
     <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
@@ -131,8 +129,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>the <code>gsl_matrix</code>, allocated for you and ready to use.</dd></dl>
 <p>usage: </p>
-<div class="fragment"><div class="line"> gsl_matrix *m = <a class="code" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a>(indata, 34, 4); </div>
-</div><!-- fragment --><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a>. </p>
+<pre class="fragment">gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); </pre><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a>. </p>
 
 </div>
 </div>
@@ -159,8 +156,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Just copies a one-dimensional array to a &lt;tt&gt;gsl_vector&lt;/tt&gt;. The input array is undisturbed.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Just copies a one-dimensional array to a <code>gsl_vector</code>. The input array is undisturbed.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>An array of <code>double</code>s. (No default. Must not be <code>NULL</code>); </td></tr>
     <tr><td class="paramname">size</td><td>How long <code>line</code> is. If this is zero or omitted, I'll guess using the <code>sizeof(line)/sizeof(line[0])</code> trick, which will work for most arrays allocated using <code>double []</code> and won't work for those allocated using <code>double *</code>. (default = auto-guess) </td></tr>
@@ -210,11 +207,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This function takes in an \ref apop_data set and writes it as a single column of
-</pre><p> numbers, outputting a <code>gsl_vector</code>. It is valid to use the <code>out_vector-&gt;data</code> element as an array of <code>doubles</code> of size <code>out_vector-&gt;data-&gt;size</code> (i.e. its <code>stride==1</code>).</p>
+<p>This function takes in an <a class="el" href="gentle.html#apop_data">apop_data</a> set and writes it as a single column of numbers, outputting a <code>gsl_vector</code>. It is valid to use the <code>out_vector-&gt;data</code> element as an array of <code>doubles</code> of size <code>out_vector-&gt;data-&gt;size</code> (i.e. its <code>stride==1</code>).</p>
 <p>The complement is <code>apop_data_unpack</code>. I.e., </p>
-<div class="fragment"><div class="line"><a class="code" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>(<a class="code" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>(in_data), data_copy) </div>
-</div><!-- fragment --><p> will return the original data set (stripped of text and names).</p>
+<pre class="fragment">apop_data_unpack(apop_data_pack(in_data), data_copy) 
+</pre><p> will return the original data set (stripped of text and names).</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>an <code><a class="el" href="structapop__data.html">apop_data</a></code> set. No default; if <code>NULL</code>, return <code>NULL</code>. </td></tr>
@@ -258,8 +254,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Dump an \ref apop_data set into the database.
-</pre><p>This function is basically preempted by <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>. Use that one; this may soon no longer be available.</p>
+<p>Dump an <a class="el" href="gentle.html#apop_data">apop_data</a> set into the database.</p>
+<p>This function is basically preempted by <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>. Use that one; this may soon no longer be available.</p>
 <p>Column names are inserted if there are any. If there are, all dots are converted to underscores. Otherwise, the columns will be named <code>c1</code>, <code>c2</code>, <code>c3</code>, &amp;c.</p>
 <ul>
 <li>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.</li>
@@ -312,9 +308,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
-to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>This is the complement to <code>apop_data_pack</code>, qv. It writes the <code>gsl_vector</code> produced by that function back to the <code><a class="el" href="structapop__data.html">apop_data</a></code> set you provide. It overwrites the data in the vector and matrix elements and, if present, the <code>weights</code> (and that's it, so names or text are as before).</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A <code>gsl_vector</code> of the form produced by <code>apop_data_pack</code>. No default; must not be <code>NULL</code>. </td></tr>
     <tr><td class="paramname">d</td><td>That data set to be filled. Must be allocated to the correct size. No default; must not be <code>NULL</code>. </td></tr>
@@ -364,15 +359,14 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">A convenience function to convert a &lt;tt&gt;double *&lt;/tt&gt; array to an \ref apop_data set. It will
-</pre><p> have no names. The input data is copied, not pointed to.</p>
+<p>A convenience function to convert a <code>double *</code> array to an <a class="el" href="gentle.html#apop_data">apop_data</a> set. It will have no names. The input data is copied, not pointed to.</p>
 <p>See also <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> or <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a>; this function will use these and then wrap an <a class="el" href="gentle.html#apop_data">apop_data</a> struct around the output(s).</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramname">in</td><td>The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example, <div class="fragment"><div class="line"><span class="keywordtype">double</span> params[] = {0, 1, 2</div>
-<div class="line">                   3, 4, 5};</div>
-<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *out = <a class="code" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>(params, 2, 2, 2);</div>
-</div><!-- fragment --> will produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with a vector <img class="formulaInl" alt="$\left[\matrix{0 \cr 3}\right]$" src="form_5.png"/> and a matrix <img class="formulaInl" alt="$\left[\matrix{1 &amp; 2 \cr 4 &amp; 5}\right]$" src="form_6.png"/>. </td></tr>
+    <tr><td class="paramname">in</td><td>The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example, <pre class="fragment">double params[] = {0, 1, 2
+                   3, 4, 5};
+apop_data *out = apop_line_to_data(params, 2, 2, 2);
+</pre> will produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with a vector <img class="formulaInl" alt="$\left[\matrix{0 \cr 3}\right]$" src="form_5.png"/> and a matrix <img class="formulaInl" alt="$\left[\matrix{1 &amp; 2 \cr 4 &amp; 5}\right]$" src="form_6.png"/>. </td></tr>
     <tr><td class="paramname">vsize</td><td>The vector size. If there are also rows/cols, I expect this to equal the number or rows. </td></tr>
     <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
   </table>
@@ -411,8 +405,8 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert a &lt;tt&gt;double *&lt;/tt&gt; array to a &lt;tt&gt;gsl_matrix&lt;/tt&gt;. Input data is copied.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Convert a <code>double *</code> array to a <code>gsl_matrix</code>. Input data is copied.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">line</td><td>the array to read in </td></tr>
     <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
@@ -421,8 +415,7 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>the <code>gsl_matrix</code>, allocated for you and ready to use.</dd></dl>
 <p>usage: </p>
-<div class="fragment"><div class="line"> gsl_matrix *m = <a class="code" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a>(indata, 34, 4); </div>
-</div><!-- fragment --> <dl class="section see"><dt>See also:</dt><dd>apop_arrary_to_matrix </dd></dl>
+<pre class="fragment">gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); </pre> <dl class="section see"><dt>See also:</dt><dd>apop_arrary_to_matrix </dd></dl>
 
 </div>
 </div>
@@ -467,8 +460,8 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Read a delimited text file into the matrix element of an \ref apop_data set.
-</pre><p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
+<p>Read a delimited text file into the matrix element of an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">text_file</td><td>= "-" The name of the text file to be read in. If "-" (the default), use stdin. </td></tr>
@@ -550,8 +543,8 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Read a text file into a database table.
-</pre><p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
+<p>Read a text file into a database table.</p>
+<p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
 <p>Using the data set from the example on the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> page, here's another way to do the regression:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
@@ -598,8 +591,8 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Converts a \c gsl_vector to an array.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Converts a <code>gsl_vector</code> to an array.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A <code>gsl_vector</code> </td></tr>
   </table>
@@ -635,8 +628,8 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Mathematically, a vector of size \form#3 and a matrix of size \form#4 are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
-</pre><p>For the reverse, try <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>.</p>
+<p>Mathematically, a vector of size <img class="formulaInl" alt="$N$" src="form_3.png"/> and a matrix of size <img class="formulaInl" alt="$N \times 1 $" src="form_4.png"/> are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.</p>
+<p>For the reverse, try <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>a <code>gsl_vector</code> (No default. If <code>NULL</code>, I return <code>NULL</code>, with a warning if <code>apop_opts.verbose &gt;=1 </code>) </td></tr>
@@ -655,4 +648,4 @@ to the \c apop_data set you provide. It overwrites the data in the vector and ma
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

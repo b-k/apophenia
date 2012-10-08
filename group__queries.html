@@ -48,11 +48,11 @@ Functions</h2></td></tr>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>These functions query the database, and most return a value for use on the C-side.</p>
 <p>In all cases, your query may be in <code>printf</code> form. For example: </p>
-<div class="fragment"><div class="line"><span class="keywordtype">char</span> tabname[] = <span class="stringliteral">&quot;demographics&quot;</span>;</div>
-<div class="line"><span class="keywordtype">char</span> colname[] = <span class="stringliteral">&quot;heights&quot;</span>;</div>
-<div class="line"><span class="keywordtype">int</span> min_height = 175;</div>
-<div class="line"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;select %s from %s where %s &gt; %i&quot;</span>, colname, tabname, colname, min_height);</div>
-</div><!-- fragment --><ul>
+<pre class="fragment">char tabname[] = "demographics";
+char colname[] = "heights";
+int min_height = 175;
+apop_query("select %s from %s where %s &gt; %i", colname, tabname, colname, min_height);
+</pre><ul>
 <li>Blanks in the database (i.e., <code> NULL</code>s) and elements that match <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> are filled with <code>NAN</code>s in the matrix. </li>
 </ul>
 <hr/><h2>Function Documentation</h2>
@@ -79,8 +79,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Send a query to the database that returns no data.
-</pre> <dl class="params"><dt>Parameters:</dt><dd>
+<p>Send a query to the database that returns no data. </p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
   </table>
@@ -113,8 +113,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Queries the database, and dumps the result into an \ref apop_data set.
-</pre><p>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column. </p>
+<p>Queries the database, and dumps the result into an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<p>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column. </p>
 
 </div>
 </div>
@@ -141,8 +141,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Queries the database, and dumps the result into a single double-precision floating point number.
-</pre> <dl class="section return"><dt>Returns:</dt><dd>A double, actually.</dd></dl>
+<p>Queries the database, and dumps the result into a single double-precision floating point number. </p>
+<dl class="section return"><dt>Returns:</dt><dd>A double, actually.</dd></dl>
 <ul>
 <li>This calls <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an {<em>order</em> by} clause in your query if you expect multiple lines).</li>
 </ul>
@@ -214,8 +214,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
-</pre><p>If you are querying to a matrix and maybe a name, use <code>apop_query_to_data</code> (and set <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> if desired). But if your data is a mix of text and numbers, use this.</p>
+<p>Query data to an <code><a class="el" href="structapop__data.html">apop_data</a></code> set, but a mix of names, vectors, matrix elements, and text.</p>
+<p>If you are querying to a matrix and maybe a name, use <code>apop_query_to_data</code> (and set <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> if desired). But if your data is a mix of text and numbers, use this.</p>
 <p>The first argument is a character string consisting of the letters <code>nvmtw</code>, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one n, v, and w.</p>
 <p>If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).</p>
 <p>The 'n' character indicates row, meaning that <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is ignored).</p>
@@ -246,8 +246,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Dump the results of a query into an array of strings.
-</pre><dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> structure with the <code>text</code> element filled. Notice that this is always a 2-D array, even if the query returns a single column. In that case, use <code>returned_tab-&gt;text[i][0]</code> to refer to row <code>i</code>.</dd></dl>
+<p>Dump the results of a query into an array of strings.</p>
+<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> structure with the <code>text</code> element filled. Notice that this is always a 2-D array, even if the query returns a single column. In that case, use <code>returned_tab-&gt;text[i][0]</code> to refer to row <code>i</code>.</dd></dl>
 <p>For example, the following function will list the tables in a database (much like you could do from the command line using <code>sqlite3 dbname.db ".table"</code>).</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
@@ -291,8 +291,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Queries the database, and dumps the first column of the result into a gsl_vector.
-</pre><dl class="section return"><dt>Returns:</dt><dd>A <code>gsl_vector</code> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.</dd></dl>
+<p>Queries the database, and dumps the first column of the result into a gsl_vector.</p>
+<dl class="section return"><dt>Returns:</dt><dd>A <code>gsl_vector</code> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.</dd></dl>
 <ul>
 <li>Uses <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> internally, then throws away all but the first column of the matrix. </li>
 <li>If <code>apop_opts.db_name_column</code> is set, then I'll ignore that column. It gets put into the names of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, and then thrown away when I look at only the <code>gsl_matrix</code> part of that set.</li>
@@ -303,4 +303,4 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

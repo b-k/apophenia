@@ -137,18 +137,15 @@ Functions</h2></td></tr>
 <div class="line">        __VA_ARGS__;    \</div>
 <div class="line">        return out;     \</div>
 <div class="line">    }</div>
-</div><!-- fragment --><pre class="fragment">A convenience macro for declaring the copy function for a new settings group.
-</pre><p> See the documentation outline -&gt; models -&gt; model settings -&gt; writing new settings group for details.</p>
+</div><!-- fragment --><p>A convenience macro for declaring the copy function for a new settings group. See the documentation outline -&gt; models -&gt; model settings -&gt; writing new settings group for details.</p>
 <p>To just do a direct copy, the default works; let your settings group be named <code>ysg:</code> </p>
-<div class="fragment"><div class="line"><a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a> (ysg, )</div>
-</div><!-- fragment --><p> generates a function that allocates space for a new settings group and copies all elements from the input group to the output group.</p>
+<pre class="fragment">Apop_settings_copy (ysg, )</pre><p> generates a function that allocates space for a new settings group and copies all elements from the input group to the output group.</p>
 <p>The space after the comma indicates that there is no new procedural code. If you want to add some, feel free. E.g., </p>
-<div class="fragment"><div class="line"><a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a> (ysg, </div>
-<div class="line">    <span class="keywordflow">if</span> (!in-&gt;score)</div>
-<div class="line">        out-&gt;score = 1;</div>
-<div class="line">    out-&gt;data_owner = 0;</div>
-<div class="line">)</div>
-</div><!-- fragment --><p> The names <code>in</code> and <code>out</code> are built into the macro. </p>
+<pre class="fragment">Apop_settings_copy (ysg, 
+    if (!in-&gt;score)
+        out-&gt;score = 1;
+    out-&gt;data_owner = 0;
+)</pre><p> The names <code>in</code> and <code>out</code> are built into the macro. </p>
 
 </div>
 </div>
@@ -198,16 +195,13 @@ Functions</h2></td></tr>
 <div class="line">        __VA_ARGS__;    \</div>
 <div class="line">        free(in);  \</div>
 <div class="line">    }</div>
-</div><!-- fragment --><pre class="fragment">A convenience macro for declaring the delete function for a new settings group.
-</pre><p> See the documentation outline -&gt; models -&gt; model settings -&gt; writing new settings group for details.</p>
+</div><!-- fragment --><p>A convenience macro for declaring the delete function for a new settings group. See the documentation outline -&gt; models -&gt; model settings -&gt; writing new settings group for details.</p>
 <p>If you don't have internal structure elements to free, let your settings group be named <code>ysg:</code> </p>
-<div class="fragment"><div class="line">  <a class="code" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a> (ysg, )</div>
-</div><!-- fragment --><p> generates a function that simply frees the input settings group.</p>
+<pre class="fragment">  Apop_settings_free (ysg, )</pre><p> generates a function that simply frees the input settings group.</p>
 <p>If your structure is pointing to other structures that need to be freed first, then add them after that comma: </p>
-<div class="fragment"><div class="line"><a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a> (ysg, </div>
-<div class="line">    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(in-&gt;dataset);</div>
-<div class="line">)</div>
-</div><!-- fragment --><p> The name <code>in</code> is built into the macro. </p>
+<pre class="fragment">Apop_settings_copy (ysg, 
+    apop_data_free(in-&gt;dataset);
+)</pre><p> The name <code>in</code> is built into the macro. </p>
 
 </div>
 </div>
@@ -242,12 +236,11 @@ Functions</h2></td></tr>
 <div class="line">    }</div>
 </div><!-- fragment --><p>A convenience macro for declaring the initialization function for a new settings group. See the documentation outline -&gt; models -&gt; model settings -&gt; writing new settings group for details.</p>
 <p>This sets the defaults for every element in the structure, so you will want a line for every element of your structure (except the ones that default to NULL, which have already been set as such).</p>
-<div class="fragment"><div class="line">  <a class="code" href="settings_8h.html#aefe030e4bba4671d8b026e81be70f764">Apop_settings_init</a> (ysg, </div>
-<div class="line">        Apop_varad_set(size1, 99);</div>
-<div class="line">        Apop_varad_set(size2, 2.3);</div>
-<div class="line">        Apop_varad_set(dataset, <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(out-&gt;size1, out-&gt;size2));</div>
-<div class="line">    )</div>
-</div><!-- fragment --><p> If you need them, the input is a structure named <code>in</code>, and the output a pointer-to-struct named <code>out</code>. </p>
+<pre class="fragment">  Apop_settings_init (ysg, 
+        Apop_varad_set(size1, 99);
+        Apop_varad_set(size2, 2.3);
+        Apop_varad_set(dataset, apop_data_alloc(out-&gt;size1, out-&gt;size2));
+    )</pre><p> If you need them, the input is a structure named <code>in</code>, and the output a pointer-to-struct named <code>out</code>. </p>
 
 </div>
 </div>
@@ -436,4 +429,4 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

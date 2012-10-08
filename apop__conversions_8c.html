@@ -112,8 +112,7 @@ sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><b>db</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">See \ref apop_db_to_crosstab for the storyline; this is the complement, which takes a
-</pre><p> crosstab and writes its values to the database.</p>
+<p>See <a class="el" href="types_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> for the storyline; this is the complement, which takes a crosstab and writes its values to the database.</p>
 <p>For example, I would take </p>
 <table  frame="box">
 <tr>
@@ -126,11 +125,11 @@ sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><b>db</b></td></tr>
 <td>r1</td><td>0</td><td>4 </td></tr>
 </table>
 <p>and do the following writes to the database:</p>
-<div class="fragment"><div class="line">insert into your_table values (<span class="stringliteral">&#39;r0&#39;</span>, <span class="stringliteral">&#39;c0&#39;</span>, 2);</div>
-<div class="line">insert into your_table values (<span class="stringliteral">&#39;r0&#39;</span>, <span class="stringliteral">&#39;c1&#39;</span>, 3);</div>
-<div class="line">insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, <span class="stringliteral">&#39;c0&#39;</span>, 3);</div>
-<div class="line">insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, <span class="stringliteral">&#39;c1&#39;</span>, 4);</div>
-</div><!-- fragment --><ul>
+<pre class="fragment">insert into your_table values ('r0', 'c0', 2);
+insert into your_table values ('r0', 'c1', 3);
+insert into your_table values ('r1', 'c0', 3);
+insert into your_table values ('r1', 'c1', 4);
+</pre><ul>
 <li>If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <code>r0</code>, <code>r1</code>, ... <code>c0</code>, <code>c1</code>, .... Text columns get their own numbering system, <code>t0</code>, <code>t1</code>, ..., which is a little more robust than continuing the column count from the matrix.</li>
 </ul>
 <ul>
@@ -152,14 +151,13 @@ sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><b>db</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">One often finds data where the column indicates the value of the data point. There may
-</pre><p> be two columns, and a mark in the first indicates a miss while a mark in the second is a hit. Or say that we have the following list of observations:</p>
-<div class="fragment"><div class="line">2 3 3 2 1 1 2 1 1 2 1 1</div>
-</div><!-- fragment --><p> Then we could write this as: </p>
-<div class="fragment"><div class="line">0  1  2  3</div>
-<div class="line">----------</div>
-<div class="line">0  6  4  2</div>
-</div><!-- fragment --><p> because there are six 1s observed, four 2s observed, and two 3s observed. We call this rank format, because 1 (or zero) is typically the most common, 2 is second most common, et cetera.</p>
+<p>One often finds data where the column indicates the value of the data point. There may be two columns, and a mark in the first indicates a miss while a mark in the second is a hit. Or say that we have the following list of observations:</p>
+<pre class="fragment">2 3 3 2 1 1 2 1 1 2 1 1
+</pre><p> Then we could write this as: </p>
+<pre class="fragment">0  1  2  3
+----------
+0  6  4  2
+</pre><p> because there are six 1s observed, four 2s observed, and two 3s observed. We call this rank format, because 1 (or zero) is typically the most common, 2 is second most common, et cetera.</p>
 <p>This function takes in a list of observations, and aggregates them into a single row in rank format.</p>
 <ul>
 <li>For the complement, see <a class="el" href="types_8h.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>.</li>
@@ -262,11 +260,11 @@ sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><b>db</b></td></tr>
 <ul>
 <li>This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple <code>select</code> query to generate the data. One is to specify an ad hoc table to pull from:</li>
 </ul>
-<div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;(select row, col, count(*) ct from base_data group by row, col)&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>,  <span class="stringliteral">&quot;ct&quot;</span>);</div>
-</div><!-- fragment --><p>The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:</p>
-<div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;base_data group by row, col&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>, <span class="stringliteral">&quot;count(*)&quot;</span>);</div>
-<div class="line"><span class="comment">//which will expand to &quot;select row, col, count(*) from base_data group by row, col&quot;</span></div>
-</div><!-- fragment --><dl class="section see"><dt>See also:</dt><dd><a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a></dd></dl>
+<pre class="fragment">apop_data * out = apop_db_to_crosstab("(select row, col, count(*) ct from base_data group by row, col)", "row", "col",  "ct");
+</pre><p>The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:</p>
+<pre class="fragment">apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col", "count(*)");
+//which will expand to "select row, col, count(*) from base_data group by row, col"
+</pre><dl class="section see"><dt>See also:</dt><dd><a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a></dd></dl>
 <ul>
 <li>If something fails along the way, return <code>NULL</code>. </li>
 </ul>
@@ -302,4 +300,4 @@ sqlite3 *&#160;</td><td class="memItemRight" valign="bottom"><b>db</b></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

@@ -83,22 +83,22 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data set. An <code><a class="el" href="structapop__data.html">apop_data</a></code> set where each row is a single data point. (No default) </td></tr>
     <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, whose <code>estimate</code> method will be used here. (No default) </td></tr>
     <tr><td class="paramname">iterations</td><td>How many bootstrap draws should I make? (default: 1,000) </td></tr>
     <tr><td class="paramname">rng</td><td>An RNG that you have initialized, probably with <code>apop_rng_alloc</code>. (Default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
-    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *boot_output = <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);</div>
-<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(boot_stats, 27, row_27)</div>
-<div class="line"><span class="comment">//If the output statistic is not just a vector, you&#39;ll need to use apop_data_unpack to put</span></div>
-<div class="line"><span class="comment">//it into the right shape. Let&#39;s assume for now that it&#39;s just a vector:</span></div>
-<div class="line">printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a>(row_27);</div>
-</div><!-- fragment --> </td></tr>
+    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <pre class="fragment">apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
+apop_data *boot_stats = apop_data_get_page(boot_output, "&lt;bootstrapped statistics&gt;");
+
+Apop_row(boot_stats, 27, row_27)
+//If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
+//it into the right shape. Let's assume for now that it's just a vector:
+printf("The statistics calculated on the 28th iteration:\n");
+apop_vector_print(row_27);
+</pre> </td></tr>
     <tr><td class="paramname">ignore_nans</td><td>If <code>'y'</code> and any of the elements in the estimation return <code>NaN</code>, then I will throw out that draw and try again. If <code>'n'</code>, then I will write that set of statistics to the list, <code>NaN</code> and all. I keep count of throw-aways; if there are more than <code>iterations</code> elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that <code>NaNs</code> are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n') </td></tr>
   </table>
   </dd>
@@ -132,12 +132,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
-</pre><p>The basic algorithm for the jackknife (with many details glossed over): create a sequence of data sets, each with exactly one observation removed, and then produce a new set of parameter estimates using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.</p>
+<p>Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.</p>
+<p>The basic algorithm for the jackknife (with many details glossed over): create a sequence of data sets, each with exactly one observation removed, and then produce a new set of parameter estimates using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.</p>
 <p>Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.</p>
 <p>Sample usage: </p>
-<div class="fragment"><div class="line"><a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(<a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(your_data, your_model));</div>
-</div><!-- fragment --><dl class="params"><dt>Parameters:</dt><dd>
+<pre class="fragment">apop_data_show(apop_jackknife_cov(your_data, your_model));
+</pre><dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>The data set. An <a class="el" href="gentle.html#apop_data">apop_data</a> set where each row is a single data point. </td></tr>
     <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, that will be used internally by <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>.</td></tr>
@@ -151,4 +151,4 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

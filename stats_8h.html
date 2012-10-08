@@ -719,22 +719,22 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data set. An <code><a class="el" href="structapop__data.html">apop_data</a></code> set where each row is a single data point. (No default) </td></tr>
     <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, whose <code>estimate</code> method will be used here. (No default) </td></tr>
     <tr><td class="paramname">iterations</td><td>How many bootstrap draws should I make? (default: 1,000) </td></tr>
     <tr><td class="paramname">rng</td><td>An RNG that you have initialized, probably with <code>apop_rng_alloc</code>. (Default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
-    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *boot_output = <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);</div>
-<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(boot_stats, 27, row_27)</div>
-<div class="line"><span class="comment">//If the output statistic is not just a vector, you&#39;ll need to use apop_data_unpack to put</span></div>
-<div class="line"><span class="comment">//it into the right shape. Let&#39;s assume for now that it&#39;s just a vector:</span></div>
-<div class="line">printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a>(row_27);</div>
-</div><!-- fragment --> </td></tr>
+    <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <pre class="fragment">apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
+apop_data *boot_stats = apop_data_get_page(boot_output, "&lt;bootstrapped statistics&gt;");
+
+Apop_row(boot_stats, 27, row_27)
+//If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
+//it into the right shape. Let's assume for now that it's just a vector:
+printf("The statistics calculated on the 28th iteration:\n");
+apop_vector_print(row_27);
+</pre> </td></tr>
     <tr><td class="paramname">ignore_nans</td><td>If <code>'y'</code> and any of the elements in the estimation return <code>NaN</code>, then I will throw out that draw and try again. If <code>'n'</code>, then I will write that set of statistics to the list, <code>NaN</code> and all. I keep count of throw-aways; if there are more than <code>iterations</code> elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that <code>NaNs</code> are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n') </td></tr>
   </table>
   </dd>
@@ -758,8 +758,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the matrix of correlation coefficients \form#59 relating each column with each other.
-</pre><p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a>; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.</p>
+<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_60.png"/> relating each column with each other.</p>
+<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a>; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.</td></tr>
@@ -783,8 +783,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the variance/covariance matrix relating each column of the matrix to each other column.
-</pre><p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a>; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.</p>
+<p>Returns the variance/covariance matrix relating each column of the matrix to each other column.</p>
+<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a>; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>An <a class="el" href="gentle.html#apop_data">apop_data</a> set. If the weights vector is set, I'll take it into account.</td></tr>
@@ -824,8 +824,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Factor names are stored in an auxiliary table with a name like 
-</pre><p> <code>"&lt;categories for your_var&gt;"</code>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.</p>
+<p>Factor names are stored in an auxiliary table with a name like <code>"&lt;categories for your_var&gt;"</code>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data set. (No default, must not be <code>NULL</code>) </td></tr>
@@ -888,13 +887,12 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">A utility to make a matrix of dummy variables. You give me a single
-</pre><p> vector that lists the category number for each item, and I'll produce a matrix with a single one in each row in the column specified.</p>
+<p>A utility to make a matrix of dummy variables. You give me a single vector that lists the category number for each item, and I'll produce a matrix with a single one in each row in the column specified.</p>
 <p>After that, you have to decide what to do with the new matrix and the original data column.</p>
 <ul>
-<li>You can manually join the dummy data set with your main data, e.g.: <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dummies  = <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(main_regression_vars, .col=8, .type=<span class="charliteral">&#39;t&#39;</span>);</div>
-<div class="line"><a class="code" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>(main_regression_vars, dummies, <span class="charliteral">&#39;c&#39;</span>, .inplace=<span class="charliteral">&#39;y&#39;</span>);</div>
-</div><!-- fragment --></li>
+<li>You can manually join the dummy data set with your main data, e.g.: <pre class="fragment">apop_data *dummies  = apop_data_to_dummies(main_regression_vars, .col=8, .type='t');
+apop_data_stack(main_regression_vars, dummies, 'c', .inplace='y');
+</pre></li>
 </ul>
 <ul>
 <li>The <code>.remove='y'</code> option specifies that I should use <a class="el" href="types_8h.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> to remove the column used to generate the dummies. Implemented only for <code>type=='d'</code>.</li>
@@ -961,8 +959,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert a column of text or numbers
-</pre><p> into a column of numeric factors, which you can use for a multinomial probit/logit, for example.</p>
+<p>Convert a column of text or numbers into a column of numeric factors, which you can use for a multinomial probit/logit, for example.</p>
 <p>If you don't run this on your data first, <a class="el" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a> and <a class="el" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a> default to running it on the vector or (if no vector) zeroth column of the matrix of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, because those models need a list of the unique values of the dependent variable.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -974,13 +971,13 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
   </dd>
 </dl>
 <p>For example: </p>
-<div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a>(<span class="stringliteral">&quot;mmt&quot;</span>, <span class="stringliteral">&quot;select 1, year, color from data&quot;</span>);</div>
-<div class="line"><a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d);</div>
-</div><!-- fragment --><p> Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.</p>
+<pre class="fragment">apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
+apop_data_to_factors(d);
+</pre><p> Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.</p>
 <p>Another example: </p>
-<div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;mmt&quot;</span>, <span class="stringliteral">&quot;select type, year from data&quot;</span>);</div>
-<div class="line"><a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d, .intype=<span class="charliteral">&#39;d&#39;</span>, .incol=0, .outcol=0);</div>
-</div><!-- fragment --><p> Here, the <code>type</code> column is converted to sequential integer factors and those factors overwrite the original data. Since a reference table is added as a second page of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, you can recover the original values as needed.</p>
+<pre class="fragment">apop_data *d  = apop_query_to_data("mmt", "select type, year from data");
+apop_data_to_factors(d, .intype='d', .incol=0, .outcol=0);
+</pre><p> Here, the <code>type</code> column is converted to sequential integer factors and those factors overwrite the original data. Since a reference table is added as a second page of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, you can recover the original values as needed.</p>
 <dl class="section return"><dt>Returns:</dt><dd>A table of the factors used in the code. This is an <code><a class="el" href="structapop__data.html">apop_data</a></code> set with only one column of text. Also, I add a page named <code>"&lt;categories for your_var&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading).</dd></dl>
 <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -1001,8 +998,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">est</td><td>The <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.</td></tr>
   </table>
@@ -1035,23 +1032,22 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Runs an F-test specified by \c q and \c c. Your best bet is to see
-</pre><p> the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
+<p>Runs an F-test specified by <code>q</code> and <code>c</code>. Your best bet is to see the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_72.png"/>
+<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_73.png"/>
 </p>
 <p> and that's what this function is based on.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">est</td><td>an <a class="el" href="structapop__model.html">apop_model</a> that you have already calculated. (No default) </td></tr>
-    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_73.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_74.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_75.png"/> are zero.) </td></tr>
+    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_74.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_75.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_76.png"/> are zero.) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_76.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_77.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_78.png"/>.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_77.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_78.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_79.png"/>.</dd></dl>
 <ul>
-<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_66.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
+<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_67.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
 </ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
@@ -1080,12 +1076,12 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
-</pre><p>The basic algorithm for the jackknife (with many details glossed over): create a sequence of data sets, each with exactly one observation removed, and then produce a new set of parameter estimates using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.</p>
+<p>Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.</p>
+<p>The basic algorithm for the jackknife (with many details glossed over): create a sequence of data sets, each with exactly one observation removed, and then produce a new set of parameter estimates using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.</p>
 <p>Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.</p>
 <p>Sample usage: </p>
-<div class="fragment"><div class="line"><a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(<a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(your_data, your_model));</div>
-</div><!-- fragment --><dl class="params"><dt>Parameters:</dt><dd>
+<pre class="fragment">apop_data_show(apop_jackknife_cov(your_data, your_model));
+</pre><dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>The data set. An <a class="el" href="gentle.html#apop_data">apop_data</a> set where each row is a single data point. </td></tr>
     <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, that will be used internally by <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>.</td></tr>
@@ -1132,12 +1128,12 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Kullback-Leibler divergence.
-</pre><p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_60.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_18.png"/> and <img class="formulaInl" alt="$q$" src="form_61.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_62.png"/>.</p>
+<p>Kullback-Leibler divergence.</p>
+<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_61.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_19.png"/> and <img class="formulaInl" alt="$q$" src="form_62.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_63.png"/>.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramname">top</td><td>the <img class="formulaInl" alt="$p$" src="form_18.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bottom</td><td>the <img class="formulaInl" alt="$q$" src="form_61.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">top</td><td>the <img class="formulaInl" alt="$p$" src="form_19.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">bottom</td><td>the <img class="formulaInl" alt="$q$" src="form_62.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">draw_ct</td><td>If I do the calculation via random draws, how many? (Default = 1e5) </td></tr>
     <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="autorng.html">Auto-allocated RNGs</a>. (Default = <code>NULL</code>)</td></tr>
   </table>
@@ -1146,7 +1142,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
 <p>This function can take empirical histogram-type models&mdash;<a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> and <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> &mdash;or continuous models like <a class="el" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a> or <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>.</p>
 <p>If there is an empirical model (I'll try <code>top</code> first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step through it for the points in the summation.</p>
 <ul>
-<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_63.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_64.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
+<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_64.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_65.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
 </ul>
 <p>If neither distribution is empirical, then I'll take <code>draw_ct</code> random draws from <code>bottom</code> and evaluate at those points.</p>
 <ul>
@@ -1185,12 +1181,11 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This is designed to be called from within the constraint method of your \ref
-</pre><p> <a class="el" href="structapop__model.html">apop_model</a>. Just write the constraint vector+matrix and this will do the rest.</p>
+<p>This is designed to be called from within the constraint method of your <a class="el" href="structapop__model.html">apop_model</a>. Just write the constraint vector+matrix and this will do the rest.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">beta</td><td>The proposed vector about to be tested. No default, must not be <code>NULL</code>.</td></tr>
-    <tr><td class="paramname">constraint</td><td>See the outline page for detailed discussion on setting contrasts. To give a quick example, say your constraint is <img class="formulaInl" alt="$3 < 2x + 4y - 7z$" src="form_23.png"/>; then the first row of your <code>data-&gt;vector</code> element would be 3, and the first row of the <code>data-&gt;matrix</code> element would be [2 4 -7]. Default: each elements is greater than zero</td></tr>
+    <tr><td class="paramname">constraint</td><td>See the outline page for detailed discussion on setting contrasts. To give a quick example, say your constraint is <img class="formulaInl" alt="$3 < 2x + 4y - 7z$" src="form_24.png"/>; then the first row of your <code>data-&gt;vector</code> element would be 3, and the first row of the <code>data-&gt;matrix</code> element would be [2 4 -7]. Default: each elements is greater than zero</td></tr>
     <tr><td class="paramname">margin</td><td>If zero, then this is a &gt;= constraint, otherwise I will return a point this amount within the borders. You could try <code>GSL_DBL_EPSILON</code>, which is the smallest value a <code>double</code> can hold, or something like 1e-3. Default = 0.</td></tr>
   </table>
   </dd>
@@ -1224,8 +1219,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the matrix of correlation coefficients \form#59 relating each column with each other.
-</pre><p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>; if you have column names, use that one.</p>
+<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_60.png"/> relating each column with each other.</p>
+<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>; if you have column names, use that one.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
@@ -1262,8 +1257,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the variance/covariance matrix relating each column with each other.
-</pre><p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>; if you have column names, use that one.</p>
+<p>Returns the variance/covariance matrix relating each column with each other.</p>
+<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>; if you have column names, use that one.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
@@ -1272,7 +1267,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you. This is the sample version&mdash;dividing by <img class="formulaInl" alt="$n-1$" src="form_45.png"/>, not <img class="formulaInl" alt="$n$" src="form_8.png"/>. It uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you. This is the sample version&mdash;dividing by <img class="formulaInl" alt="$n-1$" src="form_46.png"/>, not <img class="formulaInl" alt="$n$" src="form_8.png"/>. It uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </dd></dl>
 
 </div>
 </div>
@@ -1299,8 +1294,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Test whether the input matrix is positive semidefinite.
-</pre><p>A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.</p>
+<p>Test whether the input matrix is positive semidefinite.</p>
+<p>A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.</p>
 <p>Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates <img class="formulaInl" alt="$N$" src="form_3.png"/> determinants for an <img class="formulaInl" alt="$N$" src="form_3.png"/>x <img class="formulaInl" alt="$N$" src="form_3.png"/> matrix.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -1343,8 +1338,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Normalize  each row or column in the given matrix, one by one.
-</pre><p>Basically just a convenience fn to iterate through the columns or rows and run <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> for you.</p>
+<p>Normalize each row or column in the given matrix, one by one.</p>
+<p>Basically just a convenience fn to iterate through the columns or rows and run <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> for you.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data set to normalize. </td></tr>
@@ -1379,8 +1374,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Delete columns from a matrix. 
-</pre><p>This is done via copying, so if you have an exceptionally large data set, you're better off producing the matrix in the perfect form directly.</p>
+<p>Delete columns from a matrix.</p>
+<p>This is done via copying, so if you have an exceptionally large data set, you're better off producing the matrix in the perfect form directly.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the <code>gsl_matrix</code> to be subsetted </td></tr>
@@ -1410,8 +1405,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment"> First, this function passes tests, but is under development.
-</pre><p>It takes in a matrix and converts it to the `closest' positive semidefinite matrix.</p>
+<p>First, this function passes tests, but is under development.</p>
+<p>It takes in a matrix and converts it to the `closest' positive semidefinite matrix.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">m</td><td>On input, any matrix; on output, a positive semidefinite matrix. </td></tr>
@@ -1440,15 +1435,14 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Produce a model based on another model, but with some of the 
-</pre><p> parameters fixed at a given value.</p>
+<p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
-<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$ n=30 $" src="form_153.png"/> but <img class="formulaInl" alt="$ p_1 $" src="form_154.png"/> allowed to float freely:</p>
-<div class="fragment"><div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *bi30 = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, 30, GSL_NAN));</div>
-<div class="line">    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(bi30, apop_mle, .starting_pt=(<span class="keywordtype">double</span>[]){.5}); <span class="comment">// The Binomial doesn&#39;t like the default </span></div>
-<div class="line">                                                                       <span class="comment">// starting point of 1.</span></div>
-<div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, bi30);</div>
-</div><!-- fragment --><p>The output is an <code><a class="el" href="structapop__model.html">apop_model</a></code> that can be estimated, Bayesian updated, et cetera.</p>
+<p>For example, here is a Binomial distribution with a fixed n=30 but <img class="formulaInl" alt="$ p_1 $" src="form_16.png"/> allowed to float freely:</p>
+<pre class="fragment">    apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, GSL_NAN));
+    Apop_model_add_group(bi30, apop_mle, .starting_pt=(double[]){.5}); // The Binomial doesn't like the default 
+                                                                       // starting point of 1.
+    apop_model *out = apop_estimate(your_data, bi30);
+</pre><p>The output is an <code><a class="el" href="structapop__model.html">apop_model</a></code> that can be estimated, Bayesian updated, et cetera.</p>
 <ul>
 <li>The <code>estimate</code> method always uses an MLE, and it never calls the base model's <code>estimate</code> method.</li>
 </ul>
@@ -1534,8 +1528,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Numerically estimate the matrix of second derivatives of the
-</pre><p> parameter values. The math is simply a series of re-evaluations at small differential steps. [Therefore, it may be expensive to do this for a very computationally-intensive model.]</p>
+<p>Numerically estimate the matrix of second derivatives of the parameter values. The math is simply a series of re-evaluations at small differential steps. [Therefore, it may be expensive to do this for a very computationally-intensive model.]</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data at which the model was estimated </td></tr>
@@ -1580,8 +1573,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Produce the covariance matrix for the parameters of an estimated model via the derivative of the score function at the parameter. I.e., I find the second derivative via \ref apop_model_hessian , and take the negation of the inverse.
-</pre><p>I follow Efron and Hinkley in using the estimated information matrix&mdash;the value of the information matrix at the estimated value of the score&mdash;not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens 2008 (who directly cribbed off of both) for further details.</p>
+<p>Produce the covariance matrix for the parameters of an estimated model via the derivative of the score function at the parameter. I.e., I find the second derivative via <a class="el" href="stats_8h.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a> , and take the negation of the inverse.</p>
+<p>I follow Efron and Hinkley in using the estimated information matrix&mdash;the value of the information matrix at the estimated value of the score&mdash;not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens 2008 (who directly cribbed off of both) for further details.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data by which your model was estimated </td></tr>
@@ -1618,11 +1611,11 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">The multivariate generalization of the Gamma distribution.
-</pre> <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_67.png"/>
+<p>The multivariate generalization of the Gamma distribution. </p>
+<p class="formulaDsp">
+<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_68.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_68.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_69.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_70.png"/> takes on one of those values.</p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_69.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_70.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_71.png"/> takes on one of those values.</p>
 <p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
@@ -1677,8 +1670,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">RNG from a Generalized Hypergeometric type B3.
-</pre><p>Devroye uses this as the base for many of his distribution-generators, including the Waring.</p>
+<p>RNG from a Generalized Hypergeometric type B3.</p>
+<p>Devroye uses this as the base for many of his distribution-generators, including the Waring.</p>
 <ul>
 <li>If one of the inputs is &lt;=0, error. Returns <code>GSL_NAN</code> if the function doesn't stop. </li>
 </ul>
@@ -1698,21 +1691,21 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Run the Fisher exact test on an input contingency table.
-</pre><dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set with two rows:<br/>
+<p>Run the Fisher exact test on an input contingency table.</p>
+<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set with two rows:<br/>
  "probability of table": Probability of the observed table for fixed marginal totals. <br/>
  "p value": Table p-value. The probability of a more extreme table, where `extreme' is in a probabilistic sense.</dd></dl>
 <ul>
-<li>If there are processing errors, these values will be NaN. For example: <div class="fragment"><div class="line"><span class="keywordtype">void</span> test_fisher() {</div>
+<li>If there are processing errors, these values will be NaN. For example:</li>
+</ul>
+<div class="fragment"><div class="line"><span class="keywordtype">void</span> test_fisher() {</div>
 <div class="line">    <span class="comment">/* This test is thanks to Nick Eriksson, who sent it to me in the form of a bug report. */</span></div>
 <div class="line">    <span class="keywordtype">double</span> data[] = { 30, 50, 45, 34, 12,17 };</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> * testdata = <a class="code" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>(data,0,2,3);</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> * t2 = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(testdata);</div>
 <div class="line">    assert(fabs(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(t2,1) - 0.0001761) &lt; 1e-6);</div>
 <div class="line">}</div>
-</div><!-- fragment --> </li>
-</ul>
-
+</div><!-- fragment --> 
 </div>
 </div>
 <a class="anchor" id="a77c937ea4764d3da2ed9968273fa4544"></a>
@@ -1780,46 +1773,45 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This function will normalize a vector, either such that it has mean
-</pre><p> zero and variance one, or such that it ranges between zero and one, or sums to one.</p>
+<p>This function will normalize a vector, either such that it has mean zero and variance one, or such that it ranges between zero and one, or sums to one.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A gsl_vector which you have already allocated and filled. <code>NULL</code> input gives <code>NULL</code> output. (No default)</td></tr>
     <tr><td class="paramname">out</td><td>If normalizing in place, <code>NULL</code>. If not, the address of a <code>gsl_vector</code>. Do not allocate. (default = <code>NULL</code>.)</td></tr>
     <tr><td class="paramname">normalization_type</td><td>'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br/>
  'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br/>
- 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_56.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_57.png"/> is the sample standard deviation.<br/>
- 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_58.png"/><br/>
+ 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_57.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_58.png"/> is the sample standard deviation.<br/>
+ 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_59.png"/><br/>
 </td></tr>
   </table>
   </dd>
 </dl>
 <p><b>Example</b> </p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
-<div class="line"></div>
-<div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){</div>
-<div class="line">gsl_vector  *in, *out;</div>
-<div class="line"></div>
-<div class="line">in = gsl_vector_calloc(3);</div>
-<div class="line">gsl_vector_set(in, 1, 1);</div>
-<div class="line">gsl_vector_set(in, 2, 2);</div>
-<div class="line"></div>
-<div class="line">printf(<span class="stringliteral">&quot;The original vector:\n&quot;</span>);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(in);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(in, &amp;out, <span class="charliteral">&#39;s&#39;</span>);</div>
-<div class="line">printf(<span class="stringliteral">&quot;Standardized with mean zero and variance one:\n&quot;</span>);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(out);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(in, &amp;out, <span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line">printf(<span class="stringliteral">&quot;Normalized range with max one and min zero:\n&quot;</span>);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(out);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(in, NULL, <span class="charliteral">&#39;p&#39;</span>);</div>
-<div class="line">printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</span>);</div>
-<div class="line"><a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(in);</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<pre class="fragment">#include &lt;apop.h&gt;
+
+int main(void){
+gsl_vector  *in, *out;
+
+in = gsl_vector_calloc(3);
+gsl_vector_set(in, 1, 1);
+gsl_vector_set(in, 2, 2);
+
+printf("The original vector:\n");
+apop_vector_show(in);
+
+apop_vector_normalize(in, &amp;out, 's');
+printf("Standardized with mean zero and variance one:\n");
+apop_vector_show(out);
+
+apop_vector_normalize(in, &amp;out, 'r');
+printf("Normalized range with max one and min zero:\n");
+apop_vector_show(out);
+
+apop_vector_normalize(in, NULL, 'p');
+printf("Normalized into percentages:\n");
+apop_vector_show(in);
+}
+</pre><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
 </div>
@@ -1877,8 +1869,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find the sample covariance of a pair of weighted vectors. This only
-</pre><p> makes sense if the weightings are identical, so the function takes only one weighting vector for both.</p>
+<p>Find the sample covariance of a pair of weighted vectors. This only makes sense if the weightings are identical, so the function takes only one weighting vector for both.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">v1,v2</td><td>The data vectors </td></tr>
@@ -1913,8 +1904,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find the population kurtosis of a weighted vector.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Find the population kurtosis of a weighted vector.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
     <tr><td class="paramname">w</td><td>the weight vector. If NULL, assume equal weights. </td></tr>
@@ -1949,8 +1940,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find the weighted mean. 
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Find the weighted mean.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
     <tr><td class="paramname">w</td><td>the weight vector. If NULL, assume equal weights. </td></tr>
@@ -1984,8 +1975,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find the population skew of a weighted vector.
-</pre><p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_45.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
+<p>Find the population skew of a weighted vector.</p>
+<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_46.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -2021,8 +2012,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find the sample variance of a weighted vector.
-</pre><p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_45.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
+<p>Find the sample variance of a weighted vector.</p>
+<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_46.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -2036,4 +2027,4 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>apop_var</b> (const
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

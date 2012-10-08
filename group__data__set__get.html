@@ -63,16 +63,16 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_set_tt</b> (
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>First, some examples:</p>
-<div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 10, 10);</div>
-<div class="line"><a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;Zeroth row&quot;</span>, <span class="charliteral">&#39;r&#39;</span>);</div>
-<div class="line"><a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;Zeroth col&quot;</span>, <span class="charliteral">&#39;c&#39;</span>);</div>
-<div class="line"></div>
-<div class="line"><a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, 8, 0, 27);</div>
-<div class="line">assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 8, .colname=<span class="stringliteral">&quot;Zeroth&quot;</span>) == 27);</div>
-<div class="line"><span class="keywordtype">double</span> *x = <a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(d, .col=7, .rowname=<span class="stringliteral">&quot;Zeroth&quot;</span>);</div>
-<div class="line">*x = 270;</div>
-<div class="line">assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0, 7) == 270);</div>
-</div><!-- fragment --><p>Q: How does <code> apop_data_set(in, row, col, data)</code> differ from <code>gsl_matrix_set(in-&gt;matrix, row, col, data)</code>?<br/>
+<pre class="fragment">apop_data *d = apop_data_alloc(10, 10, 10);
+apop_name_add(d-&gt;names, "Zeroth row", 'r');
+apop_name_add(d-&gt;names, "Zeroth col", 'c');
+
+apop_data_set(d, 8, 0, 27);
+assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
+double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
+*x = 270;
+assert(apop_data_get(d, 0, 7) == 270);
+</pre><p>Q: How does <code> apop_data_set(in, row, col, data)</code> differ from <code>gsl_matrix_set(in-&gt;matrix, row, col, data)</code>?<br/>
  A: It's seven characters shorter.</p>
 <p>OK, there are a few other differences: the <a class="el" href="gentle.html#apop_data">apop_data</a> set has names, so we can get/set elements using those names, and it has both matrix and vector elements.</p>
 <ul>
@@ -80,11 +80,11 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_set_tt</b> (
 <li>For those that take a column number, column -1 is the vector element. </li>
 <li>For those that take a column name, I will search the vector last&mdash;if I don't find the name among the matrix columns, but the name matches the vector name, I return -1. </li>
 <li>If you give me both a .row and a .rowname, I go with the name; similarly for .col and .colname. </li>
-<li>You can give me the name of a page, e.g. <div class="fragment"><div class="line"><span class="keywordtype">double</span> AIC = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;Info&quot;</span>);</div>
-</div><!-- fragment --> Each search for a page in the <a class="el" href="gentle.html#apop_data">apop_data</a> set involves a regular expression search across the names of the pages, which is expensive. If you're doing one lookup, this is not an issue; for hundreds or thousands, you may be better off spending a line of code to get the page once: <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(data, page=<span class="stringliteral">&quot;Indices&quot;</span>);</div>
-<div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 1e7; i++)</div>
-<div class="line">    <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, i, 0, i);</div>
-</div><!-- fragment --></li>
+<li>You can give me the name of a page, e.g. <pre class="fragment">double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="Info");
+</pre> Each search for a page in the <a class="el" href="gentle.html#apop_data">apop_data</a> set involves a regular expression search across the names of the pages, which is expensive. If you're doing one lookup, this is not an issue; for hundreds or thousands, you may be better off spending a line of code to get the page once: <pre class="fragment">apop_data *d = apop_data_get_page(data, page="Indices");
+for (int i=0; i&lt; 1e7; i++)
+    apop_data_set(d, i, 0, i);
+</pre></li>
 </ul>
 <p>The <code>_ptr</code> functions return a pointer to the given cell. Those functions follow the lead of <code>gsl_vector_ptr</code> and <code>gsl_matrix_ptr</code>, and like those functions, return a pointer to the appropriate <code>double</code>.</p>
 <p>These functions use the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
@@ -188,8 +188,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_set_tt</b> (
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Get a pointer to an element of an \ref apop_data set. 
-</pre><ul>
+<p>Get a pointer to an element of an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<ul>
 <li>If a <code>NULL</code> vector or matrix (as the case may be), stop (unless <code>apop_opts.stop_on_warning='n'</code>, then return <code>NULL</code>). </li>
 <li>If the row/column you requested is outside the bounds of the matrix (or the name isn't found), always return <code>NULL</code>. </li>
 <li>See <a class="el" href="group__data__set__get.html">the set/get page</a> for details. </li>
@@ -250,14 +250,13 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_set_tt</b> (
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment"> Set a data element.
-</pre><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax, so with names you don't have to worry about element ordering. But the ordering of elements may still be noteworthy. For compatibility with older editions of Apophenia, the order is (row, col, value, rowname, colname), so the following would all set row 3, column 8, of <code>d</code> to 5: </p>
-<div class="fragment"><div class="line">  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, 3, 8, 5);</div>
-<div class="line">  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .col=8, .val=5);</div>
-<div class="line">  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, .val=5);</div>
-<div class="line"><span class="comment">//but:</span></div>
-<div class="line">  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, 5);  <span class="comment">//invalid---the value doesn&#39;t follow the colname.</span></div>
-</div><!-- fragment --><p>This differs somewhat from the deprecated <code>_tt</code>, <code>_ti</code>, and <code>_tt</code> functions, and to some extent, the GSL.</p>
+<p>Set a data element.</p>
+<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax, so with names you don't have to worry about element ordering. But the ordering of elements may still be noteworthy. For compatibility with older editions of Apophenia, the order is (row, col, value, rowname, colname), so the following would all set row 3, column 8, of <code>d</code> to 5: </p>
+<pre class="fragment">  apop_data_set(d, 3, 8, 5);
+  apop_data_set(d, .row = 3, .col=8, .val=5);
+  apop_data_set(d, .row = 3, .colname="Column 8", .val=5);
+//but:
+  apop_data_set(d, .row = 3, .colname="Column 8", 5);  //invalid---the value doesn't follow the colname.</pre><p>This differs somewhat from the deprecated <code>_tt</code>, <code>_ti</code>, and <code>_tt</code> functions, and to some extent, the GSL.</p>
 <dl class="section return"><dt>Returns:</dt><dd>0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).</dd></dl>
 <ul>
 <li>The error codes for out-of-bounds errors are thread-safe iff you are have a C11-compliant compiler (thanks to the <code>_Thread_local</code> keyword) or GCC (thanks to its <code>__thread</code> extension).</li>
@@ -268,4 +267,4 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_set_tt</b> (
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

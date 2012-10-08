@@ -43,20 +43,19 @@ urchinTracker();
 <li>Blank lines (empty or consisting only of white space) are also ignored.</li>
 </ul>
 <ul>
-<li>If you are reading into an array or <code>gsl_matrix</code> or <a class="el" href="gentle.html#apop_data">apop_data</a> set, all text fields are taken as zeros. You will be warned of such substitutions unless you set <div class="fragment"><div class="line"> <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>==0</div>
-</div><!-- fragment --> beforehand.</li>
+<li>If you are reading into an array or <code>gsl_matrix</code> or <a class="el" href="gentle.html#apop_data">apop_data</a> set, all text fields are taken as zeros. You will be warned of such substitutions unless you set <pre class="fragment">apop_opts.verbose==0</pre> beforehand.</li>
 </ul>
 <ul>
 <li>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert an NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then a NaN is inserted.</li>
 </ul>
 <p>If this rule doesn't work for your situation, you can explicitly insert a note that there is a missing data point. E.g., try: </p>
-<div class="fragment"><div class="line">          perl -pi.bak -e <span class="stringliteral">&#39;s/,,/,NaN,/g&#39;</span> data_file</div>
-</div><!-- fragment --><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to text that matches the given format. E.g.,</p>
-<div class="fragment"><div class="line"><span class="comment">//Apophenia&#39;s default NaN string, matching NaN, nan, or NAN, but not Nancy:</span></div>
-<div class="line">strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;NaN&quot;</span>);</div>
-<div class="line">strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;Missing&quot;</span>);</div>
-<div class="line">strcpy(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a679e3294ae45db1e7cb3ebef3fb1f7fe">db_nan</a>, <span class="stringliteral">&quot;.&quot;</span>);</div>
-</div><!-- fragment --><p>SQLite stores these NaN-type values internally as <code>NULL</code>; that means that functions like <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> will convert both your db_nan string and <code>NULL</code> to an <code>NaN</code> value.</p>
+<pre class="fragment">		perl -pi.bak -e 's/,,/,NaN,/g' data_file
+</pre><p>If you have missing data delimiters, you will need to set <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> to text that matches the given format. E.g.,</p>
+<pre class="fragment">//Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
+strcpy(apop_opts.db_nan, "NaN");
+strcpy(apop_opts.db_nan, "Missing");
+strcpy(apop_opts.db_nan, ".");
+</pre><p>SQLite stores these NaN-type values internally as <code>NULL</code>; that means that functions like <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> will convert both your db_nan string and <code>NULL</code> to an <code>NaN</code> value.</p>
 <ul>
 <li>The system uses the standards for C's <code>atof()</code> function for floating-point numbers: INFINITY, -INFINITY, and NaN work as expected. I use some tricks to get SQLite to accept these values, but they work.</li>
 </ul>
@@ -70,11 +69,11 @@ urchinTracker();
 <li>NUL characters are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string will probably break.</li>
 </ul>
 <ul>
-<li>Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given <div class="fragment"><div class="line">NUMLEOL</div>
-<div class="line">123AABB</div>
-<div class="line">456CCDD</div>
-</div><!-- fragment --> we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7. </li>
+<li>Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given <pre class="fragment">NUMLEOL
+123AABB
+456CCDD
+</pre> we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7. </li>
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

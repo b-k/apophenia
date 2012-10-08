@@ -109,23 +109,22 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Runs an F-test specified by \c q and \c c. Your best bet is to see
-</pre><p> the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
+<p>Runs an F-test specified by <code>q</code> and <code>c</code>. Your best bet is to see the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_72.png"/>
+<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_73.png"/>
 </p>
 <p> and that's what this function is based on.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">est</td><td>an <a class="el" href="structapop__model.html">apop_model</a> that you have already calculated. (No default) </td></tr>
-    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_73.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_74.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_75.png"/> are zero.) </td></tr>
+    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_74.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_75.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_76.png"/> are zero.) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns:</dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_76.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_77.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_78.png"/>.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_77.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_78.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_79.png"/>.</dd></dl>
 <ul>
-<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_66.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
+<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_67.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
 </ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
@@ -172,12 +171,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model&mdash;in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_18.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
+<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model&mdash;in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
 <p>For example, </p>
-<div class="fragment"><div class="line">   <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3);</div>
-</div><!-- fragment --><p>will return the density of the standard Normal distribution that is more than 1.3 from zero. If this function returns a small value, we can be confident that the statistic is significant. Or, </p>
-<div class="fragment"><div class="line">   <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3, <span class="stringliteral">&quot;t&quot;</span>, 10, tail=<span class="charliteral">&#39;u&#39;</span>);</div>
-</div><!-- fragment --><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_9.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_9.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
+<pre class="fragment">   apop_test(1.3);</pre><p>will return the density of the standard Normal distribution that is more than 1.3 from zero. If this function returns a small value, we can be confident that the statistic is significant. Or, </p>
+<pre class="fragment">   apop_test(1.3, "t", 10, tail='u');</pre><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_9.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_9.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
 <p>Several more distributions are supported; see below.</p>
 <ul>
 <li>For a two-tailed test (the default), this returns the density outside the range. I'll only do this for symmetric distributions. </li>
@@ -194,7 +191,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_18.png"/>-value).</dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value).</dd></dl>
 <p>Here is a list of distributions you can use, and their parameters.</p>
 <p><code>"normal"</code> or <code>"gaussian"</code> </p>
 <ul>
@@ -223,7 +220,7 @@ Functions</h2></td></tr>
 <ul>
 <li>p1=df </li>
 <li>no default </li>
-<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_18.png"/>-value for typical cases)</li>
+<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_19.png"/>-value for typical cases)</li>
 </ul>
 <p><code>"f"</code> </p>
 <ul>
@@ -237,4 +234,4 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

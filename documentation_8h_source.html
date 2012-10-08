@@ -29,51 +29,52 @@ urchinTracker();
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/* Apophenia&#39;s documentation</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2005--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">Copyright (c) 2005--2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;</div>
-<div class="line"><a name="l02105"></a><span class="lineno"> 2105</span>&#160;<span class="comment">/* To finish and add to the dataprep section:</span></div>
-<div class="line"><a name="l02106"></a><span class="lineno"> 2106</span>&#160;<span class="comment">\paragraph Probit, logit, and other -obits</span></div>
-<div class="line"><a name="l02107"></a><span class="lineno"> 2107</span>&#160;<span class="comment">The dependent variable for these models is a list of categories; this option is not relevant to continuous-valued dependent variables. </span></div>
-<div class="line"><a name="l02108"></a><span class="lineno"> 2108</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02109"></a><span class="lineno"> 2109</span>&#160;<span class="comment">Your data source may include a list of numeric categories, in which case you can pick one of the above cases.</span></div>
-<div class="line"><a name="l02110"></a><span class="lineno"> 2110</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02111"></a><span class="lineno"> 2111</span>&#160;<span class="comment">The main exception is when your data is a list of text factors, in which case your dependent variable isn&#39;t even a part of the data matrix.  In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like \code</span></div>
-<div class="line"><a name="l02112"></a><span class="lineno"> 2112</span>&#160;<span class="comment">int textcol = 3; //where is the list of dependent categories</span></div>
-<div class="line"><a name="l02113"></a><span class="lineno"> 2113</span>&#160;<span class="comment">apop_model *setmodel = apop_model_copy(apop_probit);</span></div>
-<div class="line"><a name="l02114"></a><span class="lineno"> 2114</span>&#160;<span class="comment">Apop_settings_add_group(setmodel, apop_category, textcol);</span></div>
-<div class="line"><a name="l02115"></a><span class="lineno"> 2115</span>&#160;<span class="comment">apop_estimate(yourdata, setmodel);</span></div>
-<div class="line"><a name="l02116"></a><span class="lineno"> 2116</span>&#160;<span class="comment">\endcode</span></div>
-<div class="line"><a name="l02117"></a><span class="lineno"> 2117</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02118"></a><span class="lineno"> 2118</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02119"></a><span class="lineno"> 2119</span>&#160;<span class="comment">You&#39;ll see that there are two questions here: should there be a constant column of ones, and where is the dependent column to be found?</span></div>
-<div class="line"><a name="l02120"></a><span class="lineno"> 2120</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02121"></a><span class="lineno"> 2121</span>&#160;<span class="comment">Here are the rules for preparing the data set. </span></div>
-<div class="line"><a name="l02122"></a><span class="lineno"> 2122</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02123"></a><span class="lineno"> 2123</span>&#160;<span class="comment">The first item is the </span></div>
-<div class="line"><a name="l02124"></a><span class="lineno"> 2124</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02125"></a><span class="lineno"> 2125</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02126"></a><span class="lineno"> 2126</span>&#160;<span class="comment">There are two methods:</span></div>
-<div class="line"><a name="l02127"></a><span class="lineno"> 2127</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02128"></a><span class="lineno"> 2128</span>&#160;<span class="comment">\li If the data set has no vector, </span></div>
-<div class="line"><a name="l02129"></a><span class="lineno"> 2129</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02130"></a><span class="lineno"> 2130</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02131"></a><span class="lineno"> 2131</span>&#160;<span class="comment">for the -obit and -ogit models</span></div>
-<div class="line"><a name="l02132"></a><span class="lineno"> 2132</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02133"></a><span class="lineno"> 2133</span>&#160;<span class="comment">   If there is a vector in place, then I won&#39;t touch anything.</span></div>
-<div class="line"><a name="l02134"></a><span class="lineno"> 2134</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02135"></a><span class="lineno"> 2135</span>&#160;<span class="comment">   If there is no vector in place, then:</span></div>
-<div class="line"><a name="l02136"></a><span class="lineno"> 2136</span>&#160;<span class="comment">        --If you don&#39;t tell me where to find the dependent column, I&#39;ll go with column zero, and</span></div>
-<div class="line"><a name="l02137"></a><span class="lineno"> 2137</span>&#160;<span class="comment">            --move the data to the vector</span></div>
-<div class="line"><a name="l02138"></a><span class="lineno"> 2138</span>&#160;<span class="comment">            --replace the data there with ones, creating a constant column.</span></div>
-<div class="line"><a name="l02139"></a><span class="lineno"> 2139</span>&#160;<span class="comment">        --If you do tell me where to find the dependent column, via the settings, I&#39;ll turn that into a list of factors.</span></div>
-<div class="line"><a name="l02140"></a><span class="lineno"> 2140</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l02141"></a><span class="lineno"> 2141</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l02142"></a><span class="lineno"> 2142</span>&#160;</div>
-<div class="line"><a name="l02143"></a><span class="lineno"> 2143</span>&#160;</div>
-<div class="line"><a name="l02622"></a><span class="lineno"> 2622</span>&#160;<span class="comment">/*&lt;!--</span></div>
-<div class="line"><a name="l02623"></a><span class="lineno"> 2623</span>&#160;<span class="comment">If you would like a more in-depth discussion of Apophenia&#39;s raison d&#39;etre and logic, have a look at these</span></div>
-<div class="line"><a name="l02624"></a><span class="lineno"> 2624</span>&#160;<span class="comment">&lt;a href=&quot;http://apophenia.info/apop_notes.html&quot;&gt;design notes&lt;/a&gt;. --&gt;</span></div>
-<div class="line"><a name="l02625"></a><span class="lineno"> 2625</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l02147"></a><span class="lineno"> 2147</span>&#160;<span class="comment">/* To finish and add to the dataprep section:</span></div>
+<div class="line"><a name="l02148"></a><span class="lineno"> 2148</span>&#160;<span class="comment">\paragraph Probit, logit, and other -obits</span></div>
+<div class="line"><a name="l02149"></a><span class="lineno"> 2149</span>&#160;<span class="comment">The dependent variable for these models is a list of categories; this option is not relevant to continuous-valued dependent variables. </span></div>
+<div class="line"><a name="l02150"></a><span class="lineno"> 2150</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02151"></a><span class="lineno"> 2151</span>&#160;<span class="comment">Your data source may include a list of numeric categories, in which case you can pick one of the above cases.</span></div>
+<div class="line"><a name="l02152"></a><span class="lineno"> 2152</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02153"></a><span class="lineno"> 2153</span>&#160;<span class="comment">The main exception is when your data is a list of text factors, in which case your dependent variable isn&#39;t even a part of the data matrix.  In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like </span></div>
+<div class="line"><a name="l02154"></a><span class="lineno"> 2154</span>&#160;<span class="comment">\verbatim</span></div>
+<div class="line"><a name="l02155"></a><span class="lineno"> 2155</span>&#160;<span class="comment">int textcol = 3; //where is the list of dependent categories</span></div>
+<div class="line"><a name="l02156"></a><span class="lineno"> 2156</span>&#160;<span class="comment">apop_model *setmodel = apop_model_copy(apop_probit);</span></div>
+<div class="line"><a name="l02157"></a><span class="lineno"> 2157</span>&#160;<span class="comment">Apop_settings_add_group(setmodel, apop_category, textcol);</span></div>
+<div class="line"><a name="l02158"></a><span class="lineno"> 2158</span>&#160;<span class="comment">apop_estimate(yourdata, setmodel);</span></div>
+<div class="line"><a name="l02159"></a><span class="lineno"> 2159</span>&#160;<span class="comment">\endverbatim</span></div>
+<div class="line"><a name="l02160"></a><span class="lineno"> 2160</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02161"></a><span class="lineno"> 2161</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02162"></a><span class="lineno"> 2162</span>&#160;<span class="comment">You&#39;ll see that there are two questions here: should there be a constant column of ones, and where is the dependent column to be found?</span></div>
+<div class="line"><a name="l02163"></a><span class="lineno"> 2163</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02164"></a><span class="lineno"> 2164</span>&#160;<span class="comment">Here are the rules for preparing the data set. </span></div>
+<div class="line"><a name="l02165"></a><span class="lineno"> 2165</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02166"></a><span class="lineno"> 2166</span>&#160;<span class="comment">The first item is the </span></div>
+<div class="line"><a name="l02167"></a><span class="lineno"> 2167</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02168"></a><span class="lineno"> 2168</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02169"></a><span class="lineno"> 2169</span>&#160;<span class="comment">There are two methods:</span></div>
+<div class="line"><a name="l02170"></a><span class="lineno"> 2170</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02171"></a><span class="lineno"> 2171</span>&#160;<span class="comment">\li If the data set has no vector, </span></div>
+<div class="line"><a name="l02172"></a><span class="lineno"> 2172</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02173"></a><span class="lineno"> 2173</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02174"></a><span class="lineno"> 2174</span>&#160;<span class="comment">for the -obit and -ogit models</span></div>
+<div class="line"><a name="l02175"></a><span class="lineno"> 2175</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02176"></a><span class="lineno"> 2176</span>&#160;<span class="comment">   If there is a vector in place, then I won&#39;t touch anything.</span></div>
+<div class="line"><a name="l02177"></a><span class="lineno"> 2177</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02178"></a><span class="lineno"> 2178</span>&#160;<span class="comment">   If there is no vector in place, then:</span></div>
+<div class="line"><a name="l02179"></a><span class="lineno"> 2179</span>&#160;<span class="comment">        --If you don&#39;t tell me where to find the dependent column, I&#39;ll go with column zero, and</span></div>
+<div class="line"><a name="l02180"></a><span class="lineno"> 2180</span>&#160;<span class="comment">            --move the data to the vector</span></div>
+<div class="line"><a name="l02181"></a><span class="lineno"> 2181</span>&#160;<span class="comment">            --replace the data there with ones, creating a constant column.</span></div>
+<div class="line"><a name="l02182"></a><span class="lineno"> 2182</span>&#160;<span class="comment">        --If you do tell me where to find the dependent column, via the settings, I&#39;ll turn that into a list of factors.</span></div>
+<div class="line"><a name="l02183"></a><span class="lineno"> 2183</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l02184"></a><span class="lineno"> 2184</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l02185"></a><span class="lineno"> 2185</span>&#160;</div>
+<div class="line"><a name="l02186"></a><span class="lineno"> 2186</span>&#160;</div>
+<div class="line"><a name="l02666"></a><span class="lineno"> 2666</span>&#160;<span class="comment">/*&lt;!--</span></div>
+<div class="line"><a name="l02667"></a><span class="lineno"> 2667</span>&#160;<span class="comment">If you would like a more in-depth discussion of Apophenia&#39;s raison d&#39;etre and logic, have a look at these</span></div>
+<div class="line"><a name="l02668"></a><span class="lineno"> 2668</span>&#160;<span class="comment">&lt;a href=&quot;http://apophenia.info/apop_notes.html&quot;&gt;design notes&lt;/a&gt;. --&gt;</span></div>
+<div class="line"><a name="l02669"></a><span class="lineno"> 2669</span>&#160;<span class="comment">*/</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

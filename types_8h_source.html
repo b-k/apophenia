@@ -35,16 +35,16 @@ urchinTracker();
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;gsl/gsl_matrix.h&gt;</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &quot;variadic.h&quot;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#ifdef    __cplusplus</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#ifdef  __cplusplus</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor"></span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor"></span></div>
 <div class="line"><a name="l00019"></a><span class="lineno"><a class="code" href="structapop__name.html">   19</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct</span>{</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;     <span class="keywordtype">char</span> * vector;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;     <span class="keywordtype">char</span> ** column;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;     <span class="keywordtype">char</span> ** row;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;     <span class="keywordtype">char</span> ** text;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;     <span class="keywordtype">int</span> colct, rowct, textct;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keywordtype">char</span> * vector;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordtype">char</span> ** column;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">char</span> ** row;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    <span class="keywordtype">char</span> ** text;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordtype">int</span> colct, rowct, textct;</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <span class="keywordtype">char</span> title[101];</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;} <a class="code" href="structapop__name.html">apop_name</a>;</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
@@ -271,7 +271,7 @@ urchinTracker();
 <div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;</div>
 <div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment">//From crosstabs</span></div>
 <div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="keywordtype">void</span> <a class="code" href="apop__conversions_8c.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a>(<a class="code" href="structapop__data.html">apop_data</a> *in, <span class="keywordtype">char</span> *tabname, <span class="keywordtype">char</span> *row_col_name, </div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;                              <span class="keywordtype">char</span> *col_col_name, <span class="keywordtype">char</span> *data_col_name);</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;                        <span class="keywordtype">char</span> *col_col_name, <span class="keywordtype">char</span> *data_col_name);</div>
 <div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;</div>
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">//packing data into a vector</span></div>
 <div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="preprocessor">#ifdef APOP_NO_VARIADIC</span></div>
@@ -458,10 +458,10 @@ urchinTracker();
 <div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a>(<span class="keyword">const</span> gsl_vector *data);</div>
 <div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(<span class="keyword">const</span> apop_data *data);</div>
 <div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;</div>
-<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;<span class="preprocessor">#ifdef    __cplusplus</span></div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;<span class="preprocessor">#ifdef  __cplusplus</span></div>
 <div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;<span class="preprocessor"></span>}</div>
 <div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

@@ -46,8 +46,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a69adca14afc66100168f585e05b59dcb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)</td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<div class="textblock"><pre class="fragment">  The odds and ends bin. 
-</pre><p> Copyright (c) 2005&ndash;2007, 2010 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
+<div class="textblock"><p>The odds and ends bin. Copyright (c) 2005&ndash;2007, 2010 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
 </div><hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a69adca14afc66100168f585e05b59dcb"></a>
 <div class="memitem">
@@ -72,8 +71,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).
-</pre><p>The distribution has two parameters, typically named <img class="formulaInl" alt="$\alpha$" src="form_1.png"/> and <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.</p>
+<p>The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).</p>
+<p>The distribution has two parameters, typically named <img class="formulaInl" alt="$\alpha$" src="form_1.png"/> and <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">m</td><td>The mean the Beta distribution should have. Notice that m is in [0,1].</td></tr>
@@ -114,8 +113,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This function sorts the whole of a \c apop_data set based on one column. Sorts in place, with little additional memory used.
-</pre><p>Uses the <code>gsl_sort_vector_index</code> function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.</p>
+<p>This function sorts the whole of a <code><a class="el" href="structapop__data.html">apop_data</a></code> set based on one column. Sorts in place, with little additional memory used.</p>
+<p>Uses the <code>gsl_sort_vector_index</code> function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The input set to be modified. (No default, must not be <code>NULL</code>.) </td></tr>
@@ -152,21 +151,21 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Calculate \form#0
-</pre><ul>
+<p>Calculate <img class="formulaInl" alt="$\sum_{n=1}^N {1\over n^s}$" src="form_0.png"/></p>
+<ul>
 <li>There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation.</li>
 </ul>
 <ul>
 <li>If <code>N</code> is zero or negative, return NaN. Notify the user if <code>apop_opts.verbosity &gt;=1</code></li>
 </ul>
-<p>For example: </p>
+<p>For example:</p>
 <div class="fragment"><div class="line"><span class="keywordtype">void</span> test_harmonic(){</div>
-<div class="line"><span class="keywordtype">double</span> out     = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);</div>
-<div class="line">     assert (out == 270);</div>
-<div class="line">     out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(370, -1.0);</div>
-<div class="line">     assert (out == 370*371/2);</div>
-<div class="line">     out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(12, -1.0);</div>
-<div class="line">     assert (out == 12*13/2);</div>
+<div class="line"><span class="keywordtype">double</span> out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);</div>
+<div class="line">    assert (out == 270);</div>
+<div class="line">    out = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(370, -1.0);</div>
+<div class="line">    assert (out == 370*371/2);</div>
+<div class="line">    out = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(12, -1.0);</div>
+<div class="line">    assert (out == 12*13/2);</div>
 <div class="line">}</div>
 </div><!-- fragment --> 
 </div>
@@ -206,8 +205,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">A convenience function for regular expression searching 
-</pre><ul>
+<p>A convenience function for regular expression searching</p>
+<ul>
 <li>There are three common flavors of regular expression: Basic, Extended, and Perl-compatible (BRE, ERE, PCRE). I use EREs, as per the specs of your C library, which should match POSIX's ERE specification.</li>
 </ul>
 <p>For example, "p.val" will match "P value", "p.value", "p values" (and even "tempeval", so be careful).</p>
@@ -216,7 +215,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">string</td><td>The string to search (no default; if <code>NULL</code>, I return 0&mdash;no match) </td></tr>
     <tr><td class="paramname">regex</td><td>The regular expression (no default) </td></tr>
-    <tr><td class="paramname">substrings</td><td>Parens in the regex indicate that I should return matching substrings. Give me the <em>address</em> of an <a class="el" href="gentle.html#apop_data">apop_data</a>* set, and I will allocate and fill the text portion with matches. Default= <code>NULL</code>, meaning do not return substrings (even if parens exist in the regex). If no match, return an empty <a class="el" href="gentle.html#apop_data">apop_data</a> set, so <code>output-&gt;textsize[0]==0</code>. </td></tr>
+    <tr><td class="paramname">substrings</td><td>Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an <a class="el" href="gentle.html#apop_data">apop_data</a>* set, and I will allocate and fill the text portion with matches. Default= <code>NULL</code>, meaning do not return substrings (even if parens exist in the regex). If no match, return an empty <a class="el" href="gentle.html#apop_data">apop_data</a> set, so <code>output-&gt;textsize[0]==0</code>. </td></tr>
     <tr><td class="paramname">use_case</td><td>Should I be case sensitive, <code>'y'</code> or <code>'n'</code>? (default = <code>'n'</code>, which is not the POSIX default.)</td></tr>
   </table>
   </dd>
@@ -226,7 +225,9 @@ Functions</h2></td></tr>
 <li>If <code>apop_opts.stop_on_warning='n'</code> returns -1 on error (e.g., regex <code>NULL</code> or didn't compile).</li>
 </ul>
 <ul>
-<li>Here is the test function. Notice that the substring-pulling function call passes <code>&amp;subs</code>, not plain <code>subs</code>. Also, the non-match has a zero-length blank in <code>subs-&gt;text[0][1]</code>. <div class="fragment"><div class="line"><span class="keywordtype">void</span> test_regex(){</div>
+<li>Here is the test function. Notice that the substring-pulling function call passes <code>&amp;subs</code>, not plain <code>subs</code>. Also, the non-match has a zero-length blank in <code>subs-&gt;text[0][1]</code>.</li>
+</ul>
+<div class="fragment"><div class="line"><span class="keywordtype">void</span> test_regex(){</div>
 <div class="line">    <span class="keywordtype">char</span> string1[] = <span class="stringliteral">&quot;Hello. I am a string.&quot;</span>;</div>
 <div class="line">    assert(<a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;hell&quot;</span>));</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *subs;</div>
@@ -237,9 +238,7 @@ Functions</h2></td></tr>
 <div class="line">    assert(!strcmp(subs-&gt;text[0][2], <span class="stringliteral">&quot;am&quot;</span>));</div>
 <div class="line">    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);</div>
 <div class="line">}</div>
-</div><!-- fragment --> </li>
-</ul>
-
+</div><!-- fragment --> 
 </div>
 </div>
 <a class="anchor" id="aaf0d5d65f514d9894a4ca5b0e8755873"></a>
@@ -265,8 +264,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">RNG from a Generalized Hypergeometric type B3.
-</pre><p>Devroye uses this as the base for many of his distribution-generators, including the Waring.</p>
+<p>RNG from a Generalized Hypergeometric type B3.</p>
+<p>Devroye uses this as the base for many of his distribution-generators, including the Waring.</p>
 <ul>
 <li>If one of the inputs is &lt;=0, error. Returns <code>GSL_NAN</code> if the function doesn't stop. </li>
 </ul>
@@ -296,10 +295,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Call \c system(), but with &lt;tt&gt;printf&lt;/tt&gt;-style arguments. E.g.,
-</pre><div class="fragment"><div class="line"><span class="keywordtype">char</span> filenames[] = <span class="stringliteral">&quot;apop_asst.c apop_asst.o&quot;</span></div>
-<div class="line"><a class="code" href="apop__asst_8c.html#a153362f8a4c7f64e0c8dad893edadea4">apop_system</a>(<span class="stringliteral">&quot;ls -l %s&quot;</span>, filenames);</div>
-</div><!-- fragment --><dl class="section return"><dt>Returns:</dt><dd>The return value of the <code>system()</code> call. </dd></dl>
+<p>Call <code>system()</code>, but with <code>printf</code>-style arguments. E.g.,</p>
+<pre class="fragment">char filenames[] = "apop_asst.c apop_asst.o"
+apop_system("ls -l %s", filenames);
+</pre><dl class="section return"><dt>Returns:</dt><dd>The return value of the <code>system()</code> call. </dd></dl>
 
 </div>
 </div>
@@ -356,8 +355,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Join together a list or array of strings, with optional separators between the strings.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Join together a list or array of strings, with optional separators between the strings.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">strings</td><td>An <a class="el" href="gentle.html#apop_data">apop_data</a> set with a grid of text to be combined into a single string </td></tr>
     <tr><td class="paramname">between</td><td>The text to put in between the rows of the table, such as ", ". (Default is a single space: " ") </td></tr>
@@ -422,8 +421,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Returns an array of size 101, where <code>returned_vector</code>[95] gives the value of the 95th percentile, for example. <code>Returned_vector</code>[100] is always the maximum value, and <code>returned_vector</code>[0] is always the min (regardless of rounding rule).</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>a gsl_vector of data. (No default, must not be <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">rounding</td><td>This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]". (Default = 'd'.)</td></tr>
@@ -439,4 +438,4 @@ Functions</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

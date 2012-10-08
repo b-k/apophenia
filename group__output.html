@@ -57,8 +57,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This function prettyprints the \c apop_data set to a screen.
-</pre><p>This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up. There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.</p>
+<p>This function prettyprints the <code><a class="el" href="structapop__data.html">apop_data</a></code> set to a screen.</p>
+<p>This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up. There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.</p>
 <p>So, I produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use <a class="el" href="group__apop__print.html">Assorted printing functions</a> to dump your data to a text file, and view the text file, or print subsets.</p>
 <p>For more machine-readable printing, see <a class="el" href="group__apop__print.html">Assorted printing functions</a>. </p>
 
@@ -77,8 +77,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Put summary information about the columns of a table (mean, std dev, variance, min, median, max) in a table.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Put summary information about the columns of a table (mean, std dev, variance, min, median, max) in a table.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">indata</td><td>The table to be summarized. An <a class="el" href="gentle.html#apop_data">apop_data</a> structure. </td></tr>
   </table>
@@ -105,23 +105,20 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Print the results of an estimation. If your model has a \c print
-</pre><p> method, then I'll use that, else I'll use a default setup.</p>
+<p>Print the results of an estimation. If your model has a <code>print</code> method, then I'll use that, else I'll use a default setup.</p>
 <p>Your <code>print</code> method can use both by masking itself for a second: </p>
-<div class="fragment"><div class="line"><span class="keywordtype">void</span> print_method(<a class="code" href="structapop__model.html">apop_model</a> *in){</div>
-<div class="line">  <span class="keywordtype">void</span> *temp = in-&gt;print;</div>
-<div class="line">  in-&gt;print = NULL;</div>
-<div class="line">  <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(in);</div>
-<div class="line">  in-&gt;print = temp;</div>
-<div class="line"></div>
-<div class="line">  printf(<span class="stringliteral">&quot;Additional info:\n&quot;</span>);</div>
-<div class="line">  ...</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>I always print to the file/pipe connected to {apop_opts.output_pipe}. The default is <code>stdout</code>, but if you'd like something else, use fopen. E.g.: </p>
-<div class="fragment"><div class="line"><a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a7fef183a3af4d313c4ca5303df8fde8e">output_pipe</a>=fopen(<span class="stringliteral">&quot;outfile.txt&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>); <span class="comment">//or &quot;a&quot; to append.</span></div>
-<div class="line"><a class="code" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a>(the_model);</div>
-<div class="line">fclose(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a7fef183a3af4d313c4ca5303df8fde8e">output_pipe</a>);<span class="comment">//optional in most cases.</span></div>
-</div><!-- fragment --> 
+<pre class="fragment">void print_method(apop_model *in){
+  void *temp = in-&gt;print;
+  in-&gt;print = NULL;
+  apop_model_show(in);
+  in-&gt;print = temp;
+
+  printf("Additional info:\n");
+  ...
+}</pre><p>I always print to the file/pipe connected to {apop_opts.output_pipe}. The default is <code>stdout</code>, but if you'd like something else, use fopen. E.g.: </p>
+<pre class="fragment">apop_opts.output_pipe=fopen("outfile.txt", "w"); //or "a" to append.
+apop_model_print(the_model);
+fclose(apop_opts.output_pipe);//optional in most cases.</pre> 
 </div>
 </div>
 <a class="anchor" id="ga3928a05b001f61d6dac3911f359224c9"></a>
@@ -159,15 +156,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This convenience function will take in a \c gsl_vector of data and put out a histogram, ready to pipe to Gnuplot.
-</pre><p>The function respects the <code>output_type</code> option, so code like: </p>
-<div class="fragment"><div class="line">FILE* f = popen(<span class="stringliteral">&quot;/usr/bin/gnuplot&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);</div>
-<div class="line"><a class="code" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a>(data, .bins=100, .output_pipe = f);</div>
-</div><!-- fragment --><p> will print directly to Gnuplot.</p>
+<p>This convenience function will take in a <code>gsl_vector</code> of data and put out a histogram, ready to pipe to Gnuplot.</p>
+<p>The function respects the <code>output_type</code> option, so code like: </p>
+<pre class="fragment">FILE* f = popen("/usr/bin/gnuplot", "w");
+apop_plot_histogram(data, .bins=100, .output_pipe = f);
+</pre><p> will print directly to Gnuplot.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_16.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
     <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
   </table>
   </dd>
@@ -203,8 +200,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This produces a Gnuplot file that will produce an array of 2-D
-</pre><p> plots, one for each pair of columns in the data set. Along the diagonal is a plot of the variable against itself&mdash;a density plot of the variable.</p>
+<p>This produces a Gnuplot file that will produce an array of 2-D plots, one for each pair of columns in the data set. Along the diagonal is a plot of the variable against itself&mdash;a density plot of the variable.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">d</td><td>The data set whose (matrix) columns will be compared. (No default, must not be <code>NULL</code>.)</td></tr>
@@ -252,8 +248,8 @@ A lattice showing three variables graphed against each other.</div></div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Prep for Gnuplot one of those cute scatterplots with a regression line through it.
-</pre><p>Currently, you only get two dimensions.</p>
+<p>Prep for Gnuplot one of those cute scatterplots with a regression line through it.</p>
+<p>Currently, you only get two dimensions.</p>
 <p>Set the global <a class="el" href="structapop__opts__type.html">apop_opts.output_name</a> to the filename you want before running this. It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <code>remove("filename");</code>]</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
@@ -300,4 +296,4 @@ A lattice showing three variables graphed against each other.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

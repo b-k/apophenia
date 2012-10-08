@@ -79,18 +79,16 @@ An ML search, tracing out the surface of the function</div></div>
       </table>
 </div><div class="memdoc">
 <p>The simplest use of this function is to restart a model at the latest parameter estimates.</p>
-<div class="fragment"><div class="line"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, model_using_an_MLE_search);</div>
-<div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++)</div>
-<div class="line">    m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);</div>
-<div class="line"><a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);</div>
-</div><!-- fragment --><p>By adding a line to reduce the tolerance each round [e.g., <code>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</code>], you can start broad and hone in on a precise optimum.</p>
+<pre class="fragment">apop_model *m = apop_estimate(data, model_using_an_MLE_search);
+for (int i=0; i&lt; 10; i++)
+    m = apop_estimate_restart(m);
+apop_data_show(m);</pre><p>By adding a line to reduce the tolerance each round [e.g., <code>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</code>], you can start broad and hone in on a precise optimum.</p>
 <p>You may have a new estimation method, such as first doing a coarse simulated annealing search, then a fine conjugate gradient search. When reading this example, recall that the form for adding a new settings group differs from the form for modifying existing settings: </p>
-<div class="fragment"><div class="line">Apop_model_add_settings(your_base_model, apop_mle, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);</div>
-<div class="line"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, your_base_model);</div>
-<div class="line"><a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(m, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223">APOP_CG_PR</a>);</div>
-<div class="line">m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);</div>
-<div class="line"><a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);</div>
-</div><!-- fragment --><p>Only one estimate is returned, either the one you sent in or a new one. The loser (which may be the one you sent in) is freed. That is, there is no memory leak in the above loop.</p>
+<pre class="fragment">Apop_model_add_settings(your_base_model, apop_mle, .method=APOP_SIMAN);
+apop_model *m = apop_estimate(data, your_base_model);
+Apop_settings_set(m, apop_mle, method, APOP_CG_PR);
+m = apop_estimate_restart(m);
+apop_data_show(m);</pre><p>Only one estimate is returned, either the one you sent in or a new one. The loser (which may be the one you sent in) is freed. That is, there is no memory leak in the above loop.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">e</td><td>An <a class="el" href="structapop__model.html">apop_model</a> that is the output from a prior MLE estimation. (No default, must not be <code>NULL</code>.) </td></tr>
@@ -130,8 +128,7 @@ An ML search, tracing out the surface of the function</div></div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">The maximum likelihood calculations. All of the settings are specified by adding a
-</pre><p> <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> struct to your model, so see the many notes there. Notably, the default method is the Fletcher-Reeves conjugate gradient method, and if your model does not have a dlog likelihood function, then a numeric gradient will be calculated via <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>. Add a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> group to your model for other methods, including the Nelder-Mead simplex and simulated annealing.</p>
+<p>The maximum likelihood calculations. All of the settings are specified by adding a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> struct to your model, so see the many notes there. Notably, the default method is the Fletcher-Reeves conjugate gradient method, and if your model does not have a dlog likelihood function, then a numeric gradient will be calculated via <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>. Add a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> group to your model for other methods, including the Nelder-Mead simplex and simulated annealing.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data matrix (an <a class="el" href="gentle.html#apop_data">apop_data</a> set). </td></tr>
@@ -144,13 +141,13 @@ An ML search, tracing out the surface of the function</div></div>
 <li>I only look at the first page of your parameter set. If you need more, perhaps use <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> .</li>
 </ul>
 <ul>
-<li>Get auxiliary info via, e.g.: <div class="fragment"><div class="line"><a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, <a class="code" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>);</div>
-<div class="line"><span class="keywordtype">int</span> status = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#aeba2b05a99d67db4ba658115ee5f9780">info</a>, .rowname=<span class="stringliteral">&quot;status&quot;</span>);</div>
-<div class="line"><span class="keywordflow">if</span> (status)</div>
-<div class="line">    <span class="comment">//trouble</span></div>
-<div class="line"><span class="keywordflow">else</span></div>
-<div class="line">    <span class="comment">//optimum found</span></div>
-</div><!-- fragment --></li>
+<li>Get auxiliary info via, e.g.: <pre class="fragment">apop_model *est = apop_estimate(your_data, apop_probit);
+int status = apop_data_get(est-&gt;info, .rowname="status");
+if (status)
+    //trouble
+else
+    //optimum found
+</pre></li>
 </ul>
 <ul>
 <li>During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time. </li>
@@ -160,4 +157,4 @@ An ML search, tracing out the surface of the function</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

@@ -73,8 +73,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a7975faa07196cf463ec261ff0ddc3ccc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__opts__type.html">apop_opts_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<div class="textblock"><pre class="fragment"> An easy front end to SQLite. Includes a few nice
-</pre><p> features like a variance, skew, and kurtosis aggregator for SQL. </p>
+<div class="textblock"><p>An easy front end to SQLite. Includes a few nice features like a variance, skew, and kurtosis aggregator for SQL. </p>
 </div><hr/><h2>Macro Definition Documentation</h2>
 <a class="anchor" id="ad6a9faa1c0cff7284482f44489f03db8"></a>
 <div class="memitem">
@@ -99,12 +98,12 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordtype">char</span>      *query;                 \</div>
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordtype">char</span>        *query;                 \</div>
 <div class="line">  va_list   argp;                   \</div>
-<div class="line">     va_start(argp, fmt);            \</div>
-<div class="line">     vasprintf(&amp;query, fmt, argp);   \</div>
-<div class="line">     va_end(argp);                   \</div>
-<div class="line">     Apop_notify(2, <span class="stringliteral">&quot;%s&quot;</span>, query);</div>
+<div class="line">    va_start(argp, fmt);            \</div>
+<div class="line">    vasprintf(&amp;query, fmt, argp);   \</div>
+<div class="line">    va_end(argp);                   \</div>
+<div class="line">    Apop_notify(2, <span class="stringliteral">&quot;%s&quot;</span>, query);</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -157,8 +156,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Merge a database on the hard drive with the database currently open.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Merge a database on the hard drive with the database currently open.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">db_file</td><td>The name of a file on disk. [No default; can't be <code>NULL</code>] </td></tr>
     <tr><td class="paramname">inout</td><td>Do we copy data in to the currently-open main db [<code>'i'</code>] or out to the specified auxiliary db[<code>'o'</code>]? [default = 'i']</td></tr>
@@ -202,8 +201,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Merge a single table from a database on the hard drive with the database currently open.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Merge a single table from a database on the hard drive with the database currently open.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">db_file</td><td>The name of a file on disk. [default = <code>NULL</code>] </td></tr>
     <tr><td class="paramname">tabname</td><td>The name of the table in that database to be merged in. [No default] </td></tr>
@@ -259,8 +258,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
-</pre><dl class="params"><dt>Parameters:</dt><dd>
+<p>Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.</p>
+<dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">seed</td><td>The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams. </td></tr>
   </table>
@@ -293,8 +292,8 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Check for the existence of a table, and maybe delete it.
-</pre><p>Recreating a table which already exists can cause errors, so it is good practice to check for existence first. Also, this is the stylish way to delete a table, since just calling <code>"drop table"</code> will give you an error if the table doesn't exist.</p>
+<p>Check for the existence of a table, and maybe delete it.</p>
+<p>Recreating a table which already exists can cause errors, so it is good practice to check for existence first. Also, this is the stylish way to delete a table, since just calling <code>"drop table"</code> will give you an error if the table doesn't exist.</p>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">name</td><td>the table name (no default) </td></tr>
@@ -340,4 +339,4 @@ Variables</h2></td></tr>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

@@ -37,102 +37,34 @@ struct <a class="el" href="structloess__struct.html">loess_struct</a>&#160;</td>
 <tr class="memitem:ace7009d9ce26d3af9d7bd9c12baa7bcf"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__loess__settings.html#ace7009d9ce26d3af9d7bd9c12baa7bcf">ci_level</a></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<div class="textblock"><pre class="fragment">The code for the loess system is based on FORTRAN code from 1988,
-</pre><p> overhauled in 1992, linked in to Apophenia in 2009. The structure that does all the work, then, is a <code><a class="el" href="structloess__struct.html">loess_struct</a></code> that you should basically take as opaque.</p>
+<div class="textblock"><p>The code for the loess system is based on FORTRAN code from 1988, overhauled in 1992, linked in to Apophenia in 2009. The structure that does all the work, then, is a <code><a class="el" href="structloess__struct.html">loess_struct</a></code> that you should basically take as opaque.</p>
 <p>The useful settings from that struct re-appear in the <a class="el" href="structapop__loess__settings.html">apop_loess_settings</a> struct so you can set them directly, and then the settings init function will copy your preferences into the working struct.</p>
 <p>The documentation for the elements is cut/pasted/modified from Cleveland, Grosse, and Shyu.</p>
-<p><code>.data</code>: Mandatory. Your input data set. </p>
-<pre class="fragment"> &lt;tt&gt;.lo_s.model.span&lt;/tt&gt;:         smoothing parameter. Default is 0.75.
-
- &lt;tt&gt;.lo_s.model.degree&lt;/tt&gt;:       overall degree of locally-fitted polynomial. 1 is 
-           locally-linear fitting and 2 is locally-quadratic 
-           fitting.  Default is 2.
-
- &lt;tt&gt;.lo_s.normalize&lt;/tt&gt;:     Should numeric predictors 
-           be normalized?  If 'y' - the default - the 
-           standard normalization is used. If 'n', no
-           normalization is carried out.
-
- \c .lo_s.model.parametric:    for two or more numeric predictors, this argument
-           specifies those variables that should be 
-           conditionally-parametric. The argument should be a 
-           logical vector of length p, specified in the order 
-           of the predictor group ordered in x.
-           Default is a vector of 0's of length p.
-
- \c .lo_s.model.drop_square:   for cases with degree = 2, and with two or more 
-           numeric predictors, this argument specifies those 
-           numeric predictors whose squares should be dropped 
-           from the set of fitting variables. The method of 
-           specification is the same as for parametric.
-           Default is a vector of 0's of length p.
-
- \c .lo_s.model.family:        the assumed distribution of the errors. The values 
-           are &lt;tt&gt;"gaussian"&lt;/tt&gt; or &lt;tt&gt;"symmetric"&lt;/tt&gt;. The first value is 
-           the default.  If the second value is specified, 
-           a robust fitting procedure is used.
-
- \c lo_s.control.surface: determines whether the fitted surface is computed 
-    &lt;tt&gt;"directly"&lt;/tt&gt; at all points  or whether an 
-    &lt;tt&gt;"interpolation"&lt;/tt&gt; method is used. 
-           The default, interpolation, is what most users should 
-           use unless special circumstances warrant.
-
-\c lo_s.control.statistics:    determines whether the statistical quantities are 
-    computed &lt;tt&gt;"exactly"&lt;/tt&gt; or approximately 
-    , where &lt;tt&gt;"approximate"&lt;/tt&gt; is the default. The former
-    should only be used for testing the approximation in 
-    statistical development and is not meant for routine 
-    usage because computation time can be horrendous.
-
-    \c lo_s.control.cell:      if interpolation is used to compute the surface, this
-    argument specifies the maximum cell size of the k-d 
-    tree.  Suppose k = floor(n*cell*span) where n is the 
-    number of observations.  Then a cell is further 
-    divided if the number of observations within it
-    is greater than or equal to k. default=0.2
-
- \c lo_s.control.trace_hat: Options are &lt;tt&gt;"approximate"&lt;/tt&gt;, &lt;tt&gt;"exact"&lt;/tt&gt;, and &lt;tt&gt;"wait.to.decide"&lt;/tt&gt;.    
-    When lo_s.control.surface is &lt;tt&gt;"approximate"&lt;/tt&gt;, determines
-    the computational method used to compute the trace of the hat
-    matrix, which is used in the computation of the statistical
-    quantities.  If "exact", an exact computation is done; normally
-    this goes quite fast on the fastest machines until n, the number
-    of observations is 1000 or more, but for very slow machines,
-    things can slow down at n = 300.  If "wait.to.decide" is selected,
-    then a default is chosen in loess();  the default is "exact" for
-    n &lt; 500 and "approximate" otherwise.  If surface is "exact", an
-    exact computation is always done for the trace. Set trace_hat to
-    "approximate" for large dataset will substantially reduce the
-    computation time.
-
- \c lo_s.model.iterations:     if family is &lt;tt&gt;"symmetric"&lt;/tt&gt;, the number of iterations 
-    of the robust fitting method.  Default is 0 for
-    lo_s.model.family = gaussian; 4 for family=symmetric.
-
-    That's all you can set. Here are some output parameters:
-
- \c fitted_values:   fitted values of the local regression model
-
- \c fitted_residuals:     residuals of the local regression fit
-
-   \c  enp:          equivalent number of parameters.
-
-   \c  s:       estimate of the scale of the residuals.
-
-   \c  one_delta:    a statistical parameter used in the computation of standard errors.
-
-   \c  two_delta:    a statistical parameter used in the computation of standard errors.
-
-   \c  pseudovalues: adjusted values of the response when robust estimation is used.
-
- \c trace_hat:  trace of the operator hat matrix.
-
-   \c  diagonal:     diagonal of the operator hat matrix.
-
-   \c  robust:       robustness weights for robust fitting.
-
-   \c  divisor: normalization divisor for numeric predictors.</pre> </div><hr/><h2>Field Documentation</h2>
+<p><code>.data</code>: Mandatory. Your input data set.</p>
+<p><code>.lo_s.model.span</code>: smoothing parameter. Default is 0.75.</p>
+<p><code>.lo_s.model.degree</code>: overall degree of locally-fitted polynomial. 1 is locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.</p>
+<p><code>.lo_s.normalize</code>: Should numeric predictors be normalized? If 'y' - the default - the standard normalization is used. If 'n', no normalization is carried out.</p>
+<p><code></code>.lo_s.model.parametric: for two or more numeric predictors, this argument specifies those variables that should be conditionally-parametric. The argument should be a logical vector of length p, specified in the order of the predictor group ordered in x. Default is a vector of 0's of length p.</p>
+<p><code></code>.lo_s.model.drop_square: for cases with degree = 2, and with two or more numeric predictors, this argument specifies those numeric predictors whose squares should be dropped from the set of fitting variables. The method of specification is the same as for parametric. Default is a vector of 0's of length p.</p>
+<p><code></code>.lo_s.model.family: the assumed distribution of the errors. The values are <code>"gaussian"</code> or <code>"symmetric"</code>. The first value is the default. If the second value is specified, a robust fitting procedure is used.</p>
+<p><code>lo_s.control.surface</code>: determines whether the fitted surface is computed <code>"directly"</code> at all points or whether an <code>"interpolation"</code> method is used. The default, interpolation, is what most users should use unless special circumstances warrant.</p>
+<p><code>lo_s.control.statistics</code>: determines whether the statistical quantities are computed <code>"exactly"</code> or approximately , where <code>"approximate"</code> is the default. The former should only be used for testing the approximation in statistical development and is not meant for routine usage because computation time can be horrendous.</p>
+<p><code>lo_s.control.cell</code>: if interpolation is used to compute the surface, this argument specifies the maximum cell size of the k-d tree. Suppose k = floor(n*cell*span) where n is the number of observations. Then a cell is further divided if the number of observations within it is greater than or equal to k. default=0.2</p>
+<p><code>lo_s.control.trace_hat</code>: Options are <code>"approximate"</code>, <code>"exact"</code>, and <code>"wait.to.decide"</code>. When lo_s.control.surface is <code>"approximate"</code>, determines the computational method used to compute the trace of the hat matrix, which is used in the computation of the statistical quantities. If "exact", an exact computation is done; normally this goes quite fast on the fastest machines until n, the number of observations is 1000 or more, but for very slow machines, things can slow down at n = 300. If "wait.to.decide" is selected, then a default is chosen in loess(); the default is "exact" for n &lt; 500 and "approximate" otherwise. If surface is "exact", an exact computation is always done for the trace. Set trace_hat to "approximate" for large dataset will substantially reduce the computation time.</p>
+<p><code>lo_s.model.iterations</code>: if family is <code>"symmetric"</code>, the number of iterations of the robust fitting method. Default is 0 for lo_s.model.family = gaussian; 4 for family=symmetric.</p>
+<p>That's all you can set. Here are some output parameters:</p>
+<p><code>fitted_values:</code> fitted values of the local regression model</p>
+<p><code>fitted_residuals:</code> residuals of the local regression fit</p>
+<p><code>enp:</code> equivalent number of parameters.</p>
+<p><code>s:</code> estimate of the scale of the residuals.</p>
+<p><code>one_delta:</code> a statistical parameter used in the computation of standard errors.</p>
+<p><code>two_delta:</code> a statistical parameter used in the computation of standard errors.</p>
+<p><code>pseudovalues:</code> adjusted values of the response when robust estimation is used.</p>
+<p><code>trace_hat:</code> trace of the operator hat matrix.</p>
+<p><code>diagonal:</code> diagonal of the operator hat matrix.</p>
+<p><code>robust:</code> robustness weights for robust fitting.</p>
+<p><code>divisor:</code> normalization divisor for numeric predictors. </p>
+</div><hr/><h2>Field Documentation</h2>
 <a class="anchor" id="ace7009d9ce26d3af9d7bd9c12baa7bcf"></a>
 <div class="memitem">
 <div class="memproto">
@@ -161,4 +93,4 @@ struct <a class="el" href="structloess__struct.html">loess_struct</a>&#160;</td>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>

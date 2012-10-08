@@ -32,7 +32,7 @@ urchinTracker();
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="types_8h.html">types.h</a>&quot;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="asst_8h.html">asst.h</a>&quot;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#ifdef    __cplusplus</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#ifdef  __cplusplus</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor"></span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span></div>
@@ -203,48 +203,48 @@ urchinTracker();
 <div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;</div>
 <div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment">//Loess, including the old FORTRAN-to-C.</span></div>
 <div class="line"><a name="l00314"></a><span class="lineno"><a class="code" href="structloess__struct.html">  314</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structloess__struct.html">loess_struct</a> {</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;     <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;          <span class="keywordtype">long</span>    n, p;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <span class="keywordtype">long</span>    n, p;</div>
 <div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="keywordtype">double</span>  *y, *x;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;          <span class="keywordtype">double</span>    *weights;</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;     } in;</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;     <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;             <span class="keywordtype">double</span>  span;</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;             <span class="keywordtype">long</span>    degree;</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;             <span class="keywordtype">long</span>    normalize;</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;             <span class="keywordtype">long</span>    parametric[8];</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;             <span class="keywordtype">long</span>    drop_square[8];</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;             <span class="keywordtype">char</span>    *family;</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;     } model;</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;     <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;             <span class="keywordtype">char</span>    *surface;</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;             <span class="keywordtype">char</span>    *statistics;</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;             <span class="keywordtype">double</span>  cell;</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;             <span class="keywordtype">char</span>    *trace_hat;</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;             <span class="keywordtype">long</span>    iterations;</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;     } control;</div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;     <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;          <span class="keywordtype">long</span> *parameter, *a;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;          <span class="keywordtype">double</span>    *xi, *vert, *vval;</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;     } kd_tree;</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;     <span class="keyword">struct </span>{</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;          <span class="keywordtype">double</span>    *fitted_values;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="keywordtype">double</span>  *weights;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    } in;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            <span class="keywordtype">double</span>  span;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;            <span class="keywordtype">long</span>    degree;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;            <span class="keywordtype">long</span>    normalize;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;            <span class="keywordtype">long</span>    parametric[8];</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;            <span class="keywordtype">long</span>    drop_square[8];</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            <span class="keywordtype">char</span>    *family;</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    } model;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;            <span class="keywordtype">char</span>    *surface;</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;            <span class="keywordtype">char</span>    *statistics;</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;            <span class="keywordtype">double</span>  cell;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;            <span class="keywordtype">char</span>    *trace_hat;</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            <span class="keywordtype">long</span>    iterations;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    } control;</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;    <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;        <span class="keywordtype">long</span>    *parameter, *a;</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        <span class="keywordtype">double</span>  *xi, *vert, *vval;</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    } kd_tree;</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keyword">struct </span>{</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        <span class="keywordtype">double</span>  *fitted_values;</div>
 <div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;        <span class="keywordtype">double</span>  *fitted_residuals;</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;          <span class="keywordtype">double</span>  enp, s;</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;          <span class="keywordtype">double</span>  one_delta, two_delta;</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;          <span class="keywordtype">double</span>    *pseudovalues;</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;          <span class="keywordtype">double</span>    trace_hat;</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;          <span class="keywordtype">double</span>    *diagonal;</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;          <span class="keywordtype">double</span>    *robust;</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;          <span class="keywordtype">double</span>  *divisor;</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;     } out;</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        <span class="keywordtype">double</span>  enp, s;</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        <span class="keywordtype">double</span>  one_delta, two_delta;</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        <span class="keywordtype">double</span>  *pseudovalues;</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;        <span class="keywordtype">double</span>  trace_hat;</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        <span class="keywordtype">double</span>  *diagonal;</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keywordtype">double</span>  *robust;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        <span class="keywordtype">double</span>  *divisor;</div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;    } out;</div>
 <div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;};</div>
 <div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;</div>
 <div class="line"><a name="l00352"></a><span class="lineno"><a class="code" href="structanova__struct.html">  352</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structanova__struct.html">anova_struct</a> {</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;     <span class="keywordtype">double</span>    dfn;</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;     <span class="keywordtype">double</span>    dfd;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;     <span class="keywordtype">double</span>  F_value;</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;     <span class="keywordtype">double</span>  Pr_F;</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;    <span class="keywordtype">double</span>  dfn;</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    <span class="keywordtype">double</span>  dfd;</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;    <span class="keywordtype">double</span>  F_value;</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    <span class="keywordtype">double</span>  Pr_F;</div>
 <div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;};</div>
 <div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;</div>
 <div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;</div>
@@ -302,10 +302,10 @@ urchinTracker();
 <div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;Apop_settings_declarations(apop_parts_wanted)</div>
 <div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;Apop_settings_declarations(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>)</div>
 <div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;</div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;<span class="preprocessor">#ifdef    __cplusplus</span></div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;<span class="preprocessor">#ifdef  __cplusplus</span></div>
 <div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;<span class="preprocessor"></span>}</div>
 <div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#endif</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Oct 7 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 8 2012.</div></body></html>
