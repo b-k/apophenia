@@ -108,11 +108,11 @@ Functions</h2></td></tr>
     <tr><td class="paramname">indata</td><td>The input data that will be binned. This is modified in place, so make a copy if you want to retain the original data. </td></tr>
     <tr><td class="paramname">close_top_bin</td><td>Normally, a bin covers the range from the point equal to its minimum to points strictly less than the minimum plus the width. if <code>'y'</code>, then the top bin includes points less than or equal to the upper bound. This solves the problem of displaying histograms where the top bin is just one point. </td></tr>
     <tr><td class="paramname">binspec</td><td>This is an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the same number of columns as <code>indata</code>. If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column. This allows you to specify a width for each dimension, or specify the same size for all with something like:</td></tr>
-    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>. <pre class="fragment">Apop_data_row(indata, 0, firstrow);
+    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>. <pre class="fragment">Apop_data_row(indata, 0, firstrow);
 apop_data *binspec = apop_data_copy(firstrow);
 gsl_matrix_set_all(binspec-&gt;matrix, 10); //bins of size 10 for all dim.s
 apop_data_to_bins(indata, binspec);
-</pre> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_20.png"/> bins to cover the range to the max element.</td></tr>
+</pre> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_21.png"/> bins to cover the range to the max element.</td></tr>
   </table>
   </dd>
 </dl>
@@ -282,7 +282,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
 </div><div class="memdoc">
 <p>Test the goodness-of-fit between either two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models or two <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> models.</p>
 <p>I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set. For histograms, you've use <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to ensure histograms in sync.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
+<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
 <ul>
 <li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
 </ul>
@@ -337,7 +337,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
     <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
     <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
     <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
     <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
   </table>
   </dd>
@@ -380,7 +380,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
   </dd>
 </dl>
 <p>I will also give special handling to two synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histograms</a> (probably produced via <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a>), using the histogram bins to define how the CDF is built.</p>
-<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
 <pre class="fragment"> apop_data_sort(data1);
  apop_data_sort(data2);
  apop_model *m1 = apop_estimate(data1, apop_pmf);

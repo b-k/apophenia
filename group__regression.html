@@ -69,15 +69,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Good ol' <img class="formulaInl" alt="$R^2$" src="form_31.png"/>. Let <img class="formulaInl" alt="$Y$" src="form_32.png"/> be the dependent variable, <img class="formulaInl" alt="$\epsilon$" src="form_33.png"/> the residual, <img class="formulaInl" alt="$n$" src="form_8.png"/> the number of data points, and <img class="formulaInl" alt="$k$" src="form_34.png"/> the number of independent vars (including the constant). Returns an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the following entries (in the vector element):</p>
+<p>Good ol' <img class="formulaInl" alt="$R^2$" src="form_32.png"/>. Let <img class="formulaInl" alt="$Y$" src="form_33.png"/> be the dependent variable, <img class="formulaInl" alt="$\epsilon$" src="form_34.png"/> the residual, <img class="formulaInl" alt="$n$" src="form_8.png"/> the number of data points, and <img class="formulaInl" alt="$k$" src="form_35.png"/> the number of independent vars (including the constant). Returns an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the following entries (in the vector element):</p>
 <ul>
-<li><img class="formulaInl" alt="$ SST \equiv \sum (Y_i - \bar Y) ^2 $" src="form_35.png"/> </li>
-<li><img class="formulaInl" alt="$ SSE \equiv \sum \epsilon ^2 $" src="form_36.png"/> </li>
-<li><img class="formulaInl" alt="$ R^2 \equiv 1 - {SSE\over SST} $" src="form_37.png"/> </li>
-<li><img class="formulaInl" alt="$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2) $" src="form_38.png"/></li>
+<li><img class="formulaInl" alt="$ SST \equiv \sum (Y_i - \bar Y) ^2 $" src="form_36.png"/> </li>
+<li><img class="formulaInl" alt="$ SSE \equiv \sum \epsilon ^2 $" src="form_37.png"/> </li>
+<li><img class="formulaInl" alt="$ R^2 \equiv 1 - {SSE\over SST} $" src="form_38.png"/> </li>
+<li><img class="formulaInl" alt="$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2) $" src="form_39.png"/></li>
 </ul>
 <p>Internally allocates (and frees) a vector the size of your data set.</p>
-<dl class="section return"><dt>Returns:</dt><dd>: a <img class="formulaInl" alt="$5 \times 1$" src="form_39.png"/> <a class="el" href="structapop__data.html">apop_data</a> table with the following fields: <ul>
+<dl class="section return"><dt>Returns:</dt><dd>: a <img class="formulaInl" alt="$5 \times 1$" src="form_40.png"/> <a class="el" href="structapop__data.html">apop_data</a> table with the following fields: <ul>
 <li>"R_squared" </li>
 <li>"R_squared_adj" </li>
 <li>"SSE" </li>
@@ -87,7 +87,7 @@ Functions</h2></td></tr>
 If the output is in <code>sss</code>, use <code>apop_data_get(sss, .rowname="SSE")</code> to get the SSE, and so on for the other items.</dd></dl>
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
-    <tr><td class="paramname">m</td><td>A model. I use the pointer to the data set used for estimation and the info page named <code>"&lt;Predicted&gt;"</code>. The Predicted page should include observed, expected, and residual columns, which I use to generate the sums of squared errors and residuals, et cetera. All generalized linear models produce a page with this name and of this form, as do a host of other models. Nothing keeps you from finding the <img class="formulaInl" alt="$R^2$" src="form_31.png"/> of, say, a kernel smooth; it is up to you to determine whether such a thing is appropriate to your given models and situation.</td></tr>
+    <tr><td class="paramname">m</td><td>A model. I use the pointer to the data set used for estimation and the info page named <code>"&lt;Predicted&gt;"</code>. The Predicted page should include observed, expected, and residual columns, which I use to generate the sums of squared errors and residuals, et cetera. All generalized linear models produce a page with this name and of this form, as do a host of other models. Nothing keeps you from finding the <img class="formulaInl" alt="$R^2$" src="form_32.png"/> of, say, a kernel smooth; it is up to you to determine whether such a thing is appropriate to your given models and situation.</td></tr>
   </table>
   </dd>
 </dl>
@@ -95,8 +95,8 @@ If the output is in <code>sss</code>, use <code>apop_data_get(sss, .rowname="SSE
 <li><code>apop_estimate(yourdata, apop_ols)</code> does this automatically </li>
 <li>If I don't find a Predicted page, I throw an error on the screen and return <code>NULL</code>. </li>
 <li>The number of observations equals the number of rows in the Predicted page </li>
-<li>The number of independent variables, needed only for the adjusted <img class="formulaInl" alt="$R^2$" src="form_31.png"/>, is from the number of columns in the main data set's matrix (i.e. the first page; i.e. the set of parameters if this is the <code>parameters</code> output from a model estimation). </li>
-<li>If your data (first page again) has a <code>weights</code> vector, I will find weighted SSE, SST, and SSR (and calculate the <img class="formulaInl" alt="$R^2$" src="form_31.png"/>s using those values). </li>
+<li>The number of independent variables, needed only for the adjusted <img class="formulaInl" alt="$R^2$" src="form_32.png"/>, is from the number of columns in the main data set's matrix (i.e. the first page; i.e. the set of parameters if this is the <code>parameters</code> output from a model estimation). </li>
+<li>If your data (first page again) has a <code>weights</code> vector, I will find weighted SSE, SST, and SSR (and calculate the <img class="formulaInl" alt="$R^2$" src="form_32.png"/>s using those values). </li>
 </ul>
 
 </div>

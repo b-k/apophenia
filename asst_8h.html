@@ -460,11 +460,11 @@ int int&#160;</td><td class="memItemRight" valign="bottom"><b>vasprintf</b> (cha
     <tr><td class="paramname">indata</td><td>The input data that will be binned. This is modified in place, so make a copy if you want to retain the original data. </td></tr>
     <tr><td class="paramname">close_top_bin</td><td>Normally, a bin covers the range from the point equal to its minimum to points strictly less than the minimum plus the width. if <code>'y'</code>, then the top bin includes points less than or equal to the upper bound. This solves the problem of displaying histograms where the top bin is just one point. </td></tr>
     <tr><td class="paramname">binspec</td><td>This is an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the same number of columns as <code>indata</code>. If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column. This allows you to specify a width for each dimension, or specify the same size for all with something like:</td></tr>
-    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>. <pre class="fragment">Apop_data_row(indata, 0, firstrow);
+    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>. <pre class="fragment">Apop_data_row(indata, 0, firstrow);
 apop_data *binspec = apop_data_copy(firstrow);
 gsl_matrix_set_all(binspec-&gt;matrix, 10); //bins of size 10 for all dim.s
 apop_data_to_bins(indata, binspec);
-</pre> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_20.png"/> bins to cover the range to the max element.</td></tr>
+</pre> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_21.png"/> bins to cover the range to the max element.</td></tr>
   </table>
   </dd>
 </dl>
@@ -710,7 +710,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
 </div><div class="memdoc">
 <p>Test the goodness-of-fit between either two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models or two <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> models.</p>
 <p>I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set. For histograms, you've use <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to ensure histograms in sync.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
+<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
 <ul>
 <li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
 </ul>
@@ -801,7 +801,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
     <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
     <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
     <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
     <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
   </table>
   </dd>
@@ -897,7 +897,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
       </table>
 </div><div class="memdoc">
 <p>Fit a log-linear model via iterative proportional fitting, aka raking.</p>
-<p>See Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_30.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
+<p>See Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_31.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
 <p>The combinations of categories that are considered to be relevant are called <em>contrasts</em>, after ANOVA terminology of the 1940s.</p>
 <p>The other constraint on the search are structural zeros, which are values that you know can never be non-zero, due to field-specific facts about the variables. For example, U.S. Social Security payments are available only to those age 65 or older, so "age &lt;65 and
 gets_soc_security=1" is a structural zero.</p>
@@ -1048,7 +1048,7 @@ gets_soc_security=1" is a structural zero.</p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model&mdash;in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
+<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model&mdash;in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
 <p>For example, </p>
 <pre class="fragment">   apop_test(1.3);</pre><p>will return the density of the standard Normal distribution that is more than 1.3 from zero. If this function returns a small value, we can be confident that the statistic is significant. Or, </p>
 <pre class="fragment">   apop_test(1.3, "t", 10, tail='u');</pre><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_9.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_9.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
@@ -1068,7 +1068,7 @@ gets_soc_security=1" is a structural zero.</p>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns:</dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value).</dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value).</dd></dl>
 <p>Here is a list of distributions you can use, and their parameters.</p>
 <p><code>"normal"</code> or <code>"gaussian"</code> </p>
 <ul>
@@ -1097,7 +1097,7 @@ gets_soc_security=1" is a structural zero.</p>
 <ul>
 <li>p1=df </li>
 <li>no default </li>
-<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_19.png"/>-value for typical cases)</li>
+<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_20.png"/>-value for typical cases)</li>
 </ul>
 <p><code>"f"</code> </p>
 <ul>
@@ -1140,7 +1140,7 @@ gets_soc_security=1" is a structural zero.</p>
   </dd>
 </dl>
 <p>I will also give special handling to two synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histograms</a> (probably produced via <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a>), using the histogram bins to define how the CDF is built.</p>
-<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
+<dl class="section return"><dt>Returns:</dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
 <pre class="fragment"> apop_data_sort(data1);
  apop_data_sort(data2);
  apop_model *m1 = apop_estimate(data1, apop_pmf);
@@ -1304,9 +1304,9 @@ gets_soc_security=1" is a structural zero.</p>
 <tr>
 <td><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">Beta</a> </td><td><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">Bernoulli</a> </td><td></td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_80.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_81.png"/>   </td></tr>
+<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_81.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_82.png"/>   </td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_58.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_41.png"/>  </td></tr>
+<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_59.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_42.png"/>  </td></tr>
 <tr>
 <td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">Poisson</a> </td><td>Uses sum and size of the data  </td></tr>
 </table>

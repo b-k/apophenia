@@ -94,7 +94,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The Bernoulli model: A single random draw with probability <img class="formulaInl" alt="$p$" src="form_19.png"/>. </p>
+<p>The Bernoulli model: A single random draw with probability <img class="formulaInl" alt="$p$" src="form_20.png"/>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330a45653549aeb20c15ead16548f329d68c"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -126,7 +126,7 @@ Functions</h2></td></tr>
 <p><code>Bernoulli distribution</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330accdc91386159b10c00c114d3365641c0"></a>Input format</em>&nbsp;</td><td>
-<p>The matrix or vector can have any size, and I just count up zeros and non-zeros. The Bernoulli parameter <img class="formulaInl" alt="$p$" src="form_19.png"/> is the percentage of non-zero values in the matrix. Its variance is <img class="formulaInl" alt="$p(1-p)$" src="form_150.png"/>. </p>
+<p>The matrix or vector can have any size, and I just count up zeros and non-zeros. The Bernoulli parameter <img class="formulaInl" alt="$p$" src="form_20.png"/> is the percentage of non-zero values in the matrix. Its variance is <img class="formulaInl" alt="$p(1-p)$" src="form_150.png"/>. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330a3cf103dcd4a9c8f8caf17dbfcb6dfc58"></a>Parameter format</em>&nbsp;</td><td>
 <p>A vector of length one </p>
@@ -136,7 +136,7 @@ Functions</h2></td></tr>
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top"><img class="formulaInl" alt="$p$" src="form_19.png"/> is the only element in the vector. A <code>&lt;Covariance&gt;</code> page has the variance of <img class="formulaInl" alt="$p$" src="form_19.png"/> in the (0,0)th element of the matrix.  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top"><img class="formulaInl" alt="$p$" src="form_20.png"/> is the only element in the vector. A <code>&lt;Covariance&gt;</code> page has the variance of <img class="formulaInl" alt="$p$" src="form_20.png"/> in the (0,0)th element of the matrix.  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports <code>log likelihood</code>.  </td></tr>
 </table>
@@ -261,7 +261,7 @@ Functions</h2></td></tr>
 <p>Each row of the matrix is one observation, consisting of two elements. The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, the number of draws of type one (`hits', `successes') in column one. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3addf9c786868d2562b43e0de520c08093"></a>Parameter format</em>&nbsp;</td><td>
-<p>a vector, v[0]= <img class="formulaInl" alt="$n$" src="form_8.png"/>; v[1]= <img class="formulaInl" alt="$\p_1$" src="form_148.png"/>. Thus, <img class="formulaInl" alt="$p_0$" src="form_135.png"/> isn't written down; see <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> for further discussion. If you input $v[1]&gt;1$ and <code>apop_opts.verbose &gt;=1</code>, the log likelihood function will throw a warning. </p>
+<p>a vector, v[0]= <img class="formulaInl" alt="$n$" src="form_8.png"/>; v[1]= <img class="formulaInl" alt="$p_1$" src="form_17.png"/>. Thus, <img class="formulaInl" alt="$p_0$" src="form_136.png"/> isn't written down; see <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> for further discussion. If you input $v[1]&gt;1$ and <code>apop_opts.verbose &gt;=1</code>, the log likelihood function will throw a warning. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3a13782bd575616ed1ecc86a728a537e73"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -289,7 +289,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> distribution, for descriptive purposes.</p>
+<p>The <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> distribution, for descriptive purposes.</p>
 <p>If you want to test a hypothesis, you probably don't need this, and should instead use <a class="el" href="asst_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>. See notes in <a class="el" href="group__tfchi.html">t-, chi-squared, F-, Wishart distributions</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5ab7cf5e109475b5f0b2680c125389805c"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -325,7 +325,7 @@ Functions</h2></td></tr>
 <p>Unordered list of scalars in the matrix and/or vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5a19c5a60231405a9c0310313d204501d8"></a>Parameter format</em>&nbsp;</td><td>
-<p>Zeroth element of the vector is the <img class="formulaInl" alt="$df$" src="form_66.png"/>. </p>
+<p>Zeroth element of the vector is the <img class="formulaInl" alt="$df$" src="form_67.png"/>. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5a61913e9d7d606151b839a645db92035c"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -414,11 +414,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>The Exponential distribution.</p>
-<p><img class="formulaInl" alt="$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $" src="form_129.png"/> <br/>
- <img class="formulaInl" alt="$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $" src="form_130.png"/> <br/>
- <img class="formulaInl" alt="$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $" src="form_131.png"/> <br/>
+<p><img class="formulaInl" alt="$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $" src="form_130.png"/> <br/>
+ <img class="formulaInl" alt="$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $" src="form_131.png"/> <br/>
+ <img class="formulaInl" alt="$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $" src="form_132.png"/> <br/>
 </p>
-<p>Some write the function as: <img class="formulaInl" alt="$Z(C,k) dx = \ln C C^{-k}. $" src="form_132.png"/> If you prefer this form, just convert your parameter via <img class="formulaInl" alt="$\mu = {1\over \ln C}$" src="form_133.png"/> (and convert back from the parameters this function gives you via <img class="formulaInl" alt="$C=\exp(1/\mu)$" src="form_134.png"/>). </p>
+<p>Some write the function as: <img class="formulaInl" alt="$Z(C,k) dx = \ln C C^{-k}. $" src="form_133.png"/> If you prefer this form, just convert your parameter via <img class="formulaInl" alt="$\mu = {1\over \ln C}$" src="form_134.png"/> (and convert back from the parameters this function gives you via <img class="formulaInl" alt="$C=\exp(1/\mu)$" src="form_135.png"/>). </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa7dd83848b9ff664ae707471375e09ea8"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -456,7 +456,7 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa544b0860a8d1b058e094b99162c034d0"></a>Parameter format</em>&nbsp;</td><td>
-<p><img class="formulaInl" alt="$\mu$" src="form_41.png"/> is in the zeroth element of the vector. </p>
+<p><img class="formulaInl" alt="$\mu$" src="form_42.png"/> is in the zeroth element of the vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa2d73057ebb2ce84a2ef00ac687bc3b78"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -526,7 +526,7 @@ Functions</h2></td></tr>
 <p>Unordered list of scalars in the matrix and/or vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga88a178ec7fceed826f72caa52eccca93a87d5e0dae55445e170a13f8af7afccc0"></a>Parameter format</em>&nbsp;</td><td>
-<p>Zeroth and first elements of the vector are the <img class="formulaInl" alt="$df$" src="form_66.png"/>s. </p>
+<p>Zeroth and first elements of the vector are the <img class="formulaInl" alt="$df$" src="form_67.png"/>s. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga88a178ec7fceed826f72caa52eccca93aad09bdc8fed8cb096bda3f99805d3def"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -552,10 +552,10 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>The Gamma distribution</p>
-<p><img class="formulaInl" alt="$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$" src="form_120.png"/></p>
-<p><img class="formulaInl" alt="$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$" src="form_121.png"/></p>
-<p><img class="formulaInl" alt="$d ln G/ da = -\psi(a) - ln b + ln(x) $" src="form_122.png"/> (also, <img class="formulaInl" alt="$d ln \gamma = \psi$" src="form_123.png"/>)</p>
-<p><img class="formulaInl" alt="$d ln G/ db = -a/b + x/(b^2) $" src="form_124.png"/> </p>
+<p><img class="formulaInl" alt="$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$" src="form_121.png"/></p>
+<p><img class="formulaInl" alt="$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$" src="form_122.png"/></p>
+<p><img class="formulaInl" alt="$d ln G/ da = -\psi(a) - ln b + ln(x) $" src="form_123.png"/> (also, <img class="formulaInl" alt="$d ln \gamma = \psi$" src="form_124.png"/>)</p>
+<p><img class="formulaInl" alt="$d ln G/ db = -a/b + x/(b^2) $" src="form_125.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggad11b67493ee1e2038696268a38609367a79a611c8bbb1879eb6d3e8b517c17be1"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -695,7 +695,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The improper uniform returns <img class="formulaInl" alt="$P(x) = 1$" src="form_100.png"/> for every value of x, all the time (and thus, log likelihood(x)=0). It has zero parameters. It is useful, for example, as an input to Bayesian updating, to represent a fully neutral prior.</p>
+<p>The improper uniform returns <img class="formulaInl" alt="$P(x) = 1$" src="form_101.png"/> for every value of x, all the time (and thus, log likelihood(x)=0). It has zero parameters. It is useful, for example, as an input to Bayesian updating, to represent a fully neutral prior.</p>
 <ul>
 <li>See also the <a class="el" href="group__models.html#ga95be4cc3931072118a7c8ffece73fbe1">apop_uniform</a> model. </li>
 </ul>
@@ -1070,8 +1070,8 @@ apop_model_show(est);
 </div><div class="memdoc">
 <p>The Logit model.</p>
 <p>Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.</p>
-<p>The likelihood of choosing item <img class="formulaInl" alt="$j$" src="form_114.png"/> is: <img class="formulaInl" alt="$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$" src="form_115.png"/></p>
-<p>so the log likelihood is <img class="formulaInl" alt="$x\beta_j - ln(\sum_i{e^{x\beta_i}})$" src="form_116.png"/> </p>
+<p>The likelihood of choosing item <img class="formulaInl" alt="$j$" src="form_115.png"/> is: <img class="formulaInl" alt="$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$" src="form_116.png"/></p>
+<p>so the log likelihood is <img class="formulaInl" alt="$x\beta_j - ln(\sum_i{e^{x\beta_i}})$" src="form_117.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a2a3f48c8a98bc603a60df91c2a75c42c"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1103,7 +1103,7 @@ apop_model_show(est);
 <p><code>log likelihood</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a7a1755c8ca65cf5551909f25d3b042f6"></a>Input format</em>&nbsp;</td><td>
-<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_145.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
+<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_146.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a1752154dcc4258cae3f92a18c743c7a6"></a>Prep_routine</em>&nbsp;</td><td>
 <p>You will probably want to convert some column of your data into factors, via <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>. If you do, then that adds a page of factors to your data set (and of course adjusts the data itself). If I find a factor page, I will use that info; if not, then I will run <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> on the first column (the vector if there is one, else the first column of the matrix.)</p>
@@ -1137,7 +1137,7 @@ apop_model_show(est);
 </div><div class="memdoc">
 <p>The Lognormal distribution</p>
 <p>The log likelihood function for the lognormal distribution:</p>
-<p><img class="formulaInl" alt="$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$" src="form_117.png"/> <img class="formulaInl" alt="$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$" src="form_118.png"/> </p>
+<p><img class="formulaInl" alt="$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$" src="form_118.png"/> <img class="formulaInl" alt="$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$" src="form_119.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a2242e71bbc8798381d9bbf4f8e3332b9"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1241,12 +1241,12 @@ apop_model_show(est);
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aa9924bce9086c9687768c2946ed9c56f0"></a>Parameter format</em>&nbsp;</td><td>
 <p>The parameters are kept in the vector element of the <code><a class="el" href="structapop__model.html">apop_model</a></code> parameters element. <code>parameters-&gt;vector-&gt;data</code>[0]==n; <code>parameters-&gt;vector-&gt;data</code>[1...]==p_1....</p>
-<p>The numeraire is bin zero, meaning that <img class="formulaInl" alt="$p_0$" src="form_135.png"/> is not explicitly listed, but is <img class="formulaInl" alt="$p_0=1-\sum_{i=1}^{k-1} p_i$" src="form_136.png"/>, where <img class="formulaInl" alt="$k$" src="form_34.png"/> is the number of bins. Conveniently enough, the zeroth element of the parameters vector holds <img class="formulaInl" alt="$n$" src="form_8.png"/>, and so a full probability vector can easily be produced by overwriting that first element. Continuing the above example: </p>
+<p>The numeraire is bin zero, meaning that <img class="formulaInl" alt="$p_0$" src="form_136.png"/> is not explicitly listed, but is <img class="formulaInl" alt="$p_0=1-\sum_{i=1}^{k-1} p_i$" src="form_137.png"/>, where <img class="formulaInl" alt="$k$" src="form_35.png"/> is the number of bins. Conveniently enough, the zeroth element of the parameters vector holds <img class="formulaInl" alt="$n$" src="form_8.png"/>, and so a full probability vector can easily be produced by overwriting that first element. Continuing the above example: </p>
 <pre class="fragment">int n = apop_data_get(estimated-&gt;parameters, 0, -1); 
 apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameters)-n)); 
 </pre><p> And now the parameter vector is a proper list of probabilities.</p>
 <ul>
-<li>Because an observation is typically a single row, the value of <img class="formulaInl" alt="$N$" src="form_3.png"/> is set to equal the length of the first row (counting both vector and matrix elements, as appropriate). Thus, if your data is entirely in the vector or a one-column matrix, then the <img class="formulaInl" alt="$p$" src="form_19.png"/>s are estimated using all data, but <img class="formulaInl" alt="$N=1$" src="form_137.png"/>. The covariances are calculated accordingly, and a random draw would return a single bin. </li>
+<li>Because an observation is typically a single row, the value of <img class="formulaInl" alt="$N$" src="form_3.png"/> is set to equal the length of the first row (counting both vector and matrix elements, as appropriate). Thus, if your data is entirely in the vector or a one-column matrix, then the <img class="formulaInl" alt="$p$" src="form_20.png"/>s are estimated using all data, but <img class="formulaInl" alt="$N=1$" src="form_138.png"/>. The covariances are calculated accordingly, and a random draw would return a single bin. </li>
 </ul>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aa19a03901e43728bb317f01fb6be46ba0"></a>Post-estimate</em>&nbsp;</td><td>
@@ -1254,13 +1254,13 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">As per the parameter format. Has a <code>&lt;Covariance&gt;</code> page with the covariance matrix for the <img class="formulaInl" alt="$p$" src="form_19.png"/>s ( <img class="formulaInl" alt="$n$" src="form_8.png"/> effectively has no variance).  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">As per the parameter format. Has a <code>&lt;Covariance&gt;</code> page with the covariance matrix for the <img class="formulaInl" alt="$p$" src="form_20.png"/>s ( <img class="formulaInl" alt="$n$" src="form_8.png"/> effectively has no variance).  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports <code>log likelihood</code>.  </td></tr>
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aa82a752cff9ca429d5035170b244496aa"></a>RNG</em>&nbsp;</td><td>
-<p>Returns a single vector of length <img class="formulaInl" alt="$k$" src="form_34.png"/>, the result of an imaginary tossing of <img class="formulaInl" alt="$N$" src="form_3.png"/> balls into <img class="formulaInl" alt="$k$" src="form_34.png"/> urns, with the given probabilities. </p>
+<p>Returns a single vector of length <img class="formulaInl" alt="$k$" src="form_35.png"/>, the result of an imaginary tossing of <img class="formulaInl" alt="$N$" src="form_3.png"/> balls into <img class="formulaInl" alt="$k$" src="form_35.png"/> urns, with the given probabilities. </p>
 </td></tr>
 </table>
 </dd>
@@ -1365,7 +1365,7 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3a4389e6e2a1a2ea606f89d55ec558d3a6a7cc6d1c86c9453b90a4b8c6619910e"></a>Parameter format</em>&nbsp;</td><td>
 <p>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set whose vector element is the vector of means, and whose matrix is the covariances.</p>
-<p>If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a <img class="formulaInl" alt="$1\times 1$" src="form_138.png"/> matrix. This differs from the setup for <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, which outputs a single vector with <img class="formulaInl" alt="$\mu$" src="form_41.png"/> in element zero and <img class="formulaInl" alt="$\sigma$" src="form_58.png"/> in element one. </p>
+<p>If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a <img class="formulaInl" alt="$1\times 1$" src="form_139.png"/> matrix. This differs from the setup for <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, which outputs a single vector with <img class="formulaInl" alt="$\mu$" src="form_42.png"/> in element zero and <img class="formulaInl" alt="$\sigma$" src="form_59.png"/> in element one. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3a4389e6e2a1a2ea606f89d55ec558d3a4ddb085b33ead65a5ab74e4f04ed7fa6"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -1403,10 +1403,10 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 </div><div class="memdoc">
 <p>The Normal (Gaussian) distribution</p>
 <p>You know it, it's your attractor in the limit, it's the Gaussian distribution.</p>
-<p><img class="formulaInl" alt="$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$" src="form_125.png"/></p>
-<p><img class="formulaInl" alt="$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $" src="form_126.png"/></p>
-<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $" src="form_127.png"/></p>
-<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $" src="form_128.png"/></p>
+<p><img class="formulaInl" alt="$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$" src="form_126.png"/></p>
+<p><img class="formulaInl" alt="$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $" src="form_127.png"/></p>
+<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $" src="form_128.png"/></p>
+<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $" src="form_129.png"/></p>
 <p>See also the <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga297c2dc8dbdf4ae93fc7e10860400466a2d8dca34652e8249f190f4a0b2623767"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -1449,7 +1449,7 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">Zeroth vector element is <img class="formulaInl" alt="$\mu$" src="form_41.png"/>, element 1 is <img class="formulaInl" alt="$\sigma$" src="form_58.png"/>. A page is added named <code>&lt;Covariance&gt;</code> with the 2 <img class="formulaInl" alt="$\times$" src="form_145.png"/> 2 covariance matrix for these two parameters  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">Zeroth vector element is <img class="formulaInl" alt="$\mu$" src="form_42.png"/>, element 1 is <img class="formulaInl" alt="$\sigma$" src="form_59.png"/>. A page is added named <code>&lt;Covariance&gt;</code> with the 2 <img class="formulaInl" alt="$\times$" src="form_146.png"/> 2 covariance matrix for these two parameters  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports the log likelihood. </td></tr>
 </table>
@@ -1479,7 +1479,7 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Ordinary least squares. Weighted least squares is also handled by this model. You can also use it for a lot of not-entirely linear models based on the form <img class="formulaInl" alt="$Y = f(x_1) + f(x_2) + ... + \epsilon$" src="form_113.png"/>. </p>
+<p>Ordinary least squares. Weighted least squares is also handled by this model. You can also use it for a lot of not-entirely linear models based on the form <img class="formulaInl" alt="$Y = f(x_1) + f(x_2) + ... + \epsilon$" src="form_114.png"/>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3ad035240969a4dc7f783ef1a5b6fbe9bc"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1534,8 +1534,8 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 <tr>
 <td style="vertical-align:top"><code>parameter models</code></td><td style="vertical-align:top">For the mean, a noncentral <img class="formulaInl" alt="$t$" src="form_9.png"/> distribution (<a class="el" href="group__models.html#ga45ce986bd5ea79c39877792bec39a304">apop_t_distribution</a>). </td></tr>
 <tr>
-<td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top"><p class="starttd">Reports log likelihood, and runs <a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> to add <img class="formulaInl" alt="$R^2$" src="form_31.png"/>-type information (SSE, SSR, &amp;c) to the info page.</p>
-<p>Residuals: I add a page named <code>&lt;Predicted&gt;</code>, with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be <img class="formulaInl" alt="$ Y = \beta X + \epsilon$" src="form_139.png"/>. Then the second column is the predicted values: <img class="formulaInl" alt="$\beta X$" src="form_140.png"/>, and the third column is the residuals: <img class="formulaInl" alt="$\epsilon$" src="form_33.png"/>. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.</p>
+<td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top"><p class="starttd">Reports log likelihood, and runs <a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> to add <img class="formulaInl" alt="$R^2$" src="form_32.png"/>-type information (SSE, SSR, &amp;c) to the info page.</p>
+<p>Residuals: I add a page named <code>&lt;Predicted&gt;</code>, with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be <img class="formulaInl" alt="$ Y = \beta X + \epsilon$" src="form_140.png"/>. Then the second column is the predicted values: <img class="formulaInl" alt="$\beta X$" src="form_141.png"/>, and the third column is the residuals: <img class="formulaInl" alt="$\epsilon$" src="form_34.png"/>. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.</p>
 <p class="endtd">Given your estimate <code>est</code>, the zeroth element is one of <br/>
  <code> apop_data_get(est-&gt;info, .page= "Predicted", .row=0, .colname="observed"),</code><br/>
  <code> apop_data_get(est-&gt;info, .page= "Predicted", .row=0, .colname="predicted") or</code><br/>
@@ -1545,12 +1545,12 @@ apop_data_set(estimated-&gt;parameters, 0, 1 - (apop_sum(estimated-&gt;parameter
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3a55b3f592cfb119a98e9271136d8f0472"></a>RNG</em>&nbsp;</td><td>
-<p>Linear models are typically only partially defined probability models. For OLS, we know that <img class="formulaInl" alt="$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$" src="form_141.png"/>, because this is an assumption about the error process, but we don't know much of anything about the distribution of <img class="formulaInl" alt="$X$" src="form_92.png"/>.</p>
+<p>Linear models are typically only partially defined probability models. For OLS, we know that <img class="formulaInl" alt="$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$" src="form_142.png"/>, because this is an assumption about the error process, but we don't know much of anything about the distribution of <img class="formulaInl" alt="$X$" src="form_93.png"/>.</p>
 <p>The <a class="el" href="structapop__lm__settings.html">apop_lm_settings</a> group includes an <a class="el" href="structapop__model.html">apop_model</a>* element named <code>input_distribution</code>. This is the distribution of the independent/predictor/X columns of the data set.</p>
-<p>The default is that <code>input_distribution = apop_improper_uniform </code>, meaning that <img class="formulaInl" alt="$P(X)=1$" src="form_142.png"/> for all <img class="formulaInl" alt="$X$" src="form_92.png"/>. So <img class="formulaInl" alt="$P(Y, X) = P(Y|X)P(X) = P(Y|X)$" src="form_143.png"/>. This seems to be how many people use linear models: the <img class="formulaInl" alt="$X$" src="form_92.png"/> values are taken as certain (as with actually observed data) and the only question is the odds of the dependent variable. If that's what you're looking for, just leave the default. This is sufficient for getting log likelihoods under the typical assumption that the observed data has probability one.</p>
+<p>The default is that <code>input_distribution = apop_improper_uniform </code>, meaning that <img class="formulaInl" alt="$P(X)=1$" src="form_143.png"/> for all <img class="formulaInl" alt="$X$" src="form_93.png"/>. So <img class="formulaInl" alt="$P(Y, X) = P(Y|X)P(X) = P(Y|X)$" src="form_144.png"/>. This seems to be how many people use linear models: the <img class="formulaInl" alt="$X$" src="form_93.png"/> values are taken as certain (as with actually observed data) and the only question is the odds of the dependent variable. If that's what you're looking for, just leave the default. This is sufficient for getting log likelihoods under the typical assumption that the observed data has probability one.</p>
 <p><em>But</em> you can't draw from an improper uniform. So if you draw from a linear model with a default <code>input_distribution</code>, then you'll get an error.</p>
 <p>Alternatively, you may know something about the distribution of the input data. At the least, you could generate a PMF from the actual data: </p>
-<pre class="fragment">    apop_settings_set(your_model, apop_lm, input_distribution, apop_estimate(inset, apop_pmf));</pre><p> Now, random draws are taken from the input data, and the dependent variable value calculated via <img class="formulaInl" alt="$X\beta+\epsilon$" src="form_144.png"/>, where <img class="formulaInl" alt="$X$" src="form_92.png"/> is the drawn value, <img class="formulaInl" alt="$\beta$" src="form_2.png"/> the previously-estimated parameters and <img class="formulaInl" alt="$\epsilon$" src="form_33.png"/> is a Normally-distributed random draw. Or change the PMF to any other appropriate distribution, such as a <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>, or an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> filled in with more data, or perhaps something from <a href="http://en.wikipedia.org/wiki/Errors-in-variables_models">http://en.wikipedia.org/wiki/Errors-in-variables_models</a> , as desired. </p>
+<pre class="fragment">    apop_settings_set(your_model, apop_lm, input_distribution, apop_estimate(inset, apop_pmf));</pre><p> Now, random draws are taken from the input data, and the dependent variable value calculated via <img class="formulaInl" alt="$X\beta+\epsilon$" src="form_145.png"/>, where <img class="formulaInl" alt="$X$" src="form_93.png"/> is the drawn value, <img class="formulaInl" alt="$\beta$" src="form_2.png"/> the previously-estimated parameters and <img class="formulaInl" alt="$\epsilon$" src="form_34.png"/> is a Normally-distributed random draw. Or change the PMF to any other appropriate distribution, such as a <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>, or an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> filled in with more data, or perhaps something from <a href="http://en.wikipedia.org/wiki/Errors-in-variables_models">http://en.wikipedia.org/wiki/Errors-in-variables_models</a> , as desired. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3adfe6bde7217c7ef7608fb1de6790ca8e"></a>Examples</em>&nbsp;</td><td>
 <p>First, you will need a file named <code>data</code> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example: </p>
@@ -1699,7 +1699,7 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
       </table>
 </div><div class="memdoc">
 <p>The Poisson distribution.</p>
-<p><img class="formulaInl" alt="$p(k) = {\mu^k \over k!} \exp(-\mu), $" src="form_119.png"/> </p>
+<p><img class="formulaInl" alt="$p(k) = {\mu^k \over k!} \exp(-\mu), $" src="form_120.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga9c67838a4761452cc2c9113557f2a070aa8ec35491262164a252887f0d1139bfe"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1800,7 +1800,7 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 <p><code>Probit</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga319b8e3d5025a6fc94829a978273eb8ba2e767a027546109b44c899bab669101c"></a>Input format</em>&nbsp;</td><td>
-<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_145.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
+<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_146.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga319b8e3d5025a6fc94829a978273eb8baf64397408bb9b275581d6f37f1365f82"></a>Prep_routine</em>&nbsp;</td><td>
 <p>You will probably want to convert some column of your data into factors, via <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>. If you do, then that adds a page of factors to your data set (and of course adjusts the data itself). If I find a factor page, I will use that info; if not, then I will run <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> on the first column (the vector if there is one, else the first column of the matrix.)</p>
@@ -1931,7 +1931,7 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 <p>An unordered set of numbers in the data set's vector, matrix, or both. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga95be4cc3931072118a7c8ffece73fbe1a275208d856442dc1f451495b6cd34a94"></a>Parameter format</em>&nbsp;</td><td>
-<p>Zeroth vector element is <img class="formulaInl" alt="$a$" src="form_146.png"/>, the min; element one is <img class="formulaInl" alt="$b$" src="form_147.png"/>, the max. </p>
+<p>Zeroth vector element is <img class="formulaInl" alt="$a$" src="form_147.png"/>, the min; element one is <img class="formulaInl" alt="$b$" src="form_148.png"/>, the max. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga95be4cc3931072118a7c8ffece73fbe1aee0a88a828ea0be96cd0f7bb449626d2"></a>Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -1959,10 +1959,10 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
       </table>
 </div><div class="memdoc">
 <p>The Waring distribution</p>
-<p><img class="formulaInl" alt="$W(x,k, b,a) = (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]$" src="form_104.png"/></p>
-<p><img class="formulaInl" alt="$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)$" src="form_105.png"/></p>
-<p><img class="formulaInl" alt="$dlnW/db = 1/(b-1) + \psi(b+a) - \psi(k+a+b)$" src="form_106.png"/></p>
-<p><img class="formulaInl" alt="$dlnW/da = \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)$" src="form_107.png"/> </p>
+<p><img class="formulaInl" alt="$W(x,k, b,a) = (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]$" src="form_105.png"/></p>
+<p><img class="formulaInl" alt="$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)$" src="form_106.png"/></p>
+<p><img class="formulaInl" alt="$dlnW/db = 1/(b-1) + \psi(b+a) - \psi(k+a+b)$" src="form_107.png"/></p>
+<p><img class="formulaInl" alt="$dlnW/da = \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)$" src="form_108.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaa7b3f288233f063dffda45743fd61c72a4bfc502b66314347b040a9a4a00a30d8"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -2028,9 +2028,9 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
       </table>
 </div><div class="memdoc">
 <p>The Wishart distribution, which is currently somewhat untested.</p>
-<p>Here's the likelihood function. <img class="formulaInl" alt="$p$" src="form_19.png"/> is the dimension of the data and covariance matrix, <img class="formulaInl" alt="$n$" src="form_8.png"/> is the degrees of freedom, <img class="formulaInl" alt="$\mathbf{V}$" src="form_108.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_109.png"/> matrix of Wishart parameters, and <img class="formulaInl" alt="${\mathbf{W}}$" src="form_110.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_109.png"/> matrix whose likelihood is being evaluated. <img class="formulaInl" alt="$\Gamma_p(\cdot)$" src="form_111.png"/> is the <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">multivariate gamma function</a>.</p>
+<p>Here's the likelihood function. <img class="formulaInl" alt="$p$" src="form_20.png"/> is the dimension of the data and covariance matrix, <img class="formulaInl" alt="$n$" src="form_8.png"/> is the degrees of freedom, <img class="formulaInl" alt="$\mathbf{V}$" src="form_109.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_110.png"/> matrix of Wishart parameters, and <img class="formulaInl" alt="${\mathbf{W}}$" src="form_111.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_110.png"/> matrix whose likelihood is being evaluated. <img class="formulaInl" alt="$\Gamma_p(\cdot)$" src="form_112.png"/> is the <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">multivariate gamma function</a>.</p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]" src="form_112.png"/>
+<img class="formulaDsp" alt="\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]" src="form_113.png"/>
 </p>
 <p>See also notes in <a class="el" href="group__tfchi.html">t-, chi-squared, F-, Wishart distributions</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
@@ -2159,9 +2159,9 @@ for (int i=0; i&lt; 1e8; i++){
         </tr>
       </table>
 </div><div class="memdoc">
-<p><img class="formulaInl" alt="$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $" src="form_101.png"/></p>
-<p><img class="formulaInl" alt="$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $" src="form_102.png"/></p>
-<p><img class="formulaInl" alt="$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $" src="form_103.png"/></p>
+<p><img class="formulaInl" alt="$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $" src="form_102.png"/></p>
+<p><img class="formulaInl" alt="$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $" src="form_103.png"/></p>
+<p><img class="formulaInl" alt="$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $" src="form_104.png"/></p>
 <p>apop_yule.estimate() is an MLE, so feed it appropriate <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga1ddf478052543e1d801dfc64c99bcbe3a8dfa35c139898bf7a2815bc05c2edf55"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -2226,8 +2226,8 @@ for (int i=0; i&lt; 1e8; i++){
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. <img class="formulaInl" alt="$Z(a) = {1\over \zeta(a) * i^a} $" src="form_98.png"/></p>
-<p><img class="formulaInl" alt="$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $" src="form_99.png"/></p>
+<p>Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. <img class="formulaInl" alt="$Z(a) = {1\over \zeta(a) * i^a} $" src="form_99.png"/></p>
+<p><img class="formulaInl" alt="$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $" src="form_100.png"/></p>
 <p>apop_zipf.estimate() is an MLE, so feed it appropriate <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga32e7ca1164025cbb53a9e0ecee9d4ceaa10c9a98e2c5b3b0d260a9894f6374efa"></a>Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -2582,9 +2582,9 @@ double cdf_value = apop_cdf(your_data_point, your_model);
 </div><div class="memdoc">
 <p>Get a model describing the distribution of the given parameter estimates.</p>
 <p>For many models, the parameter estimates are well-known, such as the <img class="formulaInl" alt="$t$" src="form_9.png"/>-distribution of the parameters for OLS.</p>
-<p>For models where the distribution of <img class="formulaInl" alt="$\hat{}p$" src="form_28.png"/> is not known, if you give me data, I will return a <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a> or <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> model, using the parameter estimates as mean and <a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> for the variances.</p>
+<p>For models where the distribution of <img class="formulaInl" alt="$\hat{}p$" src="form_29.png"/> is not known, if you give me data, I will return a <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a> or <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> model, using the parameter estimates as mean and <a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> for the variances.</p>
 <p>If you don't give me data, then I will assume that this is a stochastic model where re-running the model will produce different parameter estimates each time. In this case, I will run the model 1e4 times and return a <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model with the resulting parameter distributions.</p>
-<p>Before calling this, I expect that you have already run <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> to produce <img class="formulaInl" alt="$\hat{}p$" src="form_28.png"/>.</p>
+<p>Before calling this, I expect that you have already run <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> to produce <img class="formulaInl" alt="$\hat{}p$" src="form_29.png"/>.</p>
 <p>The <a class="el" href="structapop__pm__settings.html">apop_pm_settings</a> structure dictates details of how the model is generated. For example, if you want only the distribution of the third parameter, and you know the distribution will be a PMF generated via random draws, then set settings and call the model via: </p>
 <pre class="fragment">    apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
     apop_model *dist = apop_parameter_model(your_data, your_model);</pre><ul>
@@ -2623,7 +2623,7 @@ double cdf_value = apop_cdf(your_data_point, your_model);
       </table>
 </div><div class="memdoc">
 <p>A prediction supplies E(a missing value | original data, already-estimated parameters, and other supplied data elements ).</p>
-<p>For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable <img class="formulaInl" alt="$y$" src="form_29.png"/> is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]</p>
+<p>For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable <img class="formulaInl" alt="$y$" src="form_30.png"/> is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]</p>
 <p>For a univariate model (i.e. a model in one-dimensional data space), there is only one variable to omit and fill in, so the prediction problem reduces to the expected value: E(a missing value | original data, already-estimated parameters).</p>
 <p>In other cases, prediction is the missing data problem: for three-dimensional data, you may supply the input (34, <code>NaN</code>, 12), and the parameterized model provides the most likely value of the middle parameter.</p>
 <ul>

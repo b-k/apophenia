@@ -62,7 +62,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
-<p>For example, here is a Binomial distribution with a fixed n=30 but <img class="formulaInl" alt="$ p_1 $" src="form_16.png"/> allowed to float freely:</p>
+<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_16.png"/> but <img class="formulaInl" alt="$p_1$" src="form_17.png"/> allowed to float freely:</p>
 <pre class="fragment">    apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, GSL_NAN));
     Apop_model_add_group(bi30, apop_mle, .starting_pt=(double[]){.5}); // The Binomial doesn't like the default 
                                                                        // starting point of 1.

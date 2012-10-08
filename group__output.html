@@ -164,7 +164,7 @@ apop_plot_histogram(data, .bins=100, .output_pipe = f);
 <dl class="params"><dt>Parameters:</dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
     <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
   </table>
   </dd>

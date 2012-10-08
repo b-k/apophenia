@@ -205,7 +205,7 @@ sudo make install
 <li><code>gsl_matrix_set_identity (gsl_matrix * m)</code> </li>
 <li><code>void gsl_vector_set_all (gsl_vector * v, double x)</code> </li>
 <li><code>void gsl_vector_set_zero (gsl_vector * v)</code> </li>
-<li><code>int gsl_vector_set_basis (gsl_vector * v, size_t i)</code>: set all elements to zero, but set item <img class="formulaInl" alt="$i$" src="form_51.png"/> to one. </li>
+<li><code>int gsl_vector_set_basis (gsl_vector * v, size_t i)</code>: set all elements to zero, but set item <img class="formulaInl" alt="$i$" src="form_52.png"/> to one. </li>
 <li><code>gsl_vector_reverse (gsl_vector * v)</code>: reverse the order of your vector's elements</li>
 </ul>
 <p><h2><a class="anchor" name="readin"><div class="trigger" onClick="showBranch('readind');swapFolder('readinf')"><img src="right.png" border="0" id="readinf" alt="pip"> Reading from text files</div></a></h2><div class="branch" id="readind">
@@ -318,7 +318,7 @@ double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="Info");
 <p>Get the sum of squares of a vector's elements:</p>
 <pre class="fragment">double sum_of_squares = apop_map_sum(dataset, gsl_pow_2); //given &lt;tt&gt; apop_data *dataset&lt;/tt&gt;
 double sum_of_squares = apop_vector_map_sum(v, gsl_pow_2); //given &lt;tt&gt; gsl_vector *v&lt;/tt&gt;
-</pre><p>Here, we create an index vector [0, 1, 2, <img class="formulaInl" alt="$\dots$" src="form_82.png"/>].</p>
+</pre><p>Here, we create an index vector [0, 1, 2, <img class="formulaInl" alt="$\dots$" src="form_83.png"/>].</p>
 <pre class="fragment">double index(double in, int index){return index;}
 apop_data *d = apop_data_alloc(100, 0, 0);
 apop_map(d, .fn_di=index, .inplace='y');
@@ -437,7 +437,7 @@ static double apop_mean_no_nans(apop_data *in){
 <p><h2><a class="anchor" name="matrixmath"><div class="trigger" onClick="showBranch('matrixmathd');swapFolder('matrixmathf')"><img src="right.png" border="0" id="matrixmathf" alt="pip"> Matrix math</div></a></h2><div class="branch" id="matrixmathd">
 <ul>
 <li><a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> : find determinant and inverse at the same time </li>
-<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_83.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_83.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_83.png"/> matrix </li>
+<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_84.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_84.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_84.png"/> matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> : returns the determinant of the input matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> : returns the inverse of the input matrix</li>
 </ul>
@@ -738,7 +738,7 @@ apop_model *re_est = apop_estimate(data, the_estimate);
 <pre class="fragment">double apop_new_log_likelihood(apop_data *data, apop_model *m)
 </pre><p>where <code>data</code> is the input data, and <code>m</code> is the parametrized model (i.e. your model with a <code>parameters</code> element set by the caller). This function will return the value of the log likelihood function at the given parameters.</p>
 <ul>
-<li>Is this a constrained optimization? See below under Maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_84.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed.</li>
+<li>Is this a constrained optimization? See below under Maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_85.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed.</li>
 </ul>
 <ul>
 <li>Write the object. In your header file, include</li>
@@ -922,12 +922,12 @@ double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
     gsl_vector_free(normed);
     return gsl_cdf_chisq_P(sum,in-&gt;size); 
 }
-</pre><p>Or, consider the Rao statistic, <img class="formulaInl" alt="${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$" src="form_85.png"/> where <img class="formulaInl" alt="$L$" src="form_86.png"/> is your model's likelihood function and <img class="formulaInl" alt="$I$" src="form_87.png"/> its information matrix. In code:</p>
+</pre><p>Or, consider the Rao statistic, <img class="formulaInl" alt="${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$" src="form_86.png"/> where <img class="formulaInl" alt="$L$" src="form_87.png"/> is your model's likelihood function and <img class="formulaInl" alt="$I$" src="form_88.png"/> its information matrix. In code:</p>
 <pre class="fragment">apop_data * infoinv = apop_model_numerical_covariance(data, your_model);
 apop_data * score;
 apop_score(data, score-&gt;vector, your_model);
 apop_data * stat    = apop_dot(apop_dot(score, infoinv), score);
-</pre><p>Given the correct assumptions, this is <img class="formulaInl" alt="$\sim \chi^2_m$" src="form_88.png"/>, where <img class="formulaInl" alt="$m$" src="form_89.png"/> is the dimension of <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, so the odds of a Type I error given the model is:</p>
+</pre><p>Given the correct assumptions, this is <img class="formulaInl" alt="$\sim \chi^2_m$" src="form_89.png"/>, where <img class="formulaInl" alt="$m$" src="form_90.png"/> is the dimension of <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, so the odds of a Type I error given the model is:</p>
 <pre class="fragment">double p_value = apop_test(stat, "chi squared", beta-&gt;size);
 </pre><p></div>
 <p><h2><a class="anchor" name="Histosec"><div class="trigger" onClick="showBranch('Histosecd');swapFolder('Histosecf')"><img src="right.png" border="0" id="Histosecf" alt="pip"> Histograms and PMFs (probability mass functions)</div></a></h2><div class="branch" id="Histosecd">
@@ -940,7 +940,7 @@ apop_model *a_pmf = apop_estimate(your_data, apop_pmf);
 </pre><p>...would remove all duplicates, and set the weights column to reflect the original number of copies for each observation, then sort the data, then turn it into a PMF. Compression produces a corresponding improvement in efficiency when calculating CDFs or making draws. Sorting is not necessary for making draws or getting a likelihood or log likelihood.</p>
 <p>It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no <code>weights</code> segment, then I assume that all rows have equal weight. So, for example, if you find a need to normalize the data into a sums-to-one PMF, then you can use <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> on the <code>weights</code> vector to implement that. [But notice that even the PMF's <code>draw</code> function doesn't need this.]</p>
 <p>Using <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram. A binspec has as many columns as the data set being binned, and has one or two rows. The first row gives a bin width for the given column, so each column may have a different bin width. The second row, if present, gives the offset from zero for the bins. All bins, both above and below zero, are shifted accordingly. If there is no second row, the offset is zero.</p>
-<p>Send this binspec to <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/> bins from minimum to maximum. There are other preferred formulae for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code></p>
+<p>Send this binspec to <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/> bins from minimum to maximum. There are other preferred formulae for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code></p>
 <p>There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec.</p>
 <p>For example, if you do not have a prior binspec in mind, then you can use the one generaged by the first call to the histogram binning function to make sure that the second data set is in sync:</p>
 <pre class="fragment">apop_data_to_bins(first_set, NULL);
@@ -959,7 +959,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
 <li><a class="el" href="apop__hist_8c.html#ae94cfcf8da0b798028dfa59d85c42686">apop_histogram_normalize()</a>: reweight a <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> to weight one. For the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, use <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(your_pmf-&gt;data-&gt;weights) </li>
 <li><a class="el" href="apop__hist_8c.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset()</a>: bin random draws from a continuous model into an existing pmf/histogram binspec. </li>
 <li><a class="el" href="apop__hist_8c.html#a1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset()</a>: For the <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> only. </li>
-<li><a class="el" href="apop__hist_8c.html#ad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a>: goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic </li>
+<li><a class="el" href="apop__hist_8c.html#ad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a>: goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic </li>
 <li><a class="el" href="apop__hist_8c.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a>: goodness-of-fit via Kolmogorov-Smirnov statistic</li>
 </ul>
 <p></div>
@@ -973,7 +973,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "&lt;binspec&gt;"));
 <li>The overall setup is about estimating the parameters of a model with data. The user provides a data set and an unparameterized model, and the system tries parameterized models until one of them is found to be optimal. The data is fixed&mdash;it was observed before the statistician sat down to the computer. The parameters make sense only in the context of a model, so the optimization sends around a series of parameterized models, searching for the one that is most likely. In a non-stats setting, you will probably have <code>NULL</code> data, and will be optimizing the parameters internal to the model.</li>
 </ul>
 <ul>
-<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_90.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_91.png"/> is fixed ahead of time, say at 100.</li>
+<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_91.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_92.png"/> is fixed ahead of time, say at 100.</li>
 </ul>
 <pre class="fragment">    typedef struct {
             double scaling;
