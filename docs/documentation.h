@@ -733,7 +733,7 @@ apop_data_show(outdata); //breaks: no outdata in scope.
 
 
 For this if/then statement, there are two sets of local variables
-generated: one for the \c if block, and one for the \c then block. By the last line,
+generated: one for the \c if block, and one for the \c else block. By the last line,
 neither exists. You can get around the problem here by making sure to not put the macro
 declaring new variables in a block. E.g.:
 
@@ -1020,6 +1020,9 @@ These are convenience functions to handle interaction with SQLite or mySQL. They
 You will probably first use \ref apop_text_to_db to pull data into the database, then \ref apop_query to clean the data in the database, and finally \ref apop_query_to_data to pull some subset of the data out for analysis.
 
 See also the \ref conversions, including \ref apop_text_to_db.
+
+Also see the \ref db_moments page for not-SQL-standard math functions that you can
+use when sending queries from Apophenia, such as \c pow, \c stddev, or \c sqrt.
 
 \li \ref apop_query : Manipulate the database, return nothing (e.g., input data).
 \li \ref apop_db_open : Optional, for when you want to use a database on disk.

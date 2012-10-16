@@ -41,7 +41,7 @@ or more dimensional data), then just point the model to your parameter set:
 
 \code
 apop_model *my_pmf = apop_model_copy(apop_pmf);
-my_pmf->more = in_data;
+my_pmf->data = in_data;
 //or equivalently:
 apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 \endcode
@@ -66,14 +66,22 @@ weights, then draws are equiprobable. This will be difficult to debug.
 static apop_model *estim (apop_data *d, apop_model *out){
     out->data = d;
     apop_data_free(out->parameters); //may have been auto-alloced by prep.
-    out->parameters = apop_data_copy(d);
+    //out->parameters = apop_data_copy(d);
     return out;
 }
 
-/* \adoc    RNG  The first time you draw from a PMF, I will generate a CMF (Cumulative
-Mass Function). For an especially large data set this may take a human-noticeable amount
-of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
-draws will have no computational overhead. */
+/* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a
+      weights vector, i will use that to make draws; else all rows are equiprobable.
+
+    \li As a special case (which is a beta feature and subject to change), if you set
+    \c .dsize=0, then I will return the row number of the draw, not the data in that
+    row. 
+
+    \li  The first time you draw from a PMF, I will generate a CMF (Cumulative Mass
+    Function). For an especially large data set this may take a human-noticeable amount
+    of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
+    draws will have no computational overhead. 
+*/
 static void draw (double *out, gsl_rng *r, apop_model *m){
     Nullcheck_m(m, ) Nullcheck_d(m->data, )
     Get_vmsizes(m->data) //maxsize
@@ -118,6 +126,10 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         }
     }
     //Done searching. Current should now be the right row index.
+    if (m->dsize==0){
+        *out = current;
+        return;
+    }
     Apop_data_row(m->data, current, outrow);
     int i = 0;
     if (outrow->vector)

@@ -10,6 +10,7 @@
 --clean up of parameter-fixing model transformation.
 --split off multiple imputation variance code.
 **Removed apop_vector_grid_distance. Use apop_vector_distance(v1, v2, .metric='M');
+--If apop_pmf.dsize==0, apop_pmf.draw returns a row number, not the data in that row. We'll see how that goes.
 
 	September 2012
 --\0 in text files counts as white space

@@ -23,6 +23,7 @@ Also, if there is no vector, then I will move the first column of the matrix, an
 replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc    settings   None, but see above about seeking a factor page in the input data.
+\adoc    RNG  See \ref apop_ols; this one is similar but produces a category number instead of OLS's continuous draw.
 */
 
 #include "apop_internal.h"

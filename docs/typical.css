@@ -2,16 +2,14 @@
 
 .memitem {
 border: 2px solid #a6cb5e;
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 2px;
  } 
 
 .memproto table {
 white-space:nowrap;
 /*border: 1px solid #a6cb5e;*/
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 1px;
 bottom-margin= 2px;
  } =
@@ -26,8 +24,7 @@ border: 1px solid black; /* Change to suit your preferences */ }
 
 .altcolor {
 border: 1px solid #262b5e;
--moz-border-radius: 8px;
--webkit-border-radius: 8px;
+border-radius: 8px;
 padding: 2px;
 }
 
