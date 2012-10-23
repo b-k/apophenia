@@ -72,21 +72,19 @@ static int strcmpwrap(const void *a, const void *b){
   \see apop_text_unique_elements 
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
-  double val;
-  size_t prior_elmt_ctr = 107;
-  size_t elmt_ctr = 0;
-  double *elmts   = NULL;
-  gsl_vector *out = NULL;
+    size_t prior_elmt_ctr = 107;
+    size_t elmt_ctr = 0;
+    double *elmts = NULL;
     for (size_t i=0; i< v->size; i++){
         if (prior_elmt_ctr != elmt_ctr)
-            elmts   = realloc(elmts, sizeof(double)*(elmt_ctr+1));
-        prior_elmt_ctr  = elmt_ctr;
-        val     =  gsl_vector_get(v, i);
-        lsearch (&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
+            elmts = realloc(elmts, sizeof(double)*(elmt_ctr+1));
+        prior_elmt_ctr = elmt_ctr;
+        double val = gsl_vector_get(v, i);
+        lsearch(&val, elmts, &elmt_ctr, sizeof(double), compare_doubles);
         if (prior_elmt_ctr < elmt_ctr)
             qsort(elmts, elmt_ctr, sizeof(double), compare_doubles);
     }
-    out = apop_array_to_vector(elmts, elmt_ctr);
+    gsl_vector *out = apop_array_to_vector(elmts, elmt_ctr);
     free(elmts);
     return out;
 }
@@ -160,32 +158,29 @@ static char *make_catname (apop_data *d, int col, char type){
  Otherwise the work is basically identical.  
  Also, add a ->more page to the input data giving the translation.
  */
-static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, int keep_first, 
-                                    int datacol, char dummyfactor, apop_data **factor_list){
-  size_t      i, j, index,
-              elmt_ctr = 0;
-  apop_data   *out; 
-  double      val;
-  gsl_vector  *delmts  = NULL;
-  char        n[1000],
-              **telmts = NULL;//unfortunately needed for the bsearch.
+static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, 
+                            int keep_first, int datacol, char dummyfactor, 
+                            apop_data **factor_list){
+    size_t index, elmt_ctr = 0;
+    gsl_vector *delmts = NULL;
+    char **telmts = NULL;//unfortunately needed for the bsearch.
+
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
-
     char *catname =  make_catname(d, col, type);
     if (type == 't'){
         *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), catname);
         elmt_ctr = (*factor_list)->textsize[0];
         //awkward format conversion:
         telmts = malloc(sizeof(char*)*elmt_ctr);
-        for (j=0; j< elmt_ctr; j++)
+        for (size_t j=0; j< elmt_ctr; j++)
             asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
         (*factor_list)->vector = gsl_vector_alloc(elmt_ctr);
         for (size_t i=0; i< (*factor_list)->vector->size; i++)
             apop_data_set(*factor_list, i, -1, i);
     } else {
         APOP_COL(d, col, to_search);
-        delmts          = apop_vector_unique_elements(to_search);
+        delmts = apop_vector_unique_elements(to_search);
         elmt_ctr = delmts->size;
         *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), catname);
         apop_text_alloc((*factor_list), delmts->size, 1);
@@ -202,13 +197,13 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     int s = type == 't' 
             ? d->textsize[0]
             : (col >=0 ? d->matrix->size1 : d->vector->size);
-    out = (dummyfactor == 'd')
+    apop_data *out = (dummyfactor == 'd')
                 ? apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1))
                 : d;
-    for (i=0; i< s; i++){
+    for (size_t i=0; i< s; i++){
         if (type == 'd'){
-            val     = apop_data_get(d, i, col);
-            index   = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (size_t)delmts->data)/sizeof(double);
+            double val = apop_data_get(d, i, col);
+            index = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (size_t)delmts->data)/sizeof(double);
         } else 
             index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
         if (dummyfactor == 'd'){
@@ -222,7 +217,8 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     //Add names:
     if (dummyfactor == 'd'){
         char *basename = apop_get_factor_basename(d, col, type);
-        for (i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
+        for (size_t i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
+            char n[1000];
             if (type =='d'){
                 sprintf(n, "%s dummy %g", basename, gsl_vector_get(delmts,i));
             } else
@@ -233,15 +229,13 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, in
     if (delmts)
         gsl_vector_free(delmts);
     if (telmts){
-        for (j=0; j< elmt_ctr; j++)
+        for (size_t j=0; j< elmt_ctr; j++)
             free(telmts[j]);
         free(telmts);
     }
     free(catname);
     return out;
 }
-
-
 
 /** A utility to make a matrix of dummy variables. You give me a single
 vector that lists the category number for each item, and I'll produce
@@ -340,8 +334,6 @@ APOP_VAR_ENDHEAD
     }
     return dummies;
 }
-
-
 
 /** Convert a column of text or numbers
   into a column of numeric factors, which you can use for a multinomial probit/logit, for example.

@@ -254,17 +254,16 @@ http://en.wikipedia.org/wiki/Errors-in-variables_models , as desired.  */
 static void ols_rng(double *out, gsl_rng *r, apop_model *m){
     //X is drawn from the input distribution, then Y = X\beta + epsilon
     apop_lm_settings   *olp =  apop_settings_get_group(m, apop_lm);
-    apop_draw(out+1, r, olp->input_distribution);
 
     gsl_vector *tempdata = gsl_vector_alloc(m->parameters->vector->size);
-    double *ttt = tempdata->data;
-    tempdata->data = out+1;
+    apop_draw(tempdata->data, r, olp->input_distribution);
     gsl_blas_ddot(tempdata, m->parameters->vector, out);
-    tempdata->data = ttt;
-    gsl_vector_free(tempdata);
 
     double sigma_sq = apop_data_get(m->info, .rowname="SSE")/m->data->matrix->size1;
     out[0] += gsl_ran_gaussian(r, sqrt(sigma_sq));
+
+    if (m->dsize > 1) memcpy(out+1, tempdata->data, sizeof(double)*tempdata->size);
+    gsl_vector_free(tempdata);
 }
 
 /* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. If so, see \ref dataprep for details. Else, left unchanged.

@@ -278,7 +278,7 @@ static void *oldvectorloop(void *t){
 
 static size_t *threadminmax(const int threadno, const int totalct, const int threadct){
     int segment_size = totalct/threadct;
-    size_t *out = malloc(sizeof(int)*3);
+    size_t *out = malloc(sizeof(size_t)*3);
     out[0] = threadno*segment_size;
     out[1] = (threadno==threadct-1) ? totalct : (threadno+1)*segment_size;
     out[2] = threadno;

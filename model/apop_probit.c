@@ -275,6 +275,46 @@ apop_model *logit_estimate(apop_data *d, apop_model *m){
     return out;
 }
 
+//Should this be available everywhere?
+static size_t get_draw_size(apop_model *in){
+    Get_vmsizes(in->data); //msize2, firstcol
+    size_t datasize = (in->dsize == -1)
+                        ? msize2-firstcol
+                        : in->dsize;
+    Apop_assert(datasize > 0, "I don't know the size of the X "
+                              "vector to draw for drawing your logit. "
+                              "See the apop_ols RNG documentation for details.");
+    return datasize;
+}
+
+static void logit_rng(double *out, gsl_rng *r, apop_model *m){
+    //X is drawn from the input distribution, then Y = X\beta + epsilon
+    apop_lm_settings *olp = apop_settings_get_group(m, apop_lm);
+    if (!olp) olp=Apop_model_add_group(m, apop_lm
+                                , .input_distribution= apop_estimate(m->data, apop_pmf));
+
+    size_t datasize = get_draw_size(olp->input_distribution);
+    apop_data *x = apop_data_alloc(datasize);
+    apop_draw(x->vector->data, r, olp->input_distribution);
+    apop_data *xbeta = apop_dot(x, m->parameters);
+    apop_data *zero = apop_data_calloc(1);
+    apop_data *xbeta_w_numeraire = apop_data_stack(zero, xbeta, 'r');
+    apop_data_free(xbeta);
+    apop_data_free(zero);
+    apop_vector_exp(xbeta_w_numeraire->vector);
+    apop_vector_normalize(xbeta_w_numeraire->vector);
+    xbeta_w_numeraire->weights = xbeta_w_numeraire->vector;
+    xbeta_w_numeraire->vector = NULL;
+
+    Staticdef(apop_model*, a_pmf, apop_model_copy(apop_pmf))
+    a_pmf->dsize = 0; //so draws produce a row number
+    a_pmf->data = xbeta_w_numeraire;
+    apop_draw(out, r, a_pmf);
+    if (m->dsize>1) memcpy(out+1, x->vector->data, datasize *sizeof(double));
+    apop_data_free(x);
+}
+
+
 /* \amodel apop_logit The Logit model.
 
 Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.
@@ -304,6 +344,7 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc    settings   None, but see above about seeking a factor page in the input data.
 
+\adoc RNG Much like the \ref apop_ols RNG, qv. Returns the category drawn.
 
 \li PS: Here is a nice trick used in the implementation. let \f$y_i = x\beta_i\f$.
   Then
@@ -316,5 +357,5 @@ Minka, who implemented it in his Lightspeed Matlab toolkit.]
 
 */
 apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep
+.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = probit_prep, .draw=logit_rng
 };

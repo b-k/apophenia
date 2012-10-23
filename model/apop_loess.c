@@ -312,11 +312,9 @@ L70:
         }
 
     /*        set up to compute b, rsd, or xb. */
-    if (cb)
-        dcopy_(k, &qty[1], 1, &b[1], 1);
+    if (cb) dcopy_(k, &qty[1], 1, &b[1], 1);
     kp1 = *k + 1;
-    if (cxb)
-        dcopy_(k, &qty[1], 1, &xb[1], 1);
+    if (cxb) dcopy_(k, &qty[1], 1, &xb[1], 1);
     if (cr && *k < *n) {
         i__1 = *n - *k;
         dcopy_(&i__1, &qty[kp1], 1, &rsd[kp1], 1);
@@ -3317,6 +3315,13 @@ double ibeta(double x, double a, double b) {
 double pf(double q, double df1, double df2) {
 	return ibeta(q*df1/(df2+q*df1), df1/2, df2/2);
 }
+
+struct anova_struct {
+	double	dfn;
+	double	dfd;
+	double  F_value;
+	double  Pr_F;
+};
 
 void anova(struct loess_struct *one, struct loess_struct *two, struct anova_struct *out){
 	double	one_d1, one_d2, one_s, two_d1, two_d2, two_s, rssdiff, d1diff, tmp;

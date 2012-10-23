@@ -709,15 +709,15 @@ APOP_VAR_END_HEAD
         for (int j=0; j< L.ct - hasrows; j++)
             apop_name_add(set->names, *field_names->text[j], 'c');
         apop_data_free(field_names);
-    }
-    if(!set) set = apop_data_alloc(0,1, L.ct-hasrows);
+    } 
 
     //Now do the body.
-	while(L.ct && !L.eof){
+	while(!set || (L.ct && !L.eof)){
         if (!L.ct) { //skip blank lines
             L=parse_a_line(infile, add_this_line, field_ends, delimiters);
             continue;
         }
+        if (!set) set = apop_data_alloc(0,1, L.ct-hasrows); //for .has_col_names=='n'.
         row++;
         int cols = set->matrix  ? set->matrix->size2 : L.ct - hasrows;
         set->matrix = apop_matrix_realloc(set->matrix, row, cols);

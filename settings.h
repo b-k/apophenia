@@ -42,12 +42,6 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 #define Apop_model_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
-/** A convenience for your settings group init functions. 
- Gives the output item either the default value if there is one, or the value you specify. 
-\hideinitializer \ingroup settings
- */
-#define apop_varad_setting(in, out, name, value) (out)->name = (in).name ? (in).name : (value);
-
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
 \hideinitializer \ingroup settings
  */
@@ -157,7 +151,6 @@ Apop_settings_copy (ysg,
     }
 
 //see deprecated.h for the apop_settings_add_group
-
 
 
         //Part II: the details of extant settings groups.
@@ -349,14 +342,6 @@ struct loess_struct {
 	} out;
 };
 
-struct anova_struct {
-	double	dfn;
-	double	dfd;
-	double  F_value;
-	double  Pr_F;
-};
-
-
 /** The code for the loess system is based on FORTRAN code from 1988,
 overhauled in 1992, linked in to Apophenia in 2009. The structure that
 does all the work, then, is a \c loess_struct that you should
@@ -471,10 +456,8 @@ typedef struct {
     int     want_predict_ci; /**< If 'y' (the default), calculate the
                                 confidence bands for predicted values */
     double  ci_level; /**< If running a prediction, the level at which
-                        to calculate the confidence interval. default:
-                        0.95 */
+                        to calculate the confidence interval. default: 0.95 */
 } apop_loess_settings;
-
 
 
     /** \cond doxy_ignore */

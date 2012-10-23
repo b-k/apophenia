@@ -40,8 +40,8 @@ Apop_settings_init(apop_arms,
     if ((in.xl || in.xr) && !in.xinit)
         out->xinit = (double []) {in.xl+GSL_DBL_EPSILON, (in.xl+in.xr)/2., in.xr-GSL_DBL_EPSILON};
     else{
-        Apop_varad_set(xinit, ((double []) {0, 0.5, 1}));
-        //Apop_varad_set(xinit, ((double []) {-1, 0, 1}));
+        //Apop_varad_set(xinit, ((double []) {0, 0.5, 1}));
+        Apop_varad_set(xinit, ((double []) {-1, 0, 1}));
     }
     Apop_varad_set(ninit, 3);
     Apop_varad_set(xl, GSL_MIN(out->xinit[0]/10., out->xinit[0]*10)-.1);
@@ -89,8 +89,6 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 \li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more accurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
 
 \li See \ref apop_arms_settings for the list of parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
-
-
   */
 void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     apop_arms_settings *params = Apop_settings_get_group(m, apop_arms);
