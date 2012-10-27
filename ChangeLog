@@ -12,6 +12,7 @@
 **Removed apop_vector_grid_distance. Use apop_vector_distance(v1, v2, .metric='M');
 --If apop_pmf.dsize==0, apop_pmf.draw returns a row number, not the data in that row. This will change shortly.
 --Logit draw function, akin to apop_ols.draw. Both will change shortly.
+--apop_data_to_factors now auto-allocates a matrix if need be (because it always auto-allocated a vector). 
 
 	September 2012
 --\0 in text files counts as white space

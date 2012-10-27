@@ -10,10 +10,9 @@
 \ingroup names
 */
 apop_name * apop_name_alloc(void){
-    apop_name	* init_me = malloc(sizeof(apop_name));
+    apop_name * init_me = malloc(sizeof(apop_name));
     Apop_assert(init_me, "malloc failed. Probably out of memory.");
     *init_me = (apop_name){ };
-	init_me->title[0]   = '\0';
 	return init_me;
 }
 
@@ -67,7 +66,7 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 }
 
 /** Prints the given list of names to STDOUT
-\param n	The \ref apop_name structure
+\param n  The \ref apop_name structure
 \ingroup names
 */
 void apop_name_print(apop_name * n){
@@ -77,8 +76,7 @@ void apop_name_print(apop_name * n){
     }
 	if (n->vector){
 		printf("\t\t\tvector:");
-			printf("\t%s", n->vector);
-		printf("\n");
+        printf("\t%s\n", n->vector);
 	}
 	if (n->colct > 0){
 		printf("\t\t\tcolumn:");

@@ -345,7 +345,7 @@ APOP_VAR_ENDHEAD
 \param intype If \c 't', then \c incol refers to text, otherwise (\c 'd'
 is a good choice) refers to the vector or matrix. Default = \c 't'.
 \param incol The column in the text that will be converted. -1 is the vector. Default = 0.
-\param outcol The column in the data set where the numeric factors will be written (-1 means the vector, which I will allocate for you if it is \c NULL). Default = 0.
+\param outcol The column in the data set where the numeric factors will be written (-1 means the vector). Default = 0.
 
 For example:
 \code
@@ -365,7 +365,9 @@ added as a second page of the \ref apop_data set, you can recover the
 original values as needed.
 
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
-Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
+Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading) use \ref apop_data_get_factor_names to retrieve that table.
+
+\li  If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
 
 \li This function uses the \ref designated syntax for inputs.
 */
@@ -381,11 +383,15 @@ APOP_VAR_ENDHEAD
                                             "data's text has only %zu elements.", incol, data->textsize[1]);
     } else {
         Apop_assert((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
+        Apop_assert((incol == -1) || data->matrix, "You asked for the matrix column %i but "
+                                            "the matrix is NULL.", incol);
         Apop_assert((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
                                             "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
     if (!data->vector && outcol == -1) //allocate a vector for the user.
         data->vector = gsl_vector_alloc(intype=='t' ? data->textsize[0] : data->matrix->size2);
+    if (!data->matrix && outcol >= 0) //allocate a matrxi for the user.
+        data->matrix = gsl_matrix_calloc(intype=='t' ? data->textsize[0] : data->matrix->size2, outcol+1);
     apop_data *out;
     dummies_and_factors_core(data, incol, intype, 1, outcol, 'f', &out);
     return out;
@@ -395,7 +401,7 @@ APOP_VAR_ENDHEAD
 <tt>"<categories for your_var>"</tt>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.
 
 \param data The data set. (No default, must not be \c NULL)
-\param col The column whose name I'll use to check for the factor name list. Vector==-1. (default=0)
+\param col The column in the main data set whose name I'll use to check for the factor name list. Vector==-1. (default=0)
 \param type If you are referring to a text column, use 't'. (default='d')
 
 \return A pointer to the page in the data set with the given factor names.

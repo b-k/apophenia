@@ -322,11 +322,10 @@ void test_skew_and_kurt(){
 }
 
 void test_listwise_delete(){
-  int i, j;
   apop_data *t1 = apop_data_calloc(10,10);
   apop_text_alloc(t1, 10, 10);
-  for (i=0; i< 10; i++)
-      for (j=0; j< 10; j++)
+  for (int i=0; i< 10; i++)
+      for (int j=0; j< 10; j++)
           apop_text_add(t1, i, j, "%i", i*j);
   //no NaNs yet
   apop_data *t1c = apop_data_listwise_delete(t1);
@@ -342,7 +341,7 @@ void test_listwise_delete(){
   assert(atoi(t1c->text[3][4])==16);
   //check the vector
   apop_data *t2 = apop_data_calloc(10); //check on this form of calloc.
-  t1->vector    = t2->vector;
+  t1->vector = t2->vector;
   apop_data_set(t1, 4,-1, GSL_NAN);
   apop_data *t2c = apop_data_listwise_delete(t1);
   assert(t2c->matrix->size1==9);

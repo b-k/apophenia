@@ -251,7 +251,7 @@ static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data_unpack(gradient, gradient_matrix);
     gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
-    gradient_matrix->more->more = get_category_table(d);
+    gradient_matrix->more->more = apop_data_copy(get_category_table(d));
     apop_data_free_base( //return from apop_map is a vector of zeros.
         apop_map(d, .fn_rp=dlogit_foreach, .param=gradient_matrix, .all_pages='n')
     );
@@ -296,6 +296,7 @@ static void logit_rng(double *out, gsl_rng *r, apop_model *m){
     size_t datasize = get_draw_size(olp->input_distribution);
     apop_data *x = apop_data_alloc(datasize);
     apop_draw(x->vector->data, r, olp->input_distribution);
+
     apop_data *xbeta = apop_dot(x, m->parameters);
     apop_data *zero = apop_data_calloc(1);
     apop_data *xbeta_w_numeraire = apop_data_stack(zero, xbeta, 'r');
