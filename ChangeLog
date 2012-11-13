@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	November 2012
+--apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs
+	better; put them at the end of the sort order.
+
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:
     #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))

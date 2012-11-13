@@ -215,14 +215,18 @@ void apop_data_show(const apop_data *in){
                     (in->names->vector || in->names->colct || in->names->textct);
     size_t hasweights = (in->weights != NULL);
 
+
+
     size_t outsize_r = GSL_MAX(in->matrix ? in->matrix->size1 : 0, in->vector ? in->vector->size: 0);
-    outsize_r   = GSL_MAX(outsize_r, in->textsize[0]);
-    outsize_r   += hascolnames;
+    outsize_r = GSL_MAX(outsize_r, in->textsize[0]);
+    outsize_r = GSL_MAX(outsize_r, wsize);
+    outsize_r += hascolnames;
 
     size_t outsize_c = msize2;
-    outsize_c   += in->textsize[1];
-    outsize_c   += (vsize>0);
-    outsize_c   += hasrownames + hasweights;
+    outsize_c += in->textsize[1];
+    outsize_c += (vsize>0);
+    outsize_c += (wsize>0);
+    outsize_c += hasrownames + hasweights;
 
 //Write to the printout data set.
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);

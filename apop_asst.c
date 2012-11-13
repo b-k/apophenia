@@ -6,7 +6,6 @@ Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_randist.h>
 #include <regex.h>
 
-
 //more efficient than xprintf, but a little less versatile.
 static void apop_tack_on(char **in, char *addme){
     if (!addme) return;
@@ -216,7 +215,7 @@ APOP_VAR_ENDHEAD
     size_t height  = (sortby==-1) ? data->vector->size: data->matrix->size1;
     size_t sorted[height];
     size_t i, *perm, start=0;
-    gsl_permutation   *p  = gsl_permutation_alloc(height);
+    gsl_permutation *p = gsl_permutation_alloc(height);
     memset(sorted, 0, sizeof(size_t)*height);
     if (sortby == -1)
         gsl_sort_vector_index (p, data->vector);
@@ -224,7 +223,7 @@ APOP_VAR_ENDHEAD
         APOP_COL(data, sortby, v);
         gsl_sort_vector_index (p, v);
     }
-    perm    = p->data;
+    perm = p->data;
     if (asc=='d' || asc=='D') //reverse the perm matrix.
         for (size_t j=0; j< height/2; j++){
             double t         = perm[j];
@@ -244,7 +243,7 @@ APOP_VAR_ENDHEAD
             Apop_data_row(data, perm[i], onerow);
             apop_data_set_row(data, onerow, i);
             sorted[perm[i]]++;
-            i   = perm[i];
+            i = perm[i];
         }
         apop_data_set_row(data, first_row_storage, i);
         apop_data_free(first_row_storage);
@@ -312,7 +311,7 @@ careful).
 If you give a non-\c NULL address in which to place a table of paren-delimited substrings, I'll return them as a row in the text element of the returned \ref apop_data set. I'll return <em>all</em> the matches, filling the first row with substrings from the first application of your regex, then filling the next row with another set of matches (if any), and so on to the end of the string. Useful when parsing a list of items, for example.
 
 
-\param string        The string to search (no default; if \c NULL, I return 0---no match)
+\param string        The string to search (no default)
 \param regex       The regular expression (no default)
 \param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex). If no match, return an empty \ref apop_data set, so <tt>output->textsize[0]==0</tt>.
 \param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
@@ -322,6 +321,7 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 
 
 \li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
+\li If <tt>strings==NULL</tt>, I return 0---no match---and if \c substrings is provided, set it to \c NULL.
 
 \li Here is the test function. Notice that the substring-pulling
 function call passes \c &subs, not plain \c subs. Also, the non-match
@@ -331,10 +331,13 @@ has a zero-length blank in <tt>subs->text[0][1]</tt>.
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
     const char * apop_varad_var(string, NULL);
-    if (!string) return 0;
+    apop_data **apop_varad_var(substrings, NULL);
+    if (!string) {
+        if (substrings) *substrings=NULL;
+        return 0;
+    }
     const char * apop_varad_var(regex, NULL);
     Apop_assert_negone(regex, "You gave me a NULL regex.");
-    apop_data **apop_varad_var(substrings, NULL);
     const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
     regex_t re;
@@ -404,10 +407,10 @@ Returns an \c apop_beta model with its parameters appropriately set.
 
 */
 apop_model *apop_beta_from_mean_var(double m, double v){
-    apop_assert_s(m<1&&m > 0, "You asked for a beta distribution "
+    Apop_assert(m<1&&m > 0, "You asked for a beta distribution "
                         "with mean %g, but the mean of the beta will always "
                         "be strictly between zero and one.", m);
-    double k     = (m * (1- m)/ v) -1 ;
+    double k     = (m * (1- m)/ v) -1;
     double alpha = m*k;
     double beta  = k * (1-m);
     return apop_model_set_parameters(apop_beta, alpha, beta);

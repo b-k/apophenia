@@ -49,10 +49,12 @@ void apop_estimate_parameter_tests (apop_model *est){
     apop_data_free(one_elmt);
 }
 
-//Cut and pasted from the GNU std library documentation:
+//Cut and pasted from the GNU std library documentation, modified to consider NaNs:
 static int compare_doubles (const void *a, const void *b) {
     const double *da = (const double *) a;
     const double *db = (const double *) b;
+    if (gsl_isnan(*da)) return gsl_isnan(*db) ? 0 : 1;
+    if (gsl_isnan(*db)) return -1;
     return (*da > *db) - (*da < *db);
 }
 
@@ -64,11 +66,11 @@ static int strcmpwrap(const void *a, const void *b){
 }
 
 /** Give me a vector of numbers, and I'll give you a sorted list of the unique elements. 
-  This is basically running "select distinct * from datacolumn", but without the aid of the database.  
+  This is basically running "select distinct datacol from data order by datacol", but without the aid of the database.
 
   \param v a vector of items
-
   \return a sorted vector of the distinct elements that appear in the input.
+  \li NaNs appear at the end of the sort order.
   \see apop_text_unique_elements 
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
@@ -279,6 +281,7 @@ matrix. If \c 'i', insert in place, immediately after the original data column. 
 matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 
+\li NaNs appear at the end of the sort order.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){

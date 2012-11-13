@@ -8,4 +8,16 @@ void test_regex(){
     assert(!strlen(subs->text[0][1]));
     assert(!strcmp(subs->text[0][2], "am"));
     apop_data_free(subs);
+
+    //Split a comma-delimited list, throwing out white space.
+    //Notice that the regex includes only one instance of a non-comma blob 
+    //ending in a non-space followed by a comma, but the function keeps 
+    //applying it until the end of string.
+    char string2[] = " one, two , three ,four";
+    apop_regex(string2, " *([^,]*[^ ]) *(,|$) *", &subs);
+    assert(!strcmp(*subs->text[0], "one"));
+    assert(!strcmp(*subs->text[1], "two"));
+    assert(!strcmp(*subs->text[2], "three"));
+    assert(!strcmp(*subs->text[3], "four"));
+    apop_data_free(subs);
 }

@@ -54,10 +54,10 @@ void index_get_element_list(mnode_t * const * const index, bool *d);
 //End index.h; begin index.c
 
 static int find_val(double findme, mnode_t *nodecol){
-    for (int i=0; nodecol[i].val <= findme; i++)
-        if (nodecol[i].val == findme)
+    for (int i=0; nodecol[i].val <= findme || gsl_isnan(findme); i++)
+        if (nodecol[i].val == findme || (gsl_isnan(findme) && gsl_isnan(nodecol[i].val)))
            return i;
-    Apop_assert(0, "I can't find a value that should've been inserted.");
+    Apop_assert(0, "I can't find a value, %g, that should've already been inserted.", findme);
 }
 
 static int size;
@@ -75,7 +75,6 @@ mnode_t **index_generate(const apop_data *in){
     for(size_t i=0; i < margin_ct; i ++){
         Apop_col(in, i, col);
         gsl_vector *vals = apop_vector_unique_elements(col);
-		gsl_sort_vector(vals);
         mnodes[i] = malloc(sizeof(mnode_t)*(vals->size+1));
         for(size_t j=0; j < vals->size; j ++)
             mnodes[i][j] = (mnode_t) {.val = gsl_vector_get(vals, j),
