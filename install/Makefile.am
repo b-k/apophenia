@@ -80,7 +80,7 @@ VPATH= @srcdir@
 EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
-		eg apop_db_mysql.c apop_db_sqlite.c apop.i \
+		eg apop_db_mysql.c apop_db_sqlite.c apop.i tests/apophenia \
 		apop_internal.h internal.h COPYING2
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1

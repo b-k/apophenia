@@ -1,5 +1,64 @@
 #include <apop.h>
 
+
+//these work by checking that K-L divergence shrunk, and that individual margins are correct.
+//#define Diff(L, R, eps) Apop_assert_n(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps); //defined in the main test_apop.c
+
+void test_raking_further(){
+    apop_table_exists("rake_test", 'd');
+    apop_query("create table rake_test (first, second, weights);"
+            "insert into rake_test values(1, 1, 10);"
+            "insert into rake_test values(1, 2, 2);"
+            "insert into rake_test values(2, 1, 15);"
+            "insert into rake_test values(2, 2, 5);"
+            );
+
+    //Synthetic data, starting at all ones.
+    apop_data_print(
+            apop_rake(.margin_table="rake_test", .count_col="weights", 
+                .contrasts=(char*[]){"first", "second"}, .contrast_ct=2),
+        .output_file="raked", .output_type='d');
+    apop_model *base= apop_estimate(apop_query_to_mixed_data("mmw", "select * from rake_test"), apop_pmf);
+    apop_model *fitted= apop_estimate(apop_query_to_mixed_data("mmw", "select * from raked"), apop_pmf);
+    gsl_vector_set_all(base->data->weights, 1);
+    //apop_data_show(apop_query_to_data("select * from raked"));
+
+    //individual margins should match.
+    //KL divergence should be down from the initial table.  
+    #define rake_check \
+    Diff(apop_query_to_float("select sum(weights) from raked where first=1"), 12, 1e-4);\
+    Diff(apop_query_to_float("select sum(weights) from raked where first=2"), 20, 1e-4);\
+    Diff(apop_query_to_float("select sum(weights) from raked where second=1"), 25, 1e-4);\
+    Diff(apop_query_to_float("select sum(weights) from raked where second=2"), 7, 1e-4); \
+    assert(apop_kl_divergence(base, fitted) < apop_kl_divergence(base,                   \
+                apop_estimate(apop_query_to_mixed_data("mmw", "select * from rake_test"), apop_pmf)));
+
+    rake_check
+
+        //With an alternate init table
+    apop_table_exists("raked", 'd');
+    apop_query("create table rakeinit (first, second, weights);"
+            "insert into rakeinit values(1, 1, 32);"
+            "insert into rakeinit values(1, 2, 289);"
+            "insert into rakeinit values(2, 1, 19);"
+            "insert into rakeinit values(2, 2, 5447);"
+            );
+    apop_data_print(
+            apop_rake(.margin_table="rake_test", .count_col="weights", 
+                .contrasts=(char*[]){"first", "second"}, .contrast_ct=2, .init_table="rakeinit", .init_count_col="weights"),
+        .output_file="raked", .output_type='d');
+    //apop_data_show(apop_query_to_data("select * from raked"));
+
+
+    base= apop_estimate(apop_query_to_mixed_data("mmw", "select * from rakeinit"), apop_pmf);
+    fitted= apop_estimate(apop_query_to_mixed_data("mmw", "select * from raked"), apop_pmf);
+
+    rake_check
+}
+
+
+
+
 /* Some OK tests on the raking procedure. We assert that a regression on the raw data 
 and a set of dummies is equivalent to a regression on the base data. */
 
@@ -64,4 +123,5 @@ void test_raking(){
 
     apop_map(ols_out->parameters, .fn_rpi=compare_results, .param= raked_ols->parameters);
 
+    test_raking_further();
 }

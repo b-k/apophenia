@@ -93,7 +93,7 @@ mnode_t **index_generate(const apop_data *in){
 
 void index_free(mnode_t **in){
 	for (int i=0; in[i]; i++){
-		//for (int j=0; isfinite(in[i][j].val); j++)
+		//for (int j=0; !isinf(in[i][j].val); j++)
 		/*for (int j=0; in[i][j].margin_ptrs; j++)
 			free(in[i][j].margin_ptrs);*/
         free(in[i]);
@@ -110,7 +110,7 @@ next dimension as active.
  */
 static void value_loop(mnode_t *icon[], int *indices, mnode_t **values, 
             int this_dim, index_apply_f f, int *ctr, void *args){
-    while (isfinite(icon[this_dim][indices[this_dim]].val)){
+    while (!isinf(icon[this_dim][indices[this_dim]].val)){
         values[this_dim] = &icon[this_dim][indices[this_dim]];
 		if (icon[this_dim+1]){
 			indices[this_dim+1]=0;
@@ -147,9 +147,9 @@ void index_foreach(mnode_t *index[], index_apply_f f, void *args){
 \param d Should already be allocated to the right size, may be filled with garbage.
 \return d will be zero or one to indicate which rows of the indexed data set meet all criteria.
 */
-void index_get_element_list(mnode_t *const * const index, bool *d){
+void index_get_element_list(mnode_t *const * index, bool *d){
     memcpy(d, index[0]->margin_ptrs, size *  sizeof(bool));
-    for(int i=1; isfinite(index[i]->val); i++)
+    for(int i=1; !isinf(index[i]->val); i++)
         for(int j=0; j < size; j++)
             //Next two lines are equivalent to d[j]=d[j] && index[i]->..., but clock in as faster.
             if (d[j])
@@ -168,7 +168,7 @@ typedef struct {
     size_t ct, al;
 } rake_t;
 
-static void grow(rake_t *r){
+static void rakeinfo_grow(rake_t *r){
     r->al = (r->al+1)*2;
     r->elmtlist = realloc(r->elmtlist , sizeof(size_t*) * r->al);
     r->elmtlist_sizes = realloc(r->elmtlist_sizes, sizeof(size_t) * r->al);
@@ -176,16 +176,12 @@ static void grow(rake_t *r){
 }
 
 static void rakeinfo_free(rake_t r){
-    for (int i=0; i < r.ct; i++){
-        free(r.elmtlist[i]);
-        r.elmtlist[i] = NULL;
-    }
-    free(r.index);
-    free(r.elmtlist_sizes);
-    r.index = NULL;
-    r.elmtlist_sizes = NULL;
-/*    free(r.elmtlist);
-    r.elmtlist = NULL;*/
+    #define free_and_clear(in) free(in), (in) = NULL
+    for (int i=0; i < r.ct; i++)
+        free_and_clear(r.elmtlist[i]);
+    free_and_clear(r.index);
+    free_and_clear(r.elmtlist_sizes);
+//    free_and_clear(r.elmtlist);
     gsl_vector_free(r.indata_values);
     r.indata_values= NULL;
 }
@@ -196,10 +192,9 @@ static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, d
     double fit_sum = 0;
     for(size_t i=0; i < n; i ++)
         fit_sum += weights->data[elmts[i]];
-if (!fit_sum) return; //can happen if init table is very different from margins.
-    for(size_t i=0; i < n; i ++){
+    if (!fit_sum) return; //can happen if init table is very different from margins.
+    for(size_t i=0; i < n; i ++)
         weights->data[elmts[i]] *= in_sum/fit_sum;
-	}
 	overall_max_dev = GSL_MAX(overall_max_dev, fabs(in_sum-fit_sum));
 }
 
@@ -218,8 +213,7 @@ static void one_set_of_values(mnode_t *const * const icon, const int ctr, void *
 		in_sum = gsl_vector_get(r->indata_values, ctr);
     else {
         r->ct++;
-        if (ctr >= r->al) 
-            grow(r);
+        if (ctr >= r->al) rakeinfo_grow(r);
    		index_get_element_list(icon, t);
         in_sum = 0;
         int n=0, al=0;
@@ -285,7 +279,8 @@ Re: the contrast array: Each _column_ is a contrast. Put a one in each col
  1 1<br>
  0 1
  */
-static void c_loglin(const apop_data *config, const apop_data *indata, apop_data *fit, double maxdev, int maxit) {
+static void c_loglin(const apop_data *config, const apop_data *indata, 
+                        apop_data *fit, double maxdev, int maxit) {
     mnode_t ** index = index_generate(indata);
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
@@ -335,10 +330,24 @@ int get_var_index(apop_data *all_vars, char *findme){
 	Apop_assert_c(0, -1, 0, "I couldn't find %s in the full list of variables. Returning -1.", findme);
 }
 
+void nan_to_zero(double *in){ if (gsl_isnan(*in)) *in=0;}
+
 double nudge_zeros(apop_data *in, void *nudge){
     if (!in->weights->data[0])
         in->weights->data[0] = *(double*)nudge;
     return 0;
+}
+
+//L.a=R.a and L.b = R.b ...
+char *vars_to_join(apop_data *varlist){
+    char *and= " ";
+    char *out = NULL;
+    for (int i=0; i< *varlist->textsize; i++){
+        xprintf(&out, "%s%s L.%s = R.%s", (out ? out: ""),
+                and, *varlist->text[i], *varlist->text[i]);
+        and = " and ";
+    }
+    return out;
 }
 
 /** Fit a log-linear model via iterative proportional fitting, aka raking.
@@ -377,9 +386,9 @@ given all of the above constraints. Then, raking is done using only that subset.
 This means that the work is done on a number of cells proportional to the number of data
 points, not to the full cross of all categories. Set <tt>apop_opts.verbose</tt> to 2 or greater to show the query on \c stderr.
 
-\param table_name The name of the table in the database.  The table should have one
-observation per row.
-No default.
+\param margin_table The name of the table in the database to use for calculating
+the margins.  The table should have one observation per row.  No default. (This used
+to be called \c table_name; that name is now deprecated.)
 
 \param all_vars The full list of variables to search. Provide these as a single,
 pipe-delimited string: e.g., "age | sex |income". Spaces are ignored. Default: if you are using SQLite, I
@@ -409,7 +418,7 @@ value, since it's hard for the function to supply one in a race-proof manner. De
 internally-maintained values.
 
 \param init_table The default is to initially set all table elements to one and then rake from there. If you specify an \c init_table, then I will get the initial cell counts from it.  
-Default: if you specify \c init_count_col, the default is \c table_name; if you do not the default is \c NULL. The use of a separate table for initial values is currently inadequately tested and use-at-your-own-risk.
+Default: if you specify \c init_count_col, the default is \c margin_table; if you do not the default is \c NULL. The use of a separate table for initial values is currently inadequately tested and use-at-your-own-risk.
 
 \param init_count_col The column in \c init_table with the cell counts.
 
@@ -437,10 +446,13 @@ written by a U.S. government employee during work hours. Some lawyers will tell 
 the code is licensed via the same modified GPL v2 as the main work; others will tell
 you that it is public domain.
 */
-APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge){
+APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge, char* table_name){
     static int defaultrun = 0;
-    char * apop_varad_var(table_name, NULL);
-    Apop_assert(table_name, "I need the name of a table in the database that will be the data source.");
+    char * apop_varad_var(margin_table, NULL);
+    char * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
+    if (!margin_table) margin_table = table_name;
+    Apop_assert(margin_table, "I need the name of a table in the database that will be the data source.");
+    Apop_assert(apop_table_exists(margin_table), "your margin_table, %s, doesn't exist in the database.", margin_table);
     char * apop_varad_var(all_vars, NULL);
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
@@ -452,8 +464,9 @@ APOP_VAR_HEAD apop_data * apop_rake(char *table_name, char *all_vars, char **con
     int apop_varad_var(run_number, defaultrun++);
     char * apop_varad_var(init_count_col, NULL);
     char * apop_varad_var(init_table, NULL);
+    if (init_table){Apop_assert(apop_table_exists(init_table), "your init_table, %s, doesn't exist in the database.", init_table);}
     if (init_count_col && !init_table)
-        init_table = table_name;
+        init_table = margin_table;
     double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
@@ -462,7 +475,7 @@ APOP_VAR_ENDHEAD
         Apop_assert(apop_opts.db_engine!='m', "I need a list of the full set of variable "
                                             "names sent as .all_vars=\"var1 | var2 |...\"");
         //use SQLite's table_info, then shift the second col to the first.
-        all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", table_name);
+        all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", margin_table);
         int ctr=0;
         for (int i=0; i< all_vars_d->textsize[0]; i++)
             if (all_vars_d->text[i][1] && (count_col ? strcmp(all_vars_d->text[i][1], count_col) : 1)
@@ -488,7 +501,7 @@ APOP_VAR_ENDHEAD
 	char comma = ' ';
 	for (int i=0; i < var_ct; i++){
 	  	xprintf(&q, "%s %c (select distinct %s as %s from %s) as t%i\n", 
-					  q, comma, all_vars_d->text[i][0], all_vars_d->text[i][0], table_name, i);
+					  q, comma, all_vars_d->text[i][0], all_vars_d->text[i][0], margin_table, i);
 		comma = ',';
 	}
      /*keep only rows that could have nonzero values in the design matrix margins (about 10%):
@@ -519,7 +532,7 @@ APOP_VAR_ENDHEAD
             apop_query("drop table if exists apop_m%i_%i", i, run_number);
             apop_query("create table apop_m%i_%i as select distinct %s as concatenated from %s; "
                           "create index apop_mi%i_%i on apop_m%i_%i(concatenated);",
-                                i,run_number, merge, table_name, i,run_number, i,run_number);
+                                i,run_number, merge, margin_table, i,run_number, i,run_number);
         }
     }
 /* Keep out margins with values for now; join them in below.
@@ -527,8 +540,7 @@ APOP_VAR_ENDHEAD
 	xprintf(&q, "%s except\nselect ", q);
     int tt = all_vars_d->textsize[1]; all_vars_d->textsize[1] = 1; //mask all but the first col
     char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");
-    all_vars_d->textsize[1] = tt;
-	apop_query("%s %s, 0 from %s", q, list_of_fields, table_name);
+	apop_query("%s %s, 0 from %s", q, list_of_fields, margin_table);
     free(q);
 
     char *format=strdup("w");
@@ -542,22 +554,38 @@ APOP_VAR_ENDHEAD
 		  Then,
               delete from contrasts where [structural_zeros]
      */
+    char *margint=NULL, *initt=NULL; //handle structural zeros via subquery
+    if (structural_zeros) {
+        asprintf(&margint, "(select * from %s where not (%s))", margin_table, structural_zeros);
+        if (init_table) asprintf(&initt, "(select * from %s where not (%s))", init_table, structural_zeros);
+    } else {
+        asprintf(&margint, "%s", margin_table);
+        if (init_table)   asprintf(&initt, "%s", init_table);
+    }
     char *init_q = strdup("select ");
 	asprintf(&q, "create table apop_contrasts_%i as select %s ", run_number, list_of_fields);
     if (count_col){
-        xprintf(&q, "%s, sum(%s) from %s\ngroup by %s", q, count_col, table_name, list_of_fields);
-        if (init_table) xprintf(&init_q, "%s %s, sum(%s) from %s\ngroup by %s", init_q, list_of_fields, init_count_col, init_table, list_of_fields);
+        xprintf(&q, "%s, sum(%s) from %s\ngroup by %s", q, count_col, margint, list_of_fields);
+        if (init_table){
+            char *countstr;
+            if (init_count_col) asprintf(&countstr, "R.%s", init_count_col);
+            else                asprintf(&countstr, "1");
+            xprintf(&init_q, "%s %s, sum(%s)\n "
+                "from %s L left outer join %s R on %s\n"
+                "group by %s", 
+                init_q, apop_text_paste(all_vars_d, .before="L.", .between = ", L."), countstr, 
+                margint, initt, vars_to_join(all_vars_d),
+                apop_text_paste(all_vars_d, .before="L.", .between = ", L."));
+            free(countstr);
+        }
     } else {
-        xprintf(&q, "%s, count(*) from %s\ngroup by %s", q, table_name, list_of_fields);
-        if (init_table) xprintf(&init_q, "%s %s, count(*) from %s\ngroup by %s", init_q, list_of_fields, init_table, list_of_fields);
+        xprintf(&q, "%s, count(*) from %s\ngroup by %s", q, margint, list_of_fields);
+        if (init_table) xprintf(&init_q, "%s %s, count(*) from %s\ngroup by %s", init_q, list_of_fields, initt, list_of_fields);
     }
-	xprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
+	xprintf(&q,      "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
 	apop_query("%s", q);
-    Apop_notify(2, "Querying possible nonzero cells (before structural zeros are removed):\n%s", q);
-	if (structural_zeros){
-        Apop_notify(2, "\nRemoving structural zeros via:\n%s", q);
-        apop_query("delete from apop_contrasts_%i where\n %s", run_number, structural_zeros);
-    }
+    free(margint); free(initt);
+    Apop_notify(2, "Querying possible nonzero cells (after structural zeros are removed):\n%s", q);
 
     //apop_contrasts... holds the cells of the grid we actually need. Query them to 
     //an apop_data set and start doing the raking.
@@ -567,6 +595,7 @@ APOP_VAR_ENDHEAD
 
     apop_data *fit = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
                                 : apop_data_copy(d);
+    apop_vector_apply(fit->weights, nan_to_zero);
     Apop_assert(fit, "Query \"%s\" returned a blank table.", init_q);
     if (!init_table) gsl_vector_set_all(fit->weights, 1);
     if (nudge) apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
@@ -584,6 +613,8 @@ APOP_VAR_ENDHEAD
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);
     
+    all_vars_d->textsize[1] = tt;
+    apop_data_free(all_vars_d);
 	apop_query("drop table apop_zerocontrasts_%i", run_number);
 	apop_query("drop table apop_contrasts_%i", run_number);
 	apop_data_free(contrast_grid);

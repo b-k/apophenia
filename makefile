@@ -43,9 +43,9 @@ auto:
 	cd $(workdir) && sed -i -f prep_variadics.sed *.c *h model/*.c
 	#generate the internal header based on the public apop.h
 	sed -e 's/[<>]/"/g' -e 's/apophenia\///' -e '1i#include "variadic.h"' -e '1i#include "internal.h"\n' <apop.h > $(workdir)/apop_internal.h
-	#add a directory with links to all headers:
-	#mkdir $(workdir)/apophenia
-	#cp $(workdir)/*.h $(workdir)/apophenia
+	#add a directory with links to all headers, for testing.
+	mkdir $(workdir)/tests/apophenia
+	cp $(workdir)/*.h $(workdir)/tests/apophenia
 	#let the GNU prep everything and produce a distribution pkg.
 	cd $(workdir) && dot -Tpng < docs/structs.dot | pngtopnm | pnmscale .5 | pnmtopng > docs/structs.png
 	cd $(workdir) && echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS

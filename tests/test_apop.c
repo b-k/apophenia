@@ -1,6 +1,5 @@
 #include <apop.h>
 #include "nist_tests.c"
-#include "rake_test.c"
 
 //assertions never return a value.
 #undef Apop_assert
@@ -8,6 +7,7 @@
 
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
+#include "rake_test.c"
 //These test functions are also displayed in the documentation as examples.
 #include "../eg/test_kl_divergence.c"
 #include "../eg/test_strip_dots.c"

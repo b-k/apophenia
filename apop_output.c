@@ -75,6 +75,8 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
         *output_pipe = *output_pipe ? *output_pipe: stdout;      
     else if (*output_type =='s')
         *output_pipe = stdout; 
+    else if (*output_type =='d')
+        *output_pipe = stdout;  //won't be used.
     else       
         *output_pipe = *output_file
                         ? fopen(*output_file, *output_append == 'a' ? "a" : "w") 

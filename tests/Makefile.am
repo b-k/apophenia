@@ -1,5 +1,6 @@
 check_PROGRAMS=test_apop
 test_apop_LDADD=../libapophenia.la
+test_apop_CFLAGS = $(CFLAGS) -I$(top_build_prefix)/$(top_builddir)
 test_apop_SOURCES=test_apop.c
 TESTS=$(check_PROGRAMS)
 
