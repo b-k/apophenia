@@ -48,15 +48,10 @@ Data Structures</h2>
 <h2><a name="define-members"></a>
 Defines</h2>
 <ul>
-<li>#define <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a>(m, type)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(m, #type, 'c')
-<li>#define <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a>(m, type)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a>(m, #type)
-<li>#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(model, type,...)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a>(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
-<li>#define <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a>(model, type, setting)&#160;&#160;&#160;(((type ## _settings *) <a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, 'f'))-&gt;setting)
-<li>#define <a class="el" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(model, type, setting, data)
-<li>#define <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a>(m, type)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(m, #type, 'c')
-<li>#define <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a>(m, type)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a>(m, #type)
-<li>#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(model, type,...)&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a>(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
-<li>#define <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a>(model, type, setting)&#160;&#160;&#160;(((type ## _settings *) <a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, 'f'))-&gt;setting)
+<li>#define <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a>(m, type)
+<li>#define <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a>(m, type)
+<li>#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(model, type,...)
+<li>#define <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a>(model, type, setting)
 <li>#define <a class="el" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(model, type, setting, data)
 </ul>
 <hr/><h2>Define Documentation</h2>
@@ -85,41 +80,7 @@ Defines</h2>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a>(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Add a settings group. The first two arguments (the model you are attaching to and the settings group name) are mandatory, and then you can use the <a class="el" href="designated.html">Designated initializers</a> syntax to specify default values (if any). Returns a pointer to the newly-prepped group. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga553b02de4ace5e6f16a8b26da777f9b9"></a><!-- doxytag: member="settings.h::Apop_model_add_group" ref="ga553b02de4ace5e6f16a8b26da777f9b9" args="(model, type,...)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">model, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a>(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
@@ -153,41 +114,7 @@ Defines</h2>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;(((type ## _settings *) <a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, 'f'))-&gt;setting)</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Retrieves a setting from a model. See <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a> to pull the entire group. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga4ba53402807c9e6b82254fb552029501"></a><!-- doxytag: member="settings.h::Apop_settings_get" ref="ga4ba53402807c9e6b82254fb552029501" args="(model, type, setting)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">model, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">setting&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;(((type ## _settings *) <a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, 'f'))-&gt;setting)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
@@ -215,37 +142,7 @@ Defines</h2>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(m, #type, 'c')</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Retrieves a settings group from a model. See <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a> to just pull a single item from within the settings group.</p>
-<p>If it isn't found, then it returns NULL, so you can easily put it in a conditional like </p>
-<div class="fragment"><pre class="fragment">  <span class="keywordflow">if</span> (!apop_settings_get_group(m, <span class="stringliteral">&quot;apop_ols&quot;</span>)) ...
-</pre></div> 
-</div>
-</div>
-<a class="anchor" id="gaafba071ab93465fed4cac1020082b4c8"></a><!-- doxytag: member="settings.h::Apop_settings_get_group" ref="gaafba071ab93465fed4cac1020082b4c8" args="(m, type)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">m, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(m, #type, 'c')</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
@@ -275,35 +172,7 @@ Defines</h2>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a>(m, #type)</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Removes a settings group from a model's list. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga4ff4361f65c1e848fabce24b4b8f44f7"></a><!-- doxytag: member="settings.h::Apop_settings_rm_group" ref="ga4ff4361f65c1e848fabce24b4b8f44f7" args="(m, type)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">m, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a>(m, #type)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
@@ -348,60 +217,10 @@ Defines</h2>
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordflow">do</span> { type ## _settings *apop_tmp_settings = <a class="code" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, <span class="charliteral">&#39;c&#39;</span>);  \
-    Apop_assert(apop_tmp_settings, <span class="stringliteral">&quot;You&#39;re trying to modify a setting in &quot;</span> \
-                        #model <span class="stringliteral">&quot;&#39;s setting group of type &quot;</span> #type <span class="stringliteral">&quot; but that model doesn&#39;t have such a group.&quot;</span>); \
-    apop_tmp_settings-&gt;setting = (data);    \
-    } <span class="keywordflow">while</span> (0);
-</pre></div><p>Modifies a single element of a settings group to the given value. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga8659282b6003f7c2adac6f4baad5fae4"></a><!-- doxytag: member="settings.h::Apop_settings_set" ref="ga8659282b6003f7c2adac6f4baad5fae4" args="(model, type, setting, data)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">model, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">setting, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">data&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordflow">do</span> { type ## _settings *apop_tmp_settings = <a class="code" href="apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a>(model, #type, <span class="charliteral">&#39;c&#39;</span>);  \
-    Apop_assert(apop_tmp_settings, <span class="stringliteral">&quot;You&#39;re trying to modify a setting in &quot;</span> \
-                        #model <span class="stringliteral">&quot;&#39;s setting group of type &quot;</span> #type <span class="stringliteral">&quot; but that model doesn&#39;t have such a group.&quot;</span>); \
-    apop_tmp_settings-&gt;setting = (data);    \
-    } <span class="keywordflow">while</span> (0);
-</pre></div><p>Modifies a single element of a settings group to the given value. </p>
+<p>Modifies a single element of a settings group to the given value. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Nov 19 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>

@@ -26,11 +26,17 @@ urchinTracker();
 </div>
 <div class="header">
   <div class="summary">
+<a href="#define-members">Defines</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">Things to make life easier with the GSL</div>  </div>
 </div><!--header-->
 <div class="contents">
+<h2><a name="define-members"></a>
+Defines</h2>
+<ul>
+<li>#define <a class="el" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(in)&#160;&#160;&#160;<a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(in)
+</ul>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
@@ -52,6 +58,25 @@ Functions</h2>
 <li>double <a class="el" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a> (const gsl_matrix *data)
 <li>void <a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)
 </ul>
+<hr/><h2>Define Documentation</h2>
+<a class="anchor" id="ga7f85a98b61078ba3dc273f17eddd34a7"></a><!-- doxytag: member="stats.h::apop_sum" ref="ga7f85a98b61078ba3dc273f17eddd34a7" args="(in)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">in</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(in)</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>An alias for <a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>. Returns the sum of the data in the given vector. </p>
+
+</div>
+</div>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="ga45bb322b9f491c46feb1e24025b6301f"></a><!-- doxytag: member="apop_conversions.c::apop_matrix_copy" ref="ga45bb322b9f491c46feb1e24025b6301f" args="(const gsl_matrix *in)" -->
 <div class="memitem">
@@ -68,7 +93,7 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Copy one <code>gsl_matrix</code> to another. That is, all data is duplicated. Unlike <code>gsl_matrix_memcpy</code>, this function allocates and returns the destination, so you can use it like this:</p>
-<div class="fragment"><pre class="fragment"> gsl_matrix *a_copy = <a class="code" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a>(original);
+<div class="fragment"><pre class="fragment">gsl_matrix *a_copy = <a class="code" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a>(original);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the input data </td></tr>
@@ -242,7 +267,7 @@ Functions</h2>
     <tr><td class="paramname">m1</td><td>the upper/rightmost matrix (default=<code>NULL</code>, in which case this basically copies <code>m2</code>) </td></tr>
     <tr><td class="paramname">m2</td><td>the second matrix (default = <code>NULL</code>, in which case <code>m1</code> is returned) </td></tr>
     <tr><td class="paramname">posn</td><td>if 'r', stack rows on top of other rows, else, e.g. 'c' stack columns next to columns. (default ='r') </td></tr>
-    <tr><td class="paramname">inplace</td><td>If one, use <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> to modify <code>m1</code> in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving <code>m1</code> unmolested. (default=0) </td></tr>
+    <tr><td class="paramname">inplace</td><td>If one, use <a class="el" href="types_8h.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> to modify <code>m1</code> in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving <code>m1</code> unmolested. (default=0) </td></tr>
   </table>
   </dd>
 </dl>
@@ -655,7 +680,7 @@ Functions</h2>
   <table class="params">
     <tr><td class="paramname">v1</td><td>the upper vector (default=<code>NULL</code>, in which case this basically copies <code>v2</code>) </td></tr>
     <tr><td class="paramname">v2</td><td>the second vector (default=<code>NULL</code>, in which case nothing is added) </td></tr>
-    <tr><td class="paramname">inplace</td><td>If one, use <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>v1</code> in place; see the caveats on that function. Otherwise, allocate a new vector, leaving <code>v1</code> unmolested. (default=0) </td></tr>
+    <tr><td class="paramname">inplace</td><td>If one, use <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>v1</code> in place; see the caveats on that function. Otherwise, allocate a new vector, leaving <code>v1</code> unmolested. (default=0) </td></tr>
   </table>
   </dd>
 </dl>
@@ -684,4 +709,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Nov 19 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>

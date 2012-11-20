@@ -74,7 +74,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
@@ -84,7 +84,7 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_61.png"/> relating each column with each other.</p>
-<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="apop__stats_8c.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a>; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.</p>
+<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a>; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.</td></tr>
@@ -92,6 +92,12 @@ void <b>vfabs</b> (double *x)
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you. </dd></dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error='a'</td><td>Allocation error. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -100,7 +106,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
@@ -110,7 +116,7 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Returns the variance/covariance matrix relating each column of the matrix to each other column.</p>
-<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="apop__stats_8c.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a>; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.</p>
+<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a>; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>An <a class="el" href="gentle.html#apop_data">apop_data</a> set. If the weights vector is set, I'll take it into account.</td></tr>
@@ -118,6 +124,12 @@ void <b>vfabs</b> (double *x)
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns a <a class="el" href="gentle.html#apop_data">apop_data</a> set the variance/covariance matrix relating each column with each other. </dd></dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error='a'</td><td>Allocation error. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -126,7 +138,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>top</em>, </td>
@@ -186,7 +198,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="apop__stats_8c.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a> </td>
+          <td class="memname">gsl_matrix* <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -206,7 +218,7 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_61.png"/> relating each column with each other.</p>
-<p>This is the <code>gsl_matrix</code> version of <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>; if you have column names, use that one.</p>
+<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>; if you have column names, use that one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
@@ -225,7 +237,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="apop__stats_8c.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a> </td>
+          <td class="memname">gsl_matrix* <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -245,7 +257,7 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Returns the variance/covariance matrix relating each column with each other.</p>
-<p>This is the <code>gsl_matrix</code> version of <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>; if you have column names, use that one.</p>
+<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>; if you have column names, use that one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
@@ -263,7 +275,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> </td>
+          <td class="memname">int <a class="el" href="stats_8h.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>m</em>, </td>
@@ -292,7 +304,7 @@ void <b>vfabs</b> (double *x)
   </table>
   </dd>
 </dl>
-<p>See also <a class="el" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a>, which will change the input to something PSD.</p>
+<p>See also <a class="el" href="stats_8h.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a>, which will change the input to something PSD.</p>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
@@ -302,7 +314,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a> </td>
+          <td class="memname">void <a class="el" href="stats_8h.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -328,12 +340,12 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Normalize each row or column in the given matrix, one by one.</p>
-<p>Basically just a convenience fn to iterate through the columns or rows and run <a class="el" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> for you.</p>
+<p>Basically just a convenience fn to iterate through the columns or rows and run <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> for you.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data set to normalize. </td></tr>
     <tr><td class="paramname">row_or_col</td><td>Either 'r' or 'c'. </td></tr>
-    <tr><td class="paramname">normalization</td><td>see <a class="el" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>. </td></tr>
+    <tr><td class="paramname">normalization</td><td>see <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -345,7 +357,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>m</em></td><td>)</td>
@@ -364,7 +376,7 @@ void <b>vfabs</b> (double *x)
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the distance between the original and new matrices.</dd></dl>
 <ul>
-<li>See also the test function <a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>. </li>
+<li>See also the test function <a class="el" href="stats_8h.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>. </li>
 <li>This function can be used as (the core of) a model constraint.</li>
 </ul>
 <p>Adapted from the R Matrix package's nearPD, which is Copyright (2007) Jens Oehlschlägel [and is GPL]. </p>
@@ -376,7 +388,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -400,7 +412,7 @@ void <b>vfabs</b> (double *x)
 <img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_69.png"/>
 </p>
 <p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_70.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_71.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_72.png"/> takes on one of those values.</p>
-<p>See also <a class="el" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
+<p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
 </div>
@@ -409,7 +421,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -428,7 +440,7 @@ void <b>vfabs</b> (double *x)
       </table>
 </div>
 <div class="memdoc">
-<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="apop__stats_8c.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a>. </p>
+<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a>. </p>
 
 </div>
 </div>
@@ -437,7 +449,7 @@ void <b>vfabs</b> (double *x)
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> </td>
+          <td class="memname">void <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_vector *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -509,7 +521,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#a8378b4ca18cefbae9c4234585e1e9b6b">apop_vector_weighted_cov</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#a901c4b16e5691fedb4a8463548bc26a8">apop_vector_weighted_cov</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v1</em>, </td>
@@ -551,7 +563,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#aca7a5cac76bd44584d88781c5b3cbb23">apop_vector_weighted_kurt</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#aca7a5cac76bd44584d88781c5b3cbb23">apop_vector_weighted_kurt</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -588,7 +600,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#ad141d1bf48aaed451964fefe7dd2be55">apop_vector_weighted_mean</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#a520218aa38f82de6a6297263d44afa32">apop_vector_weighted_mean</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -624,7 +636,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#ab2c0cb715352abd662783b6f1bb4d84e">apop_vector_weighted_skew</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#ab2c0cb715352abd662783b6f1bb4d84e">apop_vector_weighted_skew</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -662,7 +674,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#af287d7c166a17d35bcdce5e7c8515fce">apop_vector_weighted_var</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#af287d7c166a17d35bcdce5e7c8515fce">apop_vector_weighted_var</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -696,4 +708,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Nov 19 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>

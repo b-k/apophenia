@@ -47,6 +47,8 @@ Defines</h2>
 #define <b>ERRCHECK</b>&#160;&#160;&#160;{Apop_assert_c(err==NULL, 1, 0, &quot;%s: %s&quot;,query, err);}
 <li><a class="anchor" id="a7ae9f2adfaf130062621be98ab895fe1"></a><!-- doxytag: member="apop_db.c::ERRCHECK_NR" ref="a7ae9f2adfaf130062621be98ab895fe1" args="" -->
 #define <b>ERRCHECK_NR</b>&#160;&#160;&#160;{Apop_assert_c(err==NULL, NULL, 0, &quot;%s: %s&quot;,query, err);}
+<li><a class="anchor" id="a702b43d0c63676805d33c7cd27f64002"></a><!-- doxytag: member="apop_db.c::ERRCHECK_SET_ERROR" ref="a702b43d0c63676805d33c7cd27f64002" args="(outdata)" -->
+#define <b>ERRCHECK_SET_ERROR</b>(outdata)&#160;&#160;&#160;{<a class="el" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, if (!(outdata)) (outdata)=<a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(); (outdata)-&gt;error='q'; return outdata, 0, &quot;%s: %s&quot;,query, err);}
 <li>#define <b>Fillin</b>(query, fmt)
 <li><a class="anchor" id="gaf28e7d098a9bae73f246186632a82faf"></a><!-- doxytag: member="apop_db.c::Store_settings" ref="gaf28e7d098a9bae73f246186632a82faf" args="" -->
 #define <b>Store_settings</b>&#160;&#160;&#160;int v = apop_opts.verbose; apop_opts.verbose=0;/*hack to prevent double-printing.*/ \
@@ -122,7 +124,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> </td>
+          <td class="memname">int <a class="el" href="db_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> </td>
           <td>(</td>
           <td class="paramtype">char&#160;</td>
           <td class="paramname"><em>vacuum</em></td><td>)</td>
@@ -148,7 +150,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__db_8c.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> </td>
+          <td class="memname">void <a class="el" href="db_8h.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>db_file</em>, </td>
@@ -188,7 +190,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__db_8c.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> </td>
+          <td class="memname">void <a class="el" href="db_8h.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>db_file</em>, </td>
@@ -232,7 +234,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a> </td>
+          <td class="memname">int <a class="el" href="db_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>filename</em></td><td>)</td>
@@ -245,8 +247,8 @@ Variables</h2>
 <p>If you want a disposable database which you won't use after the program ends, don't bother with this function.</p>
 <p>The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<code>sqlite3</code>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&amp;q=sqlite+gui">SQLite GUI</a>.</p>
 <p>MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set <code>apop_opts.db_engine</code> = 'm'.</p>
-<p>The Apophenia package assumes you are only using a single SQLite database at a time; if not, the <a class="el" href="apop__db_8c.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> and <a class="el" href="apop__db_8c.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> functions may help.</p>
-<p>When you are done doing your database manipulations, be sure to call <a class="el" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> if writing to disk.</p>
+<p>The Apophenia package assumes you are only using a single SQLite database at a time; if not, the <a class="el" href="db_8h.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> and <a class="el" href="db_8h.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> functions may help.</p>
+<p>When you are done doing your database manipulations, be sure to call <a class="el" href="db_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> if writing to disk.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>The name of a file on the hard drive on which to store the database. If <code>NULL</code>, then the database will be kept in memory (in which case, the other database functions will call this function for you and you don't need to bother).</td></tr>
@@ -263,7 +265,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__db_8c.html#ade5d009b6308c7a4c0b79be05c7f8a07">apop_db_rng_init</a> </td>
+          <td class="memname">void <a class="el" href="db_8h.html#ade5d009b6308c7a4c0b79be05c7f8a07">apop_db_rng_init</a> </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>seed</em></td><td>)</td>
@@ -288,7 +290,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="apop__db_8c.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> </td>
+          <td class="memname">int <a class="el" href="db_8h.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>name</em>, </td>
@@ -335,7 +337,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td>
+          <td class="memname"><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td>
         </tr>
       </table>
 </div>
@@ -355,4 +357,4 @@ Variables</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Nov 19 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>

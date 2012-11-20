@@ -59,7 +59,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="types_8h.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>m</em>, </td>
@@ -96,7 +96,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -141,7 +141,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a> </td>
+          <td class="memname">double <a class="el" href="asst_8h.html#a757dd4278aac9967f9e62c3ef3c8fc69">apop_generalized_harmonic</a> </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>N</em>, </td>
@@ -184,7 +184,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> </td>
+          <td class="memname">int <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>string</em>, </td>
@@ -247,7 +247,7 @@ Functions</h2>
     assert(!strcmp(subs-&gt;text[0][0], <span class="stringliteral">&quot;e&quot;</span>));
     assert(!strlen(subs-&gt;text[0][1]));
     assert(!strcmp(subs-&gt;text[0][2], <span class="stringliteral">&quot;am&quot;</span>));
-    apop_data_free(subs);
+    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 
     <span class="comment">//Split a comma-delimited list, throwing out white space.</span>
     <span class="comment">//Notice that the regex includes only one instance of a non-comma blob </span>
@@ -259,7 +259,7 @@ Functions</h2>
     assert(!strcmp(*subs-&gt;text[1], <span class="stringliteral">&quot;two&quot;</span>));
     assert(!strcmp(*subs-&gt;text[2], <span class="stringliteral">&quot;three&quot;</span>));
     assert(!strcmp(*subs-&gt;text[3], <span class="stringliteral">&quot;four&quot;</span>));
-    apop_data_free(subs);
+    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 }
 </pre></div> 
 </div>
@@ -269,7 +269,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> </td>
+          <td class="memname">double <a class="el" href="stats_8h.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_rng *&#160;</td>
           <td class="paramname"><em>r</em>, </td>
@@ -332,7 +332,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste</a> </td>
+          <td class="memname">char* <a class="el" href="asst_8h.html#a0f64a390c945486f04975307a5f4b4a5">apop_text_paste</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>strings</em>, </td>
@@ -429,7 +429,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double* <a class="el" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> </td>
+          <td class="memname">double* <a class="el" href="asst_8h.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_vector *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -465,4 +465,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Nov 19 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
