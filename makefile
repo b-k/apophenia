@@ -8,11 +8,10 @@ workdir=$(distdir)/$(pkg)-$(version)
 
 #See README.developer for notes.
 
-#This script copies everything into a junk directory, that GNU's 
-#prep materials will produce a thousand temp files in, concluding 
+#This script copies everything into a junk directory within dists/, which
+#GNU's prep materials will produce a thousand temp files in, concluding 
 #with a file named apophenia-N.NN.tar.gz. Once that it is ready
-#for distribution, the tar.gz arcive is copied to the main directory
-#and this junk directory is erased. 
+#for distribution, the tar.gz arcive is copied to the dists/ directory.
 #If the appropriate tools are available, it also produces Debian pkgs.
 #Finally, the script unzips the archive and compiles from the archive.
 

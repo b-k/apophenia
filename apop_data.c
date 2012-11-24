@@ -20,7 +20,7 @@ The \c weights vector is set to \c NULL. If you need it, allocate it via
 
  \return    The \ref apop_data structure, allocated and ready.
 
- This function uses the \ref designated syntax for inputs.
+ \li This function uses the \ref designated syntax for inputs.
  \ingroup data_struct
 */
 APOP_VAR_HEAD apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3){
@@ -149,20 +149,36 @@ void apop_text_free(char ***freeme, int rows, int cols){
 /** Free the elements of the given \ref apop_data set and then the \ref apop_data set
   itself. Intended to be used by \ref apop_data_free, a macro that calls this to free
   elements, then sets the value to \c NULL.
+
+\li \ref apop_data_free is a macro that calls this function and, on success, sets the input pointer to \c NULL. 
+For typical cases, that's slightly more useful than this function.
+
+\exception freeme.error='c' Circular linking is against the rules. If <tt>freeme->more == freeme</tt>, then 
+I set <tt>freeme.error='c'</tt> and return. If you send in a structure like A -> B ->
+B, then both data sets A and B will be marked.
+
+\return \c 0 on OK, \c 'c' on error.
   */
-void apop_data_free_base(apop_data *freeme){
-    if (!freeme) return;
+char apop_data_free_base(apop_data *freeme){
+    if (!freeme) return 0;
     if (freeme->more){
-        Apop_assert_n(freeme != freeme->more, "the ->more element of this data set equals the "
-                                        "data set itself. This is not healthy.");
-        apop_data_free(freeme->more);
-    }
-    if (freeme->vector)  gsl_vector_free(freeme->vector);
-    if (freeme->matrix)  gsl_matrix_free(freeme->matrix);
-    if (freeme->weights) gsl_vector_free(freeme->weights);
+        Apop_stopif(freeme == freeme->more, freeme->error='c'; return 'c',
+                            1, "the ->more element of this data set equals the data set itself. "
+                               "This is not healthy. Not freeing; marking your data set with error='c'.");
+        if (apop_data_free_base(freeme->more)) 
+            Apop_stopif(freeme->more->error == 'c', freeme->error='c'; return 'c', 
+                                1, "Propogating error code to parent data set");
+    } 
+    if (freeme->vector)  
+        gsl_vector_free(freeme->vector);
+    if (freeme->matrix)  
+        gsl_matrix_free(freeme->matrix); 
+    if (freeme->weights)
+        gsl_vector_free(freeme->weights);
     apop_name_free(freeme->names);
     apop_text_free(freeme->text, freeme->textsize[0] , freeme->textsize[1]);
     free(freeme);
+    return 0;
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
@@ -181,26 +197,37 @@ Apop_data_row(mydata, j, torow);
 apop_data_memcpy(torow, fromrow);
 \endcode
  
-  \param out    a structure that this function will fill. Must be preallocated
+  \param out   a structure that this function will fill. Must be preallocated with the appropriate sizes.
   \param in    the input data
+
+\exception out.error='d'  Dimension error; couldn't copy.
+\exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
 
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-    Apop_assert_c(out, , 1, "you are copying to a NULL vector. Do you mean to use apop_data_copy instead?");
+    Apop_assert_c(out, , 1, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     if (in->matrix){
-        Apop_assert_n(in->matrix->size1 == out->matrix->size1 && in->matrix->size2 == out->matrix->size2, 
-                "you're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix.", 
+        Apop_stopif(!out->matrix, out->error='p'; return, 1, "in->matrix exists but out->matrix does not.");
+        Apop_stopif(in->matrix->size1 != out->matrix->size1 || in->matrix->size2 != out->matrix->size2, 
+                out->error='d'; return,
+                1, "you're trying to copy a (%zu X %zu) into a (%zu X %zu) matrix.", 
                         in->matrix->size1, in->matrix->size2, out->matrix->size1, out->matrix->size2);
         gsl_matrix_memcpy(out->matrix, in->matrix);
     }
     if (in->vector){
-        Apop_assert_n(in->vector->size == out->vector->size, "You're trying to copy a %zu-elmt "
+        Apop_stopif(!out->vector, out->error='p'; return, 1, "in->vector exists but out->vector does not.");
+        Apop_stopif(in->vector->size != out->vector->size,
+                out->error='d'; return,
+                1, "You're trying to copy a %zu-elmt "
                         "vector into a %zu-elmt vector.", in->vector->size, out->vector->size);
         gsl_vector_memcpy(out->vector, in->vector);
     }
     if (in->weights){
-        Apop_assert_n(in->weights->size == out->weights->size, "Weight vector sizes don't match: "
+        Apop_stopif(!out->weights, out->error='p'; return, 1, "in->weights exists but out->weights does not.");
+        Apop_stopif(in->weights->size != out->weights->size,
+                    out->error='d'; return,
+                    1, "Weight vector sizes don't match: "
                     "you're trying to copy a %zu-elmt vector into a %zu-elmt vector.", 
                                  in->weights->size, out->weights->size);
         gsl_vector_memcpy(out->weights, in->weights);
@@ -216,9 +243,11 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
     if (in->textsize[0] && in->textsize[1]){
-        Apop_assert_n(out->textsize[0] >= in->textsize[0] && out->textsize[1] >= in->textsize[1],
-                    "I am trying to copy a grid of (%zu, %zu) text elements into a grid of (%zu, %zu), and that won't work. "
-                    "Please use apop_text_alloc to reallocate the right amount of data, or use apop_data_copy for automatic allocation.",
+        Apop_stopif(out->textsize[0] < in->textsize[0] || out->textsize[1] < in->textsize[1],
+                    out->error='d'; return,
+                    1, "I am trying to copy a grid of (%zu, %zu) text elements into a grid of (%zu, %zu), "
+                    "and that won't work. Please use apop_text_alloc to reallocate the right amount of data, "
+                    "or use apop_data_copy for automatic allocation.",
                     in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
         for (size_t i=0; i< in->textsize[0]; i++)
             for(size_t j=0; j < in->textsize[1]; j ++)
@@ -236,14 +265,21 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
   \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
 
  \ingroup data_struct
+
+\exception out.error='c'  Cyclic link: <tt>D->more == D</tt> (may be later in the chain, e.g., <tt>D->more->more = D->more</tt>) You'll have only a partial copy.
+\exception out.error='d'  Dimension error; should never happen.
+\exception out.error='p'  Missing part error; should never happen.
   */
 apop_data *apop_data_copy(const apop_data *in){
     if (!in) return NULL;
     apop_data *out = apop_data_alloc();
     if (in->more){
-        Apop_assert(in != in->more, "the ->more element of this data set equals the "
-                                        "data set itself. This is not healthy.");
+        Apop_stopif(in == in->more, out->error='c'; return out,
+                1, "the ->more element of this data set equals the "
+                                        "data set itself. This is not healthy. Made a partial copy and set out.error='c'.");
         out->more = apop_data_copy(in->more);
+        Apop_stopif(out->more->error, out->error=out->more->error; return out,
+                1, "propagating an error in the ->more element to the parent apop_data set. Only a partial copy made.");
     }
     if (in->vector)  out->vector = gsl_vector_alloc(in->vector->size);
     if (in->matrix)  out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
@@ -269,6 +305,7 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
 \param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
+\exception out.error='d'  Dimension error; couldn't copy.
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
@@ -280,8 +317,7 @@ vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
 output at all.  
 \li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
-
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup data_struct
 */
 APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace){
@@ -1094,11 +1130,14 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     if (!in)
         in  = apop_data_alloc();
     if (!in->text){
-        if (row)
+        if (row){
             in->text = malloc(sizeof(char**) * row);
+            apop_assert(in->text, "malloc failed. Probably out of memory.");
+        }
         if (row && col)
             for (size_t i=0; i< row; i++){
                 in->text[i] = malloc(sizeof(char*) * col);
+                apop_assert(in->text[i], "malloc failed. Probably out of memory.");
                 for (size_t j=0; j< col; j++)
                     in->text[i][j] = strdup("");
             }
@@ -1112,11 +1151,14 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 free(in->text[i]);
             }
             in->text = realloc(in->text, sizeof(char**)*row);
+            apop_assert(in->text, "realloc failed. Probably out of memory.");
         }
         if (rows_now < row){
             in->text = realloc(in->text, sizeof(char**)*row);
+            apop_assert(in->text, "realloc failed. Probably out of memory.");
             for (int i=rows_now; i < row; i++){
                 in->text[i] = malloc(sizeof(char*) * col);
+                apop_assert(in->text[i], "malloc failed. Probably out of memory.");
                 for (int j=0; j < cols_now; j++)
                     in->text[i][j] = strdup("");
             }
@@ -1243,8 +1285,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
       
   \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match, if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'r'.
 
-    \return The page whose title matches what you gave me. If I don't
-    find a match, return \c NULL.
+    \return The page whose title matches what you gave me. If I don't find a match, return \c NULL.
 
 This function uses the \ref designated syntax for inputs.
 */
@@ -1354,10 +1395,13 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \param drop_parameter If your \c do_drop function requires additional input, put it here and it iwll be passed through.
+  \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
   \ref apop_data_rm_rows uses \ref Apop_data_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
 
   \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
+
+ \li The typical use is to provide only a list or only a function. If both are \c NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose >=1</tt>. If you provide both, I will drop the row if either the vector has a one in that row's position, or if the function returns a nonzero value.
+ \li This function uses the \ref designated syntax for inputs.
 */  
 APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);
@@ -1365,7 +1409,9 @@ APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_dro
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
-    Apop_assert_n(drop || do_drop, "I need either a list of ints indicating which rows to drop, or a drop_fn I can use to test each row.");
+    Apop_assert_c(drop || do_drop, , 1, "You gave me neither a list of ints "
+            "indicating which rows to drop, nor a drop_fn I can use to test "
+            "each row. Returning with no changes made.");
 APOP_VAR_ENDHEAD
     //First, shift columns down to the nearest not-freed row.
     int outlength = 0;

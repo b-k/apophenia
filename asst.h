@@ -76,6 +76,16 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
         return returnval;  \
     } }
 
+
+
+
+#define Apop_stopif(test, onfail, level, ...) {\
+     if (test) {  \
+        Apop_notify(level,  __VA_ARGS__);   \
+        Apop_maybe_abort(level)  \
+        onfail;  \
+    } }
+
 #define apop_errorlevel -5
 
 /** This is just a slightly more user-friendly version of the C-standard \c assert(). The

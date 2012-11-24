@@ -50,6 +50,7 @@ typedef struct apop_data{
     size_t      textsize[2];
     gsl_vector  *weights;
     struct apop_data   *more;
+    char        error;
 } apop_data;
 
 /** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
@@ -102,6 +103,7 @@ struct apop_model{
                      information you want here. */
     size_t  more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
                          \ref apop_model_copy can do the \c memcpy as necessary. */
+    char        error;
 };
 
 /** The global options.
@@ -181,9 +183,9 @@ freed location, and you can later safely test conditions like <tt>if (data) ...<
 
  \ingroup data_struct
   */
-#define apop_data_free(freeme) do {apop_data_free_base(freeme); (freeme)= NULL; } while (0)
+#define apop_data_free(freeme) (apop_data_free_base(freeme) ? 0 : ((freeme)= NULL))
 
-void        apop_data_free_base(apop_data *freeme);
+char        apop_data_free_base(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
 APOP_VAR_DECLARE apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3);

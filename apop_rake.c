@@ -452,28 +452,24 @@ apop_query("update data_table set count_col = 1e-3 where count_col = 0");
 
 \return An \ref apop_data set where every row is a single combination of variable values
 and the \c weights vector gives the most likely value for each cell.
-
+\exception out->error='i' Input was somehow wrong.
 \li This function uses the \ref designated syntax for inputs.
 
 \li The interface is still beta, and subject to change---notably, handling of text
 categories will soon be added.
-
-\li Legal: this function is part of a larger work (C) Ben Klemens, but was partially
-written by a U.S. government employee during work hours. Some lawyers will tell you that
-the code is licensed via the same modified GPL v2 as the main work; others will tell
-you that it is public domain.
 */
 APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge, char* table_name){
     static int defaultrun = 0;
     char * apop_varad_var(margin_table, NULL);
     char * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
     if (!margin_table) margin_table = table_name;
-    Apop_assert(margin_table, "I need the name of a table in the database that will be the data source.");
+    Apop_assert(margin_table,  "I need the name of a table in the database that will be the data source.");
     Apop_assert(apop_table_exists(margin_table), "your margin_table, %s, doesn't exist in the database.", margin_table);
     char * apop_varad_var(all_vars, NULL);
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
-    Apop_assert(!(contrasts&&!contrast_ct), "you gave me a list of contrasts but not the count. "
+    Apop_stopif(contrasts&&!contrast_ct, apop_data *out=apop_data_alloc(); out->error='i'; return out,
+            0, "you gave me a list of contrasts but not the count. "
             "This is C--I can't count them myself. Please provide the count and re-run.");
     char * apop_varad_var(structural_zeros, NULL);
     char * apop_varad_var(count_col, NULL);
