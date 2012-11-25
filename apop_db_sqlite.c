@@ -239,7 +239,7 @@ apop_data * apop_sqlite_query_to_text(char *query){
     apop_data *out = apop_data_alloc();
     firstcall = 1;
     if (db==NULL) apop_db_open(NULL);
-    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK_NR
+    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK_SET_ERROR(out)
     if (out->textsize[0]==0){
         apop_data_free(out);
         return NULL;
@@ -331,7 +331,7 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         colct++;
     }
     int requested = in->intypes[0]+in->intypes[1]+in->intypes[2]+in->intypes[3]+in->intypes[4];
-      apop_assert_c(in->error_thrown++ || colct == requested, 0, 0, 
+      Apop_stopif(colct != requested, in->error_thrown='d'; return 1, 0, 
       "you asked for %i columns in your list of types(%s), but your query produced %u columns. \
       The remainder will be placed in the text section." , requested, in->instring, colct);
     return 0;
@@ -344,6 +344,9 @@ apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
     apop_qt info = { };
     count_types(&info, intypes);
 	if (!db) apop_db_open(NULL);
-    sqlite3_exec(db, query, multiquery_callback, &info, &err); ERRCHECK_NR
+    sqlite3_exec(db, query, multiquery_callback, &info, &err); 
+    Apop_stopif(info.error_thrown, if (!info.d) apop_data_alloc(); info.d->error='d'; return info.d,
+            0, "dimension error");
+    ERRCHECK_SET_ERROR(info.d)
 	return info.d;
 }

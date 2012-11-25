@@ -82,7 +82,6 @@ AX_CREATE_PKGCONFIG_INFO
 
 ACX_PTHREAD
 
-AC_CONFIG_SUBDIRS([tests])
 AC_CONFIG_FILES([Makefile tests/Makefile])
 AC_OUTPUT
 
@@ -101,7 +100,7 @@ Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
    where the optional <target> is:
      all                - build all binaries
      install            - install everything
-     test               - test the installation
+     check              - test the installation
      doc                - generate documentation via doxygen 
 
 ------------------------------------------------------------"

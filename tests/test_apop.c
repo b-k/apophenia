@@ -1,5 +1,4 @@
 #include <apop.h>
-#include "nist_tests.c"
 
 //assertions never return a value.
 #undef Apop_assert
@@ -7,7 +6,7 @@
 
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
-#include "rake_test.c"
+#include "nist_tests.c"
 //These test functions are also displayed in the documentation as examples.
 #include "../eg/test_kl_divergence.c"
 #include "../eg/test_strip_dots.c"
@@ -1161,7 +1160,6 @@ void test_data_to_db() {
     if (!apop_table_exists("snps"))
         apop_text_to_db("test_data_mixed", "snps");
     apop_data *d = apop_query_to_mixed_data("tvttmmmt", "select * from snps");
-    //apop_data_to_db(d, "snps2");
     apop_data_print(d, "snps2", .output_type='d');
     apop_data *d2 = apop_query_to_mixed_data("vmmmtttt", "select * from snps2");
     for (i=0; i< d2->vector->size; i++)
@@ -1533,9 +1531,9 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("nist_tests", nist_tests());
     do_test("test ML imputation", test_ml_imputation(r));
     do_test("test distributions", test_distributions(r, slow_tests));
-    do_test("test raking", test_raking());
     do_test("NaN handling", test_nan_data());
     do_test("test model transformation: scaling", test_transform());
     do_test("test data compressing", test_pmf_compress(r));
@@ -1546,7 +1544,7 @@ int main(int argc, char **argv){
     do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());
     do_test("test rank expand/compress", rank_round_trip(r));
-    do_test("test row set and remove", row_manipulations(r));
+    do_test("test row set and remove", row_manipulations());
     do_test("test apop_map on apop_data_rows", test_apop_map_row());
     do_test("test optimization of multi-page parameters", pack_test());
     do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
@@ -1576,7 +1574,6 @@ int main(int argc, char **argv){
     do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
     do_test("test multivariate_normal", test_multivariate_normal(r));
-    do_test("nist_tests", nist_tests());
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());

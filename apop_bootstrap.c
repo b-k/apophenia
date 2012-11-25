@@ -39,11 +39,12 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \param in	    The data set. An \ref apop_data set where each row is a single data point.
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
+\exception out->error=='n'   \c NULL input data.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \see apop_bootstrap_cov
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-    Nullcheck_d(in, NULL)
+    Apop_stopif(!in, apop_data *out = apop_data_alloc(); out->error='n'; return out, 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
     apop_model *e              = apop_model_copy(model);
     int         i, n           = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
@@ -110,8 +111,8 @@ apop_vector_print(row_27);
 \endcode
 \param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
-
-This function uses the \ref designated syntax for inputs.
+\exception out->error=='n'   \c NULL input data.
+\li This function uses the \ref designated syntax for inputs.
 \see apop_jackknife_cov
  */
 APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans) {
@@ -119,7 +120,7 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     apop_data * apop_varad_var(data, NULL);
     apop_model model = varad_in.model;
     int apop_varad_var(iterations, 1000);
-    Apop_assert(data, "The data input can't be NULL.");
+    Apop_stopif(!data, apop_data *out = apop_data_alloc(); out->error='n'; return out, 0, "The data input can't be NULL.");
     gsl_rng * apop_varad_var(rng, NULL);
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);

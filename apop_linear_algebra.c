@@ -23,8 +23,8 @@ void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errn
     Apop_maybe_abort(1);
 }
 #define Checkgsl(...) if (__VA_ARGS__) {goto done;}
-#define Check_gsl_with_out(...) if (__VA_ARGS__) {apop_data_free(out); goto done;}
-#define Check_gsl_with_outmp(...) if (__VA_ARGS__) {gsl_matrix_free(*out); goto done;}
+#define Check_gsl_with_out(...) if (__VA_ARGS__) {out->error='m'; goto done;}
+#define Check_gsl_with_outmp(...) if (__VA_ARGS__) {gsl_matrix_free(*out); *out=NULL; goto done;}
 #define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
 #define Unset_gsl_handler gsl_set_error_handler(prior_handler);
 
@@ -33,11 +33,8 @@ Calculate the determinant of a matrix, its inverse, or both, via LU decompositio
 
 \see apop_matrix_determinant,  apop_matrix_inverse
 
-\param in
-The matrix to be inverted/determined. 
-
-\param out
-If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. 
+\param in The matrix to be inverted/determined. 
+\param out If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. 
 
 \param calc_det 
 0: Do not calculate the determinant.\\
@@ -47,23 +44,24 @@ If you want an inverse, this is where to place the matrix to be filled with the 
 0: Do not calculate the inverse.\\
 1: Do.
 
-\return
-If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.
+\return If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.  If <tt>calc_inv!=0</tt>, 
+then \c *out is pointed to the matrix inverse. In case of difficulty, I will set <tt>*out=NULL</tt> and return \c NaN.
 
 \ingroup linear_algebra
 */
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
-    Apop_assert(in->size1 == in->size2, "You asked me to invert a %zu X %zu matrix, "
+    Set_gsl_handler
+    Apop_stopif(in->size1 != in->size2, *out=NULL; return GSL_NAN, 0, "You asked me to invert a %zu X %zu matrix, "
             "but inversion requires a square matrix.", in->size1, in->size2);
     int sign;
-    double 	the_determinant = 0;
+    double the_determinant = GSL_NAN;
 	gsl_matrix *invert_me = gsl_matrix_alloc(in->size1, in->size1);
 	gsl_permutation * perm = gsl_permutation_alloc(in->size1);
 	gsl_matrix_memcpy (invert_me, in);
 	Checkgsl(gsl_linalg_LU_decomp(invert_me, perm, &sign))
 	if (calc_inv){
-		*out	= gsl_matrix_alloc(in->size1, in->size1); //square.
+		*out = gsl_matrix_alloc(in->size1, in->size1); //square.
 		Check_gsl_with_outmp(gsl_linalg_LU_invert(invert_me, perm, *out))
     }
 	if (calc_det)
@@ -71,6 +69,7 @@ double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, in
     done:
 	gsl_matrix_free(invert_me);
 	gsl_permutation_free(perm);
+    Unset_gsl_handler
 	return the_determinant;
 }
 
@@ -113,7 +112,7 @@ The singular value decomposition will return this many of the eigenvectors with 
 
 \return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
-
+\exception out->error=='a'  Allocation error.
 \ingroup linear_algebra */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
@@ -122,13 +121,18 @@ APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions
     if (!data) return NULL;
 APOP_VAR_ENDHEAD
     Set_gsl_handler
+    apop_data *pc_space	= apop_data_alloc(0, data->size2, dimensions_we_want);
+    Apop_stopif(pc_space->error, return pc_space, 0, "Allocation error.");
+	pc_space->vector = gsl_vector_alloc(dimensions_we_want);
+    Apop_stopif(!pc_space->vector, pc_space->error='a'; return pc_space, 
+                0, "Allocation error setting up a %i vector.", dimensions_we_want);
     gsl_matrix *eigenvectors = gsl_matrix_alloc(data->size2, data->size2);
     gsl_vector *dummy_v 	 = gsl_vector_alloc(data->size2);
     gsl_vector *all_evalues  = gsl_vector_alloc(data->size2);
     gsl_matrix *square  	 = gsl_matrix_calloc(data->size2, data->size2);
-    double	eigentotals	= 0;
-    apop_data    *pc_space	    = apop_data_alloc(0,data->size2, dimensions_we_want);
-	pc_space->vector = gsl_vector_alloc(dimensions_we_want);
+    Apop_stopif(!eigenvectors || !dummy_v || !all_evalues || !square, pc_space->error='a'; return pc_space, 
+                0, "Allocation error setting up workspace for %zu dimensions.", data->size2);
+    double eigentotals	= 0;
     apop_matrix_normalize(data, 'c', 'm');
 	Checkgsl(gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square))
 	Checkgsl(gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v))
@@ -426,7 +430,7 @@ APOP_VAR_END_HEAD
 
 static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v, 
                              const CBLAS_TRANSPOSE_t flip){
-    #define Check_gslv(...) if (__VA_ARGS__) {gsl_vector_free(out);}
+    #define Check_gslv(...) if (__VA_ARGS__) {gsl_vector_free(out); out=NULL;}
     gsl_vector *out = (flip ==CblasNoTrans)
                         ? gsl_vector_calloc(m->size1)
                         : gsl_vector_calloc(m->size2);
@@ -434,30 +438,30 @@ static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,
     return out;
 }
 
-static apop_data* apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
+static int apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
         if (lt==CblasNoTrans) {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size2==rm->size1,
-                   "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows. Those "
+                Apop_stopif(lm->size2!=rm->size1, return 1,
+                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows. Those "
                   "two need to be equal.", lm->size2, rm->size1)
             else
-                Apop_assert(lm->size2==rm->size2,
-                   "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
+                Apop_stopif(lm->size2!=rm->size2, return 1,
+                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
                    "(after the transposition you requested). "
                    "Those two need to be equal.", lm->size2, rm->size2)
         } else {
             if (rt==CblasNoTrans) 
-                Apop_assert(lm->size1==rm->size1,
-                   "You sent me a matrix with %zu columns (after the transposition you requested) to "
+                Apop_stopif(lm->size1!=rm->size1, return 1,
+                   0, "You sent me a matrix with %zu columns (after the transposition you requested) to "
                    "multiply against a matrix with %zu rows. "
                    "Those two need to be equal.", lm->size1, rm->size1)
             else
-                Apop_assert(lm->size1==rm->size2,
-                   "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
+                Apop_stopif(lm->size1!=rm->size2, return 1,
+                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
                    "(after the two transpositions you requested). "
                    "Those two need to be equal.", lm->size1, rm->size2)
         }
-        return NULL;
+        return 0;
 }
 
 /** A convenience function for dot products.
@@ -481,7 +485,10 @@ This function uses the \ref designated syntax for inputs.
 A note for readers of <em>Modeling with Data</em>: the awkward instructions on using this function on p 130 are now obsolete, thanks to
 the designated initializer syntax for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt> a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0, 't')</tt> 
 
-\exception NULL If something goes wrong, I return NULL.
+\exception out->error='a'  Allocation error.
+\exception out->error='d'  dimension-matching error.
+\exception out->error='m'  GSL math error.
+\exception NULL If you ask me to take the dot product of NULL, I return NULL. [May some day change.]
 
 \ingroup linear_algebra
   */
@@ -499,7 +506,6 @@ APOP_VAR_ENDHEAD
                 *rm = d2->matrix;
     gsl_vector  *lv = d1->vector, 
                 *rv = d2->vector;
-    apop_data *out = apop_data_alloc();
 
     if (d1->matrix && form1 != 'v') uselm = 1;
     else if (d1->vector)            uselm = 0;
@@ -519,12 +525,13 @@ APOP_VAR_ENDHEAD
         Apop_assert_c(0, NULL, 0, "The right data set has neither non-NULL "
                                   "matrix nor vector. Returning NULL.");
     }
+    apop_data *out = apop_data_alloc();
 
     CBLAS_TRANSPOSE_t lt, rt;
     lt  = (form1 == 't' || form1 == 1) ? CblasTrans: CblasNoTrans;
     rt  = (form2 == 't' || form2 == 1) ? CblasTrans: CblasNoTrans;
     if (uselm && userm){
-        apop_check_dimensions(lm, rm, lt, rt);
+        Apop_stopif(apop_check_dimensions(lm, rm, lt, rt), out->error='d'; goto done, 0, "mismatched dimensions");
         gsl_matrix *outm = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
                                              (rt== CblasTrans)? rm->size1: rm->size2);
         Check_gsl_with_out(gsl_blas_dgemm (lt,rt, 1, lm, rm, 0, outm))
@@ -534,11 +541,13 @@ APOP_VAR_ENDHEAD
         //If output vector has dimension matrix->size1, send CblasNoTrans
         out->vector = dot_for_apop_dot(rm, lv
                         , (rt == CblasNoTrans) ? CblasTrans : CblasNoTrans);
+        Apop_stopif(!out->vector, out->error='m'; goto done, 0, "GSL-level math error");
     } else if (uselm && !userm){
         out->vector = dot_for_apop_dot(lm, rv , lt);
+        Apop_stopif(!out->vector, out->error='m'; goto done, 0, "GSL-level math error");
     } else if (!uselm && !userm){ 
         double outd;
-        Check_gsl_with_out(gsl_blas_ddot (lv, rv, &outd))
+        Check_gsl_with_out(gsl_blas_ddot(lv, rv, &outd))
         out->vector = gsl_vector_alloc(1);
         gsl_vector_set(out->vector, 0, outd);
     }

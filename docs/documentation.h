@@ -34,6 +34,7 @@ For the full list, click the <a href="globals.html">index</a> link from the head
 Most users will just want to download the packaged version in one of the forms linked from
 the
 <a href="https://github.com/b-k/Apophenia/downloads">Download Apophenia here</a> header.
+Please ignore the "Download as (.zip|.tgz)" buttons and select the most recent dated file.
 
 Those who would like to work on a cutting-edge copy of the source code
 can get the latest version by cutting and pasting the following onto
@@ -351,6 +352,21 @@ Order matters in the linking list: the files a package depends on should be list
 
 endofdiv
 
+
+Outlineheader vim Syntax highlighting 
+
+If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
+E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
+\code
+syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
+syn keyword     cType           apop_name apop_model
+\endcode
+Other text editors have similar files to which you can add the above types.
+
+endofdiv
+
+endofdiv
+
 Outlineheader debugging  Errors, logging, debugging and stopping
 
 First, let us distinguish between an <tt>error</tt> and a <tt>warning</tt>. An error,
@@ -362,6 +378,29 @@ A warning, such as converting a \c NULL data set to a different format, might ac
 make sense in some context. It's probably not what most authors meant, but if you
 knew that the input was \c NULL and know how to handle a \c NULL output, then this
 step won't cause you to calculate bad values.
+
+<h5>The \c error element</h5> 
+
+The \ref apop_data set and the \ref apop_model both include an element named \c error. It is normally \c 0, indicating no (known) error. 
+
+For example, \ref apop_data_copy detects allocation errors and circular links (when <tt>Data->more == Data</tt>) and fails in those cases. You could
+thus use the function with a form like
+
+\code
+apop_data *d = apop_text_to_data("indata");
+apop_data *cp = apop_data_copy(d);
+if (cp->error) {printf("Couldn't copy the input data; failing.\n"); return 1;}
+\endcode
+
+There is sometimes (but not always) benefit to handling specific error codes, which are listed in the documentation of those functions that set the \c error element. E.g.,
+
+\code
+apop_data *d = apop_text_to_data("indata");
+apop_data *cp = apop_data_copy(d);
+if (cp->error == 'a') {printf("Couldn't allocate space for the copy; failing.\n"); return 1;}
+if (cp->error == 'c') {printf("Circular link in the data set; failing.\n"); return 2;}
+\endcode
+
 
 <h5>Verbosity level and logging</h5> 
 
@@ -410,20 +449,6 @@ Each function has its own means of telling you that an error occurred, so see th
 
 The end of <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em>Modeling with Data</em> offers some GDB 
 macros which can make dealing with Apophenia from the GDB command line much more pleasant.
-
-endofdiv
-
-Outlineheader vim Syntax highlighting 
-
-If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
-E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/syntax/c.vim</tt>:
-\code
-syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
-syn keyword     cType           apop_name apop_model
-\endcode
-Other text editors have similar files to which you can add the above types.
-
-endofdiv
 
 endofdiv
 

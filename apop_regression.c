@@ -10,6 +10,7 @@
 
 #include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
+#define kickout(err) apop_data *out=apop_data_alloc(); out->error=err; return out
 
 /** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
 
@@ -280,7 +281,8 @@ matrix. If \c 'i', insert in place, immediately after the original data column. 
 \return An \ref apop_data set whose \c matrix element is the one-zero
 matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
-
+\exception out->error=='a' allocation error
+\exception out->error=='d' dimension error
 \li NaNs appear at the end of the sort order.
 \li This function uses the \ref designated syntax for inputs.
 */
@@ -295,12 +297,14 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     if (remove =='y' && type == 't') Apop_notify(1, "Remove isn't implemented for text source columns yet.");
 APOP_VAR_ENDHEAD
     if (type == 'd'){
-        Apop_assert((col != -1) || d->vector, "You asked for the vector element "
-                                                    "(col==-1) but the data's vector element is NULL.");
-        Apop_assert((col == -1) || (col < d->matrix->size2), "You asked for the matrix element %i "
-                               "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
-    } else
-        Apop_assert(col < d->textsize[1], "You asked for the text element %i but "
+        Apop_stopif((col == -1) && d->vector, kickout('d'),
+                                0, "You asked for the vector element "
+                                "(col==-1) but the data's vector element is NULL.");
+        Apop_stopif((col != -1) && (col >= d->matrix->size2), kickout('d'),
+                                0, "You asked for the matrix element %i "
+                                "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
+    } else Apop_stopif(col >= d->textsize[1], kickout('d'),
+                                0, "You asked for the text element %i but "
                                     "the data's text element has only %zu elements.", col, d->textsize[1]);
     apop_data *fdummy;
     apop_data *dummies= dummies_and_factors_core(d, col, type, keep_first, 0, 'd', &fdummy);
@@ -370,8 +374,9 @@ original values as needed.
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
 Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading) use \ref apop_data_get_factor_names to retrieve that table.
 
+\exception out->error=='a' allocation error.
+\exception out->error=='d' dimension error.
 \li  If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
-
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
@@ -382,14 +387,17 @@ APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int 
     char apop_varad_var(intype, 't')
 APOP_VAR_ENDHEAD
     if (intype=='t'){
-        Apop_assert(incol < data->textsize[1], "You asked for the text column %i but the "
-                                            "data's text has only %zu elements.", incol, data->textsize[1]);
+        Apop_stopif(incol >= data->textsize[1], kickout('d'),
+                        0, "You asked for the text column %i but the "
+                           "data's text has only %zu elements.", incol, data->textsize[1]);
     } else {
-        Apop_assert((incol != -1) || data->vector, "You asked for the vector of the data set but there is none.");
-        Apop_assert((incol == -1) || data->matrix, "You asked for the matrix column %i but "
-                                            "the matrix is NULL.", incol);
-        Apop_assert((incol == -1) || (incol < data->matrix->size2), "You asked for the matrix column %i but "
-                                            "the matrix has only %zu elements.", incol, data->matrix->size2);
+        Apop_stopif((incol == -1) && !data->vector, kickout('d'),
+                0, "You asked for the vector of the data set but there is none.");
+        Apop_stopif((incol != -1) && !data->matrix, kickout('d'),
+                0, "You asked for the matrix column %i but the matrix is NULL.", incol);
+        Apop_stopif((incol != -1) && (incol >= data->matrix->size2), kickout('d'),
+                0, "You asked for the matrix column %i but "
+                            "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
     if (!data->vector && outcol == -1) //allocate a vector for the user.
         data->vector = gsl_vector_alloc(intype=='t' ? data->textsize[0] : data->matrix->size2);
@@ -443,9 +451,11 @@ Notice that the query pulled a column of ones for the sake of saving room for th
 \return A table of the factors used in the code. This is an \c apop_data set with only one column of text.
 Also, the <tt>more</tt> element is a reference table of names and column numbers.
 
+\exception out->error=='d'  dimension error.
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    Apop_assert(textcol < d->textsize[1], "You asked for the text element %i but the data's "
+    Apop_stopif(textcol >= d->textsize[1],  kickout('d'),
+                0, "You asked for the text element %i but the data's "
                                             "text has only %zu elements.", datacol, d->textsize[1]);
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);

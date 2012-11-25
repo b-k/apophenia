@@ -1,9 +1,8 @@
 #include <apop.h>
 
+#define Diff(L, R, eps) Apop_assert_n(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 //these work by checking that K-L divergence shrunk, and that individual margins are correct.
-//#define Diff(L, R, eps) Apop_assert_n(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps); //defined in the main test_apop.c
-
 void test_raking_further(){
     apop_table_exists("rake_test", 'd');
     apop_query("create table rake_test (first, second, weights);"
@@ -76,7 +75,8 @@ double compare_results(apop_data *in, void *other, int index){
     return 0;
 }
     
-void test_raking(){
+int main(){
+    printf("Test raking.\n");
     //trivial case: if all margins are equal, MLE is to give equal weights.
     int a, b, c;
     apop_query("create table equals (a,b,c)");

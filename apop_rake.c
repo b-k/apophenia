@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <gsl/gsl_sort_vector.h>
 void xprintf(char **q, char *format, ...); //in apop_conversions.c
+#define kickout(err) apop_data *out=apop_data_alloc(); out->error=err; return out
 
 /* This is the internal documentation for apop_rake(). I assume you've read the usage
    documentation already (if you haven't, it's below, just above apop_rake).
@@ -323,7 +324,7 @@ apop_data **generate_list_of_contrasts(char **contras_in, int contrast_ct){
 }
 
 apop_data *get_var_list(char *margin_table, char *count_col, char *init_count_col, char *all_vars){
-    apop_data *all_vars_d;
+    apop_data *all_vars_d=NULL;
     if (!all_vars){
         Apop_assert(apop_opts.db_engine!='m', "I need a list of the full set of variable "
                                             "names sent as .all_vars=\"var1 | var2 |...\"");
@@ -335,8 +336,8 @@ apop_data *get_var_list(char *margin_table, char *count_col, char *init_count_co
                  && (init_count_col ? strcmp(all_vars_d->text[i][1], init_count_col): 1))
                     apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
         apop_text_alloc(all_vars_d, ctr, 1);
-    }
-    apop_regex(all_vars, pipe_parse, &all_vars_d);
+    } else apop_regex(all_vars, pipe_parse, &all_vars_d);
+    Apop_stopif(!all_vars_d, , 0, "Trouble getting/parsing the list of variables.");
     return all_vars_d;
 }
 
@@ -463,8 +464,9 @@ APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **c
     char * apop_varad_var(margin_table, NULL);
     char * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
     if (!margin_table) margin_table = table_name;
-    Apop_assert(margin_table,  "I need the name of a table in the database that will be the data source.");
-    Apop_assert(apop_table_exists(margin_table), "your margin_table, %s, doesn't exist in the database.", margin_table);
+    Apop_stopif(!margin_table, kickout('i'), 0,  "I need the name of a table in the database that will be the data source.");
+    Apop_stopif(!apop_table_exists(margin_table), kickout('i'), 
+            0, "your margin_table, %s, doesn't exist in the database.", margin_table);
     char * apop_varad_var(all_vars, NULL);
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
@@ -478,7 +480,8 @@ APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **c
     int apop_varad_var(run_number, defaultrun++);
     char * apop_varad_var(init_count_col, NULL);
     char * apop_varad_var(init_table, NULL);
-    if (init_table){Apop_assert(apop_table_exists(init_table), "your init_table, %s, doesn't exist in the database.", init_table);}
+    Apop_stopif(init_table && !apop_table_exists(init_table), kickout('i'),
+           0, "your init_table, %s, doesn't exist in the database.", init_table);
     if (init_count_col && !init_table)
         init_table = margin_table;
     double apop_varad_var(nudge, 0);

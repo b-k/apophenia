@@ -2,7 +2,6 @@
 Notice that I use various levels of tolerance, so this gives you an idea
 of the relative accuracies of various operations. */
 
-
 #include <apop.h>
 
 #define TOL 1e-15
@@ -11,9 +10,9 @@ of the relative accuracies of various operations. */
 #define TOL4 1e-4
 
 void pontius(){
-    apop_text_to_db("pontius.dat","d", .delimiters=" ");
-apop_data *d        = apop_query_to_data("select y, x, pow(x,2) as p from d");
-apop_model *est  =  apop_estimate(d, apop_ols);
+    apop_text_to_db("pontius.dat","pont", .delimiters=" ");
+    apop_data *d = apop_query_to_data("select y, x, pow(x,2) as p from pont");
+    apop_model *est =  apop_estimate(d, apop_ols);
 
     assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL3);
     assert(fabs(apop_data_get(est->parameters, 1, -1) - 0.732059160401003E-06) < TOL);
@@ -28,20 +27,19 @@ apop_model *est  =  apop_estimate(d, apop_ols);
 
 void wampler1(){
     apop_text_to_db("wampler1.dat","w1", .delimiters=" ");
-int             i;
-apop_data       *d    = apop_query_to_data("select y, x, pow(x,2) as p2, \
+    apop_data *d = apop_query_to_data("select y, x, pow(x,2) as p2, \
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");
-apop_model   *est  =  apop_estimate(d, apop_ols);
-    for (i=0; i<6; i++)
+    apop_model *est = apop_estimate(d, apop_ols);
+    for (int i=0; i<6; i++)
         assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4*10);
     apop_data *cov = apop_data_get_page(est->parameters, "cov");
-    for (i=0; i<6; i++)
+    for (int i=0; i<6; i++)
         assert(fabs(apop_data_get(cov, i, i)) < TOL2);
     assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 1)    < TOL);
 }
 
 void numacc4(){
-apop_data   *d  = apop_text_to_data("numacc4.dat", 0, 0);
+    apop_data *d  = apop_text_to_data("numacc4.dat", 0, 0);
     APOP_COL(d, 0, v)
     assert(apop_vector_mean(v) == 10000000.2);
     assert(apop_vector_var(v)*(v->size -1)/v->size - 0.01 < TOL3);

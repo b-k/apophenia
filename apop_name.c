@@ -11,7 +11,7 @@
 */
 apop_name * apop_name_alloc(void){
     apop_name * init_me = malloc(sizeof(apop_name));
-    Apop_assert(init_me, "malloc failed. Probably out of memory.");
+    Apop_stopif(!init_me, return NULL, 0, "malloc failed. Probably out of memory.");
     *init_me = (apop_name){ };
 	return init_me;
 }
@@ -131,8 +131,8 @@ APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1,
     apop_assert_c(n1, , 0, "Can't stack onto a NULL set of names (which n1 is).");
     apop_name * apop_varad_var(nadd, NULL); 
     if (!nadd) return;
-    char  apop_varad_var(type1, 'r');
-    char  apop_varad_var(typeadd, type1);
+    char apop_varad_var(type1, 'r');
+    char apop_varad_var(typeadd, type1);
 APOP_VAR_ENDHEAD
     int i;
     apop_name counts = (apop_name){.rowct=nadd->rowct, .textct = nadd->textct, .colct = nadd->colct};//Necessary when stacking onto self.;

@@ -176,15 +176,18 @@ will produce an \ref apop_data set with a vector \f$\left[\matrix{0 \cr 3}\right
 \param vsize    The vector size. If there are also rows/cols, I expect this to equal the number or rows.
 \param rows, cols	the size of the array.
 \return the \ref apop_data set, allocated for you and ready to use.
-
+\exception out->error=='d' Dimension error: vector and matrix heights have to be the same.
 \ingroup conversions
 */
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
     if (vsize==0 && (rows>0 && cols>0))
-      return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
+        return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
-      return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    Apop_assert_c(vsize==rows,  NULL, 0,"apop_line_to_data expects either only a matrix, only a vector, or that matrix row count and vector size are equal. You gave me a row size of %i and a vector size of %i. Returning NULL.\n", rows, vsize);
+        return apop_vector_to_data(apop_array_to_vector(in, vsize));
+    Apop_stopif(vsize!=rows, apop_data *out=apop_data_alloc(); out->error='d'; return out, 
+            0, "apop_line_to_data expects either only a matrix, only a vector, or that matrix "
+            "row count and vector size are equal. You gave me a row size of %i and a vector "
+            "size of %i. Returning NULL.\n", rows, vsize);
   return apop_data_fill_base(apop_data_alloc(vsize, rows, cols), in);
 }
 
@@ -226,30 +229,32 @@ apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col
 
 \see \ref apop_crosstab_to_db
 
-\li If something fails along the way, return \c NULL.
+\exception out->error='n' Name not found error.
+\exception out->error='q' Query returned an empty table (which might mean that it just failed).
 
 \ingroup db
 */
 apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
-    gsl_matrix *out;
+    gsl_matrix *out=NULL;
     int	i, j=0;
-    apop_data *pre_d1, *pre_d2, *datachars;
+    apop_data *pre_d1=NULL, *pre_d2=NULL, *datachars=NULL;
     apop_data *outdata = apop_data_alloc();
 
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
-    datachars	= apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    Apop_assert_c(datachars, NULL, 1, "selecting %s, %s, %s from %s returned an empty table.\n",  r1, r2, datacol, tabname);
+    datachars = apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
+    Apop_stopif(!datachars, return NULL, 1, "selecting %s, %s, %s from %s returned an empty table.",  r1, r2, datacol, tabname);
+    Apop_stopif(datachars->error, goto bailout, 0, "error selecting %s, %s, %s from %s.",  r1, r2, datacol, tabname);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
-    pre_d1	    = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    Apop_assert(pre_d1, "selecting %s from %s returned an empty table.", r1, tabname);
+    pre_d1 = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
+    Apop_stopif(!pre_d1||pre_d1->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
-	pre_d2	= apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-	Apop_assert(pre_d2, "selecting %s from %s returned an empty table.", r2, tabname);
+	pre_d2 = apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
+    Apop_stopif(!pre_d2||pre_d2->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -257,10 +262,11 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 	for (size_t k =0; k< datachars->textsize[0]; k++){
 		i = find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
 		j = find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
-        Apop_assert_c(i!=-2 && j != -2, NULL, 0, "Something went wrong in the crosstabbing; "
+        Apop_stopif(i==-2 || j == -2, outdata->error='n'; goto bailout, 0, "Something went wrong in the crosstabbing; "
                                                  "couldn't find %s or %s.", datachars->text[k][0], datachars->text[k][1]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
 	}
+    bailout:
     apop_data_free(pre_d1);
     apop_data_free(pre_d2);
     apop_data_free(datachars);
@@ -419,26 +425,26 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
     gsl_vector *out = gsl_vector_alloc(in->size);
-    Apop_assert(out, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
+    Apop_stopif(!out, return NULL, 0, "failed to allocate a gsl_vector of size %zu. Out of memory?", in->size);
     gsl_vector_memcpy(out, in);
     return out;
 }
 
 /** Copy one  <tt>gsl_matrix</tt> to another. That is, all data is duplicated.
- Unlike <tt>gsl_matrix_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
+Unlike <tt>gsl_matrix_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
 
- \code
- gsl_matrix *a_copy = apop_matrix_copy(original);
- \endcode
+\code
+gsl_matrix *a_copy = apop_matrix_copy(original);
+\endcode
 
-  \param in    the input data
-  \return       a structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
+\param in  the input data
+\return    a structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
 \ingroup convenience_fns
   */
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
     gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-    Apop_assert(out, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
+    Apop_stopif(!out, return NULL, 0, "failed to allocate a gsl_matrix of size %zu x %zu. Out of memory?", in->size1, in->size2);
     gsl_matrix_memcpy(out, in);
     return out;
 }
@@ -616,9 +622,9 @@ static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_e
 
         if (!infield){
             if (ci.type=='w') continue; //eat leading spaces.
-            if (strchr("rdnE", ci.type)){ //new field; if 'dnE', blank field.
-                if (++ct > fn->textsize[0])
-                    apop_text_alloc(fn, ct, 1);//realloc text portion.
+            if (strchr("rd", ci.type)                    //new field; if 'dnE', blank field. 
+                   || (strchr("nE", ci.type) && ct>0)){  //Blank fields only at end of lines that already have data; else all-blank line to ignore.
+                if (++ct > fn->textsize[0]) apop_text_alloc(fn, ct, 1);//realloc text portion.
                 *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
                 thisflen = 0;
                 mlen=5;
@@ -674,11 +680,12 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
 \param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
 \param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
 \return 	Returns an apop_data set.
+\exception out->error=='a' allocation error
+\exception out->error=='t' text-reading error
 
 <b>example:</b> See \ref apop_ols.
 
-This function uses the \ref designated syntax for inputs.
-
+\li This function uses the \ref designated syntax for inputs.
 \ingroup conversions	*/
 APOP_VAR_HEAD apop_data * apop_text_to_data(char const*text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters){
     char const *apop_varad_var(text_file, "-")
@@ -695,7 +702,8 @@ APOP_VAR_END_HEAD
     apop_data *add_this_line= apop_data_alloc();
     int row = 0,
         hasrows = (has_row_names == 'y');
-    if (prep_text_reading(text_file, &infile)) return NULL;
+    Apop_stopif(prep_text_reading(text_file, &infile), apop_data *out=apop_data_alloc();out->error='t'; return out,
+            0, "trouble opening %s", text_file);
 
     line_parse_t L={ };
     //First, handle the top line, if we're told that it has column names.
@@ -717,19 +725,21 @@ APOP_VAR_END_HEAD
             L=parse_a_line(infile, add_this_line, field_ends, delimiters);
             continue;
         }
-        if (!set) set = apop_data_alloc(0,1, L.ct-hasrows); //for .has_col_names=='n'.
+        if (!set) set = apop_data_alloc(0, 1, L.ct-hasrows); //for .has_col_names=='n'.
         row++;
         int cols = set->matrix  ? set->matrix->size2 : L.ct - hasrows;
         set->matrix = apop_matrix_realloc(set->matrix, row, cols);
-        if (hasrows) apop_name_add(set->names, *add_this_line->text[0], 'r');
-        if (hasrows) {Apop_assert_c(L.ct-1 <= set->matrix->size2, set, 1,
+        Apop_stopif(!set->matrix, set->error='a'; return set, 0, "allocation error.");
+        if (hasrows) {
+            apop_name_add(set->names, *add_this_line->text[0], 'r');
+            Apop_stopif(L.ct-1 > set->matrix->size2, set->error='t'; return set, 1,
                  "row %i (not counting rownames) has %i elements (not counting the rowname), "
                  "but I thought this was a data set with %zu elements per row. "
-                 "Stopping the file read; returning what I have so far.", row, L.ct-1, set->matrix->size2);}
-        if (!hasrows) {Apop_assert_c(L.ct <= set->matrix->size2, set, 1,
+                 "Stopping the file read; returning what I have so far.", row, L.ct-1, set->matrix->size2);
+        } else Apop_stopif(L.ct > set->matrix->size2, set->error='t'; return set, 1,
                  "row %i has %i elements, "
                  "but I thought this was a data set with %zu elements per row. "
-                 "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct-1, set->matrix->size2);}
+                 "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct-1, set->matrix->size2);
         for (int col=hasrows; col < L.ct; col++){
             char *thisstr = *add_this_line->text[col];
             if (strlen(thisstr)){
@@ -767,7 +777,7 @@ This function uses the \ref designated syntax for inputs.
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
     const gsl_vector * apop_varad_var(in, NULL);
     apop_data* apop_varad_var(d, NULL);
-    Apop_assert_n(d, "the data set to be filled, d, must not be NULL");
+    Apop_stopif(!d, return, 0, "the data set to be filled, d, must not be NULL");
     char apop_varad_var(use_info_pages, 'n');
 APOP_VAR_ENDHEAD
     int offset = 0;
@@ -829,7 +839,7 @@ be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
  \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
-
+\exception NULL If you give me a vector as input, and its size is not correct, returns \c NULL.
 This function uses the \ref designated syntax for inputs.
 \ingroup conversions
  */
@@ -841,7 +851,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
         size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
-        Apop_assert(out->size == total_size, "The input data set has %zu elements, "
+        Apop_stopif(out->size != total_size, return NULL, 0, "The input data set has %zu elements, "
                "but the output vector you want to fill has size %zu. Please make "
                "these sizes equal.", total_size, out->size);
     }
@@ -998,7 +1008,7 @@ static char *get_field_conditions(char *var, apop_data *field_params){
     return (apop_opts.db_engine == 'm') ? "varchar(100)" : "numeric";
 }
 
-static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
+static int tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
     char *q = NULL;
     asprintf(&q, "CREATE TABLE %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
@@ -1010,13 +1020,13 @@ static void tab_create_mysql(char *tabname, int has_row_names, apop_data *field_
     }
     xprintf(&q, "%s %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
-apop_opts.verbose=2;
     apop_query("%s", q);
-    Apop_assert_n(apop_table_exists(tabname, 0), "query \"%s\" failed.", q);
+    Apop_stopif(!apop_table_exists(tabname), return -1, 0, "query \"%s\" failed.", q);
     free(q);
+    return 0;
 }
 
-static void tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data *fn){
+static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data *fn){
     char  *q = NULL;
     asprintf(&q, "create table %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
@@ -1029,9 +1039,10 @@ static void tab_create_sqlite(char *tabname, int has_row_names, apop_data *field
     xprintf(&q, "%s' %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
     apop_query("%s", q);
-    Apop_assert_n(apop_table_exists(tabname), "query \"%s\" failed.\n", q);
+    Apop_stopif(!apop_table_exists(tabname), return -1, 0, "query \"%s\" failed.", q);
     free(q);
     apop_query("begin;");
+    return 0;
 }
 
 /**
@@ -1133,26 +1144,27 @@ APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_
     char * apop_varad_var(table_params, NULL)
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
 APOP_VAR_END_HEAD
-    int  batch_size  = 10000,
+    int  batch_size  = 10000, not_ok=0,
       	 col_ct, ct = 0, rows = 1;
     FILE *infile;
     apop_data *add_this_line = apop_data_alloc();
     sqlite3_stmt * statement = NULL;
     line_parse_t L={1,0};
 
-	Apop_assert_c(!apop_table_exists(tabname), 0, 0, "table %s exists; not recreating it.", tabname);
+	Apop_assert_c(!apop_table_exists(tabname), -1, 0, "table %s exists; not recreating it.", tabname);
 
     //get names and the first row.
-    if (prep_text_reading(text_file, &infile)) return 0;
-	use_names_in_file   = 0;    //file-global.
+    if (prep_text_reading(text_file, &infile)) return -1;
+	use_names_in_file = 0;    //file-global.
     apop_data *fn = apop_data_alloc();
     get_field_names(has_col_names=='y', field_names, infile, 
                                     add_this_line, fn, field_ends, delimiters);
     col_ct = L.ct = add_this_line->textsize[0];
     if (apop_opts.db_engine=='m')
-        tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
+        not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
     else
-        tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
+        not_ok = tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
+    Apop_stopif(not_ok, return -1, 0, "Creating the table in the database failed.");
 #if SQLITE_VERSION_NUMBER < 3003009
     apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "
@@ -1179,7 +1191,7 @@ APOP_VAR_END_HEAD
         line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
             if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
-            if (apop_opts.verbose > 0) {printf(".");fflush(NULL);}
+            if (apop_opts.verbose > 0) {Apop_notify(2, ".");fflush(NULL);}
         }
         if (statement){
             int err = sqlite3_step(statement);

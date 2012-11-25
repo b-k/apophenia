@@ -18,15 +18,15 @@ The above two points mean that you probably don't need to call this function dir
 \param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL.
 \param model    The model whose output elements will be modified.
 \return A pointer to the same model, should you need it.
-
+\exception outmodel->error=='d' dimension error.
 \ingroup models  */
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
     Get_vmsizes(data)
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
-    Apop_assert(model->dsize!=-1 || width, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_assert(model->vbase!=-1 || width, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_assert(model->m1base!=-1 || width, "The model's m1base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_assert(model->m2base!=-1 || width, "The model's m2base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->dsize==-1 && !width, model->error='d', 0, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->vbase==-1 && !width, model->error='d', 0, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->m1base==-1 && !width, model->error='d', 0, "The model's m1base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->m2base==-1 && !width, model->error='d', 0, "The model's m2base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
 
     model->dsize  = (model->dsize == -1 ? width : model->dsize);
     vsize  = model->vbase  == -1 ? width : model->vbase;
@@ -37,7 +37,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     if (!model->info)
         model->info = apop_data_alloc();
     snprintf(model->info->names->title, 100, "Info");
-    model->data         = data;
+    model->data = data;
 	return model;
 }
 
@@ -175,17 +175,20 @@ This doesn't take in data, so it won't work with models that take the number of 
 If you have a situation where these options are out, you'll have to do something like
 <tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set \c in->parameters using your data.
 
-  \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
-  \param ... The list of parameters.
-  \return A copy of the input model, with parameters set.
-
-\hideinitializer   \ingroup models
-  */
-
+\param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
+\param ... The list of parameters.
+\return A copy of the input model, with parameters set.
+\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vbase or .m2base and .m2base first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
+\hideinitializer   
+\ingroup models
+*/
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
-    Apop_assert((in.vbase != -1) && (in.m1base != -1) && (in.m2base != -1), "This function only works with models whose number of params does not depend on data size. You'll have to use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_model *out = apop_model_copy(in);
     apop_prep(NULL, out);
+    Apop_stopif((in.vbase == -1) || (in.m1base == -1) || (in.m2base == -1), out->error='d', 
+            0, "This function only works with models whose number of params does not "
+            "depend on data size. You'll have to use apop_model *new = apop_model_copy(in); "
+           " apop_model_clear(your_data, in); and then set in->parameters using your data.");
     apop_data_fill_base(out->parameters, ap);
     return out; 
 }
@@ -227,7 +230,8 @@ double apop_p(apop_data *d, apop_model *m){
         return m->p(d, m);
     else if (m->log_likelihood)
         return exp(m->log_likelihood(d, m));
-    Apop_assert(0, "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.");
+    Apop_stopif(0, , 0, "You asked for the probability of a model that has neither p nor log_likelihood methods.");
+    return GSL_NAN;
 }
 
 /** Find the log likelihood of a data/parametrized model pair.
@@ -243,7 +247,8 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
         return m->log_likelihood(d, m);
     else if (m->p)
         return log(m->p(d, m));
-    Apop_assert(0, "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.");
+    Apop_stopif(0, , 0, "You asked for the log likelihood of a model that has neither p nor log_likelihood methods.");
+    return GSL_NAN;
 }
 
 /** Find the vector of derivatives of the log likelihood of a data/parametrized model pair.

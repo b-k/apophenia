@@ -23,6 +23,7 @@ apop_opts_type apop_opts	=
 
 #define ERRCHECK {Apop_assert_c(err==NULL, 1, 0, "%s: %s",query, err);}
 #define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err);}
+#define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; return outdata, 0, "%s: %s",query, err);}
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -292,6 +293,8 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 /** Queries the database, and dumps the result into an \ref apop_data set.
 
 If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
+
+\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
   Fillin(query, fmt)
@@ -310,10 +313,11 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	if (db==NULL) apop_db_open(NULL);
     sprintf(full_divider, "^%s$", apop_opts.db_nan);
     regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE+REG_NOSUB);
-    sqlite3_exec(db, query,db_to_table,&qinfo, &err); ERRCHECK_NR
+    sqlite3_exec(db, query,db_to_table,&qinfo, &err); 
     regfree(qinfo.regex);
     free(qinfo.regex);
     free (query);
+    ERRCHECK_SET_ERROR(qinfo.outdata)
 	return qinfo.outdata;
 }
 
@@ -328,10 +332,9 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 
   Uses \ref apop_query_to_data and returns just the matrix part; see that function for notes.
 
-  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
+\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
  
-  \return A \c gsl_matrix.
-
+\return A \c gsl_matrix.
  */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
     Fillin(query, fmt)
@@ -429,6 +432,9 @@ If the query produces more columns than there are elements in the column specifi
 The 'n' character indicates row, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
 
 As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
+
+\exception out->error=='d' Dimension error. Your count of matrix parts didn't match what the query returned.
+\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...){
     Fillin(query, fmt)

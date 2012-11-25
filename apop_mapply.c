@@ -97,6 +97,8 @@ Default: \c 'n'.
 
 \return if <tt>.inplace='n'</tt> (the default), a newly allocated \ref apop_data set representing the result of mapping your function onto the input data set. if <tt>.inplace='y'</tt>, a pointer to your original data set, modified in place.
 
+\exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
+
 \ingroup mapply
 */
 APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,  apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages){ 
@@ -126,13 +128,14 @@ APOP_VAR_ENDHEAD
 
     int by_apop_rows = fn_r || fn_rp || fn_rpi || fn_ri;
 
-    Apop_assert(!((part=='c' || part=='r') && (fn_d || fn_dp || fn_dpi || fn_di)), 
-        "You asked for a vector-oriented operation (.part='r' or .part='c'), but gave me a "
-        "scalar-oriented function. Did you mean part=='a'?");
+    Apop_stopif((part=='c' || part=='r') && (fn_d || fn_dp || fn_dpi || fn_di), 
+                        apop_data *out=apop_data_alloc(); out->error='p'; return out,
+                        0, "You asked for a vector-oriented operation (.part='r' or .part='c'), but "
+                        "gave me a scalar-oriented function. Did you mean part=='a'?");
 
     //Allocate output
     Get_vmsizes(in); //vsize, msize1, msize2, maxsize
-    apop_data *out;
+    apop_data *out = NULL;
     if (inplace)
        out = in;
     else 
@@ -191,12 +194,15 @@ APOP_VAR_ENDHEAD
             }
         }
         if (part == 'r' || part == 'c'){
-            apop_assert(in->matrix, "You asked for me to operate on the %cs of the matrix, but the matrix is NULL.", part);
+            Apop_stopif(!in->matrix, if (!out) out=apop_data_alloc(); out->error='p'; return out,
+                           0, "You asked for me to operate on the %cs of the matrix, but the matrix is NULL.", part);
             mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
         }
     }
-    if ((all_pages=='y' || all_pages=='Y') && in->more)
+    if ((all_pages=='y' || all_pages=='Y') && in->more){
         out->more = apop_map_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, inplace, part, all_pages);
+        Apop_stopif(out->more->error, out->error=out->more->error, 1, "Error in subpage; marked parent page with same error code.");
+    }
     return out;
 }
 

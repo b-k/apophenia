@@ -404,10 +404,11 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 
 \param indata The table to be summarized. An \ref apop_data structure.
 \return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic. May have a <tt>weights</tt> element.
-\ingroup    output
+\exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
-\todo We should probably let this summarize rows as well.  */
+\todo We should probably let this summarize rows as well. 
+\ingroup    output */
 apop_data * apop_data_summarize(apop_data *indata){
     Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
     Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
@@ -482,7 +483,7 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
     long double sum = 0, wsum = 0, sumsq = 0, vv, ww;
     apop_assert_c(v,  0, 1, "data vector is NULL. Returning zero.\n");
     apop_assert_c(v->size, 0, 1, "data vector has size 0. Returning zero.\n");
-    apop_assert_c(w->size == v->size,  0, 0, "data vector has size %zu; weighting vector has size %zu. Returning zero.\n", v->size, w->size);
+    apop_assert_c(w->size == v->size, GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, w->size);
     //Using the E(x^2) - E^2(x) form.
     for (size_t i=0; i< w->size; i++){
         vv    = gsl_vector_get(v,i);
@@ -553,7 +554,7 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
     Apop_assert_c(v1,  0, 1, "first data vector is NULL. Returning zero.");
     Apop_assert_c(v2,  0, 1, "second data vector is NULL. Returning zero.");
     Apop_assert_c(v1->size,  0, 1, "apop_vector_weighted_variance: data vector has size 0. Returning zero.");
-    Apop_assert_c((w->size == v1->size) && (w->size == v2->size),  0, 0, "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning zero.", v1->size, v2->size, w->size);
+    Apop_assert_c((w->size == v1->size) && (w->size == v2->size), GSL_NAN, 0, "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning NaN.", v1->size, v2->size, w->size);
     //Using the E(x^2) - E^2(x) form.
     for (size_t i=0; i< w->size; i++){
         vv1   = gsl_vector_get(v1,i);
@@ -653,12 +654,13 @@ This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't 
 \param in 	An \ref apop_data set. If the weights vector is set, I'll take it into account.
 
 \return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
-
+\exception out->error='a'  Allocation error.
 \ingroup matrix_moments */
 apop_data *apop_data_covariance(const apop_data *in){
     Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
     Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
     apop_data *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
+    Apop_stopif(out->error, return out, 0, "allocation error.");
     for (size_t i=0; i < in->matrix->size2; i++){
         for (size_t j=i; j < in->matrix->size2; j++){
             Apop_col(in, i, v1);
@@ -680,6 +682,7 @@ This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't
 \param in 	A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+\exception out->error='a'  Allocation error.
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
@@ -687,7 +690,7 @@ apop_data *apop_data_correlation(const apop_data *in){
         Apop_col(in, i, cvin);
         Apop_col(out, i, cvout);
         Apop_row(out, i, rvout);
-        double std_dev = sqrt(apop_vector_weighted_var(cvin,in->weights));
+        double std_dev = sqrt(apop_vector_weighted_var(cvin, in->weights));
         gsl_vector_scale(cvout, 1.0/std_dev);
         gsl_vector_scale(rvout, 1.0/std_dev);
     }

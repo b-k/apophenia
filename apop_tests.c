@@ -105,7 +105,11 @@ apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 
 \li There are two approaches to an \f$F\f$-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a \c NULL contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {\em Modeling with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.
 
-This function uses the \ref designated syntax for inputs.
+\exception out->error='a'  Allocation error.
+\exception out->error='d'  dimension-matching error.
+\exception out->error='i'  matrix inversion error.
+\exception out->error='m'  GSL math error.
+\li This function uses the \ref designated syntax for inputs.
  */
 
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
@@ -129,9 +133,11 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     if (free_vector) gsl_vector_free(contrast->vector);
     return out;
 APOP_VAR_ENDHEAD
+    apop_data *out = apop_data_alloc();
+    sprintf(out->names->title, "F test");
     size_t contrast_ct = contrast->vector->size;
-    Apop_assert(contrast->matrix->size1 == contrast_ct,
-            "I counted %zu contrasts by the size of either contrast->vector or "
+    Apop_stopif(contrast->matrix->size1 != contrast_ct,  out->error='d'; return out,
+            0, "I counted %zu contrasts by the size of either contrast->vector or "
             "est->parameters->vector->size, but you gave me a matrix with %zu rows. Those should match."
             , contrast_ct, contrast->matrix->size1);
     double f_stat, pval;
@@ -147,6 +153,7 @@ APOP_VAR_ENDHEAD
     }
     means[0]=0;// don't screw with the ones column.
     apop_data *xpx = apop_data_alloc(msize2, msize2);
+    Apop_stopif(xpx->error, apop_data_free(xpx); out->error='a'; return out, 0, "allocation error");
     for (int i=0; i< msize2; i++)
         for (int j=0; j< msize2; j++){ //at this loop, we calculate one cell in the dot prouct
             long double total = 0;
@@ -157,14 +164,19 @@ APOP_VAR_ENDHEAD
         }
 
     apop_data xpxinv = (apop_data){.matrix=apop_matrix_inverse(xpx->matrix)};
+    Apop_stopif(!xpxinv.matrix, out->error='i'; return out, 0, "inversion of X'X error");
     apop_data *qprimexpxinv = apop_dot(contrast, &xpxinv, 'm', 'm');
     apop_data *qprimexpxinvq = apop_dot(qprimexpxinv, contrast, 'm', 't');
+    Apop_stopif(qprimexpxinvq->error || qprimexpxinv->error, out->error='m'; return out, 0, "broken dot");
     apop_data qprimexpxinvqinv = (apop_data){.matrix=apop_matrix_inverse(qprimexpxinvq->matrix)};
+    Apop_stopif(!qprimexpxinvqinv.matrix, out->error='i'; return out, 0, "inversion of Q'(X'X)^{-1}Q error");
     apop_data_free(qprimexpxinvq);
     apop_data_free(qprimexpxinv);
     apop_data *qprimebeta = apop_dot(contrast, est->parameters, 'm', 'v');
+    Apop_stopif(qprimebeta->error, out->error='m'; return out, 0, "broken dot");
     gsl_vector_sub(qprimebeta->vector, contrast->vector);
     apop_data *qprimebetaminusc_qprimexpxinvqinv = apop_dot(&qprimexpxinvqinv, qprimebeta, .form2='v');
+    Apop_stopif(qprimebetaminusc_qprimexpxinvqinv->error, out->error='m'; return out, 0, "broken dot");
     gsl_blas_ddot(qprimebeta->vector, qprimebetaminusc_qprimexpxinvqinv->vector, &f_stat);
     apop_data_free(xpx);
     apop_data_free(qprimebeta);
@@ -175,8 +187,6 @@ APOP_VAR_ENDHEAD
     f_stat *=  data_df / (variance * contrast_ct);
     pval    = (contrast_ct > 0 && data_df > 0) ? gsl_cdf_fdist_Q(f_stat, contrast_ct, data_df): GSL_NAN; 
 
-    apop_data *out = apop_data_alloc();
-    sprintf(out->names->title, "F test");
     apop_data_add_named_elmt(out, "F statistic", f_stat);
     apop_data_add_named_elmt(out, "p value", pval);
     apop_data_add_named_elmt(out, "confidence", 1- pval);

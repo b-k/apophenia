@@ -18,7 +18,7 @@ double apop_generalized_harmonic(int N, double s) __attribute__ ((__pure__));
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
 
-APOP_VAR_DECLARE int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case);
+APOP_VAR_DECLARE int apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case);
 
 int apop_system(const char *fmt, ...) __attribute__ ((format (printf,1,2)));
 
@@ -56,29 +56,17 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
             || (apop_opts.stop_on_warning=='w') ) \
                 abort();} \
 
-/** Tests whether a condition is true, and if it is not, prints an error to \c stderr and 
-  exits the function. 
+/** Execute an action and print a message to \c stderr (or the current \c FILE handle held by <tt>apop_opts.log_file</tt>).
+ Intended for leaving a function on failure.
  
-\param test The expression that you are asserting is nonzero.
-\param returnval If the assertion fails, return this. If your assertion is inside a function that returns nothing, then leave this blank, as in <tt>apop_assert_c(a==b, , 0, "a should equal b");</tt>
+\param test The expression that, if true, triggers all the action.
+\param onfail If the assertion fails, do this. E.g., <tt>out->error='x'; return GSL_NAN</tt>. Notice that it is OK to include several lines of semicolon-separated code here, but if you have a lot to do, the most readable option may be <tt>goto outro</tt>, plus an appropriately-labeled section at the end of your function.
 \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
 \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
 
 \li If \ref apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
 \li If \ref apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
-
-\see \ref Apop_assert, which always halts on error.
- */
-#define Apop_assert_c(test, returnval, level, ...) {\
-     if (!(test)) {  \
-        Apop_notify(level,  __VA_ARGS__);   \
-        Apop_maybe_abort(level)  \
-        return returnval;  \
-    } }
-
-
-
-
+*/
 #define Apop_stopif(test, onfail, level, ...) {\
      if (test) {  \
         Apop_notify(level,  __VA_ARGS__);   \
@@ -86,24 +74,18 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
         onfail;  \
     } }
 
+#define Apop_assert_c(test, returnval, level, ...) \
+    Apop_stopif(!(test), return returnval, level, __VA_ARGS__)
+
 #define apop_errorlevel -5
 
-/** This is just a slightly more user-friendly version of the C-standard \c assert(). The
-  program halts if the first argument evaluates to false, and the remaining arguments are
-  a printf-style message to display to \c stderr in such an event.
+/* The Apop_stopif macro is currently favored, but there's a long history of prior
+   error-handling setups. Consider all of the Assert... macros below to be deprecated.
+*/
 
-  This is how Apophenia does (almost) all of its assertions, and is made public as a
-  convenience to you. You can see that it isn't hard to re-implement.
-
-\param test An expression that, if false, halts the program
-\param ... A printf-style message to display on \c stderr on halt. I'll provide the function name and a carriage return.
-
-\see \ref Apop_assert_c, which continues with a message rather than shutting down.
-
-  */
 #define Apop_assert(test, ...) Apop_assert_c((test), 0, apop_errorlevel, __VA_ARGS__)
 
-//For things that return void. I consider this to be transitional and deprecated at birth.
+//For things that return void. Transitional and deprecated at birth.
 #define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)

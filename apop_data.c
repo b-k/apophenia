@@ -3,6 +3,9 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
+//apop_gsl_error is in apop_linear_algebra.c
+#define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
+#define Unset_gsl_handler gsl_set_error_handler(prior_handler);
 
 /** Allocate a \ref apop_data structure, to be filled with data.
  
@@ -14,11 +17,15 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 For allocating the text part, see \ref apop_text_alloc.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
-\code d->weights   = gsl_vector_alloc(row_ct); \endcode.
+\code d->weights   = gsl_vector_alloc(row_ct); \endcode
 
 \see apop_data_calloc
 
- \return    The \ref apop_data structure, allocated and ready.
+\return The \ref apop_data structure, allocated and ready.
+\exception out->error=='a'  Allocation error. The matrix, vector, or names couldn't be <tt>malloc</tt>ed, which probably means that you requested a very large data set.
+
+\li An \ref apop_data struct, by itself, is about 72 bytes. If I can't allocate that much memory, I return \c NULL.
+                But if even this much fails, your computer may be on fire and you should go put it out. 
 
  \li This function uses the \ref designated syntax for inputs.
  \ingroup data_struct
@@ -41,22 +48,23 @@ APOP_VAR_ENDHEAD
     }
     else vsize = size1;
     apop_data *setme = malloc(sizeof(apop_data));
-    apop_assert(setme, "malloc failed. Probably out of memory.");
+    Apop_stopif(!setme, return NULL, -5, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
+    Set_gsl_handler
     if (msize2 > 0  && msize1 > 0){
         setme->matrix = gsl_matrix_alloc(msize1,msize2);
-        apop_assert(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        Apop_stopif(!setme->matrix, setme->error='a'; return setme,
+                0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector = gsl_vector_alloc(vsize);
-        apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        Apop_stopif(!setme->vector, setme->error='a'; return setme,
+                0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
-    //I allocate a vector of msize2==-1. This is deprecated, and will one day be deleted.
-    else if (msize2==-1 && msize1>0){
-        setme->vector = gsl_vector_alloc(msize1);
-        apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
-    }
+    Unset_gsl_handler
     setme->names = apop_name_alloc();
+    Apop_stopif(!setme->names, setme->error='a'; return setme,
+                0, "couldn't allocate names. Probably out of memory.");
     return setme;
 }
 
@@ -106,8 +114,10 @@ APOP_VAR_ENDHEAD
 /** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
  The matrix is not copied, but is pointed to by the new \ref apop_data struct.
 
-\param m    The existing matrix you'd like to turn into an \ref apop_data structure.
-\return      The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
+\param m  The existing matrix you'd like to turn into an \ref apop_data structure.
+\return   The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
+\li If you give me a \c NULL matrix, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
+             a warning if <tt>apop_opts.verbosity >=1</tt>
   */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
     Apop_assert_c(m, apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
@@ -121,6 +131,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
 
 \param  v   The data vector
 \return     an allocated, ready-to-use \ref apop_data structure.
+\li If you give me a \c NULL vector, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
+             a warning if <tt>apop_opts.verbosity >=1</tt>
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
     Apop_assert_c(v, apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
@@ -266,26 +278,45 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
 
  \ingroup data_struct
 
+\exception out.error='a'  Allocation error.
 \exception out.error='c'  Cyclic link: <tt>D->more == D</tt> (may be later in the chain, e.g., <tt>D->more->more = D->more</tt>) You'll have only a partial copy.
 \exception out.error='d'  Dimension error; should never happen.
 \exception out.error='p'  Missing part error; should never happen.
+\li If the input data set has an error, then I will copy it anyway, including the error flag (which might be overwritten). I print a warning if the verbosity level is <tt>>=1</tt>.
   */
 apop_data *apop_data_copy(const apop_data *in){
     if (!in) return NULL;
     apop_data *out = apop_data_alloc();
+    Apop_stopif(out->error, return out, 0, "Allocation error.");
+    if (in->error){
+        Apop_notify(1, "the data set to be copied has an error flag of %c. Copying it.", in->error);
+        out->error = in->error;
+    }
     if (in->more){
         Apop_stopif(in == in->more, out->error='c'; return out,
-                1, "the ->more element of this data set equals the "
+                0, "the ->more element of this data set equals the "
                                         "data set itself. This is not healthy. Made a partial copy and set out.error='c'.");
         out->more = apop_data_copy(in->more);
         Apop_stopif(out->more->error, out->error=out->more->error; return out,
-                1, "propagating an error in the ->more element to the parent apop_data set. Only a partial copy made.");
+                0, "propagating an error in the ->more element to the parent apop_data set. Only a partial copy made.");
     }
-    if (in->vector)  out->vector = gsl_vector_alloc(in->vector->size);
-    if (in->matrix)  out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
-    if (in->weights) out->weights = gsl_vector_alloc(in->weights->size);
-    if (in->textsize[0] && in->textsize[1])
+    if (in->vector){
+        out->vector = gsl_vector_alloc(in->vector->size);
+        Apop_stopif(!out->vector, out->error='a'; return out, 0, "Allocation error on vector of size %zu.", in->vector->size);
+    }
+    if (in->matrix){  
+        out->matrix = gsl_matrix_alloc(in->matrix->size1, in->matrix->size2);
+        Apop_stopif(!out->matrix, out->error='a'; return out, 0, "Allocation error on matrix "
+                    "of size %zu X %zu.", in->matrix->size1, in->matrix->size2);
+    }
+    if (in->weights){
+        out->weights = gsl_vector_alloc(in->weights->size);
+        Apop_stopif(!out->weights, out->error='a'; return out, 0, "Allocation error on weights vector of size %zu.", in->weights->size);
+    }
+    if (in->textsize[0] && in->textsize[1]){
         apop_text_alloc(out, in->textsize[0], in->textsize[1]);
+        Apop_stopif(out->error, return out, 0, "Allocation error on text grid of size %zu X %zu.", in->textsize[0], in->textsize[1]);
+    }
     apop_data_memcpy(out, in);
     return out;
 }
@@ -305,7 +336,8 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
 \param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
-\exception out.error='d'  Dimension error; couldn't copy.
+\exception out->error=='a' Allocation error.
+\exception out->error=='d'  Dimension error; couldn't copy.
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
@@ -338,6 +370,7 @@ APOP_VAR_ENDHEAD
         apop_data *m = m1->more; //not following the more pointer.
         m1->more =NULL;
         out = apop_data_copy(m1);
+        Apop_stopif(out->error, return out, 0, "initial copy failed; leaving.");
         m1->more = m;
     }
     Get_vmsizes(m1); //original sizes of vsize, msize1, msize2.
@@ -354,6 +387,7 @@ APOP_VAR_ENDHEAD
                             "I can't stack that.", out->textsize[1], m2->textsize[1]);
             int basetextsize = out->textsize[0];
             apop_text_alloc(out, basetextsize+m2->textsize[0], out->textsize[1]);
+            Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
                     apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
@@ -363,6 +397,7 @@ APOP_VAR_ENDHEAD
                             "I can't stack that.", out->textsize[0], m2->textsize[0]);
             int basetextsize = out->textsize[1];
             apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
+            Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
                     apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
@@ -542,9 +577,11 @@ allocation:
     if (r_or_c=='r' && in->textsize[0] && in->textsize[1]){
         apop_name_stack(out[1]->names, in->names, 't');
         apop_text_alloc(out[0], splitpoint, in->textsize[1]);
+        Apop_stopif(out[0]->error, return out, 0, "Allocation error.");
         if (in->textsize[0] > splitpoint){
             apop_name_stack(out[0]->names, in->names, 't');
             apop_text_alloc(out[1], in->textsize[0]-splitpoint, in->textsize[1]);
+            Apop_stopif(out[1]->error, return out, 0, "Allocation error.");
         }
         for (int i=0; i< in->textsize[0]; i++)
             for (int j=0; j< in->textsize[1]; j++){
@@ -861,9 +898,6 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
     error_for_set = -1;
 }
 
-#define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error_for_set); error_for_set=0;
-#define Unset_gsl_handler gsl_set_error_handler(prior_handler);
-
 /* Set an element from an \ref apop_data set, using the row name but the column number 
   \deprecated Use \ref apop_data_set. 
  */
@@ -1125,25 +1159,27 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
   \param row    the number of rows of text.
   \param col     the number of columns of text.
   \return       A pointer to the relevant \ref apop_data set. If the input was not \c NULL, then this is a repeat of the input pointer.
+  \exception out->error=='a'  Allocation error.
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
-    if (!in)
-        in  = apop_data_alloc();
+    if (!in) in  = apop_data_alloc();
     if (!in->text){
         if (row){
             in->text = malloc(sizeof(char**) * row);
-            apop_assert(in->text, "malloc failed. Probably out of memory.");
+            Apop_stopif(!in->text, in->error='a'; return in, 
+                    0, "malloc failed setting up %zu rows. Probably out of memory.", row);
         }
         if (row && col)
             for (size_t i=0; i< row; i++){
                 in->text[i] = malloc(sizeof(char*) * col);
-                apop_assert(in->text[i], "malloc failed. Probably out of memory.");
+                Apop_stopif(!in->text[i], in->error='a'; return in, 
+                        0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (size_t j=0; j< col; j++)
                     in->text[i][j] = strdup("");
             }
     } else { //realloc
-        int rows_now = in->textsize[0];
-        int cols_now = in->textsize[1];
+        size_t rows_now = in->textsize[0];
+        size_t cols_now = in->textsize[1];
         if (rows_now > row){
             for (int i=row; i < rows_now; i++){
                 for (int j=0; j < cols_now; j++)
@@ -1151,14 +1187,18 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 free(in->text[i]);
             }
             in->text = realloc(in->text, sizeof(char**)*row);
-            apop_assert(in->text, "realloc failed. Probably out of memory.");
+            Apop_stopif(row && !in->text, in->error='a'; return in,
+                            0, "realloc failed shrinking down to %zu rows from %zu rows. "
+                            "There may be actual bugs eating your computer.", row, rows_now);
         }
         if (rows_now < row){
             in->text = realloc(in->text, sizeof(char**)*row);
-            apop_assert(in->text, "realloc failed. Probably out of memory.");
-            for (int i=rows_now; i < row; i++){
+            Apop_stopif(!in->text, in->error='a'; return in,
+                            0, "realloc failed setting up %zu rows. Probably out of memory.", row);
+            for (size_t i=rows_now; i < row; i++){
                 in->text[i] = malloc(sizeof(char*) * col);
-                apop_assert(in->text[i], "malloc failed. Probably out of memory.");
+                Apop_stopif(!in->text[i], in->error='a'; return in, 
+                        0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (int j=0; j < cols_now; j++)
                     in->text[i][j] = strdup("");
             }

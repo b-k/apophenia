@@ -18,6 +18,7 @@ Heavily hand-edited by KH and MM.
 #include "apop_internal.h"
 #include <gsl/gsl_sf.h>
 #include <gsl/gsl_math.h>
+#include <stdbool.h>
 
 /* These are the R-specific items. */
 typedef enum { FALSE = 0, TRUE /*, MAYBE */ } Rboolean;
@@ -61,7 +62,9 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 static void isort(int *n, int *ix);
 static double gammds(double *y, double *p, int *ifault);
 
+threadlocal bool has_error;
 void prterr(int icode, const char *mes) {
+    has_error++;
     Apop_notify(1, "FEXACT error %d.\n%s", icode, mes);
 }
 
@@ -185,7 +188,7 @@ static void fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 
     iwkpt = 0;
 
-    Apop_assert_n(*nrow <= *ldtabl, "NROW must be less than or equal to LDTABL.");
+    Apop_stopif(*nrow > *ldtabl, has_error=true; return, 0, "NROW must be less than or equal to LDTABL.");
 
     ntot = 0;
     for (i = 0; i < *nrow; ++i) {
@@ -366,8 +369,8 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
     --rwk;
 
     /* Check table dimensions */
-    Apop_assert_n(nrow <= ldtabl, "NROW must be less than or equal to LDTABL.");
-    Apop_assert_n(ncol > 1, "NCOL must be at least 2");
+    Apop_stopif(nrow > ldtabl, has_error=true; return, 0, "NROW must be less than or equal to LDTABL.");
+    Apop_stopif(ncol <= 1, has_error=true; return, 0, "NCOL must be at least 2");
 
     /* Initialize KEY array */
     for (i = 1; i <= *ldkey << 1; ++i) {
@@ -384,7 +387,8 @@ static void f2xact(int nrow, int ncol, int *table, int ldtabl,
     for (i = 1; i <= nrow; ++i) {
         iro[i] = 0;
         for (j = 1; j <= ncol; ++j) {
-            Apop_assert_n(table[i + j * ldtabl] >= 0., "All elements of TABLE must be non-negative.");
+            Apop_stopif(table[i + j * ldtabl] < 0., has_error=true; return,
+                    0, "All elements of TABLE must be non-negative.");
             iro[i] += table[i + j * ldtabl];
         }
         ntot += iro[i];
@@ -997,7 +1001,7 @@ LoopNode: /* Generate a node */
 	}
 
 	/* this happens less, now that we check for negative key above: */
-	Apop_assert_nan(0, "Stack length exceeded in f3xact. This problem should not occur.");
+	Apop_stopif(1, has_error=true; return GSL_NAN, 0, "Stack length exceeded in f3xact. This problem should not occur.");
 
 L180: /* Push onto stack */
 	ist[ii] = key;
@@ -1718,7 +1722,7 @@ static int iwork(int iwkmax, int *iwkpt, int number, int itype) {
         *iwkpt += (number << 1);
         i /= 2;
     }
-    Apop_assert_c(*iwkpt <=iwkmax, i, 0, "Out of workspace: %i > %i", *iwkpt, iwkmax);
+    Apop_stopif(*iwkpt >iwkmax, has_error=true;return i, 0, "Out of workspace: %i > %i", *iwkpt, iwkmax);
     return i;
 }
 
@@ -1879,6 +1883,7 @@ static int *apop_data_to_int_array(apop_data *intab){
     "probability of table": Probability of the observed table for fixed marginal totals.	<br>
     "p value":  Table p-value.	The probability of a more extreme table,
 	      where `extreme' is in a probabilistic sense.
+\exception out->error=='p' Processing error in the test.
 
 \li If there are processing errors, these values will be NaN.
 For example: 
@@ -1895,6 +1900,7 @@ apop_data *apop_test_fisher_exact(apop_data *intab){
             mult      = 30,
             rowct     = intab->matrix->size1,
             colct     = intab->matrix->size2;
+    has_error=0;
     fexact(&rowct, 
        &colct,
        intified,
@@ -1911,6 +1917,7 @@ apop_data *apop_test_fisher_exact(apop_data *intab){
     apop_data *out = apop_data_alloc(2,1);
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
+    Apop_stopif(has_error, out->error='p'; return out, 0, "processing error; don't trust the results.");
     return out;
 }
 #endif /* not USING_R */

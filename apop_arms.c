@@ -57,19 +57,19 @@ Apop_settings_init(apop_arms,
     out->state = malloc(sizeof(arms_state));
     Apop_assert(out->state, "Malloc failed. Out of memory?");
     *out->state = (arms_state) { };
-  int err = initial(out, out->state);
-  Apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
+    int err = initial(out, out->state);
+    Apop_assert_c(!err, NULL, 0, "init failed, error %i. Returning NULL", err);
 
   /* finish setting up metropolis struct (can only do this after setting up env) */
-  if(out->do_metro=='y'){
-    /* I don't understand why this is needed.
-      if((params->xprev < params->xl) || (params->xprev > params->xr))
-        apop_assert(0, 1007, 0, 's', "previous Markov chain iterate out of range")*/
-    out->state->metro_xprev = out->xprev;
-    out->state->metro_yprev = perfunc(out,out->xprev);
-    assert(isfinite(out->state->metro_xprev));
-    assert(isfinite(out->state->metro_yprev));
-  }
+    if(out->do_metro=='y'){
+        /* I don't understand why this is needed.
+          if((params->xprev < params->xl) || (params->xprev > params->xr))
+            apop_assert(0, 1007, 0, 's', "previous Markov chain iterate out of range")*/
+        out->state->metro_xprev = out->xprev;
+        out->state->metro_yprev = perfunc(out,out->xprev);
+        assert(isfinite(out->state->metro_xprev));
+        assert(isfinite(out->state->metro_yprev));
+    }
 )
 
 void distract_doxygen_arms(){/*Doxygen gets thrown by the settings macros. This decoy function is a workaround. */}

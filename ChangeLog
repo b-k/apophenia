@@ -7,6 +7,10 @@
 	November 2012
 --apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs
 	better; put them at the end of the sort order.
+!!Finally added an .error element to apop_data and apop_model structs, thus simplifying
+	error-checking.
+--Apop_stopif macro, rendering the Apop_assert family largely obsolete (so if you're using
+	them in your own work, consider them deprecated...).
 
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:
