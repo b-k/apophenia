@@ -323,6 +323,24 @@ apop_data **generate_list_of_contrasts(char **contras_in, int contrast_ct){
 	return out;
 }
 
+apop_data *get_var_list(char *margin_table, char *count_col, char *init_count_col, char *all_vars){
+    apop_data *all_vars_d;
+    if (!all_vars){
+        Apop_assert(apop_opts.db_engine!='m', "I need a list of the full set of variable "
+                                            "names sent as .all_vars=\"var1 | var2 |...\"");
+        //use SQLite's table_info, then shift the second col to the first.
+        all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", margin_table);
+        int ctr=0;
+        for (int i=0; i< all_vars_d->textsize[0]; i++)
+            if (all_vars_d->text[i][1] && (count_col ? strcmp(all_vars_d->text[i][1], count_col) : 1)
+                 && (init_count_col ? strcmp(all_vars_d->text[i][1], init_count_col): 1))
+                    apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
+        apop_text_alloc(all_vars_d, ctr, 1);
+    }
+    apop_regex(all_vars, pipe_parse, &all_vars_d);
+    return all_vars_d;
+}
+
 int get_var_index(apop_data *all_vars, char *findme){
 	for (int i=0; i< *all_vars->textsize; i++)
 		if (*all_vars->text[i] && !strcmp(*all_vars->text[i], findme))
@@ -456,7 +474,8 @@ APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **c
     char * apop_varad_var(all_vars, NULL);
     char ** apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
-    Apop_assert(!(contrasts&&!contrast_ct), "you gave me a list of contrasts but not the count. It's C--I can't count them myself. Please provide the count and re-run.");
+    Apop_assert(!(contrasts&&!contrast_ct), "you gave me a list of contrasts but not the count. "
+            "This is C--I can't count them myself. Please provide the count and re-run.");
     char * apop_varad_var(structural_zeros, NULL);
     char * apop_varad_var(count_col, NULL);
     int apop_varad_var(max_iterations, 1e3);
@@ -470,20 +489,7 @@ APOP_VAR_HEAD apop_data * apop_rake(char *margin_table, char *all_vars, char **c
     double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
-    apop_data *all_vars_d;
-    if (!all_vars){
-        Apop_assert(apop_opts.db_engine!='m', "I need a list of the full set of variable "
-                                            "names sent as .all_vars=\"var1 | var2 |...\"");
-        //use SQLite's table_info, then shift the second col to the first.
-        all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", margin_table);
-        int ctr=0;
-        for (int i=0; i< all_vars_d->textsize[0]; i++)
-            if (all_vars_d->text[i][1] && (count_col ? strcmp(all_vars_d->text[i][1], count_col) : 1)
-                 && (init_count_col ? strcmp(all_vars_d->text[i][1], init_count_col): 1))
-                    apop_text_add(all_vars_d, ctr++, 0, all_vars_d->text[i][1]);
-        apop_text_alloc(all_vars_d, ctr, 1);
-    }
-    apop_regex(all_vars, pipe_parse, &all_vars_d);
+    apop_data *all_vars_d = get_var_list(margin_table, count_col, init_count_col, all_vars);
     int var_ct = all_vars_d->textsize[0];
 
 	char *q;
