@@ -166,7 +166,7 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <p>Which parts of the code are most reliable? There are vigorous tests on the code base, which currently cover about 73% of the lines of code; most of the untested part is in methods of some of the more obscure models. A broad rule of thumb for any code base is that the well-worn parts, in this case functions like <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a> and <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>'s <code>log_likelihood</code>, are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG for the Yule distribution) are worth a bit of caution. Close to all of the code has been used in production, so all of it was at least initially tested against real-world data.</p>
 <p></div>
 <p><h2><a class="anchor" name="status"><div class="trigger" onClick="showBranch('statusd');swapFolder('statusf')"><img src="right.png" border="0" id="statusf" alt="pip"> How do I write extensions?</div></a></h2><div class="branch" id="statusd">
-<p>It's not a package, so you don't need an API---write your code and <code>#include</code> it like any other C code. The system is written to not require a registration or initialization step to add a new model or other such parts. You can read the notes below on generating new models, which have to conform to some rules if they are to play well with <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, and so forth.</p>
+<p>It's not a package, so you don't need an API---write your code and <code>include</code> it like any other C code. The system is written to not require a registration or initialization step to add a new model or other such parts. You can read the notes below on generating new models, which have to conform to some rules if they are to play well with <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, and so forth.</p>
 <p>You are encouraged to send new models or functions to the maintainer, or send the maintainer a URL if you prefer to host the code yourself; I'm happy to add references in the appropriate places.</p>
 <p></div>
 <p></div>
@@ -192,7 +192,7 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <li><a class="el" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack()</a> </li>
-<li><a class="el" href="apop__data_8c.html#a1115911d81fdc42999bfab81e986a8a8">apop_data_transpose()</a> </li>
+<li><a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose()</a> </li>
 <li><a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack()</a> </li>
 <li><a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy()</a> </li>
 <li><a class="el" href="types_8h.html#a85b202c330343fed6056578ab4ba20ff">apop_matrix_fill()</a> </li>
@@ -384,7 +384,8 @@ gsl_rng *r;
     printf(<span class="stringliteral">&quot;confidences:\t&quot;</span>); <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(confidences);
 }
 </pre></div><p>One more toy example, demonstrating the use of the <a class="el" href="stats_8h.html#a2a1bc770d6631e85359acb8b665439b3">Apop_data_row</a> :</p>
-<div class="fragment"><pre class="fragment"><span class="comment">/* This sample code sets the elements of a data set&#39;s vector to one if the index is even.</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="comment">/* This sample code sets the elements of a data set&#39;s vector to one if the index is even.</span>
 <span class="comment">   Then, via the weights vector, it adds up the even indices.</span>
 <span class="comment"></span>
 <span class="comment">   There is really no need to use the weights vector; this code snippet is an</span>
@@ -405,7 +406,7 @@ gsl_rng *r;
     <span class="keywordflow">return</span> gsl_vector_get(r-&gt;vector, 0) ? gsl_vector_get(r-&gt;weights, 0) : 0; 
 }
 
-<span class="keywordtype">void</span> test_apop_map_row(){
+<span class="keywordtype">int</span> main(){
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(100);
     d-&gt;weights = gsl_vector_alloc(100);
     <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_ri=set_vector_to_even, .inplace=<span class="charliteral">&#39;y&#39;</span>);
@@ -900,7 +901,7 @@ Apop_settings_declarations(ysg)
 <li>Find the odds that the statistic would lie within some given range, like `greater than zero' or `near 1.1'</li>
 </ul>
 <p>If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated <img class="formulaInl" alt="$t$" src="form_9.png"/> test is probably thrown in.</p>
-<p>Some tests, like ANOVA, produce a statistic using a specialized procedure, so Apophenia includes some functions, like <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> and <a class="el" href="asst_8h.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>, to produce the statistic and look up its significance level.</p>
+<p>Some tests, like ANOVA, produce a statistic using a specialized procedure, so Apophenia includes some functions, like <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> and <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>, to produce the statistic and look up its significance level.</p>
 <p>If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function <a class="el" href="asst_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> will do the final lookup step of checking where your statistic lies on your chosen distribution.</p>
 <ul>
 <li><a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test()</a> </li>
@@ -909,7 +910,7 @@ Apop_settings_declarations(ysg)
 <li><a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test()</a> </li>
 <li><a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence()</a> </li>
 <li><a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact()</a> </li>
-<li><a class="el" href="apop__hist_8c.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a> </li>
+<li><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a> </li>
 <li><a class="el" href="apop__output_8c.html#a3c2937608a4e0b4008145174bc32b58d">apop_plot_qq()</a> </li>
 <li><a class="el" href="apop__output_8c.html#aa3551254c4b531a1da147821f81ffdc8">apop_plot_triangle()</a> </li>
 <li><a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination()</a> </li>
@@ -962,22 +963,22 @@ Apop_settings_declarations(ysg)
 <p>For example, if you do not have a prior binspec in mind, then you can use the one generaged by the first call to the histogram binning function to make sure that the second data set is in sync:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(first_set, NULL);
 <a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(second_set, <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(first_set, <span class="stringliteral">&quot;&lt;binspec&gt;&quot;</span>));
-</pre></div><p>If you have a model and data, use the <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> convenience function to make random draws and bin them appropriately. Once you have two distributions so formed, you can use <a class="el" href="asst_8h.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> or <a class="el" href="asst_8h.html#a2fe2a099150e242e974ed8f95142b3a9">apop_histograms_test_goodness_of_fit</a> to generate the appropriate statistics from the pairs of bins.</p>
+</pre></div><p>If you have a model and data, use the <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> convenience function to make random draws and bin them appropriately. Once you have two distributions so formed, you can use <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> or <a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit</a> to generate the appropriate statistics from the pairs of bins.</p>
 <p>Kernel density estimation will produce a smoothed PDF. See <a class="el" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a> for details. Or, use <a class="el" href="asst_8h.html#a9d272b44efe1bb25c59bb398ecbfac8c">apop_histogram_moving_average</a> for a simpler smoothing method.</p>
 <p><h2><a class="anchor" name="gslhistos"><div class="trigger" onClick="showBranch('gslhistosd');swapFolder('gslhistosf')"><img src="right.png" border="0" id="gslhistosf" alt="pip"> GSL histograms</div></a></h2><div class="branch" id="gslhistosd">
 <p>The GSL provides a <code>gsl_histogram</code> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its <a class="el" href="structapop__model.html">apop_model</a> struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that could take in a PDF. To produce a GSL histogram-based PMF from <code>your_data</code>, use <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a>).</p>
 <p>The GSL histogram is one-dimensional. The GSL also provides a two-dimensional version, but this is still short of the <img class="formulaInl" alt="$N$" src="form_3.png"/> dimensions of the typical data set. Also, especially for larger dimensions, we need a sparse representation, while the GSL histogram structure choses the speed of a complete representation over the scalability of a sparse representation. For these and a few technical reasons, the <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> model is considered to be deprecated---for most purposes, you are better off using the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, which is at this point better supported.</p>
 <p>As an aside, the GSL provides a closely-related second structure that incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF. Because it can be used to draw from the PMF, the GSL calls this the <code>gsl_histogram_pdf</code> structure. That's right: the data in the <code>gsl_histogram_pdf</code> structure is a cumulative sum---a CMF. This is handled internally by the <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a>, but you can retrieve it if need be.</p>
-<p>As with the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, if you want to compare this histogram to other data (observed or theoretical), then you'll need to produce a second synced histogram. You can use <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to make random draws from a model and bin them. Producing a second histogram with matching bins is not as easy as just re-calling <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> with the same binspec, so there is the <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> function to produce a second synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a>.</p>
+<p>As with the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, if you want to compare this histogram to other data (observed or theoretical), then you'll need to produce a second synced histogram. You can use <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to make random draws from a model and bin them. Producing a second histogram with matching bins is not as easy as just re-calling <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> with the same binspec, so there is the <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> function to produce a second synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a>.</p>
 <p></div>
 <p>Here are some functions to deal with both the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> and <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> (most handle both). See also the GSL documentation, linked at the bottom of this outline, for other uses of the GSL's histogram structure.</p>
 <ul>
 <li><a class="el" href="apop__smoothing_8c.html#a9d272b44efe1bb25c59bb398ecbfac8c">apop_histogram_moving_average()</a>: generate a model that is a moving average of an input pmf/histogram </li>
 <li><a class="el" href="apop__hist_8c.html#ae94cfcf8da0b798028dfa59d85c42686">apop_histogram_normalize()</a>: reweight a <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> to weight one. For the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, use <a class="el" href="stats_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(your_pmf-&gt;data-&gt;weights) </li>
-<li><a class="el" href="apop__hist_8c.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset()</a>: bin random draws from a continuous model into an existing pmf/histogram binspec. </li>
-<li><a class="el" href="apop__hist_8c.html#a1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset()</a>: For the <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> only. </li>
-<li><a class="el" href="apop__hist_8c.html#ad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a>: goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic </li>
-<li><a class="el" href="apop__hist_8c.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a>: goodness-of-fit via Kolmogorov-Smirnov statistic</li>
+<li><a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset()</a>: bin random draws from a continuous model into an existing pmf/histogram binspec. </li>
+<li><a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset()</a>: For the <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> only. </li>
+<li><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a>: goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic </li>
+<li><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a>: goodness-of-fit via Kolmogorov-Smirnov statistic</li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="Maxi"><div class="trigger" onClick="showBranch('Maxid');swapFolder('Maxif')"><img src="right.png" border="0" id="Maxif" alt="pip"> Maximum likelihood methods</div></a></h2><div class="branch" id="Maxid">
@@ -1139,7 +1140,7 @@ pclose(lesspipe);
 <p>General utilities:</p>
 <ul>
 <li><a class="el" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a> </li>
-<li><a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a> </li>
+<li><a class="el" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a> </li>
 <li><a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots()</a> </li>
 <li><a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex()</a> </li>
 <li><a class="el" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste()</a> </li>
@@ -1173,4 +1174,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>

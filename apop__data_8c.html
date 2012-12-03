@@ -91,7 +91,7 @@ int <b>apop_data_set_tt</b> (<a class="el" href="structapop__data.html">apop_dat
 void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, const char type, char const **names)
 <li>int <a class="el" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col, const char *fmt,...)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a1115911d81fdc42999bfab81e986a8a8">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> const *in, char transpose_text)
 <li>gsl_matrix * <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> (gsl_matrix *m, size_t newheight, size_t newwidth)
 <li>gsl_vector * <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> (gsl_vector *v, size_t newheight)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char match)
@@ -409,7 +409,9 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The page whose title matches what you gave me. If I don't find a match, return <code>NULL</code>.</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -816,29 +818,48 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 
 </div>
 </div>
-<a class="anchor" id="a1115911d81fdc42999bfab81e986a8a8"></a><!-- doxytag: member="apop_data.c::apop_data_transpose" ref="a1115911d81fdc42999bfab81e986a8a8" args="(apop_data *in)" -->
+<a class="anchor" id="a06f38caecb66ec90b18b406b15068381"></a><!-- doxytag: member="apop_data.c::apop_data_transpose" ref="a06f38caecb66ec90b18b406b15068381" args="(apop_data const *in, char transpose_text)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a1115911d81fdc42999bfab81e986a8a8">apop_data_transpose</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>in</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> const *&#160;</td>
+          <td class="paramname"><em>in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>transpose_text</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Transpose the matrix element of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, including the row/column names. The vector and text elements of the input data set are completely ignored.</p>
-<p>This is really just a friendly wrapper for <code>gsl_matrix_transpose_memcpy</code>; if you have a <code>gsl_matrix</code> with no names, you may prefer to just use that function.</p>
+<p>Transpose the matrix element of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, including the row/column names. Returns a copy of the element(s) that got transposed. The vector and weights elements of the input data set are completely ignored (but see also <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>, which can convert a vector to a 1 X N matrix.)</p>
+<p>This is mostly just a friendly wrapper for <code>gsl_matrix_transpose_memcpy</code>; if you have a <code>gsl_matrix</code> with no names or text, you may prefer to just use that function.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">in</td><td>The input <a class="el" href="gentle.html#apop_data">apop_data</a> set. </td></tr>
+    <tr><td class="paramname">in</td><td>The input <a class="el" href="gentle.html#apop_data">apop_data</a> set. If <code>NULL</code>, I return <code>NULL</code>. Default is <code>NULL</code>. </td></tr>
+    <tr><td class="paramname">transpose_text</td><td>If <code>'y'</code>, then also transpose the text element. Default is <code>'y'</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A newly alloced <a class="el" href="gentle.html#apop_data">apop_data</a> set, with the appropriately transposed matrix. The vector and text elements will be <code>NULL</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A newly alloced <a class="el" href="gentle.html#apop_data">apop_data</a> set, with the appropriately transposed matrix and/or text. The vector and weights elements will be <code>NULL</code>. If <code>transpose_text='n'</code>, then the text element of the output set will also be <code>NULL</code>.</dd></dl>
+<ul>
+<li>Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input). </li>
+<li>If only the matrix or only the text have names, then the one set of names is written to the row names of the output. </li>
+<li>If both matrix column names and text column names are present, text column names are lost.</li>
+</ul>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -1139,4 +1160,4 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>

@@ -76,14 +76,14 @@ int <b>apop_system</b> (const char *fmt,...) __attribute__((format(printf
 <li>int <a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#a8272352be4db925f9f519613c8b58ba9">apop_crosstab_to_pmf</a> (<a class="el" href="structapop__data.html">apop_data</a> *d)
 <li>gsl_vector * <a class="el" href="asst_8h.html#a61185af7877b709c8b257b342c24edbc">apop_vector_moving_average</a> (gsl_vector *, size_t)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#a9d272b44efe1bb25c59bb398ecbfac8c">apop_histogram_moving_average</a> (<a class="el" href="structapop__model.html">apop_model</a> *m, size_t bandwidth)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *, gsl_vector *)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *base, <a class="el" href="structapop__model.html">apop_model</a> *m, long int draws, gsl_rng *rng)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a2fe2a099150e242e974ed8f95142b3a9">apop_histograms_test_goodness_of_fit</a> (<a class="el" href="structapop__model.html">apop_model</a> *h0, <a class="el" href="structapop__model.html">apop_model</a> *h1)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> (<a class="el" href="structapop__model.html">apop_model</a> *m1, <a class="el" href="structapop__model.html">apop_model</a> *m2)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *, gsl_vector *)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *base, <a class="el" href="structapop__model.html">apop_model</a> *m, long int draws, gsl_rng *rng)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit</a> (<a class="el" href="structapop__model.html">apop_model</a> *h0, <a class="el" href="structapop__model.html">apop_model</a> *h1)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> (<a class="el" href="structapop__model.html">apop_model</a> *m1, <a class="el" href="structapop__model.html">apop_model</a> *m2)
 <li>void <a class="el" href="asst_8h.html#ae94cfcf8da0b798028dfa59d85c42686">apop_histogram_normalize</a> (<a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata, <a class="el" href="structapop__data.html">apop_data</a> *binspec, int bin_count, char close_top_bin)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#a12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)
 <li>char * <a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a> (char const *in, char strip_type)
 <li>char * <a class="el" href="asst_8h.html#a0f64a390c945486f04975307a5f4b4a5">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> *strings, char *between, char *before, char *after, char *between_cols, int(*prune)(<a class="el" href="structapop__data.html">apop_data</a> *, int, int, void *), void *prune_parameter)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char inplace)
@@ -92,7 +92,7 @@ int <b>apop_system</b> (const char *fmt,...) __attribute__((format(printf
 <li>double <a class="el" href="asst_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> (double statistic, char *distribution, double p1, double p2, char tail)
 <li>double * <a class="el" href="asst_8h.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> (gsl_vector *data, char rounding)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, int sortby, char asc)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#aa431662ac96cc1bdcdfc9c443763b635">apop_rake</a> (char *margin_table, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge, char *table_name)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#ac1bae5dffbbd4bc82c7369211c36f934">apop_rake</a> (char const *margin_table, char *const *var_list, int var_ct, char const *all_vars, char *const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, int run_number, char const *init_table, char const *init_count_col, double nudge, char const *table_name)
 <li><a class="anchor" id="af1083347ab05b970089bc97287928fcb"></a><!-- doxytag: member="asst.h::asprintf" ref="af1083347ab05b970089bc97287928fcb" args="(char **res, const char *format,...) __attribute__((__format__(__printf__" -->
 int <b>asprintf</b> (char **res, const char *format,...) __attribute__((__format__(__printf__
 <li><a class="anchor" id="aa7d3fcd8b24054fe10faa86813d48aed"></a><!-- doxytag: member="asst.h::vasprintf" ref="aa7d3fcd8b24054fe10faa86813d48aed" args="(char **res, const char *format, va_list args) __attribute__((__format__(__printf__" -->
@@ -518,8 +518,10 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <li>If <code>N</code> is zero or negative, return NaN. Notify the user if <code>apop_opts.verbosity &gt;=1</code></li>
 </ul>
 <p>For example:</p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_harmonic(){
-<span class="keywordtype">double</span> out     = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+
+<span class="keywordtype">int</span> main(){
+    <span class="keywordtype">double</span> out = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);
      assert (out == 270);
      out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(370, -1.0);
      assert (out == 370*371/2);
@@ -527,59 +529,6 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
      assert (out == 12*13/2);
 }
 </pre></div> 
-</div>
-</div>
-<a class="anchor" id="ab99340f82c48dd858329ff9c48d437fd"></a><!-- doxytag: member="asst.h::apop_histogram_model_reset" ref="ab99340f82c48dd858329ff9c48d437fd" args="(apop_model *base, apop_model *m, long int draws, gsl_rng *rng)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>base</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">long int&#160;</td>
-          <td class="paramname"><em>draws</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Give me an existing histogram (i.e., an <code><a class="el" href="structapop__model.html">apop_model</a></code>) and I'll create a new histogram with the same bins, but with data from <code>draws</code> random draws from the parametrized model you provide.</p>
-<p>This function will normalize the output histogram to integrate to one.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">base</td><td>An <code><a class="el" href="structapop__model.html">apop_model</a></code> produced using a form like <code>apop_estimate(yourdata, apop_histogram)</code>. I.e. a histogram model to be used as a template. (No default) </td></tr>
-    <tr><td class="paramname">m</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
-    <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 100,000) </td></tr>
-    <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
-  </table>
-  </dd>
-</dl>
-<ul>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
 </div>
 </div>
 <a class="anchor" id="a9d272b44efe1bb25c59bb398ecbfac8c"></a><!-- doxytag: member="asst.h::apop_histogram_moving_average" ref="a9d272b44efe1bb25c59bb398ecbfac8c" args="(apop_model *m, size_t bandwidth)" -->
@@ -635,74 +584,6 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 
 </div>
 </div>
-<a class="anchor" id="a47665d2c314071a572089137b95f36c5"></a><!-- doxytag: member="asst.h::apop_histogram_vector_reset" ref="a47665d2c314071a572089137b95f36c5" args="(apop_model *, gsl_vector *)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>template</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>indata</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Give me an existing histogram (as a filled-in copy of the <code>apop_histogram</code> model) and I'll create a new histogram with the same bins, but with data from the vector you provide</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">template</td><td>An <code><a class="el" href="structapop__model.html">apop_model</a></code> produced using a form like <code>apop_estimate(yourdata, apop_histogram)</code>. </td></tr>
-    <tr><td class="paramname">indata</td><td>The new data to be binned. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="a2fe2a099150e242e974ed8f95142b3a9"></a><!-- doxytag: member="asst.h::apop_histograms_test_goodness_of_fit" ref="a2fe2a099150e242e974ed8f95142b3a9" args="(apop_model *h0, apop_model *h1)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#a2fe2a099150e242e974ed8f95142b3a9">apop_histograms_test_goodness_of_fit</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>observed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>expected</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Test the goodness-of-fit between either two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models or two <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> models.</p>
-<p>I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set. For histograms, you've use <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to ensure histograms in sync.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
-<ul>
-<li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
-</ul>
-
-</div>
-</div>
 <a class="anchor" id="a2a184259c139f1fdd970ef6b43f6274e"></a><!-- doxytag: member="asst.h::apop_ml_impute" ref="a2a184259c139f1fdd970ef6b43f6274e" args="(apop_data *d, apop_model *meanvar)" -->
 <div class="memitem">
 <div class="memproto">
@@ -740,87 +621,38 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 
 </div>
 </div>
-<a class="anchor" id="a12a8860fd05be2540b701fe7ec5acae4"></a><!-- doxytag: member="asst.h::apop_model_to_pmf" ref="a12a8860fd05be2540b701fe7ec5acae4" args="(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng)" -->
+<a class="anchor" id="ac1bae5dffbbd4bc82c7369211c36f934"></a><!-- doxytag: member="asst.h::apop_rake" ref="ac1bae5dffbbd4bc82c7369211c36f934" args="(char const *margin_table, char *const *var_list, int var_ct, char const *all_vars, char *const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, int run_number, char const *init_table, char const *init_count_col, double nudge, char const *table_name)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="asst_8h.html#a12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#ac1bae5dffbbd4bc82c7369211c36f934">apop_rake</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>model</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>binspec</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">long int&#160;</td>
-          <td class="paramname"><em>draws</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>bin_count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Make random draws from an <a class="el" href="structapop__model.html">apop_model</a>, and bin them using a binspec in the style of <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.</p>
-<p>The output is normalized to integrate to one.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
-    <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
-    <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
-    <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model.</dd></dl>
-<ul>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
-<a class="anchor" id="aa431662ac96cc1bdcdfc9c443763b635"></a><!-- doxytag: member="asst.h::apop_rake" ref="aa431662ac96cc1bdcdfc9c443763b635" args="(char *margin_table, char *all_vars, char **contrasts, int contrast_ct, char *structural_zeros, int max_iterations, double tolerance, char *count_col, int run_number, char *init_table, char *init_count_col, double nudge, char *table_name)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#aa431662ac96cc1bdcdfc9c443763b635">apop_rake</a> </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>margin_table</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char *const *&#160;</td>
+          <td class="paramname"><em>var_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>var_ct</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>all_vars</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char **&#160;</td>
+          <td class="paramtype">char *const *&#160;</td>
           <td class="paramname"><em>contrasts</em>, </td>
         </tr>
         <tr>
@@ -832,7 +664,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>structural_zeros</em>, </td>
         </tr>
         <tr>
@@ -850,7 +682,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>count_col</em>, </td>
         </tr>
         <tr>
@@ -862,13 +694,13 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>init_table</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>init_count_col</em>, </td>
         </tr>
         <tr>
@@ -880,7 +712,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>table_name</em>&#160;</td>
         </tr>
         <tr>
@@ -892,7 +724,8 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 </div>
 <div class="memdoc">
 <p>Fit a log-linear model via iterative proportional fitting, aka raking.</p>
-<p>See Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_31.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
+<p>Raking has many uses. The <a href="http://modelingwithdata.org/arch/00000138.htm">Modeling with Data blog</a> presents a series of discussions of uses of raking, including some worked examples.</p>
+<p>Or see Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_31.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
 <p>The combinations of categories that are considered to be relevant are called <em>contrasts</em>, after ANOVA terminology of the 1940s.</p>
 <p>The other constraint on the search are structural zeros, which are values that you know can never be non-zero, due to field-specific facts about the variables. For example, U.S. Social Security payments are available only to those age 65 or older, so "age &lt;65 and
 gets_soc_security=1" is a structural zero.</p>
@@ -902,7 +735,9 @@ gets_soc_security=1" is a structural zero.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">margin_table</td><td>The name of the table in the database to use for calculating the margins. The table should have one observation per row. No default. (This used to be called <code>table_name</code>; that name is now deprecated.)</td></tr>
-    <tr><td class="paramname">all_vars</td><td>The full list of variables to search. Provide these as a single, pipe-delimited string: e.g., "age | sex |income". Spaces are ignored. Default: if you are using SQLite, I will use all columns in the table (but the <code>.count_col</code> if any); if you are using mySQL, I haven't implemented this yet and you will have to provide a list.</td></tr>
+    <tr><td class="paramname">var_list</td><td>The full list of variables to search. A list of strings, e.g., <code>(char *[]){"var1", "var2", ..., "var15"}</code></td></tr>
+    <tr><td class="paramname">var_ct</td><td>The full list of variables to search.</td></tr>
+    <tr><td class="paramname">all_vars</td><td>deprecated.</td></tr>
     <tr><td class="paramname">contrasts</td><td>The contrasts describing your model. Like the <code>all_vars</code> input, each contrast is a pipe-delimited list of variable names. No default.</td></tr>
     <tr><td class="paramname">contrast_ct</td><td>The number of contrasts in the list of contrasts. No default.</td></tr>
     <tr><td class="paramname">structural_zeros</td><td>a SQL clause indicating combinations that can never take a nonzero value. This will go into a <code>where</code> clause, so anything you could put there is OK, e.g. "age &lt;65 and gets_soc_security=1 or age &lt;15 and married=1". Default: no structural zeros. </td></tr>
@@ -913,6 +748,7 @@ gets_soc_security=1" is a structural zero.</p>
     <tr><td class="paramname">init_table</td><td>The default is to initially set all table elements to one and then rake from there. If you specify an <code>init_table</code>, then I will get the initial cell counts from it. Default: if you specify <code>init_count_col</code>, the default is <code>margin_table</code>; if you do not the default is <code>NULL</code>. The use of a separate table for initial values is currently inadequately tested and use-at-your-own-risk.</td></tr>
     <tr><td class="paramname">init_count_col</td><td>The column in <code>init_table</code> with the cell counts.</td></tr>
     <tr><td class="paramname">nudge</td><td>There is a common hack of adding a small value to every zero entry, because a zero entry will always scale to zero, while a small value could eventually scale to anything. Recall that this function works on sparse sets, so I first filter out those cells that could possibly have a nonzero value given the observations, then I add <code>nudge</code> to any zero cells within that subset.</td></tr>
+    <tr><td class="paramname">table_name</td><td>Deprecated; replaced with <code>margin_table</code>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -921,7 +757,8 @@ gets_soc_security=1" is a structural zero.</p>
 </pre></div><dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set where every row is a single combination of variable values and the <code>weights</code> vector gives the most likely value for each cell. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
-    <tr><td class="paramname">out-&gt;error='i'</td><td>Input was somehow wrong. <ul>
+    <tr><td class="paramname">out-&gt;error='i'</td><td>Input was somehow wrong. </td></tr>
+    <tr><td class="paramname">out-&gt;error='c'</td><td>Raking did not converge, reached max. iteration count. <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
 </ul>
 <ul>
@@ -993,7 +830,8 @@ gets_soc_security=1" is a structural zero.</p>
 <ul>
 <li>Here is the test function. Notice that the substring-pulling function call passes <code>&amp;subs</code>, not plain <code>subs</code>. Also, the non-match has a zero-length blank in <code>subs-&gt;text[0][1]</code>.</li>
 </ul>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_regex(){
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="keywordtype">int</span> main(){
     <span class="keywordtype">char</span> string1[] = <span class="stringliteral">&quot;Hello. I am a string.&quot;</span>;
     assert(<a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;hell&quot;</span>));
     <a class="code" href="structapop__data.html">apop_data</a> *subs;
@@ -1016,7 +854,10 @@ gets_soc_security=1" is a structural zero.</p>
     assert(!strcmp(*subs-&gt;text[3], <span class="stringliteral">&quot;four&quot;</span>));
     <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 }
-</pre></div> 
+</pre></div><ul>
+<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
+</ul>
+
 </div>
 </div>
 <a class="anchor" id="a650d1ecf6f78c3bdb85c8fce71dfae05"></a><!-- doxytag: member="asst.h::apop_test" ref="a650d1ecf6f78c3bdb85c8fce71dfae05" args="(double statistic, char *distribution, double p1, double p2, char tail)" -->
@@ -1124,54 +965,6 @@ gets_soc_security=1" is a structural zero.</p>
 
 </div>
 </div>
-<a class="anchor" id="a98ccaa9de7cb16e60a435c56eaf3400d"></a><!-- doxytag: member="asst.h::apop_test_kolmogorov" ref="a98ccaa9de7cb16e60a435c56eaf3400d" args="(apop_model *m1, apop_model *m2)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m2</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Run the Kolmogorov-Smirnov test to determine whether two distributions are identical.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">m1,m2</td><td>Two models, most likely of <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default. I run it for each row of each data set, so if your model has a <code>NULL</code> at the data, I won't know what to do.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>I will also give special handling to two synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histograms</a> (probably produced via <a class="el" href="asst_8h.html#a47665d2c314071a572089137b95f36c5">apop_histogram_vector_reset</a> or <a class="el" href="asst_8h.html#ab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a>), using the histogram bins to define how the CDF is built.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
-<div class="fragment"><pre class="fragment"> <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data1);
- <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data2);
- <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data1, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
- <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data2, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
- <a class="code" href="structapop__data.html">apop_data</a> *ktest = <a class="code" href="apop__hist_8c.html#a98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>(m1, m2);
- <span class="comment">//The sort of output you could pull out:</span>
- <span class="keywordtype">double</span> k_statistic = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;max distance&quot;</span>);
- <span class="keywordtype">double</span> pval = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;p value, 2 tail&quot;</span>);
- <span class="keywordtype">double</span> confidence_of_inequality = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;confidence, 2 tail&quot;</span>);
-</pre></div><ul>
-<li>I assume that the data sets are sorted. </li>
-</ul>
-
-</div>
-</div>
 <a class="anchor" id="a0f64a390c945486f04975307a5f4b4a5"></a><!-- doxytag: member="asst.h::apop_text_paste" ref="a0f64a390c945486f04975307a5f4b4a5" args="(apop_data *strings, char *between, char *before, char *after, char *between_cols, int(*prune)(apop_data *, int, int, void *), void *prune_parameter)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1233,7 +1026,23 @@ gets_soc_security=1" is a structural zero.</p>
     <tr><td class="paramname">between</td><td>The text to put in between the rows of the table, such as ", ". (Default is a single space: " ") </td></tr>
     <tr><td class="paramname">before</td><td>The text to put at the head of the string. For the query example, this would be <code>.before="select "</code>. (Default: NULL) </td></tr>
     <tr><td class="paramname">after</td><td>The text to put at the tail of the string. For the query example, <code>.after=" from data_table"</code>. (Default: NULL) </td></tr>
-    <tr><td class="paramname">between_cols</td><td>The text to insert between columns of text. See below for an example (Default is set to equal <code>.between</code>)</td></tr>
+    <tr><td class="paramname">between_cols</td><td>The text to insert between columns of text. See below for an example (Default is set to equal <code>.between</code>) </td></tr>
+    <tr><td class="paramname">prune</td><td>If you don't want to use the entire text set, you can provide a function to indicate which elements should be pruned out. Some examples:</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><pre class="fragment"><span class="comment">//Just use column 3</span>
+<span class="keywordtype">int</span> is_not_col_3(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+    <span class="keywordflow">return</span> col!=3;
+}
+
+<span class="comment">//Jump over blanks as if they don&#39;t exist.</span>
+<span class="keywordtype">int</span> is_blank(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+    <span class="keywordflow">return</span> strlen(indata-&gt;text[row][col])==0;
+}
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">prune_parameter</td><td>A void pointer to pass to your <code>prune</code> function.</td></tr>
   </table>
   </dd>
 </dl>
@@ -1341,7 +1150,9 @@ gets_soc_security=1" is a structural zero.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
 <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000006">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
 <p>Here is a test function that compares the output via conjugate gradient table and via Gibbs sampling: </p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_updating(gsl_rng *r){
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="keywordtype">int</span> main(){
+    gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(2468);
     <span class="keywordtype">double</span> binom_start = 0.6;
     <span class="keywordtype">double</span> beta_start_a = 0.3;
     <span class="keywordtype">double</span> beta_start_b = 0.5;
@@ -1454,4 +1265,4 @@ gets_soc_security=1" is a structural zero.</p>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>

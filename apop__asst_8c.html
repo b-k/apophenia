@@ -168,8 +168,10 @@ Functions</h2>
 <li>If <code>N</code> is zero or negative, return NaN. Notify the user if <code>apop_opts.verbosity &gt;=1</code></li>
 </ul>
 <p>For example:</p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_harmonic(){
-<span class="keywordtype">double</span> out     = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+
+<span class="keywordtype">int</span> main(){
+    <span class="keywordtype">double</span> out = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);
      assert (out == 270);
      out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(370, -1.0);
      assert (out == 370*371/2);
@@ -238,7 +240,8 @@ Functions</h2>
 <ul>
 <li>Here is the test function. Notice that the substring-pulling function call passes <code>&amp;subs</code>, not plain <code>subs</code>. Also, the non-match has a zero-length blank in <code>subs-&gt;text[0][1]</code>.</li>
 </ul>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> test_regex(){
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="keywordtype">int</span> main(){
     <span class="keywordtype">char</span> string1[] = <span class="stringliteral">&quot;Hello. I am a string.&quot;</span>;
     assert(<a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;hell&quot;</span>));
     <a class="code" href="structapop__data.html">apop_data</a> *subs;
@@ -261,7 +264,10 @@ Functions</h2>
     assert(!strcmp(*subs-&gt;text[3], <span class="stringliteral">&quot;four&quot;</span>));
     <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 }
-</pre></div> 
+</pre></div><ul>
+<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
+</ul>
+
 </div>
 </div>
 <a class="anchor" id="aaf0d5d65f514d9894a4ca5b0e8755873"></a><!-- doxytag: member="apop_asst.c::apop_rng_GHgB3" ref="aaf0d5d65f514d9894a4ca5b0e8755873" args="(gsl_rng *r, double *a)" -->
@@ -388,7 +394,23 @@ Functions</h2>
     <tr><td class="paramname">between</td><td>The text to put in between the rows of the table, such as ", ". (Default is a single space: " ") </td></tr>
     <tr><td class="paramname">before</td><td>The text to put at the head of the string. For the query example, this would be <code>.before="select "</code>. (Default: NULL) </td></tr>
     <tr><td class="paramname">after</td><td>The text to put at the tail of the string. For the query example, <code>.after=" from data_table"</code>. (Default: NULL) </td></tr>
-    <tr><td class="paramname">between_cols</td><td>The text to insert between columns of text. See below for an example (Default is set to equal <code>.between</code>)</td></tr>
+    <tr><td class="paramname">between_cols</td><td>The text to insert between columns of text. See below for an example (Default is set to equal <code>.between</code>) </td></tr>
+    <tr><td class="paramname">prune</td><td>If you don't want to use the entire text set, you can provide a function to indicate which elements should be pruned out. Some examples:</td></tr>
+  </table>
+  </dd>
+</dl>
+<div class="fragment"><pre class="fragment"><span class="comment">//Just use column 3</span>
+<span class="keywordtype">int</span> is_not_col_3(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+    <span class="keywordflow">return</span> col!=3;
+}
+
+<span class="comment">//Jump over blanks as if they don&#39;t exist.</span>
+<span class="keywordtype">int</span> is_blank(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+    <span class="keywordflow">return</span> strlen(indata-&gt;text[row][col])==0;
+}
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">prune_parameter</td><td>A void pointer to pass to your <code>prune</code> function.</td></tr>
   </table>
   </dd>
 </dl>
@@ -465,4 +487,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>

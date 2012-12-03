@@ -69,6 +69,7 @@ Defines</h2>
 <li><a class="anchor" id="aaf1281c546207c8e27e4c8a9239ec3f9"></a><!-- doxytag: member="types.h::apop_IV" ref="aaf1281c546207c8e27e4c8a9239ec3f9" args="" -->
 #define <b>apop_IV</b>&#160;&#160;&#160;<a class="el" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a>
 <li>#define <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(in,...)
+<li>#define <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>(...)&#160;&#160;&#160;apop_model_mixture_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})
 </ul>
 <h2><a name="typedef-members"></a>
 Typedefs</h2>
@@ -105,7 +106,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li>int <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col, const char *fmt,...)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col)
 <li>void <a class="el" href="types_8h.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> (char ***freeme, int rows, int cols)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="types_8h.html#a1115911d81fdc42999bfab81e986a8a8">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> const *in, char transpose_text)
 <li>gsl_matrix * <a class="el" href="types_8h.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> (gsl_matrix *m, size_t newheight, size_t newwidth)
 <li>gsl_vector * <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> (gsl_vector *v, size_t newheight)
 <li>void <a class="el" href="types_8h.html#ab668b25789f7e1ef812ae9f16dc776aa">apop_data_prune_columns_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char **colnames)
@@ -154,6 +155,8 @@ gsl_matrix * <b>apop_matrix_fill_base</b> (gsl_matrix *in, double[])
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="types_8h.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
 <li><a class="anchor" id="af4c012bdc699245953babfdf92973826"></a><!-- doxytag: member="types.h::apop_model_set_parameters_base" ref="af4c012bdc699245953babfdf92973826" args="(apop_model in, double ap[])" -->
 <a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_set_parameters_base</b> (<a class="el" href="structapop__model.html">apop_model</a> in, double ap[])
+<li><a class="anchor" id="a5f10c642ac9a8c9342da4530de1a4e95"></a><!-- doxytag: member="types.h::apop_model_mixture_base" ref="a5f10c642ac9a8c9342da4530de1a4e95" args="(apop_model **inlist)" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_mixture_base</b> (<a class="el" href="structapop__model.html">apop_model</a> **inlist)
 <li><a class="anchor" id="aad65cf464db938a7fbd57de43dfe1c87"></a><!-- doxytag: member="types.h::apop_map" ref="aad65cf464db938a7fbd57de43dfe1c87" args="(apop_data *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(apop_data *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(apop_data *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(apop_data *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(apop_data *, int), void *param, int inplace, char part, int all_pages)" -->
 <a class="el" href="structapop__data.html">apop_data</a> * <b>apop_map</b> (<a class="el" href="structapop__data.html">apop_data</a> *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(<a class="el" href="structapop__data.html">apop_data</a> *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(<a class="el" href="structapop__data.html">apop_data</a> *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(<a class="el" href="structapop__data.html">apop_data</a> *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(<a class="el" href="structapop__data.html">apop_data</a> *, int), void *param, int inplace, char part, int all_pages)
 <li><a class="anchor" id="a871b9e67a6ae243f7420e6943e28e8a0"></a><!-- doxytag: member="types.h::apop_map_sum" ref="a871b9e67a6ae243f7420e6943e28e8a0" args="(apop_data *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(apop_data *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(apop_data *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(apop_data *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(apop_data *, int), void *param, char part, int all_pages)" -->
@@ -190,7 +193,8 @@ void <b>apop_data_print</b> (const <a class="el" href="structapop__data.html">ap
 <h2><a name="var-members"></a>
 Variables</h2>
 <ul>
-<li><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>
+<li><a class="anchor" id="a7975faa07196cf463ec261ff0ddc3ccc"></a><!-- doxytag: member="types.h::apop_opts" ref="a7975faa07196cf463ec261ff0ddc3ccc" args="" -->
+<a class="el" href="structapop__opts__type.html">apop_opts_type</a> <b>apop_opts</b>
 <li><a class="anchor" id="a6935c4bb039f97e52e04bcca5dd33828"></a><!-- doxytag: member="types.h::apop_beta" ref="a6935c4bb039f97e52e04bcca5dd33828" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_beta</b>
 <li><a class="anchor" id="acf02c42f90ef9c5a8bf5efca8b959f19"></a><!-- doxytag: member="types.h::apop_bernoulli" ref="acf02c42f90ef9c5a8bf5efca8b959f19" args="" -->
@@ -221,6 +225,8 @@ Variables</h2>
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_logit</b>
 <li><a class="anchor" id="aa0105d7ec4cc71b1296741cb18f36461"></a><!-- doxytag: member="types.h::apop_lognormal" ref="aa0105d7ec4cc71b1296741cb18f36461" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_lognormal</b>
+<li><a class="anchor" id="a512735ec39d262f944977c40e35a8b00"></a><!-- doxytag: member="types.h::apop_mixture" ref="a512735ec39d262f944977c40e35a8b00" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> <b>apop_mixture</b>
 <li><a class="anchor" id="abe6160b1267ed2300409579604b2a942"></a><!-- doxytag: member="types.h::apop_multinomial" ref="abe6160b1267ed2300409579604b2a942" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_multinomial</b>
 <li><a class="anchor" id="a7a58f1e9c305ccf3bd5005fd8e5a29ab"></a><!-- doxytag: member="types.h::apop_multivariate_normal" ref="a7a58f1e9c305ccf3bd5005fd8e5a29ab" args="" -->
@@ -418,9 +424,11 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
   </dd>
 </dl>
 <p>For example: </p>
-<div class="fragment"><pre class="fragment"><span class="comment">/* This sample produces a dummy times table, gets a summary, and prunes the summary table.</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+
+<span class="comment">/* This sample produces a dummy times table, gets a summary, and prunes the summary table.</span>
 <span class="comment">If you are not a test script, uncomment the last line to display the pruned table.  */</span>
-<span class="keywordtype">void</span> test_prune_cols(){
+<span class="keywordtype">int</span> main(){
     <span class="keywordtype">int</span> i, j;
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, 10, 4);
     <span class="keywordflow">for</span> (i=0; i&lt; 10; i++)
@@ -496,6 +504,24 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the same matrix that was input. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a40bb98b02fde8f8e4ab59a4d127b692f"></a><!-- doxytag: member="types.h::apop_model_mixture" ref="a40bb98b02fde8f8e4ab59a4d127b692f" args="(...)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;apop_model_mixture_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Produce a model as a linear combination of other models. See the documentation for the <a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a> model. </p>
 
 </div>
 </div>
@@ -988,7 +1014,9 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The page whose title matches what you gave me. If I don't find a match, return <code>NULL</code>.</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -1117,8 +1145,10 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="fragment"><pre class="fragment"><span class="comment">/* A round trip: generate Zipf-distributed draws, summarize them to a single list of</span>
 <span class="comment">rankings, then expand the rankings to a list of single entries. The sorted list at the end</span>
 <span class="comment">of this should be identical to the (sorted) original list. */</span>
+<span class="preprocessor">#include &lt;apop.h&gt;</span>
 
-<span class="keywordtype">void</span> rank_round_trip(gsl_rng *r){
+<span class="keywordtype">int</span> main(){
+    gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(2342);
     <span class="keywordtype">int</span> i, length = 1e4;
     <a class="code" href="structapop__model.html">apop_model</a> *a_zipf = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea">apop_zipf</a>, 3.2);
     <a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(length);
@@ -1468,29 +1498,48 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 
 </div>
 </div>
-<a class="anchor" id="a1115911d81fdc42999bfab81e986a8a8"></a><!-- doxytag: member="types.h::apop_data_transpose" ref="a1115911d81fdc42999bfab81e986a8a8" args="(apop_data *in)" -->
+<a class="anchor" id="a06f38caecb66ec90b18b406b15068381"></a><!-- doxytag: member="types.h::apop_data_transpose" ref="a06f38caecb66ec90b18b406b15068381" args="(apop_data const *in, char transpose_text)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a1115911d81fdc42999bfab81e986a8a8">apop_data_transpose</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>in</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> const *&#160;</td>
+          <td class="paramname"><em>in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>transpose_text</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Transpose the matrix element of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, including the row/column names. The vector and text elements of the input data set are completely ignored.</p>
-<p>This is really just a friendly wrapper for <code>gsl_matrix_transpose_memcpy</code>; if you have a <code>gsl_matrix</code> with no names, you may prefer to just use that function.</p>
+<p>Transpose the matrix element of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, including the row/column names. Returns a copy of the element(s) that got transposed. The vector and weights elements of the input data set are completely ignored (but see also <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>, which can convert a vector to a 1 X N matrix.)</p>
+<p>This is mostly just a friendly wrapper for <code>gsl_matrix_transpose_memcpy</code>; if you have a <code>gsl_matrix</code> with no names or text, you may prefer to just use that function.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">in</td><td>The input <a class="el" href="gentle.html#apop_data">apop_data</a> set. </td></tr>
+    <tr><td class="paramname">in</td><td>The input <a class="el" href="gentle.html#apop_data">apop_data</a> set. If <code>NULL</code>, I return <code>NULL</code>. Default is <code>NULL</code>. </td></tr>
+    <tr><td class="paramname">transpose_text</td><td>If <code>'y'</code>, then also transpose the text element. Default is <code>'y'</code>. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A newly alloced <a class="el" href="gentle.html#apop_data">apop_data</a> set, with the appropriately transposed matrix. The vector and text elements will be <code>NULL</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A newly alloced <a class="el" href="gentle.html#apop_data">apop_data</a> set, with the appropriately transposed matrix and/or text. The vector and weights elements will be <code>NULL</code>. If <code>transpose_text='n'</code>, then the text element of the output set will also be <code>NULL</code>.</dd></dl>
+<ul>
+<li>Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input). </li>
+<li>If only the matrix or only the text have names, then the one set of names is written to the row names of the output. </li>
+<li>If both matrix column names and text column names are present, text column names are lost.</li>
+</ul>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -2107,21 +2156,6 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 
 </div>
 </div>
-<hr/><h2>Variable Documentation</h2>
-<a class="anchor" id="a7975faa07196cf463ec261ff0ddc3ccc"></a><!-- doxytag: member="types.h::apop_opts" ref="a7975faa07196cf463ec261ff0ddc3ccc" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Here are where the options are initially set. See the <a class="el" href="structapop__opts__type.html">apop_opts_type</a> documentation for details. </p>
-
-</div>
-</div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Dec 2 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>
