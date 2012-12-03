@@ -261,6 +261,16 @@ typedef struct {
     int own_rng;
 } apop_pm_settings;
 
+
+
+/** Settings to accompany the \ref apop_pmf. */
+typedef struct {
+    gsl_vector *cmf;  /**< A cumulative mass function, for the purposes of making random draws.*/
+    char draw_index;  /**< If \c 'y', then draws from the PMF return the integer index of the row drawn. 
+                           If \c 'n' (the default), then return the data in the vector/matrix elements of the data set. */
+    int cmf_refct;    /**< For internal use, so I can garbage-collect the CMF when needed. */
+} apop_pmf_settings;
+
 #include <gsl/gsl_histogram.h>
 /** Settings for the histogram and kernel density structures, mostly opaque. 
   On setup, you must set the \c .data and \c .bins_in items. 
@@ -502,6 +512,7 @@ typedef struct {
 //Doxygen drops whatever is after these declarations, so I put them last.
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
+Apop_settings_declarations(apop_pmf)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_arms)

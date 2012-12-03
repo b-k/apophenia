@@ -11,6 +11,9 @@
 	error-checking.
 --Apop_stopif macro, rendering the Apop_assert family largely obsolete (so if you're using
 	them in your own work, consider them deprecated...).
+--Where the assert macros used to abort() on errors, they now send signal(SIGTRAP), making
+	debugging a little easier. Most host systems force an abort on SIGTRAP anyway.
+--Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
 
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:

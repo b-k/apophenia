@@ -4,6 +4,7 @@
 #define __apop_asst__
 
 #include <assert.h>
+#include <signal.h> //raise(SIGTRAP)
 #include "types.h"
 #include "variadic.h"
 #include <gsl/gsl_rng.h>
@@ -51,10 +52,10 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
 } }
 
 #define Apop_maybe_abort(level) \
-            {if ((level == -5 && apop_opts.stop_on_warning!='n')  \
+            {if ((level == -5 && apop_opts.stop_on_warning!='n')                \
             || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
             || (apop_opts.stop_on_warning=='w') ) \
-                abort();} \
+                raise(SIGTRAP);}
 
 /** Execute an action and print a message to \c stderr (or the current \c FILE handle held by <tt>apop_opts.log_file</tt>).
  Intended for leaving a function on failure.

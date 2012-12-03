@@ -47,7 +47,9 @@ void numacc4(){
     //Sample Autocorrelation Coefficient (lag 1) r(1):   -0.999     (exact)
 }
 
-void nist_tests(){
+int main(){
+    if (getenv("srcdir")) //if defined, this is probably via an automake rule.
+    apop_system("cp %s/*dat* %s/printing_sample .", getenv("srcdir"), getenv("srcdir")); //needed for make distcheck. No-op in many cases.
     pontius();
     wampler1();
     numacc4();

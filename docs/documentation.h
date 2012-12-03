@@ -563,7 +563,7 @@ endofdiv
 
 Outlineheader status How do I write extensions?
 
-It's not a package, so you don't need an API---write your code and #include it like any
+It's not a package, so you don't need an API---write your code and <tt>#include</tt> it like any
 other C code. The system is written to not require a registration or initialization step
 to add a new model or other such parts.  You can read the notes below on generating
 new models, which have to conform to some rules if they are to play well with \ref
@@ -890,7 +890,6 @@ Outlineheader  matrixmathtwo  Basic Math
 \li\ref apop_vector_log : take the log of every element of a vector
 \li\ref apop_vector_log10 : take the log (base 10) of every element of a vector
 \li\ref apop_vector_distance : find the Euclidean distance between two vectors
-\li\ref apop_vector_grid_distance : find the distance via the Manhattan metric between two vectors
 \li\ref apop_vector_normalize : scale/shift a matrix to have mean zero, sum to one, et cetera
 \li\ref apop_matrix_normalize : apply apop_vector_normalize to every column or row of a matrix
 
@@ -1881,8 +1880,7 @@ Some more descriptive methods:
 
 General utilities:
 
-\li\ref Apop_assert
-\li\ref Apop_assert_c
+\li\ref Apop_stopif
 \li\ref apop_opts
 \li\ref apop_strip_dots()
 \li\ref apop_regex()

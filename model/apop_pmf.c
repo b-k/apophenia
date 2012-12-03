@@ -56,10 +56,25 @@ weights, then draws are equiprobable. This will be difficult to debug.
 \adoc    Input_format     As above, you can input to the \c estimate
                       routine a 2-D matrix that will be converted into this form.     
 \adoc    Parameter_format  None. The list of observations and their weights are in the \c data set, not the \c parameters.
-\adoc    Settings   None.    
+\adoc    Settings   \ref apop_pmf_settings
 */
 
 #include "apop_internal.h"
+
+Apop_settings_copy(apop_pmf,
+    out->cmf = apop_vector_copy(in->cmf);
+    out->cmf_refct++;
+)
+
+Apop_settings_free(apop_pmf,
+    if (!(--in->cmf_refct)) gsl_vector_free(in->cmf);
+) 
+
+Apop_settings_init(apop_pmf,
+    Apop_varad_set(draw_index, 'n')
+    out->cmf_refct = 1;
+)
+
 
 /* \adoc    estimated_data  The data you sent in is linked to (not copied).
 \adoc    estimated_parameters  Still \c NULL.    */
@@ -73,35 +88,48 @@ static apop_model *estim (apop_data *d, apop_model *out){
 /* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a
       weights vector, i will use that to make draws; else all rows are equiprobable.
 
-    \li As a special case (which is a beta feature and subject to change), if you set
-    \c .dsize=0, then I will return the row number of the draw, not the data in that
-    row. 
+\li If you set \c draw_index to \c 'y', e.g., 
 
-    \li  The first time you draw from a PMF, I will generate a CMF (Cumulative Mass
-    Function). For an especially large data set this may take a human-noticeable amount
-    of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
-    draws will have no computational overhead. 
+\code
+Apop_settings_add(your_model, apop_pmf, draw_index, 'y');
+\endcode
+
+then I will return the row number of the draw, not the data in that row. 
+
+\li  The first time you draw from a PMF, I will generate a CMF (Cumulative Mass
+Function). For an especially large data set this may take a human-noticeable amount
+of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
+draws will have no computational overhead. 
+
+\exception m->error='f' There is zero density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
+\exception m->error='a' Allocation error. I set the model's \c error element to \c 'a' and set <tt>out=NAN</tt>. Maybe try \ref apop_data_pmf_compress first?
 */
 static void draw (double *out, gsl_rng *r, apop_model *m){
     Nullcheck_m(m, ) Nullcheck_d(m->data, )
+    apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
+    if (!settings) settings = Apop_model_add_group(m, apop_pmf);
     Get_vmsizes(m->data) //maxsize
     size_t current; 
     if (!m->data->weights) //all rows are equiprobable
         current = gsl_rng_uniform(r)* (maxsize-1);
     else {
         size_t size = m->data->weights->size;
-        if (!m->more){
-            m->more = gsl_vector_alloc(size);
-            gsl_vector *cdf = m->more; //alias.
+        if (!settings->cmf){
+            settings->cmf = gsl_vector_alloc(size);
+            Apop_stopif(!settings->cmf, m->error='a'; *out=GSL_NAN; return,
+                    0, "Allocation error setting up the CMF.");
+            gsl_vector *cdf = settings->cmf; //alias.
             cdf->data[0] = m->data->weights->data[0];
             for (int i=1; i< size; i++)
                 cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
             //Now make sure the last entry is one.
+            Apop_stopif(cdf->data[size-1]==0, m->error='f'; *out=GSL_NAN; return,
+                    0, "Zero density in the PMF.");
             gsl_vector_scale(cdf, 1./cdf->data[size-1]);
         }
         double draw = gsl_rng_uniform(r);
         //do a binary search for where draw is in the CDF.
-        double *cdf = ((gsl_vector*)m->more)->data; //alias.
+        double *cdf = settings->cmf->data; //alias.
         size_t top = size-1, bottom = 0; 
         current = (top+bottom)/2.;
         if (current==0){//array of size one or two
@@ -126,7 +154,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         }
     }
     //Done searching. Current should now be the right row index.
-    if (m->dsize==0){
+    if (settings->draw_index=='y'){
         *out = current;
         return;
     }
@@ -205,7 +233,15 @@ double pmf_p(apop_data *d, apop_model *m){
 
 static void pmf_print(apop_model *est){ apop_data_print(est->data); }
 
-apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p, .print=pmf_print};
+static void pmf_prep(apop_data * data, apop_model *model){
+    Get_vmsizes(data) //msize2, firstcol
+    int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
+    if (Apop_settings_get_group(model, apop_pmf) && Apop_settings_get(model, apop_pmf, draw_index)=='y' && !width) model->dsize=0;
+    apop_model_clear(data, model);
+}
+
+apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p, 
+                        .print=pmf_print, .prep=pmf_prep};
 
 
 /** Say that you have added a long list of observations to a single \ref apop_data set,
