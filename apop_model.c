@@ -143,13 +143,18 @@ void apop_model_show (apop_model * print_me){
 
 \li If <tt>in.more_size > 0</tt> I <tt>memcpy</tt> the \c more pointer from the original data set.
 
+\exception out->error=='a' Allocation error. In extreme cases, where there aren't even a few hundred bytes available, I will return \c NULL.
+\exception out->error=='s' Error copying settings groups.
+\exception out->error=='p' Error copying parameters or info page; the given \ref apop_data struct may be \c NULL or may have its own <tt>->error</tt> element.
 \ingroup models
 */
 apop_model * apop_model_copy(apop_model in){
-  apop_model * out = malloc(sizeof(apop_model));
+    apop_model * out = malloc(sizeof(apop_model));
+    Apop_stopif(!out, return NULL, 0, "Serious allocation error; returning NULL.");
     memcpy(out, &in, sizeof(apop_model));
     if (in.more_size){
         out->more  = malloc(in.more_size);
+        Apop_stopif(!out->more, out->error='a'; return out, 0, "Allocation error setting up the ->more pointer.");
         memcpy(out->more, in.more, in.more_size);
     }
     int i=0; 
@@ -159,7 +164,11 @@ apop_model * apop_model_copy(apop_model in){
             apop_settings_copy_group(out, &in, in.settings[i].name);
         while (strlen(in.settings[i++].name));
     out->parameters = apop_data_copy(in.parameters);
+    Apop_stopif(in.parameters && (!out->parameters || out->parameters->error), 
+                    out->error='p'; return out, 0, "Error copying the model parameters.");
     out->info = apop_data_copy(in.info);
+    Apop_stopif(in.info && (!out->info || out->info->error), 
+                    out->error='p'; return out, 0, "Error copying the info segment.");
     return out;
 }
 

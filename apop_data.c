@@ -1425,7 +1425,7 @@ APOP_VAR_ENDHEAD
 
 typedef int (*apop_fn_ir)(apop_data*, void*);
 
-/** Remove the columns set to one in the \c drop vector.  
+/** Remove the columns set to one in the \c drop vector or for which the \c do_drop function returns one.  
   \param in the \ref apop_data structure to be pared down
   \param drop  a vector with as many elements as the max of the vector, matrix, or text
   parts of \c in, with a one marking those columns to be removed.       \ingroup names
@@ -1435,8 +1435,8 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
   \ref apop_data_rm_rows uses \ref Apop_data_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+  \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
 
   \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
 

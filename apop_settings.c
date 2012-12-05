@@ -49,6 +49,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 
 /** This function is used internally by the macro \ref Apop_settings_get_group. Use that.  */
 void * apop_settings_get_grp(apop_model *m, char *type, char fail){
+    Apop_stopif(!m, return NULL, 0, "you gave me a NULL model as input.");
     if (!m->settings) return NULL;
     int i;
     for (i=0; m->settings[i].name[0] !='\0'; i++)
@@ -64,8 +65,10 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
  the first.  (i.e., the arguments are in memcpy order). 
 
  You probably won't need this often---just use \ref apop_model_copy.
+ \exception outm->error=='s'  Error copying settings group.
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
+    Apop_stopif(!inm, if (outm) outm->error = 's'; return, 0, "you asked me to copy the settings of a NULL model.");
     Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
     void *g =  apop_settings_get_grp(inm, copyme, 'f');
     int i;

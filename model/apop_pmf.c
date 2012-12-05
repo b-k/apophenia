@@ -62,8 +62,10 @@ weights, then draws are equiprobable. This will be difficult to debug.
 #include "apop_internal.h"
 
 Apop_settings_copy(apop_pmf,
-    out->cmf = apop_vector_copy(in->cmf);
-    out->cmf_refct++;
+    if (in->cmf){
+        out->cmf = apop_vector_copy(in->cmf);
+        out->cmf_refct++;
+    }
 )
 
 Apop_settings_free(apop_pmf,

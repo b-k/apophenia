@@ -33,8 +33,8 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 \ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
-    Apop_assert_c(in, 0, 1, "You just asked me to sum a NULL. Returning zero.")
-    double  out = 0;
+    Apop_stopif(!in, return 0, 1, "You just asked me to sum a NULL. Returning zero.")
+    long double out = 0;
     for (size_t i=0; i< in->size; i++)
         out += gsl_vector_get(in, i);
 	return out; 

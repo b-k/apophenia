@@ -74,7 +74,7 @@ APOP_VAR_END_HEAD
 
 \param in a \c gsl_vector (No default. If \c NULL, I return \c NULL, with a warning if <tt>apop_opts.verbose >=1 </tt>)
 \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
-\return a newly-allocated <tt>gsl_matrix</tt> with one column.
+\return a newly-allocated <tt>gsl_matrix</tt> with one column (or row).
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 \li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
@@ -571,8 +571,18 @@ typedef struct{
     char c, type;
 } apop_char_info;
 
-static apop_char_info parse_next_char(FILE *f, char const *delimiters){
-    char c = fgetc(f);
+static size_t bs=1e5;
+static char get_next(char *buffer, size_t *ptr, FILE *infile){
+    if (*ptr>=bs){
+        size_t len=fread(buffer, 1, bs, infile);
+        if (len < bs) buffer[len]=EOF;
+        *ptr=0;
+    }
+    return buffer[(*ptr)++];
+}
+
+static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char const *delimiters){
+    char c = get_next(buffer, ptr, f);
     int is_delimiter = !!strchr(delimiters, c);
     return (apop_char_info){.c=c, 
             .type = (c==' '||c=='\t' || c==0)? (is_delimiter ? 'W'  : 'w')
@@ -590,24 +600,24 @@ static apop_char_info parse_next_char(FILE *f, char const *delimiters){
 //fills fn with a list of strings.
 //returns the count of elements. Negate the count if we're at EOF.
 //fn must already be allocated via apop_data_alloc() [no args].
-static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_ends, char const *delimiters){
+static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_data *fn, int const *field_ends, char const *delimiters){
     int ct=0, thisflen=0, inq=0, inqq=0, infield=0, mlen=5,
             lastwhite=0, lastnonwhite=0; 
     if (field_ends) return parse_a_fixed_line(infile, fn, field_ends);
     apop_char_info ci;
     do {
-        ci = parse_next_char(infile, delimiters);
+        ci = parse_next_char(buffer, ptr, infile, delimiters);
         //comments are to end of line, so they're basically a newline.
         if (ci.type=='#' && !(inq||inqq)){
             for(char c='x'; (c!='\n' && c!=EOF); )
-                c = fgetc(infile);
+                c = get_next(buffer, ptr, infile);
             ci.type='n';
         }
 
         //The escape-type cases: \\ and '' and "".
         //If one applies, set the type to regular
         if (ci.type=='\\'){
-            ci=parse_next_char(infile, delimiters);
+            ci=parse_next_char(buffer, ptr, infile, delimiters);
             if (ci.type!='E')
                 ci.type='r';
         }
@@ -654,15 +664,15 @@ static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_e
 }
 
 //On return, fn has copies of the field names, and add_this_line has the first data line.
-static void get_field_names(int has_col_names, char **field_names, FILE *infile, 
+static void get_field_names(int has_col_names, char **field_names, FILE *infile, char *buffer, size_t *ptr,
                                 apop_data *add_this_line, apop_data *fn, int const *field_ends, char const *delimiters){
     if (has_col_names && field_names == NULL){
         use_names_in_file++;
-        while (fn->textsize[0] ==0) parse_a_line(infile, fn, field_ends, delimiters);
-        parse_a_line(infile, add_this_line, field_ends, delimiters);
+        while (fn->textsize[0] ==0) parse_a_line(infile, buffer, ptr, fn, field_ends, delimiters);
+        parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
     } else{
         while (add_this_line->textsize[0] ==0) 
-            parse_a_line(infile, add_this_line, field_ends, delimiters);
+            parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
         fn	= apop_text_alloc(fn, add_this_line->textsize[0], 1);
         for (int i=0; i< fn->textsize[0]; i++)
             if (field_names) apop_text_add(fn, i, 0, field_names[i]);
@@ -699,6 +709,8 @@ APOP_VAR_END_HEAD
     apop_data *set = NULL;
     FILE *infile = NULL;
     char *str;
+    char buffer[bs];
+    size_t ptr=bs;
     apop_data *add_this_line= apop_data_alloc();
     int row = 0,
         hasrows = (has_row_names == 'y');
@@ -709,7 +721,7 @@ APOP_VAR_END_HEAD
     //First, handle the top line, if we're told that it has column names.
     if (has_col_names=='y'){
         apop_data *field_names = apop_data_alloc();
-        get_field_names(1, NULL, infile, add_this_line, field_names, field_ends, delimiters);
+        get_field_names(1, NULL, infile, buffer, &ptr, add_this_line, field_names, field_ends, delimiters);
         L.ct = add_this_line->textsize[0];
         set = apop_data_alloc(0,1, L.ct - hasrows);
 	    set->names->colct   = 0;
@@ -722,7 +734,7 @@ APOP_VAR_END_HEAD
     //Now do the body.
 	while(!set || (L.ct && !L.eof)){
         if (!L.ct) { //skip blank lines
-            L=parse_a_line(infile, add_this_line, field_ends, delimiters);
+            L=parse_a_line(infile,buffer, &ptr,  add_this_line, field_ends, delimiters);
             continue;
         }
         if (!set) set = apop_data_alloc(0, 1, L.ct-hasrows); //for .has_col_names=='n'.
@@ -752,7 +764,7 @@ APOP_VAR_END_HEAD
                 }
             } else gsl_matrix_set(set->matrix, row-1, col-hasrows, GSL_NAN);
         }
-        L=parse_a_line(infile, add_this_line, field_ends, delimiters);
+        L=parse_a_line(infile, buffer, &ptr, add_this_line, field_ends, delimiters);
 	}
     apop_data_free(add_this_line);
     if (strcmp(text_file,"-")) fclose(infile);
@@ -1147,6 +1159,8 @@ APOP_VAR_END_HEAD
     int  batch_size  = 10000, not_ok=0,
       	 col_ct, ct = 0, rows = 1;
     FILE *infile;
+    char buffer[bs];
+    size_t ptr=bs;
     apop_data *add_this_line = apop_data_alloc();
     sqlite3_stmt * statement = NULL;
     line_parse_t L={1,0};
@@ -1157,7 +1171,7 @@ APOP_VAR_END_HEAD
     if (prep_text_reading(text_file, &infile)) return -1;
 	use_names_in_file = 0;    //file-global.
     apop_data *fn = apop_data_alloc();
-    get_field_names(has_col_names=='y', field_names, infile, 
+    get_field_names(has_col_names=='y', field_names, infile, buffer, &ptr,
                                     add_this_line, fn, field_ends, delimiters);
     col_ct = L.ct = add_this_line->textsize[0];
     if (apop_opts.db_engine=='m')
@@ -1203,7 +1217,7 @@ APOP_VAR_END_HEAD
 #endif
         }
         do {
-            L = parse_a_line(infile, add_this_line, field_ends, delimiters);
+            L = parse_a_line(infile, buffer, &ptr, add_this_line, field_ends, delimiters);
             rows ++;
         } while (!L.ct && !L.eof); //skip blank lines
 	}
