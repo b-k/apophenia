@@ -4,6 +4,14 @@
 !!Big.
 ]
 
+	December 2012
+--Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
+--faster read-in of text files
+--Exponential model uses data in both the vector and matrix parts of the apop_data input
+--transformation to generate mixtures (i.e., linear combinations) of models.
+**apop_data_transpose now transposes the text element as well as the matrix (by default).
+	Use apop_data_transpose(your_matrix,  .transpose_text='n') to replicate the previous behavior.
+
 	November 2012
 --apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs
 	better; put them at the end of the sort order.
@@ -13,7 +21,6 @@
 	them in your own work, consider them deprecated...).
 --Where the assert macros used to abort() on errors, they now send signal(SIGTRAP), making
 	debugging a little easier. Most host systems force an abort on SIGTRAP anyway.
---Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
 
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:

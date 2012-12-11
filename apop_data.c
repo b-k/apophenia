@@ -1220,19 +1220,42 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
 }
 
 /** Transpose the matrix element of the input \ref apop_data set,
- including the row/column names. The vector and text elements of the input data set are completely ignored.
+ including the row/column names. Returns a copy of the element(s) that got transposed.
+ The vector and weights elements of the input data set are completely ignored (but see also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.)
 
- This is really just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names, you may prefer to just use that function.
+This is mostly just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names or text, you may prefer to just use that function.
 
- \param in The input \ref apop_data set.
- \return  A newly alloced \ref apop_data set, with the appropriately transposed matrix. The vector and text elements will be \c NULL.
+\param in The input \ref apop_data set. If \c NULL, I return \c NULL. Default is \c NULL.
+\oaram transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
+\return  A newly alloced \ref apop_data set, with the appropriately transposed matrix and/or text. The vector and weights elements will be \c NULL. If <tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.
+
+\li Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input).
+\li If only the matrix or only the text have names, then the one set of names is written to the row names of the output.
+\li If both matrix column names and text column names are present, text column names are lost.
+
+\li This function uses the \ref designated syntax for inputs.
  */ 
-apop_data *apop_data_transpose(apop_data *in){
-    apop_assert_c(in->matrix, NULL, 0, "input data set has no matrix element, so I'm returning NULL.");
-    apop_data *out = apop_data_alloc(0, in->matrix->size2, in->matrix->size1);
-    gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
+APOP_VAR_HEAD apop_data * apop_data_transpose(apop_data const *in, char transpose_text){
+    apop_data const * apop_varad_var(in, NULL);
+    Apop_stopif(!in, return NULL, 1, "Transposing a NULL data set; returning NULL.");
+    char apop_varad_var(transpose_text, 'y');
+
+APOP_VAR_ENDHEAD
+    Apop_stopif(!in->matrix && !*in->textsize, return apop_data_alloc(), 
+            1, "input data set has neither matrix nor text elements; returning an empty data set.");
+    apop_data *out = apop_data_alloc(0, in->matrix ? in->matrix->size2 : 0
+                                      , in->matrix ? in->matrix->size1 : 0);
+    if (in->matrix) gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
     apop_name_stack(out->names, in->names, 'r', 'c');
     apop_name_stack(out->names, in->names, 'c', 'r');
+    if (!(transpose_text=='y')) return out;
+
+    apop_text_alloc(out, in->textsize[1], in->textsize[0]);
+    for (int r=0; r< in->textsize[0]; r++)
+        for (int c=0; c< in->textsize[1]; c++)
+            apop_text_add(out, c, r, in->text[r][c]);
+    if (in->names->textct && !in->names->textct)
+        apop_name_stack(out->names, in->names, 't', 'r');
     return out;
 }
 
@@ -1327,7 +1350,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 
     \return The page whose title matches what you gave me. If I don't find a match, return \c NULL.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title, const char match){
     const apop_data * apop_varad_var(data, NULL);
