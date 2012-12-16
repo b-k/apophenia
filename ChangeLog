@@ -11,6 +11,7 @@
 --transformation to generate mixtures (i.e., linear combinations) of models.
 **apop_data_transpose now transposes the text element as well as the matrix (by default).
 	Use apop_data_transpose(your_matrix,  .transpose_text='n') to replicate the previous behavior.
+--removed Autoconf pkg-config macros, because Autoconf no longer needs the help.
 
 	November 2012
 --apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs

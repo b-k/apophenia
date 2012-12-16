@@ -12,8 +12,10 @@
 #include "apop_internal.h"
 
 static double apply_me(double x, void *in){
-    double    *ln_l = in;
-    return x==0 ? 0 :  *ln_l *x - gsl_sf_lngamma(x+1);
+    if (x < 0) return -INFINITY;
+    if ((x - (int)x) > 1e-4) return -INFINITY;
+    double *ln_l = in;
+    return x==0 ? 0 : *ln_l *x - gsl_sf_lngamma(x+1);
 }
 
 static double poisson_log_likelihood(apop_data *d, apop_model * p){

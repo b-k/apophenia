@@ -1,4 +1,6 @@
-void test_fisher() {
+#include <apop.h>
+
+int main() {
     /* This test is thanks to Nick Eriksson, who sent it to me in the form of a bug report. */
     double data[] = { 30, 50, 45, 34, 12,17 };
     apop_data * testdata = apop_line_to_data(data,0,2,3);

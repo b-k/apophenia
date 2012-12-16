@@ -101,7 +101,7 @@ Function). For an especially large data set this may take a human-noticeable amo
 of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
 draws will have no computational overhead. 
 
-\exception m->error='f' There is zero density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
+\exception m->error='f' There is zero or NaN density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
 \exception m->error='a' Allocation error. I set the model's \c error element to \c 'a' and set <tt>out=NAN</tt>. Maybe try \ref apop_data_pmf_compress first?
 */
 static void draw (double *out, gsl_rng *r, apop_model *m){
@@ -123,10 +123,11 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
             for (int i=1; i< size; i++)
                 cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
             //Now make sure the last entry is one.
-            Apop_stopif(cdf->data[size-1]==0, m->error='f'; *out=GSL_NAN; return,
-                    0, "Zero density in the PMF.");
+            Apop_stopif(cdf->data[size-1]==0 || isnan(cdf->data[size-1]), m->error='f'; *out=GSL_NAN; return,
+                    0, "Zero or NaN density in the PMF.");
             gsl_vector_scale(cdf, 1./cdf->data[size-1]);
         }
+        Apop_stopif(m->error=='f', *out=GSL_NAN; return, 0, "Zero or NaN density in the PMF.");
         double draw = gsl_rng_uniform(r);
         //do a binary search for where draw is in the CDF.
         double *cdf = settings->cmf->data; //alias.

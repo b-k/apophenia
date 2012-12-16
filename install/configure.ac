@@ -78,11 +78,10 @@ AM_CONDITIONAL([HAVE_PYTHON], [test $PYTHON_VERSION > 1 ])
 
 
 PACKAGE_NAME=apophenia
-AX_CREATE_PKGCONFIG_INFO
 
 ACX_PTHREAD
 
-AC_CONFIG_FILES([Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile tests/Makefile apophenia.pc])
 AC_OUTPUT
 
 echo \

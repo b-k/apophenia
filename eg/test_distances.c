@@ -1,5 +1,7 @@
+#include <apop.h>
+
 /* Test distance calculations using a 3-4-5 triangle */
-void test_distances(){
+int main(){
     gsl_vector *v1 = gsl_vector_alloc(2);
     gsl_vector *v2 = gsl_vector_alloc(2);
     gsl_vector_set(v1, 0,2);

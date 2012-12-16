@@ -328,6 +328,9 @@ function call passes \c &subs, not plain \c subs. Also, the non-match
 has a zero-length blank in <tt>subs->text[0][1]</tt>.
 
 \include test_regex.c
+
+\li Each set of matches will be one row of the output data. E.g., given the regex <tt>([A-Za-z])([0-9]), the column zero of <tt>outdata</tt> will hold letters, and column one will hold numbers.
+Use \ref apop_data_transpose to reverse this so that the letters are in <tt>outdata->text[0]</tt> and numbers in <tt>outdata->text[1]</tt>.
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
     const char * apop_varad_var(string, NULL);

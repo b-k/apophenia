@@ -1,6 +1,8 @@
+#include <apop.h>
+
 /* This sample produces a dummy times table, gets a summary, and prunes the summary table.
 If you are not a test script, uncomment the last line to display the pruned table.  */
-void test_prune_cols(){
+int main(){
     int i, j;
     apop_data *d = apop_data_alloc(0, 10, 4);
     for (i=0; i< 10; i++)

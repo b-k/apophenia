@@ -5,8 +5,8 @@ lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = \
             apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
             apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
-			apop_linear_algebra.c apop_linear_constraint.c              \
-			apop_mapply.c apop_missing_data.c apop_mle.c apop_model.c   \
+			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
+			apop_missing_data.c apop_mixture.c apop_mle.c apop_model.c   \
 			apop_fix_params.c apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c          \
             apop_stats.c apop_tests.c apop_model_transform.c 		    \
@@ -35,8 +35,8 @@ libapophenia_la_SOURCES = \
 pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
 include_HEADERS = apop.h
 
-pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
+pkgconfigdir = `pkg-config --variable pc_path pkg-config | cut -f1 -d:`
 
 SUBDIRS=. tests
 
@@ -51,6 +51,7 @@ apop.py: apop.i
 	mv apop.tmp.py apop.py; \
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
 	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
+
 
 install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
@@ -81,7 +82,7 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
 		eg apop_db_mysql.c apop_db_sqlite.c apop.i tests/apophenia \
-		apop_internal.h internal.h COPYING2
+		apop_internal.h internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
 

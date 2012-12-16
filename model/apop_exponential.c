@@ -29,17 +29,20 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
 
 static double exponential_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
-    gsl_matrix	*data	    = d->matrix;
-    double		mu		    = gsl_vector_get(p->parameters->vector, 0);
-    double		llikelihood = -apop_matrix_sum(data)/ mu;
-	llikelihood	-= data->size1 * data->size2 * log(mu);
+    Get_vmsizes(d) //tsize
+    double mu = gsl_vector_get(p->parameters->vector, 0);
+    double llikelihood = -((d->matrix ? apop_matrix_sum(d->matrix):0) + (d->vector ? apop_sum(d->vector) : 0))/ mu;
+	llikelihood	-= tsize * log(mu);
 	return llikelihood;
 }
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
     apop_name_add(est->parameters->names, "mu", 'r');
-	gsl_vector_set(est->parameters->vector, 0, apop_matrix_mean(data->matrix));
+    Get_vmsizes(data); //msize1, msize2, vsize, tsize
+    double mu =  (vsize ? vsize * apop_vector_mean(data->vector):0
+                + msize1 ? msize1*msize2 * apop_matrix_mean(data->matrix):0)/tsize;
+	gsl_vector_set(est->parameters->vector, 0, mu);
     apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
 	return est;
 }
@@ -54,12 +57,11 @@ static double expo_cdf(apop_data *d, apop_model *params){
 
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Nullcheck_mpd(d, p, );
+    Get_vmsizes(d) //tsize
     double mu = gsl_vector_get(p->parameters->vector, 0);
-    gsl_matrix *data = d->matrix;
-    double d_likelihood;
-	d_likelihood  = apop_matrix_sum(data);
+    double d_likelihood = (d->matrix ? apop_matrix_sum(d->matrix):0) + (d->vector ? apop_sum(d->vector) : 0);
 	d_likelihood /= gsl_pow_2(mu);
-	d_likelihood -= data->size1 * data->size2 /mu;
+	d_likelihood -= tsize /mu;
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 

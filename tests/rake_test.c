@@ -76,7 +76,6 @@ double compare_results(apop_data *in, void *other, int index){
 }
     
 int main(){
-    printf("Test raking.\n");
     //trivial case: if all margins are equal, MLE is to give equal weights.
     int a, b, c;
     apop_query("create table equals (a,b,c)");

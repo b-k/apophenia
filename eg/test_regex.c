@@ -1,4 +1,5 @@
-void test_regex(){
+#include <apop.h>
+int main(){
     char string1[] = "Hello. I am a string.";
     assert(apop_regex(string1, "hell"));
     apop_data *subs;

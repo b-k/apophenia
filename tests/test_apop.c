@@ -6,18 +6,6 @@
 
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
-//These test functions are also displayed in the documentation as examples.
-#include "../eg/test_kl_divergence.c"
-#include "../eg/test_strip_dots.c"
-#include "../eg/test_distances.c"
-#include "../eg/test_harmonic.c"
-#include "../eg/test_updating.c" 
-#include "../eg/test_pruning.c"     // test_prune_cols()
-#include "../eg/apop_map_row.c" 
-#include "../eg/test_fisher.c" 
-#include "../eg/test_ranks.c" 
-#include "../eg/test_regex.c" 
-#include "../eg/pmf_test.c" 
 
 //A NULL-tolerant strcmp, which used to be a fn and has been deleted.
 #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
@@ -1394,22 +1382,14 @@ int main(int argc, char **argv){
     do_test("NaN handling", test_nan_data());
     do_test("test model transformation: scaling", test_transform());
     do_test("test data compressing", test_pmf_compress(r));
-    do_test("test apop_update", test_updating(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
     do_test("default RNG", test_default_rng(r));
     do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());
-    do_test("test rank expand/compress", rank_round_trip(r));
     do_test("test row set and remove", row_manipulations());
-    do_test("test apop_map on apop_data_rows", test_apop_map_row());
-    do_test("test optimization of multi-page parameters", pack_test());
-    do_test("Kullback-Leibler divergence test", test_kl_divergence(r));
-    do_test("apop_distance test", test_distances());
-    do_test("test column pruning", test_prune_cols());
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
-    do_test("test regex", test_regex());
     do_test("test adaptive rejection sampling", test_arms(r));
     do_test("test listwise delete", test_listwise_delete());
     //do_test("test fix params", test_model_fix_parameters(r));
@@ -1419,7 +1399,6 @@ int main(int argc, char **argv){
     do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());
     do_test("test vector/matrix realloc", test_resize());
-    do_test("test Fisher exact test", test_fisher());
     do_test("db_to_text", db_to_text());
     do_test("test_vector_moving_average", test_vector_moving_average());
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
@@ -1437,8 +1416,6 @@ int main(int argc, char **argv){
     do_test("split and stack test", test_split_and_stack(r));
     do_test("multivariate gamma", test_mvn_gamma());
     do_test("apop_dot test", test_dot());
-    do_test("apop_generalized_harmonic test", test_harmonic());
-    do_test("apop_strip_dots test", test_strip_dots());
     do_test("Inversion test", test_inversion(r));
     do_test("apop_jackknife test", test_jackknife(r));
     do_test("apop_matrix_summarize test", test_summarize());
