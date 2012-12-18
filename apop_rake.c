@@ -38,39 +38,33 @@ mnode[i][j].margin_ptrs = a list of all of the rows in the data set with the giv
 mnode[i][j].margin_ptrs[k] = the kth item for the value.
   */
 
-//// If the index part of this file were split into separate files, the next few lines would be index.h.
 typedef struct {
     double val;
-    bool *margin_ptrs;
+    bool *margin_ptrs, *fit_ptrs;
 } mnode_t;
 
 typedef void(*index_apply_f)(mnode_t * const * const, int, void*);
-
-mnode_t **index_generate(const apop_data *in);
-void index_free(mnode_t **in);
-void index_add_node(mnode_t **mnodes, size_t dim, size_t row, double val);
-void index_foreach(mnode_t *index[], index_apply_f f, void *args);
-void index_get_element_list(mnode_t * const * const index, bool *d);
-
-//End index.h; begin index.c
 
 static int find_val(double findme, mnode_t *nodecol){
     for (int i=0; nodecol[i].val <= findme || gsl_isnan(findme); i++)
         if (nodecol[i].val == findme || (gsl_isnan(findme) && gsl_isnan(nodecol[i].val)))
            return i;
-    Apop_assert(0, "I can't find a value, %g, that should've already been inserted.", findme);
+    return -1;
 }
 
-static int size;
-
-void index_add_node(mnode_t **mnodes, size_t dim, size_t row, double val){
+//returns -1 if the given row/col doesn't exist.
+int index_add_node(mnode_t **mnodes, size_t dim, size_t row, double val, bool is_margin){
     int index = find_val(val, mnodes[dim]);
-    mnodes[dim][index].margin_ptrs[row] = 1;
+    if (index == -1) return -1;
+    if (is_margin) mnodes[dim][index].margin_ptrs[row] = true;
+    else           mnodes[dim][index].fit_ptrs[row] = true;
+    return 0;
 }
 
-mnode_t **index_generate(const apop_data *in){
+mnode_t **index_generate(apop_data const *in, apop_data const *in2){
     size_t margin_ct = in->matrix->size2;
-    size = in->matrix->size1;
+    size_t margin_rows = in->matrix->size1;
+    size_t fit_rows = in2->matrix->size1;
     mnode_t **mnodes = malloc(sizeof(mnode_t*)*(margin_ct+1));
     //allocate every node
     for(size_t i=0; i < margin_ct; i ++){
@@ -79,23 +73,28 @@ mnode_t **index_generate(const apop_data *in){
         mnodes[i] = malloc(sizeof(mnode_t)*(vals->size+1));
         for(size_t j=0; j < vals->size; j ++)
             mnodes[i][j] = (mnode_t) {.val = gsl_vector_get(vals, j),
-                        .margin_ptrs = calloc(size, sizeof(bool))};
+                        .margin_ptrs = calloc(margin_rows, sizeof(bool)),
+                        .fit_ptrs = calloc(fit_rows, sizeof(bool))
+            };
         mnodes[i][vals->size] = (mnode_t) {.val = GSL_POSINF}; //end-of-array sentinel
         gsl_vector_free(vals);
     }
     mnodes[margin_ct] = NULL; //end-of-array sentinel
     //put data from the matrix into the right pigeonhole
-    for(size_t i=0; i < margin_ct; i++)
+    for(size_t i=0; i < margin_ct; i++){
         for(size_t j=0; j < in->matrix->size1; j++)
-            index_add_node(mnodes, i, j, apop_data_get(in, j, i));
+            Apop_stopif(index_add_node(mnodes, i, j, apop_data_get(in, j, i), true) == -1, return mnodes,
+            0, "I can't find a value, %g, that should've already been inserted.", apop_data_get(in, j, i));
+        for(size_t j=0; j < in2->matrix->size1; j++) //these values may not be present, in which case ignore them.
+            index_add_node(mnodes, i, j, apop_data_get(in2, j, i), false);
+    }
     return mnodes;
 }
 
 void index_free(mnode_t **in){
 	for (int i=0; in[i]; i++){
-		//for (int j=0; !isinf(in[i][j].val); j++)
-		/*for (int j=0; in[i][j].margin_ptrs; j++)
-			free(in[i][j].margin_ptrs);*/
+		for (int j=0; !isinf(in[i][j].val); j++)
+			free(in[i][j].margin_ptrs);
         free(in[i]);
 	}
     free(in);
@@ -106,8 +105,7 @@ for a given index (which may be the whole thing or a margin). index_foreach does
 initialization of some state variables; value_loop does the odometer-like recursion. At
 each step, value_loop will either increment the current dimension's index, or if the
 current index is at its limit, will loop back to zero on this index and then set the
-next dimension as active.  
- */
+next dimension as active. */
 static void value_loop(mnode_t *icon[], int *indices, mnode_t **values, 
             int this_dim, index_apply_f f, int *ctr, void *args){
     while (!isinf(icon[this_dim][indices[this_dim]].val)){
@@ -125,11 +123,10 @@ static void value_loop(mnode_t *icon[], int *indices, mnode_t **values,
 
 /* Inputs: the index to be iterated over, the function to apply to each combination,
 and a void* with other sundry arguments to the function. I'll apply the function 
-to an mnode_t* with a single mnode_t for each dimension.
- */
+to an mnode_t* with a single mnode_t for each dimension.  */
 void index_foreach(mnode_t *index[], index_apply_f f, void *args){
     int j, ctr=0;
-    for (j=0; index[j]; j++) ;//Do nothing; just counting elmts.
+    for (j=0; index[j]; ) j++;
     mnode_t *values[j+1];
     for (j=0; index[j]; j++) 
         values[j] = &index[j][0];
@@ -145,15 +142,14 @@ void index_foreach(mnode_t *index[], index_apply_f f, void *args){
 
 \param index Is actually a partial index: for each dimension, there should be only one value. Useful for the center of an index_foreach loop.
 \param d Should already be allocated to the right size, may be filled with garbage.
-\return d will be zero or one to indicate which rows of the indexed data set meet all criteria.
-*/
-void index_get_element_list(mnode_t *const * index, bool *d){
-    memcpy(d, index[0]->margin_ptrs, size *  sizeof(bool));
-    for(int i=1; !isinf(index[i]->val); i++)
-        for(int j=0; j < size; j++)
-            //Next two lines are equivalent to d[j]=d[j] && index[i]->..., but clock in as faster.
-            if (d[j])
-                d[j] = index[i]->margin_ptrs[j];
+\return d will be zero or one to indicate which rows of the indexed data set meet all criteria.  */
+void index_get_element_list(mnode_t *const * index, bool *d, size_t len, bool is_margin){
+    memcpy(d, is_margin ? index[0]->margin_ptrs: index[0]->fit_ptrs, len *  sizeof(bool));
+    for(size_t i=1; !isinf(index[i]->val); i++){
+        bool *ptr_list = is_margin ? index[i]->margin_ptrs: index[i]->fit_ptrs;
+        for(size_t j=0; j < len; j++)
+             d[j] &= ptr_list[j];
+    }
 }
 
 ////End index.c
@@ -179,14 +175,12 @@ static void rakeinfo_free(rake_t r){
     #define free_and_clear(in) free(in), (in) = NULL
     for (int i=0; i < r.ct; i++)
         free_and_clear(r.elmtlist[i]);
-    free_and_clear(r.index);
+    free_and_clear(r.index); //these are just pointers to the main index.
     free_and_clear(r.elmtlist_sizes);
-//    free_and_clear(r.elmtlist);
+    free_and_clear(r.elmtlist);
     gsl_vector_free(r.indata_values);
     r.indata_values= NULL;
 }
-
-double overall_max_dev;
 
 static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, double const in_sum){
     double fit_sum = 0;
@@ -195,32 +189,38 @@ static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, d
     if (!fit_sum) return; //can happen if init table is very different from margins.
     for(size_t i=0; i < n; i ++)
         weights->data[elmts[i]] *= in_sum/fit_sum;
-	overall_max_dev = GSL_MAX(overall_max_dev, fabs(in_sum-fit_sum));
 }
 
 /* Given one set of values from one margin, do the actual scaling.
  On the first pass, this function takes notes on each margin's element list and total 
  in the original data. Later passes just read the notes and call the scaling() function above.
 */
-static void one_set_of_values(mnode_t *const * const icon, const int ctr, void *in){
+static void one_set_of_values(mnode_t *const * const margincons, int ctr, void *in){
     rake_t *r = in;
-    int size = r->indata->matrix->size1;
-    static bool *t = NULL;
-    if (!t) t = malloc(size * sizeof(bool));
-	int first_pass = 0;
+    int marginsize = r->indata->matrix->size1;
+    int fitsize = r->fit->matrix->size1;
+    static bool *melmts = NULL;
+    if (!melmts) melmts = malloc(marginsize * sizeof(bool));
+    static bool *fitelmts = NULL;
+    if (!fitelmts) fitelmts = malloc(fitsize * sizeof(bool));
+	long int first_pass = 0;
     double in_sum;
 	if (ctr < r->ct)
 		in_sum = gsl_vector_get(r->indata_values, ctr);
     else {
         r->ct++;
         if (ctr >= r->al) rakeinfo_grow(r);
-   		index_get_element_list(icon, t);
+   		index_get_element_list(margincons, melmts, marginsize, true);
+   		index_get_element_list(margincons, fitelmts, fitsize, false);
         in_sum = 0;
         int n=0, al=0;
         r->elmtlist[ctr] = NULL;
-        for(int m=0; m < size; m++)
-            if (t[m]){
-                in_sum += r->indata->weights->data[m];
+        //use margin index to get total for this margin.
+        for(int m=0; m < marginsize; m++)
+            if (melmts[m]) in_sum += r->indata->weights->data[m];
+        //use fit index to get elements involved in this margin
+        for(int m=0; m < fitsize; m++)
+            if (fitelmts[m]){
                 if (n >= al) {
                     al = (al+1)*2;
                     r->elmtlist[ctr] = realloc(r->elmtlist[ctr], al*sizeof(size_t));
@@ -239,10 +239,8 @@ static void one_set_of_values(mnode_t *const * const icon, const int ctr, void *
 /* For each configuration margin, for each combination for that margin, 
    call the above one_set_of_values() function. */
 static void main_loop(int config_ct, rake_t *rakeinfo, int k){
-	overall_max_dev = GSL_NEGINF;
-    for(size_t i=0; i < config_ct; i ++)
-		if (k==1)
-			index_foreach(rakeinfo[i].index, one_set_of_values, rakeinfo+i);
+    for (size_t i=0; i < config_ct; i ++)
+		if (k==1) index_foreach(rakeinfo[i].index, one_set_of_values, rakeinfo+i);
 		else
 			for(int m=0; m < rakeinfo[i].ct; m++)
 				one_set_of_values(NULL, m, rakeinfo+i);
@@ -265,6 +263,13 @@ void cleanup(mnode_t **index, rake_t rakeinfos[], int contrast_ct){
 	index_free(index);
 }
 
+int youre_done(gsl_vector *prev, gsl_vector *current, double lim){
+    gsl_vector_sub(prev, current);
+    for (int i=0; i< prev->size; i++)
+        if (fabs(prev->data[i]) > lim) return 0;
+    return 1;
+}
+
 /*
 \param config 	An nvar x ncon matrix; see below. [as in the original, but not squashed into 1-D.]
 \param indata 	the actual table. I use a PMF format.
@@ -281,7 +286,7 @@ Re: the contrast array: Each _column_ is a contrast. Put a one in each col
  */
 static void c_loglin(const apop_data *config, const apop_data *indata, 
                         apop_data *fit, double maxdev, int maxit) {
-    mnode_t ** index = index_generate(indata);
+    mnode_t ** index = index_generate(indata, fit);
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
     //fit->weights is either all 1 (if no count_col) or the initial counts from the db.
@@ -296,24 +301,29 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
         rakeinfos[i] = (rake_t) {
             .indata = indata,
             .fit = fit,
-            .index = malloc(sizeof(mnode_t) *(apop_sum(iconv)+1))
+            .index = malloc(sizeof(mnode_t) *(apop_sum(iconv)+1)),
             //others are NULL, to be filled in as we go.
         };
         generate_margin_index(rakeinfos[i].index, config, index, i);
     }
     int k;
+    gsl_vector *previous = apop_vector_copy(fit->weights);
     for (k = 1; k <= maxit; ++k) {
 		if (!(k%100)){printf(".");fflush(NULL);}
         main_loop(contrast_ct, rakeinfos, k);
-        if (overall_max_dev < maxdev) { // Normal termination 
+        Apop_notify(3, "Data set after round %i of raking.\n", k);
+        if (apop_opts.verbose >=3) apop_data_show(fit);
+        if (youre_done(previous, fit->weights, maxdev)) { // Normal termination 
             cleanup(index, rakeinfos, contrast_ct);
+            gsl_vector_free(previous);
             return;
         }
+        gsl_vector_memcpy(previous, fit->weights);
     }
     cleanup(index, rakeinfos,contrast_ct);
-    Apop_assert_c(k < maxit, , 0, "Maximum number of iterations reached. The max "
-            "deviation is %g, which is still more than tolerance = %g", overall_max_dev, maxdev);
+    Apop_stopif(k < maxit, fit->error='c', 0, "Maximum number of iterations reached.");
 }
+
 char *pipe_parse = "[ \n\t]*([^| \n\t]+)[ \n\t]*([|]|$)";
 
 apop_data **generate_list_of_contrasts(char *const *contras_in, int contrast_ct){
@@ -378,8 +388,8 @@ char *vars_to_join(apop_data *varlist){
 }
 
 int setup_nonzero_contrast(char const *margin_table, 
-                        char * const*allvars, int allvars_ct, int run_number,
-                        char const *list_of_fields, apop_data *const* contras, int contrast_ct){
+              char * const *allvars, int allvars_ct, int run_number,
+              char const *list_of_fields, apop_data *const* contras, int contrast_ct){
     char *q;
 	asprintf(&q, "create table apop_zerocontrasts_%i as select ", run_number);
     for (int i=0; i < allvars_ct; i++) xprintf(&q, "%s t%i.%s, ", q, i, allvars[i]); 
@@ -523,6 +533,7 @@ apop_query("update data_table set count_col = 1e-3 where count_col = 0");
 \return An \ref apop_data set where every row is a single combination of variable values
 and the \c weights vector gives the most likely value for each cell.
 \exception out->error='i' Input was somehow wrong.
+\exception out->error='c' Raking did not converge, reached max. iteration count.
 \li This function uses the \ref designated syntax for inputs.
 
 \li The interface is still beta, and subject to change---notably, handling of text
@@ -595,25 +606,29 @@ APOP_VAR_ENDHEAD
         if (init_table) asprintf(&initt, "%s", init_table);
     }
     char *init_q = strdup("select ");
+    char *pre_init_q = NULL;
 	asprintf(&q, "create table apop_contrasts_%i as select %s ", run_number, list_of_fields);
-    if (count_col){
-        xprintf(&q, "%s, sum(%s) from %s\ngroup by %s", q, count_col, margint, list_of_fields);
-        if (init_table){
-            char *countstr;
-            if (init_count_col) asprintf(&countstr, "R.%s", init_count_col);
-            else                asprintf(&countstr, "1");
-            xprintf(&init_q, "%s %s, sum(%s)\n "
-                "from %s L left outer join %s R on %s\n"
-                "group by %s", 
-                init_q, apop_text_paste(all_vars_d, .before="L.", .between = ", L."), countstr, 
-                margint, initt, vars_to_join(all_vars_d),
-                apop_text_paste(all_vars_d, .before="L.", .between = ", L."));
-            free(countstr);
+    if (count_col)
+         xprintf(&q, "%s, sum(%s)  from %s\ngroup by %s", q, count_col, margint, list_of_fields);
+    else xprintf(&q, "%s, count(*) from %s\ngroup by %s", q,            margint, list_of_fields);
+    if (init_table){
+        char *countstr;
+        for (int i=0; i< all_vars_d->textsize[1]; i++){
+            xprintf(&pre_init_q, "%s create index apop_loj1_%s%i on %s(%s);", pre_init_q ? pre_init_q : "",
+                    (*all_vars_d->text)[i], run_number, initt, (*all_vars_d->text)[i]);
+            xprintf(&pre_init_q, "%s create index apop_loj2_%s%i on apop_contrasts_%i(%s);", pre_init_q,
+                    (*all_vars_d->text)[i], run_number, run_number, (*all_vars_d->text)[i]);
         }
-    } else {
-        xprintf(&q, "%s, count(*) from %s\ngroup by %s", q, margint, list_of_fields);
-        if (init_table) xprintf(&init_q, "%s %s, count(*) from %s\ngroup by %s", init_q, list_of_fields, initt, list_of_fields);
-    }
+        if (init_count_col) asprintf(&countstr, "sum(R.%s) as %s", init_count_col, init_count_col);
+        else                asprintf(&countstr, "count(R.%s)", **all_vars_d->text);
+        xprintf(&init_q, "%s %s, %s\n "
+            "from apop_contrasts_%i L left outer join %s R on %s\n"
+            "group by %s", 
+            init_q, apop_text_paste(all_vars_d, .before="L.", .between = ", L."), countstr, 
+            run_number, initt, vars_to_join(all_vars_d),
+            apop_text_paste(all_vars_d, .before="R.", .between = ", R."));
+        free(countstr);
+    } 
 	xprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
 	Apop_stopif(apop_query("%s", q), 
                  apop_data *out=apop_data_alloc(); out->error='q'; return out,
@@ -629,6 +644,7 @@ APOP_VAR_ENDHEAD
     Apop_stopif(!d || d->error, apop_data *out=apop_data_alloc(); out->error='q'; return out,
             0, "This query:\nselect * from apop_contrasts_%i\ngenerated a blank or broken table.", run_number);
 
+    if (pre_init_q) apop_query(pre_init_q);
     apop_data *fit = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
                                 : apop_data_copy(d);
     apop_vector_apply(fit->weights, nan_to_zero);
