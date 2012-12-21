@@ -858,7 +858,7 @@ gsl_vector_memcpy(firstcol, your_other_data_vector);
 
 <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(&amp;<a class="code" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a>, apop_lm, .instruments = submatrix);
 <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a>);
-<a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
+apop_model_show(est);
 </pre></div> </td></tr>
 </table>
 </dd>
@@ -1157,8 +1157,51 @@ gsl_vector_memcpy(firstcol, your_other_data_vector);
 </p>
 </li>
 </ul>
-<p>The elements of the sum are all now exp(something negative), so overflow won't happen, and if there's underflow, then that term must not have been very important. [This trick is attributed to Tom Minka, who implemented it in his Lightspeed Matlab toolkit.] </p>
-</td></tr>
+<p>The elements of the sum are all now exp(something negative), so overflow won't happen, and if there's underflow, then that term must not have been very important. [This trick is attributed to Tom Minka, who implemented it in his Lightspeed Matlab toolkit.]</p>
+<p>Here is an artifical example:</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+
+<span class="keywordtype">char</span> *testfile = <span class="stringliteral">&quot;logit_test_data&quot;</span>;
+
+<span class="comment">//generate a fake data set.</span>
+<span class="comment">//Notice how the first column is the outcome, just as with standard regression.</span>
+<span class="keywordtype">void</span> write_data(){
+    FILE *f = fopen(testfile, <span class="stringliteral">&quot;w&quot;</span>);
+    fprintf(f, <span class="stringliteral">&quot;\</span>
+<span class="stringliteral">        outcome,A, B \n\</span>
+<span class="stringliteral">        0, 0, 0     \n\</span>
+<span class="stringliteral">        1, 1, 1     \n\</span>
+<span class="stringliteral">        1, .7, .5   \n\</span>
+<span class="stringliteral">        1, .7, .3   \n\</span>
+<span class="stringliteral">        1, .3, .7   \n\</span>
+<span class="stringliteral">        \n\</span>
+<span class="stringliteral">        1, .5, .5   \n\</span>
+<span class="stringliteral">        0, .4, .4   \n\</span>
+<span class="stringliteral">        0, .3, .4   \n\</span>
+<span class="stringliteral">        1, .1, .3   \n\</span>
+<span class="stringliteral">        1, .3, .1   &quot;</span>);
+    fclose(f);
+}
+
+<span class="keywordtype">int</span> main(){
+    write_data();
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(testfile);
+    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(&amp;<a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>, apop_mle, .tolerance=1e-5);
+    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>);
+    unlink(testfile);
+
+    <span class="comment">/* Apophenia&#39;s test suite checks that this code produces </span>
+<span class="comment">       values close to canned values. As a human, you probably </span>
+<span class="comment">       just want to print the results to the screen. */</span>
+<span class="preprocessor">    #ifndef Testing</span>
+<span class="preprocessor"></span>        apop_model_show(est);
+<span class="preprocessor">    #else</span>
+<span class="preprocessor"></span>        assert(fabs(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, .rowname=<span class="stringliteral">&quot;1&quot;</span>)- -1.155026) &lt; 1e-6);
+        assert(fabs(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, .rowname=<span class="stringliteral">&quot;A&quot;</span>)- 4.039903) &lt; 1e-6);
+        assert(fabs(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, .rowname=<span class="stringliteral">&quot;B&quot;</span>)- 1.494694) &lt; 1e-6);
+<span class="preprocessor">    #endif</span>
+<span class="preprocessor"></span>}
+</pre></div> </td></tr>
 </table>
 </dd>
 </dl>
@@ -1701,14 +1744,14 @@ gsl_vector_memcpy(firstcol, your_other_data_vector);
     <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
-    <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(est);
+    apop_model_show(est);
 }
 </pre></div><p>If you saved this code to <code>sample.c</code>, then you can compile it with </p>
 <div class="fragment"><pre class="fragment">gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 </pre></div><p>and then run it with <code>./run_me</code>. Alternatively, you may prefer to compile the program using a <a class="el" href="makefile.html">Makefile</a> .</p>
 <p>Feeling lazy? The program above was good form and demonstrated useful features, but the code below will do the same thing in two lines:</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
-<span class="keywordtype">int</span> main(){ <a class="code" href="apop__model_8c.html#a4fa08e29db38e8dcc111899c942022d9">apop_model_show</a>(<a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(<a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>), <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>)); }
+<span class="keywordtype">int</span> main(){ apop_model_show(<a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(<a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>), <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>)); }
 </pre></div> </td></tr>
 </table>
 </dd>
@@ -2889,4 +2932,4 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>

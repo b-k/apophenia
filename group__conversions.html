@@ -45,7 +45,7 @@ Functions</h2>
 <li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
 <li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
-<li>void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
+<li>int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays. </p>
@@ -242,12 +242,12 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="ga1207fee6d1e23cea944f7c7effd86851"></a><!-- doxytag: member="apop_db.c::apop_data_to_db" ref="ga1207fee6d1e23cea944f7c7effd86851" args="(const apop_data *set, const char *tabname, const char output_append)" -->
+<a class="anchor" id="ga43aa7a723adab7a592a5e52961b338df"></a><!-- doxytag: member="apop_db.c::apop_data_to_db" ref="ga43aa7a723adab7a592a5e52961b338df" args="(const apop_data *set, const char *tabname, const char output_append)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="group__conversions.html#ga1207fee6d1e23cea944f7c7effd86851">apop_data_to_db</a> </td>
+          <td class="memname">int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>set</em>, </td>
@@ -287,7 +287,13 @@ Functions</h2>
 <ul>
 <li>You can also call this via <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> <code>(data, "tabname", .output_type='d', .output_append='w')</code> to overwrite a new table or with <code>.output_append='a'</code> to append.</li>
 </ul>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<ul>
+<li>Especially if you are using a pre-2007 version of SQLite, there may be a spe</li>
+</ul>
+<div class="fragment"><pre class="fragment"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;begin;&quot;</span>);
+<a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(dataset, .output_file=<span class="stringliteral">&quot;dbtab&quot;</span>, .output_type=<span class="charliteral">&#39;d&#39;</span>);
+<a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;commit;&quot;</span>);
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">set</td><td>The name of the matrix </td></tr>
     <tr><td class="paramname">tabname</td><td>The name of the db table to be created </td></tr>
@@ -295,6 +301,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>0=OK, -1=error </dd></dl>
 
 </div>
 </div>
@@ -586,8 +593,11 @@ Functions</h2>
 <p>Read a text file into a database table.</p>
 <p>See <a class="el" href="text_format.html">Notes on input text file formatting</a>.</p>
 <p>See the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> page for an example that uses this function to read in sample data (also listed on that page).</p>
-<p>By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<p>Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:</p>
+<div class="fragment"><pre class="fragment"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;begin;&quot;</span>);
+<a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(dataset, .output_file=<span class="stringliteral">&quot;dbtab&quot;</span>, .output_type=<span class="charliteral">&#39;d&#39;</span>);
+<a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;commit;&quot;</span>);
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">text_file</td><td>The name of the text file to be read in. If <code>"-"</code>, then read from <code>STDIN</code>. (default = "-") </td></tr>
     <tr><td class="paramname">tabname</td><td>The name to give the table in the database (default = <code> apop_strip_dots (text_file, 'd')</code>; default in Python/R interfaces="t") </td></tr>
@@ -678,4 +688,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>

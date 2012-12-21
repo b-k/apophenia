@@ -64,20 +64,24 @@ urchinTracker();
 <a name="l00033"></a>00033 <span class="keywordtype">void</span> xprintf(<span class="keywordtype">char</span> **q, <span class="keywordtype">char</span> *format, ...);
 <a name="l00034"></a>00034 <span class="preprocessor">#define XN(in) ((in) ? (in) : &quot;&quot;)</span>
 <a name="l00035"></a>00035 <span class="preprocessor"></span>
-<a name="l00036"></a>00036 <span class="keywordtype">char</span> *<a class="code" href="apop__conversions_8c.html#ac6114b6a2be902c83a75d4367db4371f">prep_string_for_sqlite</a>(<span class="keywordtype">int</span> prepped_statements, <span class="keywordtype">char</span> <span class="keyword">const</span> *astring);<span class="comment">//apop_conversions.c</span>
-<a name="l00037"></a>00037 <span class="keywordtype">void</span> apop_gsl_error(<span class="keyword">const</span> <span class="keywordtype">char</span> *reason, <span class="keyword">const</span> <span class="keywordtype">char</span> *file, <span class="keywordtype">int</span> line, <span class="keywordtype">int</span> gsl_errno); <span class="comment">//apop_linear_algebra.c</span>
-<a name="l00038"></a>00038 
-<a name="l00039"></a>00039 <span class="comment">//For when we&#39;re forced to use a global variable.</span>
-<a name="l00040"></a>00040 <span class="preprocessor">#undef threadlocal</span>
-<a name="l00041"></a>00041 <span class="preprocessor"></span><span class="preprocessor">#ifdef _ISOC11_SOURCE </span>
-<a name="l00042"></a>00042 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal _Thread_local</span>
-<a name="l00043"></a>00043 <span class="preprocessor"></span><span class="preprocessor">#elif defined(__APPLE__) </span>
-<a name="l00044"></a>00044 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal</span>
-<a name="l00045"></a>00045 <span class="preprocessor"></span><span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; !defined(threadlocal)</span>
-<a name="l00046"></a>00046 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal __thread</span>
-<a name="l00047"></a>00047 <span class="preprocessor"></span><span class="preprocessor">#else</span>
+<a name="l00036"></a>00036 <span class="preprocessor">#include &lt;sqlite3.h&gt;</span>
+<a name="l00037"></a>00037 <span class="preprocessor">#include &lt;stddef.h&gt;</span>
+<a name="l00038"></a>00038 <span class="keywordtype">int</span> apop_use_sqlite_prepared_statements(<span class="keywordtype">size_t</span> col_ct);
+<a name="l00039"></a>00039 <span class="keywordtype">int</span> apop_prepare_prepared_statements(<span class="keywordtype">char</span> <span class="keyword">const</span> *tabname, <span class="keywordtype">size_t</span> col_ct, sqlite3_stmt **statement);
+<a name="l00040"></a>00040 <span class="keywordtype">char</span> *<a class="code" href="apop__conversions_8c.html#ac6114b6a2be902c83a75d4367db4371f">prep_string_for_sqlite</a>(<span class="keywordtype">int</span> prepped_statements, <span class="keywordtype">char</span> <span class="keyword">const</span> *astring);<span class="comment">//apop_conversions.c</span>
+<a name="l00041"></a>00041 <span class="keywordtype">void</span> apop_gsl_error(<span class="keywordtype">char</span> <span class="keyword">const</span> *reason, <span class="keywordtype">char</span> <span class="keyword">const</span> *file, <span class="keywordtype">int</span> line, <span class="keywordtype">int</span> gsl_errno); <span class="comment">//apop_linear_algebra.c</span>
+<a name="l00042"></a>00042 
+<a name="l00043"></a>00043 <span class="comment">//For when we&#39;re forced to use a global variable.</span>
+<a name="l00044"></a>00044 <span class="preprocessor">#undef threadlocal</span>
+<a name="l00045"></a>00045 <span class="preprocessor"></span><span class="preprocessor">#ifdef _ISOC11_SOURCE </span>
+<a name="l00046"></a>00046 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal _Thread_local</span>
+<a name="l00047"></a>00047 <span class="preprocessor"></span><span class="preprocessor">#elif defined(__APPLE__) </span>
 <a name="l00048"></a>00048 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal</span>
-<a name="l00049"></a>00049 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00049"></a>00049 <span class="preprocessor"></span><span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; !defined(threadlocal)</span>
+<a name="l00050"></a>00050 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal __thread</span>
+<a name="l00051"></a>00051 <span class="preprocessor"></span><span class="preprocessor">#else</span>
+<a name="l00052"></a>00052 <span class="preprocessor"></span><span class="preprocessor">    #define threadlocal</span>
+<a name="l00053"></a>00053 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Dec 21 2012.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
