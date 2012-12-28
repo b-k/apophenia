@@ -124,8 +124,10 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
                 cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
             //Now make sure the last entry is one.
             Apop_stopif(cdf->data[size-1]==0 || isnan(cdf->data[size-1]), m->error='f'; *out=GSL_NAN; return,
-                    0, "Zero or NaN density in the PMF.");
+                    0, "Bad density in the PMF.");
             gsl_vector_scale(cdf, 1./cdf->data[size-1]);
+            Apop_stopif(!isfinite(cdf->data[size-1]), m->error='f'; *out=GSL_NAN; return,
+                    0, "Bad density in the PMF.");
         }
         Apop_stopif(m->error=='f', *out=GSL_NAN; return, 0, "Zero or NaN density in the PMF.");
         double draw = gsl_rng_uniform(r);

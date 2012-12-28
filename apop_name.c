@@ -25,7 +25,7 @@ apop_name * apop_name_alloc(void){
 't': add a text category name<br>
 'h': add a title (or a header. 't' is taken).<br>
 'v': add (or overwrite) the vector name<br>
-\return 	Returns the number of rows/cols/depvars after you have added the new one.
+\return 	Returns the number of rows/cols/depvars after you have added the new one. But if \c add_me is \c NULL, return -1.
 \ingroup names
 */
 int apop_name_add(apop_name * n, char const *add_me, char type){

@@ -93,8 +93,10 @@ mnode_t **index_generate(apop_data const *in, apop_data const *in2){
 
 void index_free(mnode_t **in){
 	for (int i=0; in[i]; i++){
-		for (int j=0; !isinf(in[i][j].val); j++)
+		for (int j=0; !isinf(in[i][j].val); j++){
 			free(in[i][j].margin_ptrs);
+			free(in[i][j].fit_ptrs);
+        }
         free(in[i]);
 	}
     free(in);
@@ -162,6 +164,7 @@ typedef struct {
 	gsl_vector *indata_values;
     mnode_t **index;
     size_t ct, al;
+    double *maxdev;
 } rake_t;
 
 static void rakeinfo_grow(rake_t *r){
@@ -182,13 +185,17 @@ static void rakeinfo_free(rake_t r){
     r.indata_values= NULL;
 }
 
-static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, double const in_sum){
-    double fit_sum = 0;
+static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, double const in_sum, double *maxdev){
+    double fit_sum = 0, out_sum=0;
     for(size_t i=0; i < n; i ++)
         fit_sum += weights->data[elmts[i]];
     if (!fit_sum) return; //can happen if init table is very different from margins.
-    for(size_t i=0; i < n; i ++)
+    for(size_t i=0; i < n; i ++){
+        out_sum +=
         weights->data[elmts[i]] *= in_sum/fit_sum;
+    }
+    *maxdev = GSL_MAX(fabs(fit_sum - out_sum), *maxdev);
+
 }
 
 /* Given one set of values from one margin, do the actual scaling.
@@ -233,7 +240,7 @@ static void one_set_of_values(mnode_t *const * const margincons, int ctr, void *
 	}
     if (!r->elmtlist_sizes[ctr]) return;
     if (!first_pass && !in_sum)  return;
-    scaling(r->elmtlist[ctr], r->elmtlist_sizes[ctr], r->fit->weights, in_sum);
+    scaling(r->elmtlist[ctr], r->elmtlist_sizes[ctr], r->fit->weights, in_sum, r->maxdev);
 }
 
 /* For each configuration margin, for each combination for that margin, 
@@ -263,13 +270,6 @@ void cleanup(mnode_t **index, rake_t rakeinfos[], int contrast_ct){
 	index_free(index);
 }
 
-int youre_done(gsl_vector *prev, gsl_vector *current, double lim){
-    gsl_vector_sub(prev, current);
-    for (int i=0; i< prev->size; i++)
-        if (fabs(prev->data[i]) > lim) return 0;
-    return 1;
-}
-
 /*
 \param config 	An nvar x ncon matrix; see below. [as in the original, but not squashed into 1-D.]
 \param indata 	the actual table. I use a PMF format.
@@ -285,7 +285,7 @@ Re: the contrast array: Each _column_ is a contrast. Put a one in each col
  0 1
  */
 static void c_loglin(const apop_data *config, const apop_data *indata, 
-                        apop_data *fit, double maxdev, int maxit) {
+                        apop_data *fit, double tolerance, int maxit) {
     mnode_t ** index = index_generate(indata, fit);
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
@@ -296,11 +296,13 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
 
 	int contrast_ct =config && config->matrix ? config->matrix->size2 : 0;
     rake_t rakeinfos[contrast_ct];
+    double maxdev=0;
     for(size_t i=0; i < contrast_ct; i ++){
         Apop_col(config, i, iconv)
         rakeinfos[i] = (rake_t) {
-            .indata = indata,
-            .fit = fit,
+            .indata = indata, 
+            .fit = fit, 
+            .maxdev = &maxdev, //one value shared across dimensions
             .index = malloc(sizeof(mnode_t) *(apop_sum(iconv)+1)),
             //others are NULL, to be filled in as we go.
         };
@@ -309,18 +311,16 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
     int k;
     gsl_vector *previous = apop_vector_copy(fit->weights);
     for (k = 1; k <= maxit; ++k) {
-		if (!(k%100)){printf(".");fflush(NULL);}
+		if (!(k%100)) Apop_notify(1, ".");
+        maxdev = 0;
         main_loop(contrast_ct, rakeinfos, k);
         Apop_notify(3, "Data set after round %i of raking.\n", k);
-        if (apop_opts.verbose >=3) apop_data_show(fit);
-        if (youre_done(previous, fit->weights, maxdev)) { // Normal termination 
-            cleanup(index, rakeinfos, contrast_ct);
-            gsl_vector_free(previous);
-            return;
-        }
+        if (apop_opts.verbose >=3) apop_data_print(fit, .output_pipe=apop_opts.log_file);
+        if (maxdev < tolerance) break;// Normal termination 
         gsl_vector_memcpy(previous, fit->weights);
     }
     cleanup(index, rakeinfos,contrast_ct);
+    gsl_vector_free(previous);
     Apop_stopif(k < maxit, fit->error='c', 0, "Maximum number of iterations reached.");
 }
 
@@ -488,7 +488,7 @@ to be called \c table_name; that name is now deprecated.)
 
 \param var_list The full list of variables to search. A list of strings, e.g., <tt>(char *[]){"var1", "var2", ..., "var15"}</tt>
 
-\param var_count The full list of variables to search.
+\param var_ct The full list of variables to search.
 
 \param all_vars deprecated.
 
@@ -524,6 +524,8 @@ a zero entry will always scale to zero, while a small value could eventually sca
 to anything.  Recall that this function works on sparse sets, so I first filter out
 those cells that could possibly have a nonzero value given the observations, then I
 add <tt>nudge</tt> to any zero cells within that subset.
+
+\param table_name Deprecated; replaced with \c margin_table.
 
 If you want all cells to have nonzero value, then you can do that via pre-processing:
 \code

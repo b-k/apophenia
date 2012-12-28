@@ -3,34 +3,24 @@ CC = $(PTHREAD_CC)
 
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = \
-            apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
-            apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
-			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
-			apop_missing_data.c apop_mixture.c apop_mle.c apop_model.c   \
-			apop_fix_params.c apop_name.c apop_output.c apop_rake.c     \
-            apop_regression.c apop_settings.c apop_smoothing.c          \
-            apop_stats.c apop_tests.c apop_model_transform.c 		    \
-			apop_update.c	            \
+            apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c   \
+            apop_data.c apop_db.c apop_fexact.c apop_hist.c 	          \
+			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c  \
+			apop_missing_data.c apop_mle.c apop_model.c apop_fix_params.c \
+			apop_name.c apop_output.c apop_rake.c  apop_regression.c      \
+            apop_settings.c apop_smoothing.c apop_stats.c apop_tests.c    \
+            apop_model_transform.c apop_update.c \
 			asprintf.c 					\
-			model/apop_bernoulli.c      \
-            model/apop_beta.c			\
-            model/apop_multinomial.c 	\
-			model/apop_dirichlet.c      \
-			model/apop_exponential.c    \
-			model/apop_gamma.c          \
-            model/apop_histogram.c      \
-			model/apop_loess.c          \
-			model/apop_multivariate_normal.c  \
-			model/apop_normal.c         \
-            model/apop_ols.c 		 	\
-            model/apop_pmf.c            \
-			model/apop_poisson.c        \
-			model/apop_probit.c	        \
-            model/apop_t_f_chi.c		\
-			model/apop_uniform.c        \
-			model/apop_waring.c         \
-            model/apop_yule.c 	 		\
-            model/apop_zipf.c 
+			model/apop_bernoulli.c      model/apop_beta.c			\
+            model/apop_multinomial.c 	model/apop_dirichlet.c      \
+			model/apop_exponential.c    model/apop_gamma.c          \
+            model/apop_histogram.c      model/apop_loess.c          \
+			model/apop_mixture.c 	    model/apop_multivariate_normal.c  \
+			model/apop_normal.c         model/apop_ols.c 		 	\
+            model/apop_pmf.c            model/apop_poisson.c        \
+			model/apop_probit.c	        model/apop_t_f_chi.c		\
+			model/apop_uniform.c        model/apop_waring.c         \
+            model/apop_yule.c 	 		model/apop_zipf.c 
 
 pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
 include_HEADERS = apop.h
@@ -89,6 +79,7 @@ DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
 doc: 
+	-rm tests/apophenia/*h
 	cat model/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
 	doxygen docs/doxyconfig
 	cp docs/flake.gif docs/search.gif docs/right.png docs/down.png html/

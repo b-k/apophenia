@@ -1226,7 +1226,7 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
 This is mostly just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names or text, you may prefer to just use that function.
 
 \param in The input \ref apop_data set. If \c NULL, I return \c NULL. Default is \c NULL.
-\oaram transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
+\param transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
 \return  A newly alloced \ref apop_data set, with the appropriately transposed matrix and/or text. The vector and weights elements will be \c NULL. If <tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.
 
 \li Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input).

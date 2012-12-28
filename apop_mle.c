@@ -347,7 +347,7 @@ static double negshell (const gsl_vector *beta, void * in){
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-    if(penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
+    if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
     double f_val = f(i->data, i->model);
     out = penalty - f_val; //negative llikelihood
     if (gsl_isnan(out)){

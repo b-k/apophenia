@@ -154,9 +154,10 @@ APOP_VAR_ENDHEAD
              apop_name_stack(out->names, in->names, 'r');
              apop_name_stack(out->names, in->names, 'c');
         }
-        else if (by_apop_rows || part == 'a')
+        else if (by_apop_rows || part == 'a'){
+             apop_name_free(out->names);
              out->names = apop_name_copy(in->names);
-        else if (part == 'r')
+        } else if (part == 'r')
              apop_name_stack(out->names, in->names, 'r');
         else if (part == 'c')
             apop_name_stack(in->names, out->names, 'r', 'c');

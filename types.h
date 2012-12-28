@@ -328,6 +328,7 @@ apop_model *apop_beta_from_mean_var(double m, double v); //in apop_beta.c
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
 
 //apop_mixture.c
+/** Produce a model as a linear combination of other models. See the documentation for the \ref apop_mixture model.  */
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 

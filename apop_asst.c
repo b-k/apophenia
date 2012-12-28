@@ -24,6 +24,21 @@ typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
 \param before   The text to put at the head of the string. For the query example, this would be <tt>.before="select "</tt>. (Default: NULL)
 \param after   The text to put at the tail of the string. For the query example, <tt>.after=" from data_table"</tt>. (Default: NULL)
 \param between_cols The text to insert between columns of text. See below for an example (Default is set to equal <tt>.between</tt>)
+\param prune If you don't want to use the entire text set, you can provide a function to indicate which elements should be pruned out. Some examples:
+
+\code
+//Just use column 3
+int is_not_col_3(apop_data *indata, int row, int col, void *ignore){
+    return col!=3;
+}
+
+//Jump over blanks as if they don't exist.
+int is_blank(apop_data *indata, int row, int col, void *ignore){
+    return strlen(indata->text[row][col])==0;
+}
+\endcode
+
+\param prune_parameter A void pointer to pass to your \c prune function.
 
 \return A single string with the elements of the \c strings table joined as per your specification. Allocated by the function, to be freed by you if desired.
 
@@ -38,8 +53,7 @@ table, then produces the body of the table with the query result (pasting the
 <tt>tr</tt>s and <tt> td</tt>s into the right places).
 
 \include sql_to_html.c
-
- */
+*/
 APOP_VAR_HEAD char *apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter){
     apop_data *apop_varad_var(strings, NULL);
     char *apop_varad_var(between, " ");
@@ -329,7 +343,7 @@ has a zero-length blank in <tt>subs->text[0][1]</tt>.
 
 \include test_regex.c
 
-\li Each set of matches will be one row of the output data. E.g., given the regex <tt>([A-Za-z])([0-9]), the column zero of <tt>outdata</tt> will hold letters, and column one will hold numbers.
+\li Each set of matches will be one row of the output data. E.g., given the regex <tt>([A-Za-z])([0-9])</tt>, the column zero of <tt>outdata</tt> will hold letters, and column one will hold numbers.
 Use \ref apop_data_transpose to reverse this so that the letters are in <tt>outdata->text[0]</tt> and numbers in <tt>outdata->text[1]</tt>.
 */
 APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data **substrings, const char use_case){
@@ -362,13 +376,11 @@ APOP_VAR_ENDHEAD
             for (int i=0; i< matchcount; i++){
                 if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.
                     int length_of_match = result[i+1].rm_eo - result[i+1].rm_so;
+                    free((*substrings)->text[matchrow][i]);
                     (*substrings)->text[matchrow][i] = malloc(strlen(string)+1);
                     memcpy((*substrings)->text[matchrow][i], string + result[i+1].rm_so, length_of_match);
                     (*substrings)->text[matchrow][i][length_of_match] = '\0';
-                } else{ //matches nothing
-                    (*substrings)->text[matchrow][i] = malloc(1);
-                    (*substrings)->text[matchrow][i][0]='\0';
-                }
+                } //else matches nothing; apop_text_alloc already made this cell this NULL.
             }
             string += result[0].rm_eo; //end of whole match;
             matchrow++;

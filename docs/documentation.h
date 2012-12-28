@@ -563,7 +563,7 @@ endofdiv
 
 Outlineheader status How do I write extensions?
 
-It's not a package, so you don't need an API---write your code and <tt>#include</tt> it like any
+It's not a package, so you don't need an API---write your code and <tt>include</tt> it like any
 other C code. The system is written to not require a registration or initialization step
 to add a new model or other such parts.  You can read the notes below on generating
 new models, which have to conform to some rules if they are to play well with \ref
