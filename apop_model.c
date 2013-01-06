@@ -132,7 +132,7 @@ void apop_model_print (apop_model * print_me){
         apop_opts.output_pipe = NULL; //return to the default. Probably not worth it.
 }
 
-/** Alias for \ref apop_model_print. Use that one. */
+/* Alias for \ref apop_model_print. Use that one. */
 void apop_model_show (apop_model * print_me){
     apop_model_print(print_me);
 }

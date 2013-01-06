@@ -4,6 +4,7 @@
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <regex.h>
 #include <assert.h>
+#include <stdbool.h>
 
 /*extend a string. this prevents a minor leak you'd get if you did
  asprintf(&q, "%s is a teapot.", q);
@@ -802,15 +803,17 @@ APOP_VAR_ENDHEAD
         vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
         d = d->more;
         if (use_info_pages=='n')
-            while (apop_regex(d->names->title, "^<.*>$"))
+            while (d && apop_regex(d->names->title, "^<.*>$"))
                 d = d->more;
+        Apop_stopif(!d, return, 0, "The data set (without info pages, because you didn't ask"
+                " me to use them) is too short for the input vector.");
         apop_data_unpack(&vin, d);
     }
 }
 
-static size_t sizecount(const apop_data *in, const int all_pp, const int use_info_pp){ 
+static size_t sizecount(const apop_data *in, bool all_pp, bool use_info_pp){ 
     if (!in) return 0;
-    if (use_info_pp=='n' && apop_regex(in->names->title, "^<.*>$"))
+    if (!use_info_pp && apop_regex(in->names->title, "^<.*>$"))
         return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
              + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)
@@ -849,13 +852,13 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(all_pages, 'n');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
         Apop_stopif(out->size != total_size, return NULL, 0, "The input data set has %zu elements, "
                "but the output vector you want to fill has size %zu. Please make "
                "these sizes equal.", total_size, out->size);
     }
 APOP_VAR_ENDHEAD
-    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
     if (!total_size) return NULL;
     int offset = 0;
     if (!out) out = gsl_vector_alloc(total_size);
@@ -878,10 +881,12 @@ APOP_VAR_ENDHEAD
         offset  += in->weights->size;
     }
     if ((all_pages == 'y' ||all_pages =='Y') && in->more){
-        vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
         while (use_info_pages=='n' && in->more && apop_regex(in->more->names->title, "^<.*>$"))
             in = in->more;
-        apop_data_pack(in->more, &vout, .all_pages='y');
+        if (in->more){
+            vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
+            apop_data_pack(in->more, &vout, .all_pages='y');
+        }
     }
     return out;
 }
