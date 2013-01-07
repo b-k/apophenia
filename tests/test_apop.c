@@ -259,32 +259,29 @@ void test_percentiles(){
 }
 
 void test_score(){
-  int         i, j, len = 1e5;
-  gsl_rng     *r        = apop_rng_alloc(123);
-  apop_data   *data     = apop_data_alloc(len,1);
-    for (i=0; i<10; i++){
-        apop_model  *source   = apop_model_set_parameters(apop_normal, 
-                                    gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
-        for (j=0; j< len; j++)
-            apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
-        apop_model *estme = apop_model_copy(apop_normal);
-        Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
-        apop_prep(data, estme);
-        apop_model *out = apop_maximum_likelihood(data, estme);
+    int i, j, len = 1e5;
+    gsl_rng *r = apop_rng_alloc(123);
+    apop_data *data = apop_data_alloc(len,1);
+    apop_model  *source   = apop_model_set_parameters(apop_normal, 
+                                gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
+    for (j=0; j< len; j++)
+        apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
+    apop_model *estme = apop_model_copy(apop_normal);
+    Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
+    apop_prep(data, estme);
+    apop_model *out = apop_maximum_likelihood(data, estme);
 
-        apop_model *straight_est = apop_estimate(data, apop_normal);
-        Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
-        Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
+    apop_model *straight_est = apop_estimate(data, apop_normal);
+    Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
+    Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
 
-        double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
-        apop_data *cov = apop_data_get_page(out->parameters, "cov");
-        Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
-        Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
-        assert(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1) < tol3);
-        apop_model_free(out);
-        printf(".");
-        apop_model_free(source); 
-    }
+    double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
+    apop_data *cov = apop_data_get_page(out->parameters, "cov");
+    Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
+    Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
+    assert(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1) < tol3);
+    apop_model_free(out);
+    apop_model_free(source); 
     apop_data_free(data);
 }
 
@@ -1068,7 +1065,6 @@ void test_unique_elements(){
 }
 
 void test_probit_and_logit(gsl_rng *r){
-  for (int i=0; i < 3; i++){
     int param_ct = gsl_rng_uniform(r)*7 + 1; //up to seven params.
     gsl_vector *true_params = gsl_vector_alloc(param_ct);
     for (int j = 0; j < param_ct; j++)
@@ -1091,7 +1087,6 @@ void test_probit_and_logit(gsl_rng *r){
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
     apop_model_free(m);
     apop_data_free(data2);
-  }
 }
 
 void test_resize(){
@@ -1378,6 +1373,8 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test probit and logit", test_probit_and_logit(r));
+    do_test("test probit and logit again", test_probit_and_logit(r));
     do_test("test ML imputation", test_ml_imputation(r));
     do_test("NaN handling", test_nan_data());
     do_test("test model transformation: scaling", test_transform());
@@ -1424,7 +1421,6 @@ int main(int argc, char **argv){
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
         if (verbose) printf("\tSlower tests:\n");
-        do_test("test probit and logit", test_probit_and_logit(r));
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
     printf("\nApophenia has passed all of the sundry tests. Yay.\n");

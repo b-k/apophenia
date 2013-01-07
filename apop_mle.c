@@ -89,8 +89,8 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
-    Apop_varad_set(n_tries, 200);  //The number of points to try for each step. 
-    Apop_varad_set(iters_fixed_T, 200);   //The number of iterations at each temperature. 
+    Apop_varad_set(n_tries, 5);  //The number of points to try for each step. 
+    Apop_varad_set(iters_fixed_T, 5);   //The number of iterations at each temperature. 
     Apop_varad_set(k, 1.0);  //The maximum step size in the random walk. 
     Apop_varad_set(t_initial, 50);   //cooling schedule data
     Apop_varad_set(mu_t, 1.002); 

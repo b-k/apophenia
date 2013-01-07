@@ -51,7 +51,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp])
+AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp asprintf])
 
 # For SWIG.
 

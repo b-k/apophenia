@@ -25,17 +25,17 @@
 # define _GNU_SOURCE    1
 #endif
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 /* vsprintf with automatic memory allocation. */
 
 #include <stdio.h>
 #include <stdarg.h>
 #include <stddef.h>
 
-#if HAVE_VASPRINTF
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#if HAVE_ASPRINTF
 #else
 
 #ifndef __attribute__
@@ -72,8 +72,6 @@ extern char * vasnprintf (char *resultbuf, size_t *lengthp, const char *format, 
 
 #ifdef	__cplusplus
 }
-#endif
-
 #endif
 
 
@@ -1723,4 +1721,5 @@ int vasprintf (char **resultp, const char *format, va_list args) {
      and set errno to EOVERFLOW.  */
   return length;
 }
+#endif
     /** \endcond */ //Doxygen ignore.

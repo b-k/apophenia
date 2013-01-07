@@ -4,6 +4,11 @@
 !!Big.
 ]
 
+	January 2012
+--Logit regression much smarter about picking a starting point.
+--Defaults for simulated annealing try 1600x fewer points. Prior settings were overkill.
+--configure.ac checks for native asprintf and uses it if it is present
+
 	December 2012
 --Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
 --faster read-in of text files

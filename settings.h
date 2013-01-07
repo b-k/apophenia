@@ -171,7 +171,7 @@ typedef enum {
 \ingroup settings */
 typedef struct{
     double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
-                                  If NULL, use zero.  Note that if \c v is a \c gsl_vector, then 
+                                  If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
                                   \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
     apop_optimization_enum method; /**< See the  \ref apop_optimization_enum documentation for options. */
     double      step_size, /**< the initial step size. */

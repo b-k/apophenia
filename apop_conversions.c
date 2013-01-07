@@ -622,7 +622,7 @@ static line_parse_t parse_a_line(FILE *infile, apop_data *fn, int const *field_e
 
         if (!infield){
             if (ci.type=='w') continue; //eat leading spaces.
-            if (strchr("rd", ci.type)                    //new field; if 'dnE', blank field. 
+            if (ci.type=='r' || ci.type=='d'             //new field; if 'dnE', blank field. 
                    || (strchr("nE", ci.type) && ct>0)){  //Blank fields only at end of lines that already have data; else all-blank line to ignore.
                 if (++ct > fn->textsize[0]) apop_text_alloc(fn, ct, 1);//realloc text portion.
                 *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
@@ -720,7 +720,7 @@ APOP_VAR_END_HEAD
     } 
 
     //Now do the body.
-	while(!set || (L.ct && !L.eof)){
+	while(!set || !L.eof || L.ct){
         if (!L.ct) { //skip blank lines
             L=parse_a_line(infile, add_this_line, field_ends, delimiters);
             continue;
