@@ -38,13 +38,13 @@ Defines</h2>
 <li><a class="anchor" id="a419e26c0fb4f93a4126dddbaef0d1794"></a><!-- doxytag: member="apop_output.c::Output_vars" ref="a419e26c0fb4f93a4126dddbaef0d1794" args="" -->
 #define <b>Output_vars</b>&#160;&#160;&#160;output_file, output_pipe, output_type, output_append
 <li><a class="anchor" id="a4fcc7847142ed4254b5b88ca14b9ab9f"></a><!-- doxytag: member="apop_output.c::Output_declares" ref="a4fcc7847142ed4254b5b88ca14b9ab9f" args="" -->
-#define <b>Output_declares</b>&#160;&#160;&#160;char * output_file, FILE * output_pipe, char output_type, char output_append
+#define <b>Output_declares</b>&#160;&#160;&#160;char const * output_file, FILE * output_pipe, char output_type, char output_append
 <li>#define <b>Dispatch_output</b>
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a> (char **output_file, FILE **output_pipe, char *output_type, char *output_append)
+<li>void <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> (char const *output_file, FILE **output_pipe, char *output_type, char *output_append)
 <li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
 <li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
 <li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
@@ -72,11 +72,11 @@ void <b>p_fn</b> (FILE *f, double data)
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordtype">char</span> * apop_varad_var(output_file, NULL);  \
+<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordtype">char</span> <span class="keyword">const</span> *apop_varad_var(output_file, NULL);  \
     FILE * apop_varad_var(output_pipe, NULL);  \
     char apop_varad_var(output_type, 0);       \
     char apop_varad_var(output_append, 0);     \
-    apop_prep_output(&amp;output_file, &amp;output_pipe, &amp;output_type, &amp;output_append);
+    apop_prep_output(output_file, &amp;output_pipe, &amp;output_type, &amp;output_append);
 </pre></div>
 </div>
 </div>
@@ -136,7 +136,7 @@ void <b>p_fn</b> (FILE *f, double data)
   </dd>
 </dl>
 <ul>
-<li>See <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -174,21 +174,21 @@ void <b>p_fn</b> (FILE *f, double data)
 A triangle plot with a smattering of data points.</div></div>
  <ul>
 <li>Gnuplot will rescale for you, so you don't need to worry about whether the row sums to one. </li>
-<li>See <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
 
 </div>
 </div>
-<a class="anchor" id="ad8a34f4b9dfcd461c6b1e4c439f5184d"></a><!-- doxytag: member="apop_output.c::apop_prep_output" ref="ad8a34f4b9dfcd461c6b1e4c439f5184d" args="(char **output_file, FILE **output_pipe, char *output_type, char *output_append)" -->
+<a class="anchor" id="a63231ef277c172cd3ab0652b0376f66f"></a><!-- doxytag: member="apop_output.c::apop_prep_output" ref="a63231ef277c172cd3ab0652b0376f66f" args="(char const *output_file, FILE **output_pipe, char *output_type, char *output_append)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a> </td>
+          <td class="memname">void <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> </td>
           <td>(</td>
-          <td class="paramtype">char **&#160;</td>
+          <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>output_file</em>, </td>
         </tr>
         <tr>
@@ -236,4 +236,4 @@ A triangle plot with a smattering of data points.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>

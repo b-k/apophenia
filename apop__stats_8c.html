@@ -54,8 +54,6 @@ Functions</h2>
 <li>double <a class="el" href="apop__stats_8c.html#ab2c0cb715352abd662783b6f1bb4d84e">apop_vector_weighted_skew</a> (const gsl_vector *v, const gsl_vector *w)
 <li>double <a class="el" href="apop__stats_8c.html#aca7a5cac76bd44584d88781c5b3cbb23">apop_vector_weighted_kurt</a> (const gsl_vector *v, const gsl_vector *w)
 <li>double <a class="el" href="apop__stats_8c.html#a8378b4ca18cefbae9c4234585e1e9b6b">apop_vector_weighted_cov</a> (const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w)
-<li>gsl_matrix * <a class="el" href="apop__stats_8c.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a> (gsl_matrix *in, const char normalize)
-<li>gsl_matrix * <a class="el" href="apop__stats_8c.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a> (gsl_matrix *in, const char normalize)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
 <li>double <a class="el" href="apop__stats_8c.html#a4489b3994f099ed40ccd77df6143728e">apop_kl_divergence</a> (<a class="el" href="structapop__model.html">apop_model</a> *top, <a class="el" href="structapop__model.html">apop_model</a> *bottom, int draw_ct, gsl_rng *rng)
@@ -83,8 +81,7 @@ void <b>vfabs</b> (double *x)
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_61.png"/> relating each column with each other.</p>
-<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a>; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.</p>
+<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_73.png"/> relating each column with each other.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.</td></tr>
@@ -115,14 +112,16 @@ void <b>vfabs</b> (double *x)
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the variance/covariance matrix relating each column of the matrix to each other column.</p>
-<p>This is the <a class="el" href="gentle.html#apop_data">apop_data</a> version of <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a>; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.</p>
+<p>Returns the sample variance/covariance matrix relating each column of the matrix to each other column.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>An <a class="el" href="gentle.html#apop_data">apop_data</a> set. If the weights vector is set, I'll take it into account.</td></tr>
   </table>
   </dd>
 </dl>
+<ul>
+<li>This is the sample covariance---dividing by <img class="formulaInl" alt="$n-1$" src="form_59.png"/>, not <img class="formulaInl" alt="$n$" src="form_8.png"/>.</li>
+</ul>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns a <a class="el" href="gentle.html#apop_data">apop_data</a> set the variance/covariance matrix relating each column with each other. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -170,11 +169,11 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Kullback-Leibler divergence.</p>
-<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_62.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_20.png"/> and <img class="formulaInl" alt="$q$" src="form_63.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_64.png"/>.</p>
+<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_74.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_20.png"/> and <img class="formulaInl" alt="$q$" src="form_75.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_76.png"/>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">top</td><td>the <img class="formulaInl" alt="$p$" src="form_20.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bottom</td><td>the <img class="formulaInl" alt="$q$" src="form_63.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">bottom</td><td>the <img class="formulaInl" alt="$q$" src="form_75.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">draw_ct</td><td>If I do the calculation via random draws, how many? (Default = 1e5) </td></tr>
     <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="autorng.html">Auto-allocated RNGs</a>. (Default = <code>NULL</code>)</td></tr>
   </table>
@@ -183,90 +182,13 @@ void <b>vfabs</b> (double *x)
 <p>This function can take empirical histogram-type models---<a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> and <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> ---or continuous models like <a class="el" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a> or <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>.</p>
 <p>If there is an empirical model (I'll try <code>top</code> first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step through it for the points in the summation.</p>
 <ul>
-<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_65.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_66.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
+<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_77.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_78.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
 </ul>
 <p>If neither distribution is empirical, then I'll take <code>draw_ct</code> random draws from <code>bottom</code> and evaluate at those points.</p>
 <ul>
 <li>Set <code>apop_opts.verbose = 3</code> for observation-by-observation info.</li>
 </ul>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
-<a class="anchor" id="a46a40bc32015eb68e605835d82c3134b"></a><!-- doxytag: member="apop_stats.c::apop_matrix_correlation" ref="a46a40bc32015eb68e605835d82c3134b" args="(gsl_matrix *in, const char normalize)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="stats_8h.html#a46a40bc32015eb68e605835d82c3134b">apop_matrix_correlation</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_matrix *&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char&#160;</td>
-          <td class="paramname"><em>normalize</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_61.png"/> relating each column with each other.</p>
-<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>; if you have column names, use that one.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">normalize</td><td>'n' or 'N' = subtract the mean from each column, thus changing the input data but speeding up the computation.<br/>
- anything else (like 0)= don't modify the input data (default = no modification)</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
-<a class="anchor" id="a8ab4dde598ac3710072eb58384512153"></a><!-- doxytag: member="apop_stats.c::apop_matrix_covariance" ref="a8ab4dde598ac3710072eb58384512153" args="(gsl_matrix *in, const char normalize)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="stats_8h.html#a8ab4dde598ac3710072eb58384512153">apop_matrix_covariance</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_matrix *&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char&#160;</td>
-          <td class="paramname"><em>normalize</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the variance/covariance matrix relating each column with each other.</p>
-<p>This is the <code>gsl_matrix</code> version of <a class="el" href="stats_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>; if you have column names, use that one.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. (No default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">normalize</td><td>'n', 'N', or 1 = subtract the mean from each column, thus changing the input data but speeding up the computation.<br/>
- anything else (like 0)= don't modify the input data (default = no modification)</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you. This is the sample version---dividing by <img class="formulaInl" alt="$n-1$" src="form_47.png"/>, not <img class="formulaInl" alt="$n$" src="form_8.png"/>. It uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </dd></dl>
 
 </div>
 </div>
@@ -409,9 +331,9 @@ void <b>vfabs</b> (double *x)
 <div class="memdoc">
 <p>The multivariate generalization of the Gamma distribution. </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_69.png"/>
+<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_81.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_70.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_71.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_72.png"/> takes on one of those values.</p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_82.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_83.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_84.png"/> takes on one of those values.</p>
 <p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
@@ -474,15 +396,15 @@ void <b>vfabs</b> (double *x)
       </table>
 </div>
 <div class="memdoc">
-<p>This function will normalize a vector, either such that it has mean zero and variance one, or such that it ranges between zero and one, or sums to one.</p>
+<p>This function will normalize a vector, either such that it has mean zero and variance one, or ranges between zero and one, or sums to one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A gsl_vector which you have already allocated and filled. <code>NULL</code> input gives <code>NULL</code> output. (No default)</td></tr>
     <tr><td class="paramname">out</td><td>If normalizing in place, <code>NULL</code>. If not, the address of a <code>gsl_vector</code>. Do not allocate. (default = <code>NULL</code>.)</td></tr>
     <tr><td class="paramname">normalization_type</td><td>'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br/>
  'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br/>
- 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_58.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_59.png"/> is the sample standard deviation.<br/>
- 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_60.png"/><br/>
+ 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_70.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_71.png"/> is the sample standard deviation.<br/>
+ 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_72.png"/><br/>
 </td></tr>
   </table>
   </dd>
@@ -656,7 +578,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 <div class="memdoc">
 <p>Find the population skew of a weighted vector.</p>
-<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_47.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
+<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_59.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -694,7 +616,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 <div class="memdoc">
 <p>Find the sample variance of a weighted vector.</p>
-<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_47.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
+<p>Note: Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_59.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_8.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -708,4 +630,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>

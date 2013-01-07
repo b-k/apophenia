@@ -38,7 +38,6 @@ Functions</h2>
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a> (const double **in, const int rows, const int cols)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> (const double **in, const int rows, const int cols)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> (double *line, int rows, int cols)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
@@ -53,51 +52,6 @@ Functions</h2>
 
 <h3><a class="anchor" id="dbtomatrix"></a>Converting from database table to &lt;tt&gt;gsl_matrix&lt;/tt&gt; or \ref apop_data</h3><div class="textblock"><p>Use <code>fill_me = apop_query_to_matrix("select * from table_name;");</code> or <code>fill_me = apop_query_to_data("select * from table_name;");</code>. [See <a class="el" href="group__queries.html#ga8a1da4d925dbafdd2b3318672eac751f">apop_query_to_matrix</a>; <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.] </p>
 </div><hr/><h2>Function Documentation</h2>
-<a class="anchor" id="gaffca0627028a244e262098cf3cf19b28"></a><!-- doxytag: member="apop_conversions.c::apop_array_to_data" ref="gaffca0627028a244e262098cf3cf19b28" args="(const double **in, const int rows, const int cols)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a> </td>
-          <td>(</td>
-          <td class="paramtype">const double **&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>cols</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Convert a <code>double **</code> array to an <a class="el" href="gentle.html#apop_data">apop_data</a> set. It will have no names. Input data is copied.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>the array to read in </td></tr>
-    <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>the <a class="el" href="gentle.html#apop_data">apop_data</a> set, allocated for you and ready to use.</dd></dl>
-<p>usage: </p>
-<div class="fragment"><pre class="fragment"> <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#gaffca0627028a244e262098cf3cf19b28">apop_array_to_data</a>(indata, 34, 4); 
-</pre></div><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>. </p>
-
-</div>
-</div>
 <a class="anchor" id="ga5c7ed1341ef1be13e2e277f9f31e42df"></a><!-- doxytag: member="apop_conversions.c::apop_array_to_matrix" ref="ga5c7ed1341ef1be13e2e277f9f31e42df" args="(const double **in, const int rows, const int cols)" -->
 <div class="memitem">
 <div class="memproto">
@@ -288,7 +242,10 @@ Functions</h2>
 <li>You can also call this via <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> <code>(data, "tabname", .output_type='d', .output_append='w')</code> to overwrite a new table or with <code>.output_append='a'</code> to append.</li>
 </ul>
 <ul>
-<li>Especially if you are using a pre-2007 version of SQLite, there may be a spe</li>
+<li>If your data set has zero data (i.e., is just a list of column names or is entirely blank), I return -1 without creating anything in the database.</li>
+</ul>
+<ul>
+<li>Especially if you are using a pre-2007 version of SQLite, there may be a speed gain to wrapping the call to this function in a begin/commit pair:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;begin;&quot;</span>);
 <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(dataset, .output_file=<span class="stringliteral">&quot;dbtab&quot;</span>, .output_type=<span class="charliteral">&#39;d&#39;</span>);
@@ -297,7 +254,7 @@ Functions</h2>
   <table class="params">
     <tr><td class="paramname">set</td><td>The name of the matrix </td></tr>
     <tr><td class="paramname">tabname</td><td>The name of the db table to be created </td></tr>
-    <tr><td class="paramname">output_append</td><td>See <a class="el" href="apop__output_8c.html#ad8a34f4b9dfcd461c6b1e4c439f5184d">apop_prep_output</a>. </td></tr>
+    <tr><td class="paramname">output_append</td><td>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -677,7 +634,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>a newly-allocated <code>gsl_matrix</code> with one column.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>a newly-allocated <code>gsl_matrix</code> with one column (or row).</dd></dl>
 <ul>
 <li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>. </li>
 <li>If <code>gsl_matrix_alloc</code> fails and <code>apop_opts.stop_on_warn=='n'</code>, you get a <code>NULL</code> pointer in return.</li>
@@ -688,4 +645,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>

@@ -62,8 +62,6 @@ double <b>apop_query_to_float</b> (const char *fmt,...) __attribute__((format(pr
 <li>int gsl_matrix <a class="el" href="structapop__data.html">apop_data</a> <br class="typebreak"/>
 <a class="el" href="structapop__data.html">apop_data</a> <a class="el" href="structapop__data.html">apop_data</a> gsl_vector <br class="typebreak"/>
 double int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, char)
-<li>void <a class="el" href="db_8h.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> (char *db_file, char inout)
-<li>void <a class="el" href="db_8h.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> (char *db_file, char *tabname, char inout)
 <li>double <a class="el" href="group__ttest.html#gaf6b4c155f970f1a63c9d9cfba6300189">apop_db_t_test</a> (char *tab1, char *col1, char *tab2, char *col2)
 <li>double <a class="el" href="group__ttest.html#gaeb5eee3a851024eb4a2835b0d501e15a">apop_db_paired_t_test</a> (char *tab1, char *col1, char *col2)
 </ul>
@@ -95,90 +93,6 @@ double int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52
 
 </div>
 </div>
-<a class="anchor" id="a5aed91e24f47e18dfe42bd82ceab1286"></a><!-- doxytag: member="db.h::apop_db_merge" ref="a5aed91e24f47e18dfe42bd82ceab1286" args="(char *db_file, char inout)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="db_8h.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>db_file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>inout</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Merge a database on the hard drive with the database currently open.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">db_file</td><td>The name of a file on disk. [No default; can't be <code>NULL</code>] </td></tr>
-    <tr><td class="paramname">inout</td><td>Do we copy data in to the currently-open main db [<code>'i'</code>] or out to the specified auxiliary db[<code>'o'</code>]? [default = 'i']</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If a table exists in the new database but not in the currently open one, then it is simply copied over. If there are tables with the same name in both databases, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <code>insert into main.tab select * from merge_me.tab</code>.]</p>
-<ul>
-<li>This is sqlite-only; I'm not sure if it really makes much sense for mySQL.</li>
-</ul>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
-<a class="anchor" id="ae10510ee8eb7a00e5b6734c183b6c777"></a><!-- doxytag: member="db.h::apop_db_merge_table" ref="ae10510ee8eb7a00e5b6734c183b6c777" args="(char *db_file, char *tabname, char inout)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="db_8h.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>db_file</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>tabname</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>inout</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Merge a single table from a database on the hard drive with the database currently open.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">db_file</td><td>The name of a file on disk. [default = <code>NULL</code>] </td></tr>
-    <tr><td class="paramname">tabname</td><td>The name of the table in that database to be merged in. [No default] </td></tr>
-    <tr><td class="paramname">inout</td><td>Do we copy data in to the currently-open main db [<code>'i'</code>] or out to the specified auxiliary db[<code>'o'</code>]? [default = 'i']</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If the table exists in the new database but not in the currently open one, then it is simply copied over. If there is a table with the same name in the currently open database, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <code>insert into main.tab select * from merge_me.tab</code>.]</p>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
 <a class="anchor" id="a4d81aff912df2982697038c51795e358"></a><!-- doxytag: member="db.h::apop_db_open" ref="a4d81aff912df2982697038c51795e358" args="(char const *filename)" -->
 <div class="memitem">
 <div class="memproto">
@@ -197,7 +111,7 @@ double int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52
 <p>If you want a disposable database which you won't use after the program ends, don't bother with this function.</p>
 <p>The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<code>sqlite3</code>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&amp;q=sqlite+gui">SQLite GUI</a>.</p>
 <p>MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set <code>apop_opts.db_engine</code> = 'm'.</p>
-<p>The Apophenia package assumes you are only using a single SQLite database at a time; if not, the <a class="el" href="db_8h.html#a5aed91e24f47e18dfe42bd82ceab1286">apop_db_merge</a> and <a class="el" href="db_8h.html#ae10510ee8eb7a00e5b6734c183b6c777">apop_db_merge_table</a> functions may help.</p>
+<p>The Apophenia package assumes you are only using a single SQLite database at a time. You can use the SQL <code>attach</code> function to load other databases, or see <a href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further suggestions and sample code.</p>
 <p>When you are done doing your database manipulations, be sure to call <a class="el" href="db_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> if writing to disk.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -283,4 +197,4 @@ double int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>

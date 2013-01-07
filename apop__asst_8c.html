@@ -41,7 +41,7 @@ typedef int(* <b>apop_fn_riip</b> )(<a class="el" href="structapop__data.html">a
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>char * <a class="el" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)
+<li>char * <a class="el" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)
 <li>double <a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a> (int N, double s)
 <li>char * <a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a> (char const *in, char strip_type)
 <li>int <a class="el" href="apop__asst_8c.html#a153362f8a4c7f64e0c8dad893edadea4">apop_system</a> (const char *fmt,...)
@@ -232,7 +232,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>1 == match; 0 == no match. <code>substrings</code> may be allocated and filled if needed.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>Count of matches found. 0 == no match. <code>substrings</code> may be allocated and filled if needed.</dd></dl>
 <ul>
 <li>If <code>apop_opts.stop_on_warning='n'</code> returns -1 on error (e.g., regex <code>NULL</code> or didn't compile). </li>
 <li>If <code>strings==NULL</code>, I return 0---no match---and if <code>substrings</code> is provided, set it to <code>NULL</code>.</li>
@@ -263,6 +263,17 @@ Functions</h2>
     assert(!strcmp(*subs-&gt;text[2], <span class="stringliteral">&quot;three&quot;</span>));
     assert(!strcmp(*subs-&gt;text[3], <span class="stringliteral">&quot;four&quot;</span>));
     <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
+
+    <span class="comment">//Get a parenthetical. For EREs, \( \) match plain parens in the text.</span>
+    <span class="keywordtype">char</span> string3[] = <span class="stringliteral">&quot; one (but secretly, two)&quot;</span>;
+    <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string3, <span class="stringliteral">&quot;(\\([^)]*\\))&quot;</span>, &amp;subs);
+    assert(!strcmp(*subs-&gt;text[0], <span class="stringliteral">&quot;(but secretly, two)&quot;</span>));
+    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
+
+    <span class="comment">//NULL input string ==&gt; no-op.</span>
+    <span class="keywordtype">int</span> match_count = <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(NULL, <span class="stringliteral">&quot; *([^,]*[^ ]) *(,|$) *&quot;</span>, &amp;subs);
+    assert(!match_count);
+    assert(!subs);
 }
 </pre></div><ul>
 <li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
@@ -333,14 +344,14 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="a98e7d8ea0621e231298d5ceee61a5dc1"></a><!-- doxytag: member="apop_asst.c::apop_text_paste" ref="a98e7d8ea0621e231298d5ceee61a5dc1" args="(apop_data *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)" -->
+<a class="anchor" id="a28097fab95794bb0146de61f8461b843"></a><!-- doxytag: member="apop_asst.c::apop_text_paste" ref="a28097fab95794bb0146de61f8461b843" args="(apop_data const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="asst_8h.html#a0f64a390c945486f04975307a5f4b4a5">apop_text_paste</a> </td>
+          <td class="memname">char* <a class="el" href="asst_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a> </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> const *&#160;</td>
           <td class="paramname"><em>strings</em>, </td>
         </tr>
         <tr>
@@ -417,7 +428,7 @@ Functions</h2>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A single string with the elements of the <code>strings</code> table joined as per your specification. Allocated by the function, to be freed by you if desired.</dd></dl>
 <ul>
 <li>If the table of strings is <code>NULL</code> or has no text, I will print only the <code>.before</code> and <code>.after</code> parts with nothing in between. </li>
-<li>if <code> apop_opts.verbose &gt;=2</code>, then print the pasted text to stderr. </li>
+<li>if <code> apop_opts.verbose &gt;=3</code>, then print the pasted text to stderr. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
 </ul>
 <p>The sample snippet generates the SQL for a query using a list of column names (where the query begins with <code>select </code>, ends with <code>from datatab</code>, and has commas in between each element), re-processes the same list to produce the head of an HTML table, then produces the body of the table with the query result (pasting the <code>tr</code>s and <code> td</code>s into the right places).</p>
@@ -434,11 +445,11 @@ Functions</h2>
     <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 0, 0, <span class="stringliteral">&quot;name&quot;</span>);
     <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 1, 0, <span class="stringliteral">&quot;age&quot;</span>);
     <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 2, 0, <span class="stringliteral">&quot;sex&quot;</span>);
-    <span class="keywordtype">char</span> *query= <a class="code" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;select &quot;</span>, .between=<span class="stringliteral">&quot;, &quot;</span>);
+    <span class="keywordtype">char</span> *query= <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;select &quot;</span>, .between=<span class="stringliteral">&quot;, &quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;%s from datatab&quot;</span>, query);
-    <span class="keywordtype">char</span> *html_head = <a class="code" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&quot;</span>,
+    <span class="keywordtype">char</span> *html_head = <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&quot;</span>,
                                 .between=<span class="stringliteral">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span>, .after=<span class="stringliteral">&quot;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;&quot;</span>);
-    <span class="keywordtype">char</span> *html_table = <a class="code" href="apop__asst_8c.html#a98e7d8ea0621e231298d5ceee61a5dc1">apop_text_paste</a>(d, .before=html_head, .after=<span class="stringliteral">&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;</span>,
+    <span class="keywordtype">char</span> *html_table = <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(d, .before=html_head, .after=<span class="stringliteral">&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;</span>,
                                 .between=<span class="stringliteral">&quot;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;&quot;</span>, .between_cols=<span class="stringliteral">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span>);
     FILE *outfile = fopen(<span class="stringliteral">&quot;yourdata.html&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);                                                                                                                              fprintf(outfile, <span class="stringliteral">&quot;%s&quot;</span>, html_table);
     fclose(outfile);
@@ -487,4 +498,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Jan 7 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>

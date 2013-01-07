@@ -23,133 +23,144 @@
 \form#22:$v_i$
 \form#23:$-\max < x < \max$
 \form#24:$ d1 \cdot d2$
-\form#25:$3 < 2x + 4y - 7z$
-\form#26:$(-1, +1)$
-\form#27:$\to$
-\form#28:$\leq$
-\form#29:$\hat{}p$
-\form#30:$y$
-\form#31:$g_1(A) + g_2(BC) + g_3(CD)$
-\form#32:$R^2$
-\form#33:$Y$
-\form#34:$\epsilon$
-\form#35:$k$
-\form#36:$ SST \equiv \sum (Y_i - \bar Y) ^2 $
-\form#37:$ SSE \equiv \sum \epsilon ^2 $
-\form#38:$ R^2 \equiv 1 - {SSE\over SST} $
-\form#39:$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2) $
-\form#40:$5 \times 1$
-\form#41:$\bar x$
-\form#42:$\mu$
-\form#43:$n^2/(n^2-1)$
-\form#44:$(\sum_i (x_i - \mu)^3/n))$
-\form#45:$^{3/2}$
-\form#46:$\sum_i (x_i - \mu)^4/n)$
-\form#47:$n-1$
-\form#48:${\cal N}(0,1)$
-\form#49:$\sigma^4$
-\form#50:$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$
-\form#51:$\sqrt{\sum_i{(a_i - b_i)^2}},$
-\form#52:$i$
-\form#53:$\sum_i{|a_i - b_i|},$
-\form#54:$a = b$
-\form#55:$|a_i - b_i|$
-\form#56:$L_p$
-\form#57:$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$
-\form#58:$(X-\mu) / \sigma$
-\form#59:$\sigma$
-\form#60:$(X-\mu)$
-\form#61:$(\sigma^2_{xy}/(\sigma_x\sigma_y))$
-\form#62:$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $
-\form#63:$q$
-\form#64:$D(p, q) \neq D(q, p)$
-\form#65:$p_i>0$
-\form#66:$q_i=0$
-\form#67:$df$
-\form#68:$F$
-\form#69:\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]
-\form#70:$\Gamma(x)$
-\form#71:$x\in\{0, -1, -2, ...\}$
-\form#72:$a+(1-j)/2$
-\form#73:$L > R$
-\form#74:\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]
-\form#75:${\bf Q}$
-\form#76:${\bf c}$
-\form#77:$\beta_1$
-\form#78:$(X'X)^{-1}$
-\form#79:$(X'\Sigma X)^{-1}$
-\form#80:$\Sigma$
-\form#81:$\lambda^{-1}$
-\form#82:$\lambda$
-\form#83:$\dots$
-\form#84:$\cdot$
-\form#85:$->$
-\form#86:${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$
-\form#87:$L$
-\form#88:$I$
-\form#89:$\sim \chi^2_m$
-\form#90:$m$
-\form#91:$(1-x)^2+ s(y - x^2)^2$
-\form#92:$s$
-\form#93:$X$
-\form#94:$X\beta$
-\form#95:$(i,j)$
-\form#96:$y = x_1 + \log(x_2) + x_3^2$
-\form#97:$x_1$
-\form#98:$Z(a) = {1\over \zeta(a) * i^a} $
-\form#99:$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $
-\form#100:$P(x) = 1$
-\form#101:$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $
-\form#102:$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $
-\form#103:$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $
-\form#104:$W(x,k, b,a) = (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]$
-\form#105:$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)$
-\form#106:$dlnW/db = 1/(b-1) + \psi(b+a) - \psi(k+a+b)$
-\form#107:$dlnW/da = \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)$
-\form#108:$\mathbf{V}$
-\form#109:$p\times p$
-\form#110:${\mathbf{W}}$
-\form#111:$\Gamma_p(\cdot)$
-\form#112:\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
-\form#113:$Y = f(x_1) + f(x_2) + ... + \epsilon$
-\form#114:$j$
-\form#115:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
-\form#116:$x\beta_j - ln(\sum_i{e^{x\beta_i}})$
-\form#117:$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$
-\form#118:$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$
-\form#119:$p(k) = {\mu^k \over k!} \exp(-\mu), $
-\form#120:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
-\form#121:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
-\form#122:$d ln G/ da = -\psi(a) - ln b + ln(x) $
-\form#123:$d ln \gamma = \psi$
-\form#124:$d ln G/ db = -a/b + x/(b^2) $
-\form#125:$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$
-\form#126:$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $
-\form#127:$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $
-\form#128:$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $
-\form#129:$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $
-\form#130:$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $
-\form#131:$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $
-\form#132:$Z(C,k) dx = \ln C C^{-k}. $
-\form#133:$\mu = {1\over \ln C}$
-\form#134:$C=\exp(1/\mu)$
-\form#135:$p_0$
-\form#136:$p_0=1-\sum_{i=1}^{k-1} p_i$
-\form#137:$N=1$
-\form#138:$1\times 1$
-\form#139:$ Y = \beta X + \epsilon$
-\form#140:$\beta X$
-\form#141:$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$
-\form#142:$P(X)=1$
-\form#143:$P(Y, X) = P(Y|X)P(X) = P(Y|X)$
-\form#144:$X\beta+\epsilon$
-\form#145:$\times$
-\form#146:$y_i = x\beta_i$
-\form#147:\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]
-\form#148:$a$
-\form#149:$b$
-\form#150:$\in[0,1]$
-\form#151:$p(1-p)$
-\form#152:$>0$
-\form#153:$P(Y|X)$
-\form#154:$X'\beta$
+\form#25:$3 \times 5$
+\form#26:$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3$
+\form#27:$3 \times 3$
+\form#28:$5 \times 5$
+\form#29:$cdot$
+\form#30:$3\times 1$
+\form#31:$3\times 4$
+\form#32:$1 \times 4$
+\form#33:$N \times 1$
+\form#34:$\cdot$
+\form#35:$1 \times N$
+\form#36:$N \times N$
+\form#37:$3 < 2x + 4y - 7z$
+\form#38:$(-1, +1)$
+\form#39:$\to$
+\form#40:$\leq$
+\form#41:$\hat{}p$
+\form#42:$y$
+\form#43:$g_1(A) + g_2(BC) + g_3(CD)$
+\form#44:$R^2$
+\form#45:$Y$
+\form#46:$\epsilon$
+\form#47:$k$
+\form#48:$ SST \equiv \sum (Y_i - \bar Y) ^2 $
+\form#49:$ SSE \equiv \sum \epsilon ^2 $
+\form#50:$ R^2 \equiv 1 - {SSE\over SST} $
+\form#51:$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2) $
+\form#52:$5 \times 1$
+\form#53:$\bar x$
+\form#54:$\mu$
+\form#55:$n^2/(n^2-1)$
+\form#56:$(\sum_i (x_i - \mu)^3/n))$
+\form#57:$^{3/2}$
+\form#58:$\sum_i (x_i - \mu)^4/n)$
+\form#59:$n-1$
+\form#60:${\cal N}(0,1)$
+\form#61:$\sigma^4$
+\form#62:$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$
+\form#63:$\sqrt{\sum_i{(a_i - b_i)^2}},$
+\form#64:$i$
+\form#65:$\sum_i{|a_i - b_i|},$
+\form#66:$a = b$
+\form#67:$|a_i - b_i|$
+\form#68:$L_p$
+\form#69:$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$
+\form#70:$(X-\mu) / \sigma$
+\form#71:$\sigma$
+\form#72:$(X-\mu)$
+\form#73:$(\sigma^2_{xy}/(\sigma_x\sigma_y))$
+\form#74:$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $
+\form#75:$q$
+\form#76:$D(p, q) \neq D(q, p)$
+\form#77:$p_i>0$
+\form#78:$q_i=0$
+\form#79:$df$
+\form#80:$F$
+\form#81:\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]
+\form#82:$\Gamma(x)$
+\form#83:$x\in\{0, -1, -2, ...\}$
+\form#84:$a+(1-j)/2$
+\form#85:$L > R$
+\form#86:\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]
+\form#87:${\bf Q}$
+\form#88:${\bf c}$
+\form#89:$\beta_1$
+\form#90:$(X'X)^{-1}$
+\form#91:$(X'\Sigma X)^{-1}$
+\form#92:$\Sigma$
+\form#93:$\lambda^{-1}$
+\form#94:$\lambda$
+\form#95:$0, 1, 2, ...$
+\form#96:$->$
+\form#97:${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$
+\form#98:$L$
+\form#99:$I$
+\form#100:$\sim \chi^2_m$
+\form#101:$m$
+\form#102:$(1-x)^2+ s(y - x^2)^2$
+\form#103:$s$
+\form#104:$X$
+\form#105:$X\beta$
+\form#106:$(i,j)$
+\form#107:$y = x_1 + \log(x_2) + x_3^2$
+\form#108:$x_1$
+\form#109:$Z(a) = {1\over \zeta(a) * i^a} $
+\form#110:$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $
+\form#111:$P(x) = 1$
+\form#112:$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $
+\form#113:$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $
+\form#114:$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $
+\form#115:$W(x,k, b,a) = (b-1) \gamma(b+a) \gamma(k+a) / [\gamma(a+1) \gamma(k+a+b)]$
+\form#116:$\ln W(x, b, a) = \ln(b-1) + \ln\gamma(b+a) + \ln\gamma(k+a) - \ln\gamma(a+1) - \ln\gamma(k+a+b)$
+\form#117:$dlnW/db = 1/(b-1) + \psi(b+a) - \psi(k+a+b)$
+\form#118:$dlnW/da = \psi(b+a) + \psi(k+a) - \psi(a+1) - \psi(k+a+b)$
+\form#119:$\mathbf{V}$
+\form#120:$p\times p$
+\form#121:${\mathbf{W}}$
+\form#122:$\Gamma_p(\cdot)$
+\form#123:\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
+\form#124:$Y = f(x_1) + f(x_2) + ... + \epsilon$
+\form#125:$j$
+\form#126:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
+\form#127:$x\beta_j - ln(\sum_i{e^{x\beta_i}})$
+\form#128:$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$
+\form#129:$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$
+\form#130:$p(k) = {\mu^k \over k!} \exp(-\mu), $
+\form#131:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
+\form#132:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
+\form#133:$d ln G/ da = -\psi(a) - ln b + ln(x) $
+\form#134:$d ln \gamma = \psi$
+\form#135:$d ln G/ db = -a/b + x/(b^2) $
+\form#136:$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$
+\form#137:$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $
+\form#138:$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $
+\form#139:$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $
+\form#140:$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $
+\form#141:$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $
+\form#142:$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $
+\form#143:$Z(C,k) dx = \ln C C^{-k}. $
+\form#144:$\mu = {1\over \ln C}$
+\form#145:$C=\exp(1/\mu)$
+\form#146:$p_0$
+\form#147:$p_0=1-\sum_{i=1}^{k-1} p_i$
+\form#148:$N=1$
+\form#149:$1\times 1$
+\form#150:$ Y = \beta X + \epsilon$
+\form#151:$\beta X$
+\form#152:$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$
+\form#153:$P(X)=1$
+\form#154:$P(Y, X) = P(Y|X)P(X) = P(Y|X)$
+\form#155:$X\beta+\epsilon$
+\form#156:$\times$
+\form#157:$y_i = x\beta_i$
+\form#158:\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]
+\form#159:$a$
+\form#160:$b$
+\form#161:$\in[0,1]$
+\form#162:$p(1-p)$
+\form#163:$>0$
+\form#164:$P(Y|X)$
+\form#165:$X'\beta$
