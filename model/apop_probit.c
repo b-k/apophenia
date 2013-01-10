@@ -39,8 +39,8 @@ static apop_data *get_category_table(apop_data *d){
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
-    apop_ols.prep(d, m);//also runs the default apop_model_clear.
     apop_data *factor_list = get_category_table(d);
+    apop_ols.prep(d, m);//also runs the default apop_model_clear.
     int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');

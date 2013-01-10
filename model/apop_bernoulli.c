@@ -58,10 +58,13 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
 //One of those functions that just fills out the form.
 //CDF to zero = 1-p
 //CDF to one = 1
-    Nullcheck_mpd(d, params, GSL_NAN); Get_vmsizes(d)  //vsize
-    double val = apop_data_get(d, 0, vsize ? -1 : 0);
-    double p = params->parameters->vector->data[0];
-    return val ? 1 : 1-p;
+    Nullcheck_mpd(d, params, GSL_NAN); Get_vmsizes(d)  //firstcol
+    double val = apop_data_get(d, .col=firstcol);
+    double p = *params->parameters->vector->data;
+    return isnan(val) ? GSL_NAN
+            : val < 0 ? 0
+            : val < 1 ? 1 - p
+                      : 1;
 }
 
 static void bernie_print(apop_model *m){

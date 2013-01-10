@@ -26,7 +26,7 @@ apop_opts_type apop_opts	=
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
-#include "apop_db_sqlite.c"
+#include "apop_db_sqlite.c" // callback_t is defined here, btw.
 
 //This macro declares the query string and fills it from the printf part of the call.
 #define Fillin(query, fmt)        \
@@ -36,12 +36,6 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 	vasprintf(&query, fmt, argp); \
 	va_end(argp);                 \
 	Apop_notify(2, "%s", query);
-
-typedef struct {
-    int        firstcall;
-    size_t     currentrow;
-    apop_data  *outdata;
-} callback_t;
 
 /** Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
 
@@ -257,23 +251,22 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
     callback_t *qi= qinfo;
     if (qi->firstcall){
         qi->firstcall--;
-        namecol = -1;
         for(i=0; i<argc; i++)
             if (!strcasecmp(column[i], apop_opts.db_name_column)){
-                namecol = i;
+                qi->namecol = i;
                 ncfound = 1;
                 break;
             }
 	    qi->outdata = argc-ncfound ? apop_data_alloc(1, argc-ncfound) : apop_data_alloc( );
         for(i=0; i<argc; i++)
-            if (namecol != i)
+            if (qi->namecol != i)
                 apop_name_add(qi->outdata->names, column[i], 'c');
     } else 
         if (qi->outdata->matrix)
             apop_matrix_realloc(qi->outdata->matrix, qi->currentrow+1, qi->outdata->matrix->size2);
     ncfound =0;
     for (int jj=0;jj<argc;jj++)
-        if (jj != namecol){
+        if (jj != qi->namecol){
             double valor = 
                 !argv[jj] || !strcmp(argv[jj], "NULL")|| !strcasecmp(apop_opts.db_nan, argv[jj])
                  ? GSL_NAN : atof(argv[jj]);
@@ -303,7 +296,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 
     //else
     char *err=NULL;
-    callback_t qinfo = {.firstcall = 1};
+    callback_t qinfo = {.firstcall = 1, .namecol=-1};
 	if (db==NULL) apop_db_open(NULL);
     sqlite3_exec(db, query,db_to_table,&qinfo, &err); 
     free (query);

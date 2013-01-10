@@ -86,5 +86,7 @@ int main(int argc, char **argv){
 	}
 	apop_db_open(argv[optind + 2]);
     if (tab_exists_check) apop_table_exists(argv[optind+1],1);
+    apop_query("begin;");
 	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL, .field_ends=field_list);
+    apop_query("commit;");
 }

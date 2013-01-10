@@ -3507,6 +3507,7 @@ void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
 }
 
 #define lo_set(var, dflt) .var = in.lo_s.var ? in.lo_s.var : dflt
+#define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
 
 Apop_settings_init(apop_loess,
     Apop_assert(in.data, "I need a .data element to allocate apop_loess_settings.");
@@ -3523,17 +3524,17 @@ Apop_settings_init(apop_loess,
 
 	    lo_set(model.degree , 2),
 	    lo_set(model.normalize , 'y'),
-        .model.family = !strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian",
+        .model.family = apop_strcmp(in.lo_s.model.family , "symmetric") ? "symmetric": "gaussian",
         lo_set(model.span , 0.75),
         //.model.span = in.span ? in.span : 0.75,
 
-        .control.surface = !strcmp(in.lo_s.control.surface , "direct") ? "direct" : "interpolate",
-        .control.statistics = !strcmp(in.lo_s.control.statistics , "exact") ? "exact" : "approximate",
+        .control.surface = apop_strcmp(in.lo_s.control.surface , "direct") ? "direct" : "interpolate",
+        .control.statistics = apop_strcmp(in.lo_s.control.statistics , "exact") ? "exact" : "approximate",
         lo_set(control.cell , 0.2),
-        .control.trace_hat = !strcmp(in.lo_s.control.trace_hat , "exact") ? "exact" 
-                        : !strcmp(in.lo_s.control.trace_hat , "approximate") ? "approximate" 
+        .control.trace_hat = apop_strcmp(in.lo_s.control.trace_hat , "exact") ? "exact" 
+                        : apop_strcmp(in.lo_s.control.trace_hat , "approximate") ? "approximate" 
                         : "wait.to.decide",
-        lo_set(control.iterations, (!strcmp(in.lo_s.model.family , "symmetric") ? 4 : 0)),
+        lo_set(control.iterations, (apop_strcmp(in.lo_s.model.family , "symmetric") ? 4 : 0)),
 
         .out.fitted_values =  malloc(n * sizeof(double)),
         .out.fitted_residuals =  malloc(n * sizeof(double)),

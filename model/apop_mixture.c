@@ -162,6 +162,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
 void unpack(apop_model *min){
     apop_mixture_settings *ms = Apop_settings_get_group(min, apop_mixture);
     int posn=ms->model_count, i=0;
+    if (!min->parameters) return; //Trusting user that the user has just added already-esimated models.
     for (apop_model **m = ms->model_list; *m; m++){
         gsl_vector v = gsl_vector_subvector(min->parameters->vector, posn, ms->param_sizes[i]).vector;
         apop_data_unpack(&v, (*m)->parameters);
@@ -170,12 +171,17 @@ void unpack(apop_model *min){
 }
 
 #define weighted_sum(fn)                                                            \
-    gsl_vector vforsum = gsl_vector_subvector(model_in->parameters->vector, 0, ms->model_count).vector; \
-    long double total_weight = apop_vector_sum(&vforsum);                           \
     long double total=0;                                                            \
-    size_t i=0;                                                                     \
-    for (apop_model **m = ms->model_list; *m; m++)                                  \
-        total += fn(d, *m) * vforsum.data[i]/total_weight;
+    if (model_in->parameters) {                                                     \
+        gsl_vector vforsum = gsl_vector_subvector(model_in->parameters->vector, 0, ms->model_count).vector; \
+        long double total_weight = apop_vector_sum(&vforsum);                       \
+        size_t i=0;                                                                 \
+        for (apop_model **m = ms->model_list; *m; m++)                              \
+            total += fn(d, *m) * vforsum.data[i++]/total_weight;                    \
+    } else {   /*assume equal weights.*/                                            \
+        for (apop_model **m = ms->model_list; *m; m++)                              \
+            total += fn(d, *m)/ms->model_count;                                     \
+    }
 
 
 static double mixture_log_likelihood(apop_data *d, apop_model *model_in){
@@ -207,7 +213,8 @@ static double weights_over_zero(apop_data *data, apop_model *m){
 }
 
 static double mixture_cdf(apop_data *d, apop_model *model_in){
-    Nullcheck_mpd(d, model_in, GSL_NAN)
+    Nullcheck_m(model_in, GSL_NAN)
+    Nullcheck_d(d, GSL_NAN)
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     unpack(model_in);
     weighted_sum(apop_cdf);

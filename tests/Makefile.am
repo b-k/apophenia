@@ -1,5 +1,5 @@
 check_PROGRAMS=test_apop rake_test error_test distribution_tests nist_tests ../eg/test_ranks ../eg/test_harmonic ../eg/test_distances \
-	   ../eg/test_fisher ../eg/test_strip_dots ../eg/test_kl_divergence \
+	   ../eg/some_cdfs ../eg/test_fisher ../eg/test_strip_dots ../eg/test_kl_divergence \
 		../eg/pmf_test ../eg/test_pruning ../eg/test_updating \
 		../eg/apop_map_row ../eg/test_regex ../eg/fake_logit
 TESTS=$(check_PROGRAMS)
