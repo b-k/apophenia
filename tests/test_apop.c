@@ -259,12 +259,12 @@ void test_percentiles(){
 }
 
 void test_score(){
-    int i, j, len = 1e5;
+    int len = 1e5;
     gsl_rng *r = apop_rng_alloc(123);
     apop_data *data = apop_data_alloc(len,1);
     apop_model  *source   = apop_model_set_parameters(apop_normal, 
                                 gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
-    for (j=0; j< len; j++)
+    for (size_t j=0; j< len; j++)
         apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
     apop_model *estme = apop_model_copy(apop_normal);
     Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);

@@ -311,7 +311,6 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
     int k;
     gsl_vector *previous = apop_vector_copy(fit->weights);
     for (k = 1; k <= maxit; ++k) {
-		if (!(k%100)) Apop_notify(1, ".");
         maxdev = 0;
         main_loop(contrast_ct, rakeinfos, k);
         Apop_notify(3, "Data set after round %i of raking.\n", k);

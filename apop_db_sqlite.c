@@ -39,6 +39,10 @@ select sqrt(x), pow(x,0.5), exp(x), log(x),
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
 \endcode
+
+Some more realistic sample code:
+
+\include normalizations.c
 */
 
 typedef struct StdDevCtx StdDevCtx;

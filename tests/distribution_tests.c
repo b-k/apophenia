@@ -104,8 +104,7 @@ void test_distributions(gsl_rng *r, int slow_tests){
                 apop_lognormal, apop_multinomial, apop_multivariate_normal,
                 apop_normal, apop_poisson,
                 /*apop_t_distribution, */ apop_uniform,
-                apop_yule, apop_zipf, 
-                slow_tests ? apop_waring : null_model,
+                 apop_waring, apop_yule, apop_zipf, 
                 /*apop_wishart,*/
                 null_model};
 

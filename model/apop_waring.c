@@ -74,7 +74,6 @@ static double dapply_b(double val, void *in){
     Get_vmsizes(d) //tsize
     ab_type ab = {.bb = gsl_vector_get(m->parameters->vector, 0),
                   .a  = gsl_vector_get(m->parameters->vector, 1)};
-    apop_data_show(m->parameters);
     double d_bb = apop_map_sum(d, .fn_dp=dapply_b, .param=&ab);
     double d_a  = apop_map_sum(d, .fn_dp=dapply_a, .param=&ab);
     double	bb_minus_one_inv = 1./(ab.bb-1),
@@ -84,7 +83,6 @@ static double dapply_b(double val, void *in){
 	d_a	 += (psi_a_bb- psi_a_mas_one) * tsize;
 	gsl_vector_set(gradient, 0, d_bb);
 	gsl_vector_set(gradient, 1, d_a);
-    apop_vector_show(gradient);
 }
 
 /* \adoc RNG Give me parameters, and I'll draw a ranking from the appropriate
@@ -116,6 +114,5 @@ static void waring_rng(double *out, gsl_rng *r, apop_model *eps){
 }
 
 apop_model apop_waring = {"Waring distribution", 2,0,0, .dsize=1,
-	 .log_likelihood =  waring_log_likelihood,
+	 .log_likelihood =  waring_log_likelihood, .score = waring_dlog_likelihood,
      .constraint =  beta_zero_and_one_greater_than_x_constraint,  .draw = waring_rng};
- /*.score = waring_dlog_likelihood,  //seems numerically unstable*/
