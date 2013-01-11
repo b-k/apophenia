@@ -175,12 +175,12 @@ apop_system("cp %s xxx", outfile);
 void v_pow10(double *in){ *in = pow(10,*in);}
 
 static void log_and_exp(gsl_rng *r){
-    int i;
     apop_data *d = apop_data_alloc(100,2);
     apop_data_add_names(d, 'c', "10", "e");
-    for (i=0; i< 100; i++){
+    for (int i=0; i< 100; i++){
         apop_data_set(d, i, .colname="10", .val=gsl_rng_uniform(r)*10);
-        apop_data_set(d, i, .colname="e", .val=gsl_rng_uniform(r)*10);
+        double *eval = apop_data_ptr(d, .row=i, .colname="e");
+        *eval = gsl_rng_uniform(r)*10;
     }
     apop_data *d2 = apop_data_copy(d);
     Apop_col_t(d, "10", tencol);
@@ -241,14 +241,13 @@ void test_ml_imputation(gsl_rng *r){
 }
 
 void test_percentiles(){
-  gsl_vector    *v      = gsl_vector_alloc(307);
-  int           i;
-    for (i=0; i< 307; i++)
+    gsl_vector *v = gsl_vector_alloc(307);
+    for (size_t i=0; i< 307; i++)
         gsl_vector_set(v, i, i);
-  double        *pcts_up    = apop_vector_percentiles(v, 'u');
-  double        *pcts_down  = apop_vector_percentiles(v, 'd');
-  double        *pcts_avg   = apop_vector_percentiles(v, 'a');
-    for (i=0; i< 101; i++){
+    double *pcts_up    = apop_vector_percentiles(v, 'u');
+    double *pcts_down  = apop_vector_percentiles(v, 'd');
+    double *pcts_avg   = apop_vector_percentiles(v, 'a');
+    for (size_t i=0; i< 101; i++){
         assert(pcts_up[i] >= pcts_down[i]);
         assert(pcts_up[i] >= pcts_avg[i]);
         assert(pcts_avg[i] >= pcts_down[i]);
@@ -274,6 +273,7 @@ void test_score(){
     apop_model *straight_est = apop_estimate(data, apop_normal);
     Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
     Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
+    apop_model_free(straight_est); 
 
     double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
     apop_data *cov = apop_data_get_page(out->parameters, "cov");
@@ -342,11 +342,11 @@ void test_nan_data(){
     apop_text_to_db("test_data_nans", "nandata");
     strcpy(apop_opts.db_name_column, "head");
     strcpy(apop_opts.db_nan, "(nan|\\.)");
-  apop_data *d  = apop_query_to_data("select * from nandata");
+    apop_data *d  = apop_query_to_data("select * from nandata");
     apop_opts.output_type ='d';//check that rownames come in OK, and NaNs written right.
     apop_data_print(d, "nantest");
     apop_data_free(d);
-  apop_data *d2  = apop_query_to_data("select * from nantest");
+    apop_data *d2  = apop_query_to_data("select * from nantest");
     assert(gsl_isnan(apop_data_get_tt(d2,"second", "c")));
     assert(gsl_isnan(apop_data_get_tt(d2,"third", "b")));
     assert(!apop_data_get_tt(d2,"fourth", "b"));
@@ -460,6 +460,12 @@ void test_split_and_stack(gsl_rng *r){
         apop_data_free(splits[1]);
         apop_data_free(dv2);
     }
+
+    apop_data **notsplits = apop_data_split(d1, 800, 'c');
+    assert(notsplits[0]->matrix->size1 == d1->matrix->size1);
+    assert(notsplits[0]->matrix->size2 == d1->matrix->size2);
+    assert(notsplits[0]->vector->size == d1->vector->size);
+    assert(notsplits[1] == NULL);
     //let's try a NULL data set 
     apop_data *nulldata = apop_data_alloc();
     apop_data *onespot = apop_data_alloc(1,1);
@@ -470,6 +476,32 @@ void test_split_and_stack(gsl_rng *r){
     assert(apop_data_get(nulldata, 0, 0) == 12);
     apop_data_free(nulldata);
     apop_data_free(onespot);
+
+    //text
+    apop_data *txt = apop_text_alloc(NULL, 3,3);
+    apop_data *txt2 = apop_text_alloc(NULL, 3,3);
+    for (int i=0; i< 3; i++)
+        for (int j=0; j< 3; j++){
+            apop_text_add(txt, i, j, "(%i, %i)", i, j);
+            apop_text_add(txt2, i, j, "[%i, %i]", i, j);
+        }
+    apop_data_stack(txt, txt2, .posn='r', .inplace='y');
+    assert(txt->textsize[0] == 6);
+    assert(txt->textsize[1] == 3);
+    assert(!strcmp(txt->text[2][2], "(2, 2)"));
+    assert(!strcmp(txt->text[5][2], "[2, 2]"));
+    apop_data **txtsplits = apop_data_split(txt, 3, 'r');
+    assert(txtsplits[0]->textsize[0] ==txtsplits[0]->textsize[1]);
+    assert(txtsplits[0]->textsize[0] == 3);
+    assert(txtsplits[1]->textsize[0] ==txtsplits[1]->textsize[1]);
+    assert(txtsplits[1]->textsize[0] == 3);
+    assert(!strcmp(txtsplits[0]->text[1][1], "(1, 1)"));
+    assert(!strcmp(txtsplits[1]->text[1][1], "[1, 1]"));
+    apop_data_free(d1);
+    apop_data_free(txt);
+    apop_data_free(txt2);
+    apop_data_free(onespot);
+    apop_data_free(nulldata);
 }
 
 /** I claim that the mean residual is near zero, and that the predicted
@@ -516,12 +548,9 @@ void test_f(apop_model *est){
     Diff (f2 , r*(n-K)/((1-r)*K) , tol5);
 }
 
-
-
 void test_OLS(gsl_rng *r){
   apop_data *set = apop_data_alloc(0, len, 2);
-  int i;
-    for(i=0; i< len; i++){
+    for(int i=0; i< len; i++){
         apop_data_set(set, i, 1, 100*(gsl_rng_uniform(r)-0.5));
         apop_data_set(set, i, 0, -1.4 + apop_data_get(set,i,1)*2.3);
     }
@@ -529,6 +558,7 @@ void test_OLS(gsl_rng *r){
     apop_model *out = apop_estimate(set, apop_ols);
     Diff (apop_data_get(out->parameters, 0,-1) , -1.4 , tol5);
     Diff (apop_data_get(out->parameters, 1,-1) , 2.3 , tol5);
+    apop_model_free(out);
 
     gsl_vector *w = gsl_vector_alloc(set->matrix->size1);
     gsl_vector_set_all(w, 14);
@@ -536,6 +566,7 @@ void test_OLS(gsl_rng *r){
     out = apop_estimate(bkup, apop_ols);
     Diff (apop_data_get(out->parameters, 0,-1) , -1.4 , tol5);
     Diff (apop_data_get(out->parameters, 1,-1) , 2.3 , tol5);
+    apop_model_free(out);
 }
 
 #define INVERTSIZE 100
@@ -654,16 +685,16 @@ void apop_pack_test(gsl_rng *r){
 }
 
 void test_model_fix_parameters(gsl_rng *r){
-  size_t    i, ct = 1000;
-  apop_data *d  = apop_data_alloc(0,ct,2);
-  double    draw[2];
-  apop_multivariate_normal.vbase =
-  apop_multivariate_normal.m1base =
-  apop_multivariate_normal.m2base = 2;
-  apop_model *pp = apop_model_set_parameters(apop_multivariate_normal,
+    size_t ct = 1000;
+    apop_data *d = apop_data_alloc(0,ct,2);
+    double draw[2];
+    apop_multivariate_normal.vbase =
+    apop_multivariate_normal.m1base =
+    apop_multivariate_normal.m2base = 2;
+    apop_model *pp = apop_model_set_parameters(apop_multivariate_normal,
                                         8, 1, 0.5,
                                         2, 0.5, 1);
-    for(i=0; i< ct; i++){
+    for(int i=0; i< ct; i++){
         apop_multivariate_normal.draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
         apop_data_set(d, i, 1, draw[1]);
@@ -671,21 +702,26 @@ void test_model_fix_parameters(gsl_rng *r){
 
     apop_data *pcopy = apop_data_copy(pp->parameters);
     gsl_matrix_set_all(pp->parameters->matrix, GSL_NAN);
-    apop_model *mep1   = apop_model_fix_params(pp);
+    apop_model *mep1  = apop_model_fix_params(pp);
     Apop_settings_add(mep1, apop_mle, starting_pt, ((double[]){1.5, .25, .25, 1.5}));
-    apop_model   *e1  = apop_estimate(d, *mep1);
+    apop_model *e1 = apop_estimate(d, *mep1);
     gsl_vector_sub(e1->parameters->vector, pcopy->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-1);
+    apop_model_free(e1);
 
-  double    start2[] = {7,3};
+    double start2[] = {7,3};
     pp->parameters = apop_data_copy(pcopy);
     gsl_vector_set_all(pp->parameters->vector, GSL_NAN);
-    apop_model *mep2   = apop_model_fix_params(pp);
+    apop_model *mep2  = apop_model_fix_params(pp);
+    apop_model_free(pp);
     Apop_settings_add(mep2, apop_mle, starting_pt, start2);
     Apop_settings_add(mep2, apop_mle, method, APOP_CG_PR);
-    apop_model   *e2  = apop_estimate(d, *mep2);
+
+    apop_model *e2 = apop_estimate(d, *mep2);
+    apop_model_free(mep2);
     gsl_matrix_sub(e2->parameters->matrix, pcopy->matrix);
     assert(apop_matrix_sum(e2->parameters->matrix) < 1e-2);
+    apop_model_free(e2);
 }
 
 void test_linear_constraint(){
@@ -743,15 +779,14 @@ void test_data_sort(){
 void test_histograms(gsl_rng *r){
 //create a million draws 
     int n = 5e5;
-  double    mu = 2.8, sigmasq = 1.34;
-  apop_data *d = apop_data_alloc(0,n,1);
-  gsl_matrix *out   = gsl_matrix_alloc(n,1);
-  int       i;
-    for (i=0; i< n; i++)
+    double mu = 2.8, sigmasq = 1.34;
+    apop_data *d = apop_data_alloc(0,n,1);
+    gsl_matrix *out = gsl_matrix_alloc(n,1);
+    for (int i=0; i< n; i++)
         //gsl_matrix_set(d->matrix, i, 0, gsl_rng_uniform(r));
         gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
-    apop_model   *hp = apop_estimate(d, apop_histogram);
-    for (i=0; i< n; i++){
+    apop_model *hp = apop_estimate(d, apop_histogram);
+    for (int i=0; i< n; i++){
         apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
@@ -763,11 +798,11 @@ void test_histograms(gsl_rng *r){
 
     apop_model   *hp2 = apop_model_copy(apop_histogram);
     Apop_model_add_group(hp2, apop_histogram, .data=d, .bins_in=100);
-    for (i=0; i< n; i++){
+    for (int i=0; i< n; i++){
         apop_draw(gsl_matrix_ptr(out, i,0), r, hp2);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
-    apop_model *outparams2   = apop_estimate(apop_matrix_to_data(out), apop_normal);
+    apop_model *outparams2 = apop_estimate(apop_matrix_to_data(out), apop_normal);
     assert(fabs(outparams2->parameters->vector->data[0]-mu) < 1e2);
     assert(fabs(outparams2->parameters->vector->data[1]-sigmasq) < 1e2);
     apop_model_free(hp2);
@@ -830,20 +865,24 @@ void test_lognormal(gsl_rng *r){
         apop_draw(k, r, source);
         *k = exp(*k);
     }
+    apop_model_free(source);
     apop_model *out = apop_estimate(data, apop_lognormal);
     double muhat = apop_data_get(out->parameters, 0,-1);
     double sigmahat = apop_data_get(out->parameters, 1,-1);
     //if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
     Diff(mu, muhat, 1e-2);
     Diff(sigma, sigmahat, 1e-2);
+    apop_model_free(out);
 
     apop_model *for_mle= apop_model_copy(apop_lognormal);
     for_mle->estimate=NULL;
     apop_model *out2 = apop_estimate(data, *for_mle);
+    apop_model_free(for_mle);
     muhat = apop_data_get(out2->parameters, 0,-1);
     sigmahat = apop_data_get(out2->parameters, 1,-1);
     Diff(mu, muhat, 1e-2);
     Diff(sigma, sigmahat, 1e-2);
+    apop_model_free(out2);
 }
 
 void test_multivariate_normal(gsl_rng *r){
@@ -859,6 +898,8 @@ void test_multivariate_normal(gsl_rng *r){
         APOP_ROW(rdraws, i, ping);
         apop_draw(ping->data, r, mv);
     }
+    mv->parameters=NULL;
+    apop_model_free(mv);
     apop_model *est =apop_estimate(rdraws, apop_multivariate_normal);
     double error = fabs(est->parameters->vector->data[0] - p->vector->data[0])
                   +fabs(est->parameters->vector->data[1] - p->vector->data[1])
@@ -867,6 +908,7 @@ void test_multivariate_normal(gsl_rng *r){
                   +fabs(est->parameters->matrix->data[2] - p->matrix->data[2])
                   +fabs(est->parameters->matrix->data[3] - p->matrix->data[3]);
     assert (error < 3e-2); //yes, unimpressive, but we don't wanna be here all day.
+    apop_model_free(est);
 }
 
 static void common_binomial_bit(apop_model *out, int n, double p){
@@ -885,7 +927,9 @@ void test_binomial(gsl_rng *r){
     apop_model *outm = apop_estimate(d, apop_multinomial);
     common_binomial_bit(out, n, p);
     common_binomial_bit(outm, n, p);
+    apop_model_free(outm);
     apop_data_free(d);
+    apop_model_free(out);
 }
 
 void db_to_text(){
@@ -1021,7 +1065,7 @@ void test_transpose(){
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
   double val;
-  int samples = 1e5;
+  int samples = 1.5e5;
   apop_data *data = apop_data_alloc(samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
@@ -1072,7 +1116,7 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
-    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n');
+    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n', .tolerance=1e-5);
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
@@ -1355,16 +1399,14 @@ int main(int argc, char **argv){
     if (getenv("srcdir")) //if defined, this is probably via an automake rule.
     apop_system("cp %s/*dat* %s/printing_sample .", getenv("srcdir"), getenv("srcdir")); //needed for make distcheck. No-op in many cases.
     int  slow_tests = 0;
+    apop_opts.thread_count = 2;
     char c, opts[]  = "sqt:";
     if (argc==1)
-        printf("Sundry tests for Apophenia.\nRunning relatively faster tests.  To run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\nRunning...\n");
+        printf("Sundry tests for Apophenia.\nRunning relatively faster tests.  To run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. To change thread count (default=2), use -t1, -t2, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
-        if (c == 's')
-            slow_tests  ++;
-        else if (c == 'q')
-            verbose  --;
-        else if (c == 't')
-            apop_opts.thread_count  = atoi(optarg);
+        if (c == 's')       slow_tests++;
+        else if (c == 'q')  verbose--;
+        else if (c == 't')  apop_opts.thread_count = atoi(optarg);
 
     //set up some global or common variables
     gsl_rng *r = apop_rng_alloc(8); 
@@ -1373,6 +1415,9 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("test multivariate_normal", test_multivariate_normal(r));
+    do_test("log and exponent", log_and_exp(r));
+    do_test("split and stack test", test_split_and_stack(r));
     do_test("test probit and logit", test_probit_and_logit(r));
     do_test("test probit and logit again", test_probit_and_logit(r));
     do_test("test ML imputation", test_ml_imputation(r));
@@ -1382,7 +1427,6 @@ int main(int argc, char **argv){
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
     do_test("default RNG", test_default_rng(r));
-    do_test("log and exponent", log_and_exp(r));
     do_test("test printing", test_printing());
     do_test("test row set and remove", row_manipulations());
     do_test("test PMF", test_pmf());
@@ -1406,11 +1450,9 @@ int main(int argc, char **argv){
     do_test("test jackknife covariance", test_jack(r));
     do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
-    do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("database skew and kurtosis", test_skew_and_kurt());
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
-    do_test("split and stack test", test_split_and_stack(r));
     do_test("multivariate gamma", test_mvn_gamma());
     do_test("apop_dot test", test_dot());
     do_test("Inversion test", test_inversion(r));

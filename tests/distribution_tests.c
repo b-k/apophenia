@@ -91,7 +91,7 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
 
 double true_parameter_v[] = {1.82,2.1};
 
-void test_distributions(gsl_rng *r, int slow_tests){
+void test_distributions(gsl_rng *r){
   if (verbose) printf("\n");
   apop_model* true_params;
   apop_model null_model = {"the null model"};
@@ -148,19 +148,14 @@ void test_distributions(gsl_rng *r, int slow_tests){
 static void got_bored(){ exit(0); }
 
 int main(int argc, char **argv){
-    int slow_tests = 0;
     char c, opts[] = "sqt:";
     if (argc==1)
-        printf("Distribution tests.\nTo run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\n");
+        printf("Distribution tests.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
-        if (c == 's')
-            slow_tests  ++;
-        else if (c == 'q')
-            verbose  --;
-        else if (c == 't')
-            apop_opts.thread_count  = atoi(optarg);
+        if (c == 'q')      verbose  --;
+        else if (c == 't') apop_opts.thread_count  = atoi(optarg);
 
     gsl_rng *r = apop_rng_alloc(213452);
     signal(SIGINT, got_bored);
-    test_distributions(r, slow_tests);
+    test_distributions(r);
 }

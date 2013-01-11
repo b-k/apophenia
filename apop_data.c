@@ -448,7 +448,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
      if (r_or_c == 'r' || r_or_c == 'R') {
         if (splitpoint <=0)
             out[1]  = apop_data_copy(in);
-        else if (splitpoint >= in->matrix->size1)
+        else if (in->matrix && splitpoint >= in->matrix->size1)
             out[0]  = apop_data_copy(in);
         else {
             namev0  =
@@ -490,7 +490,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
 
         if (splitpoint <= -1)
             out[1]  = apop_data_copy(in);
-        else if (splitpoint >= in->matrix->size2)
+        else if (in->matrix && splitpoint >= in->matrix->size2)
             out[0]  = apop_data_copy(in);
         else if (splitpoint == 0){
             if (in->vector){
@@ -507,7 +507,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             } else 
                 set_m2 = 0;
             goto allocation;
-        } else if (splitpoint > 0 && splitpoint < in->matrix->size2){
+        } else if (splitpoint > 0 && in->matrix && splitpoint < in->matrix->size2){
             if (in->vector){
                 v1      = gsl_vector_subvector(in->vector, 0, in->vector->size).vector;
                 namev0  = 1;
@@ -586,7 +586,8 @@ allocation:
         for (int i=0; i< in->textsize[0]; i++)
             for (int j=0; j< in->textsize[1]; j++){
                 int whichtext = (i >= splitpoint);
-                asprintf(&(out[whichtext]->text[i][j]), "%s", in->text[i][j]);
+                int row = whichtext ? i - splitpoint : i;
+                asprintf(&(out[whichtext]->text[row][j]), "%s", in->text[i][j]);
             }
     }
     return out;

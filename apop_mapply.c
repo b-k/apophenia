@@ -293,11 +293,10 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
 }
 
 static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22){
-    int           threadct    = apop_opts.thread_count;
-    pthread_t     thread_id[threadct];
-    int           i;
-    threadpass    tp[threadct];
-    for (i=0 ; i<threadct; i++)
+    int threadct = GSL_MIN((m? m->size1 : vin->size), apop_opts.thread_count);
+    pthread_t thread_id[threadct];
+    threadpass tp[threadct];
+    for (size_t i=0 ; i<threadct; i++)
         tp[i] = (threadpass) {
             .limlist   = threadminmax(i, 
                     m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin->size ,threadct),
@@ -310,14 +309,14 @@ static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vect
         if (m)  post_22 ? forloop(tp) : oldforloop(tp);
         else    post_22 ? vectorloop(tp) : oldvectorloop(tp);
     } else {
-        for (i=0 ; i<threadct; i++){
+        for (size_t i=0 ; i<threadct; i++){
             if (m)  pthread_create(&thread_id[i], NULL,post_22 ? forloop : oldforloop,(tp+i));
             else    pthread_create(&thread_id[i], NULL,post_22 ? vectorloop : oldvectorloop,(tp+i));
         }
-        for (i=0 ; i<threadct; i++)
+        for (size_t i=0 ; i<threadct; i++)
             pthread_join(thread_id[i], NULL);
     }
-    for (i=0 ; i<threadct; i++)
+    for (size_t i=0 ; i<threadct; i++)
         free(tp[i].limlist);
     return vout;
 }
