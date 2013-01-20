@@ -438,35 +438,7 @@ static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,
     return out;
 }
 
-static int apop_check_dimensions(gsl_matrix *lm, gsl_matrix *rm, CBLAS_TRANSPOSE_t lt, CBLAS_TRANSPOSE_t rt){
-        if (lt==CblasNoTrans) {
-            if (rt==CblasNoTrans) 
-                Apop_stopif(lm->size2!=rm->size1, return 1,
-                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows. Those "
-                  "two need to be equal.", lm->size2, rm->size1)
-            else
-                Apop_stopif(lm->size2!=rm->size2, return 1,
-                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
-                   "(after the transposition you requested). "
-                   "Those two need to be equal.", lm->size2, rm->size2)
-        } else {
-            if (rt==CblasNoTrans) 
-                Apop_stopif(lm->size1!=rm->size1, return 1,
-                   0, "You sent me a matrix with %zu columns (after the transposition you requested) to "
-                   "multiply against a matrix with %zu rows. "
-                   "Those two need to be equal.", lm->size1, rm->size1)
-            else
-                Apop_stopif(lm->size1!=rm->size2, return 1,
-                   0, "You sent me a matrix with %zu columns to multiply against a matrix with %zu rows "
-                   "(after the two transpositions you requested). "
-                   "Those two need to be equal.", lm->size1, rm->size2)
-        }
-        return 0;
-}
-
-/** A convenience function for dot products.
-
-First, this requires less typing than the <tt>gsl_cblas_dgexx</tt> functions.
+/** A convenience function for dot products, which requires less prep and typing than the <tt>gsl_cblas_dgexx</tt> functions.
 
 Second, it makes some use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
@@ -474,21 +446,51 @@ This function uses the \ref designated syntax for inputs.
 
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
-\param form1 't' or 'p' or 1: transpose or prime \c d1->matrix.<br>
+\param form1 't' or 'p': transpose or prime \c d1->matrix, or, if \c d1->matrix is \c NULL, read \c d1->vector as a row vector.<br>
                     'n' or 0: no transpose. (the default)<br>
                     'v': ignore the matrix and use the vector.
+
 \param form2 As above, with \c d2.
 \return     an \ref apop_data set. If two matrices come in, the vector element is \c NULL and the 
             matrix has the dot product; if either or both are vectors,
-            the vector has the output and the matrix is \c NULL
-
-A note for readers of <em>Modeling with Data</em>: the awkward instructions on using this function on p 130 are now obsolete, thanks to
-the designated initializer syntax for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt> a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0, 't')</tt> 
+            the vector has the output and the matrix is \c NULL.
 
 \exception out->error='a'  Allocation error.
 \exception out->error='d'  dimension-matching error.
 \exception out->error='m'  GSL math error.
 \exception NULL If you ask me to take the dot product of NULL, I return NULL. [May some day change.]
+
+\li Some systems auto-transpose non-conforming matrices. You input a \f$3 \times 5\f$ and
+a \f$3 \times 5\f$ matrix, and the system assumes that you meant to transpose the second,
+producing a \f$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3\f$ output. Apophenia
+does not do this. First, it's ambiguous whether the output should be \f$3 \times 3\f$
+or \f$5 \times 5\f$. Second, your next run might have three observations, and two \f$3 \times 3\f$ 
+matrices don't require transposition; auto-transposition thus creates situations where
+bugs can pop up on only some iterations of a loop.
+
+\li For a vector \f$cdot\f$ a matrix, the vector is always treated as a row vector,
+meaning that a \f$3\times 1\f$ dot a \f$3\times 4\f$ matrix is correct, and produces a
+\f$1 \times 4\f$ vector.  For a vector \f$cdot\f$ a matrix, the vector is always treated
+as a column vector. Requests for transposition are ignored.  
+
+\li As a corrollary to the above rule, a vector dot a vector always produces a scalar,
+ which will be put in the zeroth element of the output vector;
+see the example. 
+
+\li If you want to multiply an $N \times 1\f$ vector \f$\cdot\f$ a \f$1 \times N$
+matrix produce an $N \times N$ matrix, then use \ref apop_vector_to_matrix to turn
+your vectors into matrices; see the example.
+
+
+\li A note for readers of <em>Modeling with Data</em>: the awkward instructions on using
+this function on p 130 are now obsolete, thanks to the designated initializer syntax
+for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt>
+a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers
+to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0,
+'t')</tt>
+
+Sample code:
+\include dot_products.c
 
 \ingroup linear_algebra
   */
@@ -526,23 +528,39 @@ APOP_VAR_ENDHEAD
                                   "matrix nor vector. Returning NULL.");
     }
     apop_data *out = apop_data_alloc();
+    #define Dimcheck(lr, lc, rr, rc) Apop_stopif((lc)!=(rr), out->error='d'; goto done,\
+        0, "mismatched dimensions: %zuX%zu dot %zuX%zu. %s", (lr), (lc), (rr), (rc),\
+        ((lr)==(rr)) ? " Maybe transpose the first?" \
+        : ((rc)==(lc)) ? " Maybe transpose the second?" : "");
 
     CBLAS_TRANSPOSE_t lt, rt;
-    lt  = (form1 == 't' || form1 == 1) ? CblasTrans: CblasNoTrans;
-    rt  = (form2 == 't' || form2 == 1) ? CblasTrans: CblasNoTrans;
+    lt  = (form1 == 'p' || form1 == 't' || form1 == 1) 
+            ? CblasTrans: CblasNoTrans;
+    rt  = (form2 == 'p' || form2 == 't' || form2 == 1) 
+            ? CblasTrans: CblasNoTrans;
     if (uselm && userm){
-        Apop_stopif(apop_check_dimensions(lm, rm, lt, rt), out->error='d'; goto done, 0, "mismatched dimensions");
+        Dimcheck((lt== CblasNoTrans) ? lm->size1:lm->size2,
+                 (lt== CblasNoTrans) ? lm->size2:lm->size1,
+                 (rt== CblasNoTrans) ? rm->size1:rm->size2,
+                 (rt== CblasNoTrans) ? rm->size2:rm->size1)
         gsl_matrix *outm = gsl_matrix_calloc((lt== CblasTrans)? lm->size2: lm->size1, 
                                              (rt== CblasTrans)? rm->size1: rm->size2);
         Check_gsl_with_out(gsl_blas_dgemm (lt,rt, 1, lm, rm, 0, outm))
         out->matrix = outm;
     } else if (!uselm && userm){
-        //If output vector has dimension matrix->size2, send CblasTrans
-        //If output vector has dimension matrix->size1, send CblasNoTrans
+        Dimcheck((size_t)1, lv->size,
+                 (rt== CblasNoTrans) ? rm->size1:rm->size2,
+                 (rt== CblasNoTrans) ? rm->size2:rm->size1)
+        //dgemv is always matrix first, then vector, so reverse from vm to mv:
+        // if output vector has dimension matrix->size2, send CblasTrans
+        // if output vector has dimension matrix->size1, send CblasNoTrans
         out->vector = dot_for_apop_dot(rm, lv
                         , (rt == CblasNoTrans) ? CblasTrans : CblasNoTrans);
         Apop_stopif(!out->vector, out->error='m'; goto done, 0, "GSL-level math error");
     } else if (uselm && !userm){
+        Dimcheck((lt== CblasNoTrans) ? lm->size1:lm->size2,
+                 (lt== CblasNoTrans) ? lm->size2:lm->size1,
+                  rv->size , (size_t)1)
         out->vector = dot_for_apop_dot(lm, rv , lt);
         Apop_stopif(!out->vector, out->error='m'; goto done, 0, "GSL-level math error");
     } else if (!uselm && !userm){ 

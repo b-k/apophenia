@@ -164,7 +164,8 @@ typedef enum {
     APOP_RF_NEWTON  =10,        /**<  Find a root of the derivative via Newton's method */
 //    APOP_RF_BROYDEN =11,        //  Find a root of the derivative via the Broyden Algorithm
     APOP_RF_HYBRID  =12,        /**<  Find a root of the derivative via the Hybrid method */
-    APOP_RF_HYBRID_NOSCALE  =13 /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
+    APOP_RF_HYBRID_NOSCALE = 13, /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
+    APOP_UNKNOWN_ML = -1       /**<  For internal use */
 } apop_optimization_enum;
 
 /** The settings for maximum likelihood estimation (including simulated annealing).
@@ -194,7 +195,7 @@ delta;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
     char        *trace_path; ///< See \ref trace_path
-    apop_model  *parent;
+    apop_model  *parent;   ///< Deprecated. Does nothing.
 } apop_mle_settings;
 
 /** Settings for least-squares type models 

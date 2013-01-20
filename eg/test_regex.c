@@ -21,4 +21,9 @@ int main(){
     assert(!strcmp(*subs->text[2], "three"));
     assert(!strcmp(*subs->text[3], "four"));
     apop_data_free(subs);
+
+    //NULL input string ==> no-op.
+    int match_count = apop_regex(NULL, " *([^,]*[^ ]) *(,|$) *", &subs);
+    assert(!match_count);
+    assert(!subs);
 }

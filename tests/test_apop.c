@@ -6,27 +6,17 @@
 
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
-
 //A NULL-tolerant strcmp, which used to be a fn and has been deleted.
 #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
 
 /*
-Some of these tests are mechanical tests that data gets shunted to the right place and
-that nothing segfaults. Those are not very conceptually difficult.
-
-Many of these tests are much more computationally-intensive than the norm, both in
-terms of compute time, and in terms of the expectations of the algorithm. For example,
-let us say that we wish to verify the results of a regression. Some systems have a
-canned screenshot of the 'correct' regression results that ships with the test suite,
-and compare a screenshot of the run to the canned version. I don't get much confidence
-from this---what if the canned screenshot is wrong? Better would be to know something
-about the regression results (like the relation between the common F statistic, SSR,
-and SSE) and check that the fact always holds.
-
-Some other examples: given a set of parameters for a distribution, make a million
-draws from the distribution given those parameters, then estimate the parameters of
-the distribution; the "before" and "after" parameters should match. Or, if there are
-multiple methods of doing Bayesian updating, the output distributions should match.
+Here are assorted unit tests, some mechanical and some much more computation-intensive.
+For example, let us say that we wish to verify the results of a regression. Some
+systems have a canned screenshot of the 'correct' regression results that ships with
+the test suite, and compare a screenshot of the run to the canned version. I don't get
+much confidence from this---what if the canned screenshot is wrong? Better would be
+to know something about the regression results (like the relation between the common
+F statistic, SSR, and SSE) and check that the fact always holds.
 
 Those claims are true as N goes to infinity; for finite N the routines have to strike
 a balance. How many draws should I make, and how much user time should I waste, before
@@ -39,9 +29,8 @@ much more permissive, and just tells us whether the computation failed to go in 
 right direction. Users who run 'make check' will be running the second type of test,
 because I (BK) just got sick of people sending me bug reports that a test failed
 because it reported an error of 1e-5 when it should have been 1e-8. There is always
-room for better numeric precision; we all know this with or without reminders from
-the post-install tests.
-*/
+room for better numeric precision; we all know this without reminders from the
+post-install tests.  */
 
 #ifdef FULL_TOLERANCE
 double tol6 = 1e-6;
@@ -50,9 +39,9 @@ double tol3 = 1e-3;
 double tol2 = 1e-2;
 double tol1 = 1e-1;
 #else
-double tol6 = 1e-1;
-double tol5 = 1e-1;
-double tol3 = 1e-1;
+double tol6 = 1e-3;
+double tol5 = 1e-3;
+double tol3 = 1e-2;
 double tol2 = 1e-1;
 double tol1 = 1e-1;
 #endif
@@ -134,10 +123,7 @@ void test_transform(){
     apop_model_show(out);
 }
 
-
-
-
-
+#include <sys/wait.h> 
 static void test_printing(){
     //This compares printed output to the printed output in the attached file. 
     char outfile[] = "print_test.out";
@@ -156,8 +142,23 @@ apop_system("cp %s xxx", outfile);
     FILE *f = fopen(outfile, "a");
     fprintf(f, "\nand a full vector+matrix+text+weights data set, formatted for computer reading:\n");
     strcpy(apop_opts.output_delimiter, "\t| ");
-
+    apop_name_add(d->names, "Some SNPS", 'h');
     apop_data_print(d, .output_pipe =f);
+
+    fprintf(f, "\nand just the names:\n");
+    fclose(f);
+    //need to redirect stdout.
+    int status;
+    if (fork() == 0){
+        freopen(outfile, "a", stdout);
+        apop_name_print(d->names);
+        fclose(stdout);
+        exit(0);
+    }
+
+    wait(&status);
+    f = fopen(outfile, "a");
+
     fprintf(f, "\nand just the weights vector:\n");
     strcpy(apop_opts.output_delimiter, "\t");
     apop_opts.output_type = 'p';
@@ -173,6 +174,8 @@ apop_system("cp %s xxx", outfile);
 }
 
 void v_pow10(double *in){ *in = pow(10,*in);}
+double log_for_map(gsl_vector *v){apop_vector_log(v); return apop_sum(v);}
+double log_by_val(double x){return x;}
 
 static void log_and_exp(gsl_rng *r){
     apop_data *d = apop_data_alloc(100,2);
@@ -195,6 +198,17 @@ static void log_and_exp(gsl_rng *r){
     Apop_col(d2, 1, o_ecol);
     assert(apop_vector_distance(ecol, o_ecol) < 1e-3);
 
+    apop_data *d5 = apop_data_alloc(5,5);
+    for (int i=0; i< 5; i++)
+        for (int j=0; j< 5; j++)
+            apop_data_set(d5, i, j, gsl_rng_uniform(r));
+    double log_sum_by_v = apop_matrix_map_sum(d5->matrix, log_for_map);
+    //d5 is now all logs.
+    double log_sum = apop_matrix_map_all_sum(d5->matrix, log_by_val);
+    Diff(log_sum_by_v, log_sum, 1e-5);
+    Diff(apop_matrix_mean(d5->matrix)*25., log_sum, 1e-5);
+    apop_data_free(d); apop_data_free(d2);
+    apop_data_free(d5);
 }
 
 static void compare_mvn_estimates(apop_model *L, apop_model *R, double tolerance){
@@ -266,7 +280,7 @@ void test_score(){
     for (size_t j=0; j< len; j++)
         apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
     apop_model *estme = apop_model_copy(apop_normal);
-    Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN,.parent= estme);
+    Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN);
     apop_prep(data, estme);
     apop_model *out = apop_maximum_likelihood(data, estme);
 
@@ -410,14 +424,27 @@ void test_weigted_moments(){
 }
 
 void test_split_and_stack(gsl_rng *r){
-    gsl_vector *dv = gsl_vector_alloc(10);
-    apop_data *d1 = apop_data_alloc(0,10,10);
-    int     i,j, tr, tc;
-    apop_data   **splits, *dv2;
-    d1->vector  = dv;
+    apop_data *d1 = apop_data_alloc(10,10,10);
+    int i,j, tr, tc;
+    apop_data **splits, *dv2;
     for(i=-1; i< 10; i++)
         for(j=0; j< 10; j++)
             apop_data_set(d1, j, i, gsl_rng_uniform(r));
+
+    //vector_stacking NULLs:
+    gsl_vector *orig=apop_vector_copy(d1->vector);
+    gsl_vector *cp=apop_vector_stack(NULL, d1->vector);
+    apop_vector_stack(d1->vector, NULL);
+    assert(d1->vector->size==10);
+        for(j=0; j< 10; j++){
+            assert(gsl_vector_get(d1->vector, j)==gsl_vector_get(orig, j));
+            assert(gsl_vector_get(cp, j)==gsl_vector_get(orig, j));
+        }
+    assert(!apop_vector_stack(NULL, NULL));
+    assert(!apop_data_stack(NULL, NULL));
+    gsl_vector_free(orig);
+    gsl_vector_free(cp);
+
     for(i=-1; i< 13; i++){
         splits  = apop_data_split(d1, i, 'r');
         if (i>0 && i< 10)
@@ -485,12 +512,23 @@ void test_split_and_stack(gsl_rng *r){
             apop_text_add(txt, i, j, "(%i, %i)", i, j);
             apop_text_add(txt2, i, j, "[%i, %i]", i, j);
         }
-    apop_data_stack(txt, txt2, .posn='r', .inplace='y');
-    assert(txt->textsize[0] == 6);
-    assert(txt->textsize[1] == 3);
+
+    apop_data *rbound = apop_data_stack(txt, txt2, .posn='r');
+    assert(rbound->textsize[0] == 6);
+    assert(rbound->textsize[1] == 3);
+    assert(!strcmp(rbound->text[2][2], "(2, 2)"));
+    assert(!strcmp(rbound->text[5][2], "[2, 2]"));
+
+    apop_data_stack(txt, txt2, .posn='c', .inplace='y');
+    assert(txt->textsize[0] == 3);
+    assert(txt->textsize[1] == 6);
     assert(!strcmp(txt->text[2][2], "(2, 2)"));
-    assert(!strcmp(txt->text[5][2], "[2, 2]"));
-    apop_data **txtsplits = apop_data_split(txt, 3, 'r');
+    assert(!strcmp(txt->text[2][5], "[2, 2]"));
+    apop_data_free(txt);
+    apop_data_free(txt2);
+
+    apop_data **txtsplits = apop_data_split(rbound, 3, 'r');
+    apop_data_free(rbound);
     assert(txtsplits[0]->textsize[0] ==txtsplits[0]->textsize[1]);
     assert(txtsplits[0]->textsize[0] == 3);
     assert(txtsplits[1]->textsize[0] ==txtsplits[1]->textsize[1]);
@@ -498,8 +536,6 @@ void test_split_and_stack(gsl_rng *r){
     assert(!strcmp(txtsplits[0]->text[1][1], "(1, 1)"));
     assert(!strcmp(txtsplits[1]->text[1][1], "[1, 1]"));
     apop_data_free(d1);
-    apop_data_free(txt);
-    apop_data_free(txt2);
     apop_data_free(onespot);
     apop_data_free(nulldata);
 }
@@ -607,18 +643,29 @@ double          t, v;
 }
 
 void test_dot(){
-apop_data *d1   = apop_text_to_data(.text_file="test_data2",0,1); // 100 x 2
-apop_data *d2   = apop_text_to_data("test_data2"); // 100 x 2
-apop_data *d3   = apop_dot(d1, d2, 0, 1);
-//apop_data *d4   = apop_dot(d1, d2, 'p', 0);
-gsl_vector  v1 = gsl_matrix_row(d1->matrix, 0).vector;
-apop_data *d5   = apop_vector_to_data(&v1); // 2 x 1
-apop_data *d7   = apop_dot(d5, d5, 0, 0);
+apop_data *d1   = apop_text_to_data(.text_file="test_data2",0,1); // 55 x 2
+apop_data *d2   = apop_text_to_data("test_data2"); // 55 x 2
+apop_data *d3   = apop_dot(d1, d2, .form2='t');
+gsl_vector v1 = gsl_matrix_row(d1->matrix, 0).vector;
+apop_data *dv   = apop_vector_to_data(&v1); // 2 x 1
+apop_data *d7   = apop_dot(dv, dv);
     assert(apop_data_get(d7, 0, -1) == apop_data_get(d3, 0,0));
-apop_data *d8   = apop_dot(d1, d5, 0, 0);
-apop_data *d9   = apop_dot(d5, d1, .form2=1);
+apop_data *d8   = apop_dot(d1, dv);
+apop_data *d9   = apop_dot(dv, d1, .form2='t');
     gsl_vector_sub(d8->vector, d9->vector);
     assert(!apop_vector_sum(d8->vector));
+
+    int verbosity = apop_opts.verbose;
+    apop_opts.verbose = -1;
+    apop_data *d10 = apop_dot(d1, d2);
+    assert(d10->error == 'd');
+    apop_data *d11 = apop_dot(dv, d1);
+    assert(d11->error == 'd');
+    apop_opts.verbose = verbosity;
+    apop_data_free(d1); apop_data_free(d2); apop_data_free(d3); 
+    dv->vector=NULL; apop_data_free(dv); 
+    apop_data_free(d7); apop_data_free(d8);
+    apop_data_free(d9); apop_data_free(d10); apop_data_free(d11);
 }
  
 static void fill_p(apop_data *d, gsl_rng *r){
@@ -1116,7 +1163,8 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
-    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n', .tolerance=1e-5);
+    Apop_model_add_group(&apop_logit, apop_mle,.verbose='y', .want_cov='n', .tolerance=1e-5);
+    apop_logit.score=NULL; //OK, but still too imprecise.
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
@@ -1209,14 +1257,23 @@ void test_default_rng(gsl_rng *r) {
 }
 
 double ran_uniform(double in, void *r){ return gsl_rng_uniform(r);}
+double negate(double in){ return -in;}
 
 void test_posdef(gsl_rng *r){
     for(size_t j=0; j < 30; j ++){
         int size = gsl_rng_uniform(r) *10+1;
-        apop_data *d = apop_data_alloc( size, size);
+        apop_data *d = apop_data_alloc(size, size);
         apop_map(d, .fn_dp=ran_uniform, .param=r, .inplace=1, .part='m');
-        apop_matrix_to_positive_semidefinite(d->matrix);
+        apop_matrix_to_positive_semidefinite(d->matrix); 
         assert(apop_matrix_is_positive_semidefinite(d->matrix));
+
+        //start over, from the negation of where you just were 
+        //(guaranteed neg definite, no?)
+        gsl_matrix * neg = apop_matrix_map_all(d->matrix, negate);
+        apop_matrix_to_positive_semidefinite(neg);
+        assert(apop_matrix_is_positive_semidefinite(neg));
+        gsl_matrix_free(neg);
+        apop_data_free(d);
     }
 }
 
@@ -1396,8 +1453,12 @@ void test_ols_offset(gsl_rng *r){
                           if (verbose) printf(" passed.\n");} 
 
 int main(int argc, char **argv){
-    if (getenv("srcdir")) //if defined, this is probably via an automake rule.
-    apop_system("cp %s/*dat* %s/printing_sample .", getenv("srcdir"), getenv("srcdir")); //needed for make distcheck. No-op in many cases.
+    char *srcdir = getenv("srcdir");
+    if (srcdir){ //if defined, this is probably via an automake rule.
+        char buf[10000]; 
+        if (strcmp(srcdir, ".") && strcmp(srcdir, getcwd(buf, 10000)))
+            apop_system("cp %s/*dat* %s/printing_sample .", srcdir, srcdir); //needed for make distcheck. No-op in many cases.
+    }
     int  slow_tests = 0;
     apop_opts.thread_count = 2;
     char c, opts[]  = "sqt:";
@@ -1415,6 +1476,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
+    do_test("apop_dot", test_dot());
     do_test("test multivariate_normal", test_multivariate_normal(r));
     do_test("log and exponent", log_and_exp(r));
     do_test("split and stack test", test_split_and_stack(r));
@@ -1454,12 +1516,11 @@ int main(int argc, char **argv){
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
     do_test("multivariate gamma", test_mvn_gamma());
-    do_test("apop_dot test", test_dot());
-    do_test("Inversion test", test_inversion(r));
-    do_test("apop_jackknife test", test_jackknife(r));
-    do_test("apop_matrix_summarize test", test_summarize());
-    do_test("apop_linear_constraint test", test_linear_constraint());
-    do_test("transposition test", test_transpose());
+    do_test("Inversion", test_inversion(r));
+    do_test("apop_jackknife", test_jackknife(r));
+    do_test("apop_matrix_summarize", test_summarize());
+    do_test("apop_linear_constraint", test_linear_constraint());
+    do_test("transposition", test_transpose());
     do_test("test unique elements", test_unique_elements());
     if (slow_tests){
         if (verbose) printf("\tSlower tests:\n");

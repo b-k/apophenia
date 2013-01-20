@@ -215,7 +215,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
 
     if (Apop_settings_get_group(base, apop_mle))
         apop_settings_copy_group(model_out, base, "apop_mle");
-    else Apop_model_add_group(model_out, apop_mle, .parent= model_out, .method=APOP_CG_PR,
+    else Apop_model_add_group(model_out, apop_mle, .method=APOP_CG_PR,
                                      .want_cov='n', .step_size=1, .tolerance=0.2);
 
 }

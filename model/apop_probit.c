@@ -209,14 +209,13 @@ static size_t find_index(double in, double *m, size_t max){
 double one_logit_row(apop_data *thisobservation, void *factor_list){
     //get the $x\beta_j$ numerator for the appropriate choice:
     size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
-                                (double*)factor_list, thisobservation->matrix->size2);
+                                factor_list, thisobservation->matrix->size2);
     Apop_row(thisobservation, 0, thisrow);
     double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
 
     /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
      mentioned in the documentation.  Don't forget the implicit beta_0, fixed at 
      zero (so we need to add exp(0-max)). */
-
 
     double max = gsl_vector_max(thisrow);
     gsl_vector_add_constant(thisrow, -max);
@@ -239,13 +238,10 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
-static double dlogit_foreach(apop_data *x, void *gin){
+static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop_data *factor_list){
   //\beta_this = choice for the row.
-  //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_j e^(x\beta_i)/\sum_k e^(x\beta_k)
+  //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_i e^(x\beta_j)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
-    apop_data *gmat = gin;
-    gsl_matrix *beta = gmat->more->matrix;
-    apop_data* factor_list = gmat->more->more;
     Apop_row(x, 0, xdata);
     assert(gmat->matrix->size1 == x->matrix->size2);     //the j index---input vars (incl. 1 column)
     assert(gmat->matrix->size2 == beta->size2); //the i index---choices
@@ -254,13 +250,15 @@ static double dlogit_foreach(apop_data *x, void *gin){
     for (int i=0; i < beta->size2; i++) { //go through choices.
         gsl_vector *denom = gsl_vector_alloc(beta->size1);
         gsl_vector_set_all(denom, 1); //see below
-        for (int other=0; other < beta->size2; other++){
+        for (int other=-1; other < (int)beta->size2; other++){
             if (other != i) { //this block calculates exp(x (otherbeta-thisbeta))
                 Apop_matrix_col(beta, i, thisbeta); 
-                Apop_matrix_col(beta, other, otherbeta);
                 gsl_vector *diff = apop_vector_copy(thisbeta);
                 gsl_vector_scale(diff, -1);
-                gsl_vector_add(diff, otherbeta);
+                if (other >=0){//the phantom beta_0 == 0, so that term is e^x(0-beta|i)
+                    Apop_matrix_col(beta, other, otherbeta);
+                    gsl_vector_add(diff, otherbeta);
+                }
                 gsl_vector_mul(diff, xdata);
                 apop_vector_exp(diff);
                 gsl_vector_add(denom, diff);
@@ -274,36 +272,19 @@ static double dlogit_foreach(apop_data *x, void *gin){
         }
         gsl_vector_free(denom);
     }
-    return 0;
 }
 
 static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Nullcheck_mpd(d, p, );
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
-    apop_data_unpack(gradient, gradient_matrix);
-    gradient_matrix->more = p->parameters;  // facilitate passing to logit_foreach.
-    gradient_matrix->more->more = apop_data_copy(get_category_table(d));
-    apop_data_free_base( //return from apop_map is a vector of zeros.
-        apop_map(d, .fn_rp=dlogit_foreach, .param=gradient_matrix, .all_pages='n')
-    );
+    apop_data *cats = get_category_table(d);
+    for (int i=0; i< d->matrix->size1; i++){
+        Apop_data_row(d, i, onerow);
+        dlogit_foreach(onerow, gradient_matrix, p->parameters->matrix, cats);
+    }
+//printf("----\nfinal for beta=."); apop_data_show(p->parameters); apop_data_show(gradient_matrix);
     apop_data_pack(gradient_matrix, gradient);
-    gradient_matrix->more=NULL;
     apop_data_free(gradient_matrix);
-}
-
-apop_model *logit_estimate(apop_data *d, apop_model *m){
-    apop_model *out = apop_maximum_likelihood(d, m);
-
-    //That's the whole estimation. But now we need to add a row of zeros
-    //for the numeraire. This is just tedious matrix-shunting.
-    apop_data *p = out->parameters;
-    apop_data *newparams = apop_data_calloc(p->matrix->size1, 1);//top row of zeros...
-    apop_data_stack(newparams, p, 'c', .inplace='y');            //...followed by the rest
-    apop_name_stack(newparams->names, p->names, 'r');
-
-    apop_data_free(p);
-    out->parameters = newparams;
-    return out;
 }
 
 //Should this be available everywhere?

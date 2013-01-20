@@ -627,7 +627,7 @@ APOP_VAR_ENDHEAD
             "group by %s", 
             init_q, apop_text_paste(all_vars_d, .before="L.", .between = ", L."), countstr, 
             run_number, initt, vars_to_join(all_vars_d),
-            apop_text_paste(all_vars_d, .before="R.", .between = ", R."));
+            apop_text_paste(all_vars_d, .before="L.", .between = ", L."));
         free(countstr);
     } 
 	xprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);

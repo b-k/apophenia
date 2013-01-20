@@ -173,7 +173,6 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     return est;
 }
 
-
 /* \adoc    Input_format Each row of the matrix is one observation: a set of draws from a single bin.
   The number of draws of type zero are in column zero, the number of draws of type one in column one, et cetera.
 

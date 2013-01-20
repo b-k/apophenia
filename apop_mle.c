@@ -78,7 +78,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-2);
     Apop_varad_set(max_iterations, 5000);
-    Apop_varad_set(method, (in.parent && in.parent->score) ? APOP_CG_FR : APOP_SIMPLEX_NM);
+    Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
     Apop_varad_set(use_score, 'y');
     if (in.use_score == 1) out->use_score = 'y';
@@ -100,7 +100,7 @@ Apop_settings_init(apop_mle,
 
 //deprecated; left to make some examples in Modeling with Data coherent.
 apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
-    return apop_mle_settings_init((apop_mle_settings){.parent=parent}); }
+    return apop_mle_settings_init((apop_mle_settings){ }); }
 
 //      MLE support functions
 //Including numerical differentiation and a couple of functions to
@@ -465,7 +465,6 @@ Inside the infostruct, you'll find these elements:
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use a vector whose elements are all 0.1 (zero has too many pathological cases).
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
-\param verbose		Y'know.
 \return	an \ref apop_model with the parameter estimates, &c. If returned_estimate->status == 0, then optimum parameters were found; if status != 0, then there were problems.
 */
     gsl_multimin_fdfminimizer *s;
@@ -498,19 +497,22 @@ Inside the infostruct, you'll find these elements:
             break;
         }
         status 	= gsl_multimin_fdfminimizer_iterate(s);
-        if (status) break; 
+        if(status && status!=GSL_CONTINUE) break; //commented out error msg because too many GSL_ENOPROG false positives.
+        //Apop_stopif(status && status!=GSL_CONTINUE, break, 0, "GSL error: %s", gsl_strerror(status));
         status = gsl_multimin_test_gradient(s->gradient,  mp->tolerance);
+        if(status && status!=GSL_CONTINUE) break; //commented out error msg because too many GSL_ENOPROG false positives.
+        //Apop_stopif(status && status!=GSL_CONTINUE, break, 0, "GSL error: %s", gsl_strerror(status));
         if (mp->verbose)
             printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
         if (status == GSL_SUCCESS){
             apopstatus	= 1;
-            if(mp->verbose)	printf ("Minimum found.\n");
+            Apop_notify(1, "Minimum found.\n");
         }
     } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
 	if (iter==mp->max_iterations) {
 		apopstatus	= -1;
-		if (mp->verbose) printf("No min!!\n");
+        Apop_notify(1, "No min!!\n");
 	}
 	//Clean up, copy results to output estimate.
     apop_data_unpack(s->x, est->parameters);
@@ -662,7 +664,10 @@ else
  \ingroup mle */
 apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
-    if (!mp) mp = Apop_model_add_group(dist, apop_mle, .parent=dist);
+    if (!mp) mp = Apop_model_add_group(dist, apop_mle);
+    if (mp->method == APOP_UNKNOWN_ML)
+        mp->method = (dist->score) ? APOP_CG_FR : APOP_SIMPLEX_NM;
+
     Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize.")
     infostruct info = {.data           = data,
                        .use_constraint = 1,

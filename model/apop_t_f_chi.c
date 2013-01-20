@@ -5,7 +5,6 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
-    apop_model *out = apop_model_copy(*m);
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double v_sum_sq = vsize ? apop_var(d->vector)*(vsize-1) : 0;
     double m_sum_sq = 0;
@@ -14,21 +13,21 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
        apop_matrix_mean_and_var(d->matrix, &mmu, &m_sum_sq);
        m_sum_sq *= msize1*msize2-1;
    }
-    apop_data_add_names(out->parameters, 'r', "mean", "standard deviation", "df");
-    apop_data_set(out->parameters, 0, -1, (vmu *vsize + mmu * msize1*msize2)/tsize);
-    apop_data_set(out->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
-    apop_data_set(out->parameters, 2, -1, tsize-1);
-    apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
-    return out;
+    apop_data_add_names(m->parameters, 'r', "mean", "standard deviation", "df");
+    apop_data_set(m->parameters, 0, -1, (vmu *vsize + mmu * msize1*msize2)/tsize);
+    apop_data_set(m->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
+    apop_data_set(m->parameters, 2, -1, tsize-1);
+    apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
+    return m;
 }
 
 apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2
-    apop_model *out = apop_model_copy(*m);
-    apop_data_add_named_elmt(out->parameters, "df", tsize - 1);
-    apop_data_add_named_elmt(out->info, "log likelihood", out->log_likelihood(d, out));
-    return out;
+    apop_name_add(m->parameters->names, "df",  'r');
+    apop_data_set(m->parameters, 0, -1, tsize -1);
+    apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
+    return m;
 }
 
 apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
@@ -57,21 +56,17 @@ static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *
 double apop_tdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     double *params = m->parameters->vector->data;
-    return apop_map_sum(d, .fn_dp=one_t, .param=&params);
+    return apop_map_sum(d, .fn_dp=one_t, .param=params);
 }
 
 double apop_chisq_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
-    double df = m->parameters->vector->data[0];
-    return apop_map_sum(d, .fn_dp=one_chisq, .param =&df);
+    return apop_map_sum(d, .fn_dp=one_chisq, .param =m->parameters->vector->data);
 }
 
 double apop_fdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
-    double df[2];
-    df[0] = m->parameters->vector->data[0];
-    df[1] = m->parameters->vector->data[1];
-    return apop_map_sum(d, .fn_dp=one_f, .param =df);
+    return apop_map_sum(d, .fn_dp=one_f, .param =m->parameters->vector->data);
 }
 
 void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
@@ -308,7 +303,7 @@ If you want to test a hypothesis, you probably don't need this, and should inste
 \adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */
 
-apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimate = apop_t_estimate, 
+apop_model apop_t_distribution  = {"t distribution", 3, .dsize=1, .estimate = apop_t_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw, .cdf=apop_t_dist_cdf,
          .constraint=apop_t_dist_constraint };
 
@@ -322,7 +317,7 @@ apop_model apop_t_distribution  = {"t distribution", 3, 0, 0, .dsize=1, .estimat
                           \f$df2=\f$ matrix count minus one. If you set the \c estimate method to \c NULL, via MLE.    
 \adoc    settings   \ref apop_mle_settings    
 */
-apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimate = apop_fdist_estimate, 
+apop_model apop_f_distribution  = {"F distribution", 2, .dsize=1, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
 /*\amodel apop_chi_squared The \f$\chi^2\f$ distribution, for descriptive purposes.
@@ -336,5 +331,5 @@ apop_model apop_f_distribution  = {"F distribution", 2, 0, 0, .dsize=1, .estimat
 \adoc    settings   \ref apop_mle_settings    
 */
 
-apop_model apop_chi_squared  = {"Chi squared distribution", 1, 0, 0, .dsize=1, .estimate = apop_chi_estimate,  
+apop_model apop_chi_squared  = {"Chi squared distribution", 1, .dsize=1, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

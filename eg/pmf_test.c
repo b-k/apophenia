@@ -14,7 +14,7 @@ void pack_prep(apop_data *d, apop_model *m){
     m->parameters = apop_data_alloc(0, 2, 2);
     apop_data_add_page(m->parameters, apop_data_alloc(0, 2, 2), "page two");
     if (!Apop_settings_get_group(m, apop_mle))
-        Apop_model_add_group(m, apop_mle, .parent=m, .tolerance=1e-6, .step_size=3);
+        Apop_model_add_group(m, apop_mle, .tolerance=1e-6, .step_size=3);
 }
 
 double pack_constraint(apop_data *d, apop_model *m){

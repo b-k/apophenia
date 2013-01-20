@@ -549,14 +549,12 @@ When these transformations are more complete and usable, Apophenia will be at 1.
 and at that point it will be more than a library for conveniently estimating and
 drawing from distributions, but a language for expressing how models are developed.
 
-Which parts of the code are most reliable? There are vigorous tests on the code base,
-which currently cover about 73% of the lines of code; most of the untested part is in
-methods of some of the more obscure models. A broad rule of thumb for any code base
-is that the well-worn parts, in this case functions like \ref apop_data_get and \ref
-apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
-out-of-the-way functions (maybe the RNG for the Yule distribution) are worth a bit
-of caution. Close to all of the code has been used in production, so all of it was at
-least initially tested against real-world data.
+There are vigorous tests on the code base, which currently cover over 80% of the lines
+of code. A broad rule of thumb for any code base is that the well-worn parts, in this
+case functions like \ref apop_data_get and \ref apop_normal's <tt>log_likelihood</tt>,
+are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG
+for the Yule distribution) are worth a bit of caution. Close to all of the code has been
+used in production, so all of it was at least initially tested against real-world data.
 
 endofdiv
 
