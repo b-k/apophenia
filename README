@@ -17,6 +17,9 @@ The quick summary for installation:
 --You need the usual C compiler and the supporting environment that a
 sane programmer requires.
 
+--Download from Sourceforge (because GitHub stopped supporting downloads):
+https://sourceforge.net/projects/apophenia/files/latest/download?source=files
+
 --The library makes an effort to not reinvent already-developed systems
 like matrix inversion or database querying, which means that the package
 has several dependencies. You need the GNU Scientific Library (wich needs
@@ -34,11 +37,11 @@ swig and Python-dev packages.
 
 --One you have it in place,
 
-tar xzf apophenia-X.XX.tar.gz 
+tar xzf apophenia-*.tar.gz 
 cd apophenia-X.XX
 ./configure; make; sudo make install
 
-should compile for you.
+should compile and install for you.
 
 --Once you have it installed, the user manual is in the form of a textbook
 on statistical computing at http://modelingwithdata.org and the

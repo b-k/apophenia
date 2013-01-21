@@ -1,7 +1,7 @@
 #include <apop.h>
 
 int main(){
-    gsl_rng *r    = apop_rng_alloc(10);
+    gsl_rng *r = apop_rng_alloc(10);
     size_t i, ct = 5e4;
 
     //set up the model & params
@@ -29,5 +29,4 @@ int main(){
     apop_vector_show(params->vector);
     printf("estimated params: ");
     apop_vector_show(e1->parameters->vector);
-    return 0;
 }

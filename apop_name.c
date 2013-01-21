@@ -25,7 +25,7 @@ apop_name * apop_name_alloc(void){
 't': add a text category name<br>
 'h': add a title (or a header. 't' is taken).<br>
 'v': add (or overwrite) the vector name<br>
-\return 	Returns the number of rows/cols/depvars after you have added the new one.
+\return 	Returns the number of rows/cols/depvars after you have added the new one. But if \c add_me is \c NULL, return -1.
 \ingroup names
 */
 int apop_name_add(apop_name * n, char const *add_me, char type){
@@ -55,8 +55,8 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		return n->textct;
 	}
 	//else assume (type == 'c')
-        if (type != 'c')
-            Apop_notify(2,"You gave me >%c<, I'm assuming you meant c; "
+        Apop_stopif(type != 'c', /*keep going.*/, 
+            2,"You gave me >%c<, I'm assuming you meant c; "
                              " copying column names.", type);
 		n->colct++;
 		n->column	= realloc(n->column, sizeof(char*) * n->colct);
@@ -65,7 +65,7 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		return n->colct;
 }
 
-/** Prints the given list of names to STDOUT
+/** Prints the given list of names to STDOUT. Useful for debugging, and not much else.
 \param n  The \ref apop_name structure
 \ingroup names
 */
@@ -74,24 +74,25 @@ void apop_name_print(apop_name * n){
         printf("NULL");
         return;
     }
+	if (n->title) printf("title: %s\n", n->title);
 	if (n->vector){
-		printf("\t\t\tvector:");
+		printf("vector:");
         printf("\t%s\n", n->vector);
 	}
 	if (n->colct > 0){
-		printf("\t\t\tcolumn:");
+		printf("column:");
 		for (int i=0; i < n->colct; i++)
 			printf("\t%s", n->column[i]);
 		printf("\n");
 	}
 	if (n->textct > 0){
-		printf("\t\t\ttext:");
+		printf("text:");
 		for (int i=0; i < n->textct; i++)
 			printf("\t%s", n->text[i]);
 		printf("\n");
 	}
 	if (n->rowct > 0){
-		printf("\t\t\trow:");
+		printf("row:");
 		for (int i=0; i < n->rowct; i++)
 			printf("\t%s", n->row[i]);
 		printf("\n");

@@ -51,7 +51,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_STRTOD
-AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp])
+AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp asprintf])
 
 # For SWIG.
 
@@ -78,11 +78,10 @@ AM_CONDITIONAL([HAVE_PYTHON], [test $PYTHON_VERSION > 1 ])
 
 
 PACKAGE_NAME=apophenia
-AX_CREATE_PKGCONFIG_INFO
 
 ACX_PTHREAD
 
-AC_CONFIG_FILES([Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile tests/Makefile apophenia.pc])
 AC_OUTPUT
 
 echo \

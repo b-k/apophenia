@@ -26,10 +26,7 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
 gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 
-void apop_data_to_db(const apop_data *set, const char *tabname, char);
-
-APOP_VAR_DECLARE void apop_db_merge(char *db_file, char inout);
-APOP_VAR_DECLARE void apop_db_merge_table(char *db_file, char *tabname, char inout);
+int apop_data_to_db(const apop_data *set, const char *tabname, char);
 
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
 double apop_db_paired_t_test(char * tab1, char *col1, char *col2);

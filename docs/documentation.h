@@ -29,12 +29,11 @@ Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL 
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="https://github.com/b-k/Apophenia/downloads">Download Apophenia here</a>.</h5>
+<h5><a href="https://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download Apophenia here</a>.</h5>
 
-Most users will just want to download the packaged version in one of the forms linked from
-the
-<a href="https://github.com/b-k/Apophenia/downloads">Download Apophenia here</a> header.
-Please ignore the "Download as (.zip|.tgz)" buttons and select the most recent dated file.
+Most users will just want to download the latest packaged version linked from the <a
+href="https://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download
+Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
 can get the latest version by cutting and pasting the following onto
@@ -550,20 +549,18 @@ When these transformations are more complete and usable, Apophenia will be at 1.
 and at that point it will be more than a library for conveniently estimating and
 drawing from distributions, but a language for expressing how models are developed.
 
-Which parts of the code are most reliable? There are vigorous tests on the code base,
-which currently cover about 73% of the lines of code; most of the untested part is in
-methods of some of the more obscure models. A broad rule of thumb for any code base
-is that the well-worn parts, in this case functions like \ref apop_data_get and \ref
-apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
-out-of-the-way functions (maybe the RNG for the Yule distribution) are worth a bit
-of caution. Close to all of the code has been used in production, so all of it was at
-least initially tested against real-world data.
+There are vigorous tests on the code base, which currently cover over 80% of the lines
+of code. A broad rule of thumb for any code base is that the well-worn parts, in this
+case functions like \ref apop_data_get and \ref apop_normal's <tt>log_likelihood</tt>,
+are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG
+for the Yule distribution) are worth a bit of caution. Close to all of the code has been
+used in production, so all of it was at least initially tested against real-world data.
 
 endofdiv
 
 Outlineheader status How do I write extensions?
 
-It's not a package, so you don't need an API---write your code and <tt>#include</tt> it like any
+It's not a package, so you don't need an API---write your code and <tt>include</tt> it like any
 other C code. The system is written to not require a registration or initialization step
 to add a new model or other such parts.  You can read the notes below on generating
 new models, which have to conform to some rules if they are to play well with \ref

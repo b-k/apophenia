@@ -9,6 +9,8 @@ Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
 
+/** \defgroup histograms The GSL's histograms and Apophenia's PMFs. */
+
 /** Give me an existing histogram (as a filled-in copy of the \c apop_histogram model) and I'll
  create a new histogram with the same bins, but with data from the vector you provide 
 

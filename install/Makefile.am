@@ -12,31 +12,22 @@ libapophenia_la_SOURCES = \
             apop_stats.c apop_tests.c apop_model_transform.c 		    \
 			apop_update.c	            \
 			asprintf.c 					\
-			model/apop_bernoulli.c      \
-            model/apop_beta.c			\
-            model/apop_multinomial.c 	\
-			model/apop_dirichlet.c      \
-			model/apop_exponential.c    \
-			model/apop_gamma.c          \
-            model/apop_histogram.c      \
-			model/apop_loess.c          \
-			model/apop_multivariate_normal.c  \
-			model/apop_normal.c         \
-            model/apop_ols.c 		 	\
-            model/apop_pmf.c            \
-			model/apop_poisson.c        \
-			model/apop_probit.c	        \
-            model/apop_t_f_chi.c		\
-			model/apop_uniform.c        \
-			model/apop_waring.c         \
-            model/apop_yule.c 	 		\
-            model/apop_zipf.c 
+			model/apop_bernoulli.c      model/apop_beta.c			\
+            model/apop_multinomial.c 	model/apop_dirichlet.c      \
+			model/apop_exponential.c    model/apop_gamma.c          \
+            model/apop_histogram.c      model/apop_loess.c          \
+			model/apop_mixture.c 	    model/apop_multivariate_normal.c  \
+			model/apop_normal.c         model/apop_ols.c 		 	\
+            model/apop_pmf.c            model/apop_poisson.c        \
+			model/apop_probit.c	        model/apop_t_f_chi.c		\
+			model/apop_uniform.c        model/apop_waring.c         \
+            model/apop_yule.c 	 		model/apop_zipf.c 
 
 pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
 include_HEADERS = apop.h
 
-pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= apophenia.pc
+pkgconfigdir = `pkg-config --variable pc_path pkg-config | cut -f1 -d:`
 
 SUBDIRS=. tests
 
@@ -52,6 +43,7 @@ apop.py: apop.i
 	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
 	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
 
+
 install-exec-hook: apop.py
 	@if test -e _apop.so ; then \
 		cp _apop.so ${pythondir} ; \
@@ -63,16 +55,14 @@ apop.py: apop.i
 endif
 
 #The programs
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_merge_dbs apop_plot_query apop_lookup
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_plot_query apop_lookup
 apop_text_to_db_SOURCES = cmd_apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = cmd_apop_db_to_crosstab.c
-apop_merge_dbs_SOURCES = cmd_apop_merge_dbs.c
 apop_plot_query_SOURCES = cmd_apop_plot_query.c
 apop_lookup_SOURCES = cmd_apop_lookup.c
 
 apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
-apop_merge_dbs_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
 
 VPATH= @srcdir@
@@ -81,13 +71,14 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
 		eg apop_db_mysql.c apop_db_sqlite.c apop.i tests/apophenia \
-		apop_internal.h internal.h COPYING2
+		apop_internal.h internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
 doc: 
+	-rm tests/apophenia/*h
 	cat model/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
 	doxygen docs/doxyconfig
 	cp docs/flake.gif docs/search.gif docs/right.png docs/down.png html/

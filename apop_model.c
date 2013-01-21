@@ -132,7 +132,7 @@ void apop_model_print (apop_model * print_me){
         apop_opts.output_pipe = NULL; //return to the default. Probably not worth it.
 }
 
-/** Alias for \ref apop_model_print. Use that one. */
+/* Alias for \ref apop_model_print. Use that one. */
 void apop_model_show (apop_model * print_me){
     apop_model_print(print_me);
 }
@@ -472,11 +472,15 @@ See also \ref apop_cdf_settings, which is the structure I use to store draws alr
 Apop_model_add_group(your_model, apop_cdf, .draws=1e5, .rng=my_rng);
 double cdf_value = apop_cdf(your_data_point, your_model);
 \endcode
+
+Here are many examples using common, mostly symmetric distributions.
+
+\include some_cdfs.c
+
 \ingroup models
   */
 double apop_cdf(apop_data *d, apop_model *m){
-    if (m->cdf)
-        return m->cdf(d, m);
+    if (m->cdf) return m->cdf(d, m);
     apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);
     if (!cs)
         cs = Apop_model_add_group(m, apop_cdf);

@@ -1,4 +1,6 @@
-void test_updating(gsl_rng *r){
+#include <apop.h>
+int main(){
+    gsl_rng *r = apop_rng_alloc(2468);
     double binom_start = 0.6;
     double beta_start_a = 0.3;
     double beta_start_b = 0.5;

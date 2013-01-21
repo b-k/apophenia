@@ -164,14 +164,15 @@ typedef enum {
     APOP_RF_NEWTON  =10,        /**<  Find a root of the derivative via Newton's method */
 //    APOP_RF_BROYDEN =11,        //  Find a root of the derivative via the Broyden Algorithm
     APOP_RF_HYBRID  =12,        /**<  Find a root of the derivative via the Hybrid method */
-    APOP_RF_HYBRID_NOSCALE  =13 /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
+    APOP_RF_HYBRID_NOSCALE = 13, /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
+    APOP_UNKNOWN_ML = -1       /**<  For internal use */
 } apop_optimization_enum;
 
 /** The settings for maximum likelihood estimation (including simulated annealing).
 \ingroup settings */
 typedef struct{
     double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
-                                  If NULL, use zero.  Note that if \c v is a \c gsl_vector, then 
+                                  If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
                                   \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
     apop_optimization_enum method; /**< See the  \ref apop_optimization_enum documentation for options. */
     double      step_size, /**< the initial step size. */
@@ -194,7 +195,7 @@ delta;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
     char        *trace_path; ///< See \ref trace_path
-    apop_model  *parent;
+    apop_model  *parent;   ///< Deprecated. Does nothing.
 } apop_mle_settings;
 
 /** Settings for least-squares type models 

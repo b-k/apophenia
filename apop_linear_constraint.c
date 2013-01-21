@@ -25,7 +25,7 @@ assert(!gsl_isnan(S));
 assert(!gsl_isnan(gsl_vector_get(out,0)));
 }
 
-static int binds(gsl_vector *v, double k, gsl_vector *b, double margin){
+static int binds(gsl_vector const *v, double k, gsl_vector const *b, double margin){
     double d;
     gsl_blas_ddot(v, b, &d);
     return d < k + margin;
@@ -128,7 +128,6 @@ APOP_VAR_ENDHEAD
     static gsl_vector *closest_pt = NULL;
     static gsl_vector *candidate  = NULL;
     static gsl_vector *fix        = NULL;
-    gsl_vector *base_beta = apop_vector_copy(beta);
     int constraint_ct = constraint->matrix->size1;
     int bindlist[constraint_ct];
     int i, bound = 0;
@@ -148,6 +147,7 @@ APOP_VAR_ENDHEAD
     }
     if (!bound)    //All constraints met.
         return 0;
+    gsl_vector *base_beta = apop_vector_copy(beta);
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
         APOP_ROW(constraint, 0, c);
@@ -180,5 +180,7 @@ add_margin:
             gsl_vector_add(beta, fix);
         }
     }
-    return apop_vector_distance(base_beta, beta);
+    double out = apop_vector_distance(base_beta, beta);
+    gsl_vector_free(base_beta);
+    return out;
 }

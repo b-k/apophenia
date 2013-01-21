@@ -4,6 +4,24 @@
 !!Big.
 ]
 
+	January 2012
+--Logit regression much smarter about picking a starting point.
+--Defaults for simulated annealing try 1600x fewer points. Prior settings were overkill.
+--configure.ac checks for native asprintf and uses it if it is present
+**Removed apop_db_merge and apop_db_merge_table. Get them from http://modelingwithdata.org/arch/00000141.html .
+
+	December 2012
+--Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
+--faster read-in of text files
+--Exponential model uses data in both the vector and matrix parts of the apop_data input
+--transformation to generate mixtures (i.e., linear combinations) of models.
+**apop_data_transpose now transposes the text element as well as the matrix (by default).
+	Use apop_data_transpose(your_matrix,  .transpose_text='n') to replicate the previous behavior.
+--removed Autoconf pkg-config macros, because Autoconf no longer needs the help.
+--writing apop_data to DB uses prepared queries where possible => much faster.
+**It is now up to you to put apop_query("begin"); / apop_query("commit"); wrappers around
+	writing of tables to the database.
+
 	November 2012
 --apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs
 	better; put them at the end of the sort order.
@@ -13,7 +31,6 @@
 	them in your own work, consider them deprecated...).
 --Where the assert macros used to abort() on errors, they now send signal(SIGTRAP), making
 	debugging a little easier. Most host systems force an abort on SIGTRAP anyway.
---Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
 
 	October 2012
 **Removed apop_strcmp. If you still need it, this macro is basically equivalent:

@@ -39,6 +39,10 @@ select sqrt(x), pow(x,0.5), exp(x), log(x),
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
 \endcode
+
+Some more realistic sample code:
+
+\include normalizations.c
 */
 
 typedef struct StdDevCtx StdDevCtx;
@@ -200,30 +204,31 @@ static int apop_sqlite_db_open(char const *filename){
     return 0;
 }
 
-//these are global for the apop_db_to_... callbacks.
-int namecol;
-static int firstcall;
+typedef struct {    //for the apop_query_to_... functions.
+    int       firstcall, namecol;
+    size_t    currentrow;
+    apop_data *outdata;
+} callback_t;
 
 //This is the callback for apop_query_to_text.
-static int db_to_chars(void *o,int argc, char **argv, char **column){
+static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
+    callback_t *qi= qinfo;
+    apop_data* d  = qi->outdata; //alias. Allocated in calling fn.
     int	addnames = 0, ncshift=0;
-    apop_data* d  = o;
-    if (!d->names->textct)
-        addnames    ++;
-    if (firstcall){
-        namecol   = -1;
-        firstcall = 0;
+    if (!d->names->textct) addnames++;
+    if (qi->firstcall){
+        qi->firstcall = 0;
         for(int i=0; i<argc; i++)
             if (!strcmp(column[i], apop_opts.db_name_column)){
-                namecol = i;
+                qi->namecol = i;
                 break;
             }
     }
-    int rows = d ? d->textsize[0] : 0;
-    int cols = argc - (namecol >= 0);
-    apop_text_alloc(d, rows+1, cols);
+    int rows = d->textsize[0];
+    int cols = argc - (qi->namecol >= 0);
+    apop_text_alloc(d, rows+1, cols);//doesn't move d.
     for (size_t jj=0; jj<argc; jj++)
-        if (jj == namecol){
+        if (jj == qi->namecol){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
         } else {
@@ -236,15 +241,14 @@ static int db_to_chars(void *o,int argc, char **argv, char **column){
 
 apop_data * apop_sqlite_query_to_text(char *query){
     char *err = NULL;
-    apop_data *out = apop_data_alloc();
-    firstcall = 1;
+    callback_t qinfo = {.outdata=apop_data_alloc(), .namecol=-1, .firstcall=1};
     if (db==NULL) apop_db_open(NULL);
-    sqlite3_exec(db, query, db_to_chars, out, &err); ERRCHECK_SET_ERROR(out)
-    if (out->textsize[0]==0){
-        apop_data_free(out);
+    sqlite3_exec(db, query, db_to_chars, &qinfo, &err); ERRCHECK_SET_ERROR(qinfo.outdata)
+    if (qinfo.outdata->textsize[0]==0){
+        apop_data_free(qinfo.outdata);
         return NULL;
     }
-    return out;
+    return qinfo.outdata;
 }
 
 typedef struct {

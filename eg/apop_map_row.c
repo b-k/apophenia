@@ -1,3 +1,4 @@
+#include <apop.h>
 /* This sample code sets the elements of a data set's vector to one if the index is even.
    Then, via the weights vector, it adds up the even indices.
 
@@ -19,7 +20,7 @@ double weight_given_even(apop_data *r){
     return gsl_vector_get(r->vector, 0) ? gsl_vector_get(r->weights, 0) : 0; 
 }
 
-void test_apop_map_row(){
+int main(){
     apop_data *d = apop_data_alloc(100);
     d->weights = gsl_vector_alloc(100);
     apop_map(d, .fn_ri=set_vector_to_even, .inplace='y');

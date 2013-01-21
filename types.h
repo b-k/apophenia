@@ -134,7 +134,7 @@ typedef struct{
     float version;
 } apop_opts_type;
 
-extern apop_opts_type apop_opts;
+apop_opts_type apop_opts;
 
 apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char const *add_me, char type);
@@ -202,7 +202,7 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
-apop_data *apop_data_transpose(apop_data *in);
+APOP_VAR_DECLARE apop_data * apop_data_transpose(apop_data const *in, char transpose_text);
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
@@ -265,35 +265,36 @@ int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
     // Models and model support functions
 
-extern apop_model apop_beta;
-extern apop_model apop_bernoulli;
-extern apop_model apop_binomial;
-extern apop_model apop_chi_squared;
-extern apop_model apop_dirichlet;
-extern apop_model apop_exponential;
-extern apop_model apop_f_distribution;
-extern apop_model apop_gamma;
-extern apop_model apop_histogram;
-extern apop_model apop_improper_uniform;
-extern apop_model apop_iv;
-extern apop_model apop_kernel_density;
-extern apop_model apop_loess;
-extern apop_model apop_logit;
-extern apop_model apop_lognormal;
-extern apop_model apop_multinomial;
-extern apop_model apop_multivariate_normal;
-extern apop_model apop_normal;
-extern apop_model apop_ols;
-extern apop_model apop_pmf;
-extern apop_model apop_poisson;
-extern apop_model apop_probit;
-extern apop_model apop_t_distribution;
-extern apop_model apop_uniform;
-extern apop_model apop_waring;
-extern apop_model apop_wishart;
-extern apop_model apop_wls;
-extern apop_model apop_yule;
-extern apop_model apop_zipf;
+apop_model apop_beta;
+apop_model apop_bernoulli;
+apop_model apop_binomial;
+apop_model apop_chi_squared;
+apop_model apop_dirichlet;
+apop_model apop_exponential;
+apop_model apop_f_distribution;
+apop_model apop_gamma;
+apop_model apop_histogram;
+apop_model apop_improper_uniform;
+apop_model apop_iv;
+apop_model apop_kernel_density;
+apop_model apop_loess;
+apop_model apop_logit;
+apop_model apop_lognormal;
+apop_model apop_mixture;
+apop_model apop_multinomial;
+apop_model apop_multivariate_normal;
+apop_model apop_normal;
+apop_model apop_ols;
+apop_model apop_pmf;
+apop_model apop_poisson;
+apop_model apop_probit;
+apop_model apop_t_distribution;
+apop_model apop_uniform;
+apop_model apop_waring;
+apop_model apop_wishart;
+apop_model apop_wls;
+apop_model apop_yule;
+apop_model apop_zipf;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */
@@ -325,6 +326,11 @@ apop_model *apop_beta_from_mean_var(double m, double v); //in apop_beta.c
 
 #define apop_model_set_parameters(in, ...) apop_model_set_parameters_base((in), (double []) {__VA_ARGS__})
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
+
+//apop_mixture.c
+/** Produce a model as a linear combination of other models. See the documentation for the \ref apop_mixture model.  */
+#define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
+apop_model *apop_model_mixture_base(apop_model **inlist);
 
 
         // Map and apply

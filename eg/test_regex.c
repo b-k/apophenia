@@ -1,4 +1,5 @@
-void test_regex(){
+#include <apop.h>
+int main(){
     char string1[] = "Hello. I am a string.";
     assert(apop_regex(string1, "hell"));
     apop_data *subs;
@@ -20,4 +21,9 @@ void test_regex(){
     assert(!strcmp(*subs->text[2], "three"));
     assert(!strcmp(*subs->text[3], "four"));
     apop_data_free(subs);
+
+    //NULL input string ==> no-op.
+    int match_count = apop_regex(NULL, " *([^,]*[^ ]) *(,|$) *", &subs);
+    assert(!match_count);
+    assert(!subs);
 }

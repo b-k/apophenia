@@ -54,7 +54,7 @@ auto:
 	cd $(workdir) && autoheader
 	cd $(workdir) && automake -a
 	cd $(workdir) && ./configure #--enable-python
-	cd $(workdir) && make distcheck
+	-cd $(workdir) && make distcheck
 	mv $(workdir)/apophenia-$(version).tar.gz $(distdir)/apophenia-$(version)-$(date).tgz 
 
 rpm: auto

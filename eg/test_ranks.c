@@ -1,8 +1,10 @@
 /* A round trip: generate Zipf-distributed draws, summarize them to a single list of
 rankings, then expand the rankings to a list of single entries. The sorted list at the end
 of this should be identical to the (sorted) original list. */
+#include <apop.h>
 
-void rank_round_trip(gsl_rng *r){
+int main(){
+    gsl_rng *r = apop_rng_alloc(2342);
     int i, length = 1e4;
     apop_model *a_zipf = apop_model_set_parameters(apop_zipf, 3.2);
     apop_data *draws = apop_data_alloc(length);

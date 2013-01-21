@@ -4,7 +4,7 @@
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <regex.h>
 #include <assert.h>
-#include <sqlite3.h>
+#include <stdbool.h>
 
 /*extend a string. this prevents a minor leak you'd get if you did
  asprintf(&q, "%s is a teapot.", q);
@@ -632,7 +632,7 @@ static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_d
 
         if (!infield){
             if (ci.type=='w') continue; //eat leading spaces.
-            if (strchr("rd", ci.type)                    //new field; if 'dnE', blank field. 
+            if (ci.type=='r' || ci.type=='d'             //new field; if 'dnE', blank field. 
                    || (strchr("nE", ci.type) && ct>0)){  //Blank fields only at end of lines that already have data; else all-blank line to ignore.
                 if (++ct > fn->textsize[0]) apop_text_alloc(fn, ct, 1);//realloc text portion.
                 *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
@@ -732,7 +732,7 @@ APOP_VAR_END_HEAD
     } 
 
     //Now do the body.
-	while(!set || (L.ct && !L.eof)){
+	while(!set || !L.eof || L.ct){
         if (!L.ct) { //skip blank lines
             L=parse_a_line(infile,buffer, &ptr,  add_this_line, field_ends, delimiters);
             continue;
@@ -815,15 +815,17 @@ APOP_VAR_ENDHEAD
         vin = gsl_vector_subvector((gsl_vector *)in, offset, in->size - offset).vector;
         d = d->more;
         if (use_info_pages=='n')
-            while (apop_regex(d->names->title, "^<.*>$"))
+            while (d && apop_regex(d->names->title, "^<.*>$"))
                 d = d->more;
+        Apop_stopif(!d, return, 0, "The data set (without info pages, because you didn't ask"
+                " me to use them) is too short for the input vector.");
         apop_data_unpack(&vin, d);
     }
 }
 
-static size_t sizecount(const apop_data *in, const int all_pp, const int use_info_pp){ 
+static size_t sizecount(const apop_data *in, bool all_pp, bool use_info_pp){ 
     if (!in) return 0;
-    if (use_info_pp=='n' && apop_regex(in->names->title, "^<.*>$"))
+    if (!use_info_pp && apop_regex(in->names->title, "^<.*>$"))
         return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
              + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)
@@ -862,13 +864,13 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     char apop_varad_var(all_pages, 'n');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
         Apop_stopif(out->size != total_size, return NULL, 0, "The input data set has %zu elements, "
                "but the output vector you want to fill has size %zu. Please make "
                "these sizes equal.", total_size, out->size);
     }
 APOP_VAR_ENDHEAD
-    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='n'));
+    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
     if (!total_size) return NULL;
     int offset = 0;
     if (!out) out = gsl_vector_alloc(total_size);
@@ -891,10 +893,12 @@ APOP_VAR_ENDHEAD
         offset  += in->weights->size;
     }
     if ((all_pages == 'y' ||all_pages =='Y') && in->more){
-        vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
         while (use_info_pages=='n' && in->more && apop_regex(in->more->names->title, "^<.*>$"))
             in = in->more;
-        apop_data_pack(in->more, &vout, .all_pages='y');
+        if (in->more){
+            vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
+            apop_data_pack(in->more, &vout, .all_pages='y');
+        }
     }
     return out;
 }
@@ -1053,7 +1057,6 @@ static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_
     apop_query("%s", q);
     Apop_stopif(!apop_table_exists(tabname), return -1, 0, "query \"%s\" failed.", q);
     free(q);
-    apop_query("begin;");
     return 0;
 }
 
@@ -1119,13 +1122,45 @@ static void line_to_insert(line_parse_t L, apop_data const*addme, char const *ta
     }
 }
 
+int apop_use_sqlite_prepared_statements(size_t col_ct){
+    #if SQLITE_VERSION_NUMBER < 3003009
+        return 0;
+    #else
+        return (sqlite3_libversion_number() >=3003009
+                    && !(apop_opts.db_engine == 'm')
+                    &&  col_ct <= 999); //Arbitrary SQLite limit on blanks in prepared statements.
+    #endif
+}
+
+int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3_stmt **statement){
+    #if SQLITE_VERSION_NUMBER < 3003009
+        Apop_stopif(1, return -1, 0, "Attempting to prepapre prepared statements, but using a version of SQLite that doesn't support them.");
+    #else
+        char *q=NULL;
+        asprintf(&q, "INSERT INTO %s VALUES (", tabname);
+        for (size_t i = 0; i < col_ct; i++)
+            xprintf(&q, "%s?%c", q, i==col_ct-1 ? ')' : ',');
+        Apop_stopif(!db, return -1, 0, "The database should be open by now but isn't.");
+        Apop_stopif(sqlite3_prepare_v2(db, q, -1, statement, NULL) != SQLITE_OK, 
+                    return -1, apop_errorlevel, "Failure preparing prepared statement: %s", sqlite3_errmsg(db));
+        free(q);
+        return 0;
+    #endif
+}
+
 /** Read a text file into a database table.
 
   See \ref text_format.
 
 See the \ref apop_ols page for an example that uses this function to read in sample data (also listed on that page).
 
-By the way, there is a begin/commit wrapper that bundles the process into bundles of 10000 inserts per transaction. if you want to change this to more or less frequent commits, you'll need to modify and recompile the code. 
+Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:
+
+\code
+apop_query("begin;");
+apop_data_print(dataset, .output_file="dbtab", .output_type='d');
+apop_query("commit;");
+\endcode
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
 \param tabname      The name to give the table in the database (default
@@ -1162,7 +1197,7 @@ APOP_VAR_END_HEAD
     char buffer[bs];
     size_t ptr=bs;
     apop_data *add_this_line = apop_data_alloc();
-    sqlite3_stmt * statement = NULL;
+    sqlite3_stmt *statement;
     line_parse_t L={1,0};
 
 	Apop_assert_c(!apop_table_exists(tabname), -1, 0, "table %s exists; not recreating it.", tabname);
@@ -1173,7 +1208,7 @@ APOP_VAR_END_HEAD
     apop_data *fn = apop_data_alloc();
     get_field_names(has_col_names=='y', field_names, infile, buffer, &ptr,
                                     add_this_line, fn, field_ends, delimiters);
-    col_ct = L.ct = add_this_line->textsize[0];
+    col_ct = L.ct = *add_this_line->textsize;
     if (apop_opts.db_engine=='m')
         not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
     else
@@ -1183,31 +1218,19 @@ APOP_VAR_END_HEAD
     apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "
                     "so if errors crop up please see about installing a more recent version of SQLite's library.");
-    int use_sqlite_prepared_statements = 0;
-#else
-    int use_sqlite_prepared_statements = (sqlite3_libversion_number() >=3003009
-                    && !(apop_opts.db_engine == 'm') 
-                    &&  col_ct <= 999); //Arbitrary SQLite limit on blanks in prepared statements.
-    if (use_sqlite_prepared_statements){
-        char *q=NULL;
-        asprintf(&q, "INSERT INTO %s VALUES (?", tabname);
-        for (int i = 1; i < col_ct; i++)
-            xprintf(&q, "%s, ?", q);
-        xprintf(&q, "%s)", q);
-        Apop_assert_c(db, -1, 0, "Trouble opening the database; inserting no data.");
-        sqlite3_prepare_v2(db, q, -1, &statement, NULL);
-        free(q);
-    }
 #endif
+    int use_sqlite_prepared_statements = apop_use_sqlite_prepared_statements(col_ct);
+    if (use_sqlite_prepared_statements)
+        Apop_stopif(apop_prepare_prepared_statements(tabname, col_ct, &statement), 
+                return -1, 0, "Trouble preparing the prepared statement for SQLite.");
     //done with table & query setup.
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 	while(L.ct && !L.eof){
         line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
-            if (apop_opts.db_engine != 'm') apop_query("commit; begin;");
             if (apop_opts.verbose > 0) {Apop_notify(2, ".");fflush(NULL);}
         }
-        if (statement){
+        if (use_sqlite_prepared_statements){
             int err = sqlite3_step(statement);
             if (err!=0 && err != 101) //0=ok, 101=done
                 Apop_notify(0, "sqlite insert query gave error code %i.\n", err);
@@ -1222,10 +1245,11 @@ APOP_VAR_END_HEAD
         } while (!L.ct && !L.eof); //skip blank lines
 	}
     apop_data_free(add_this_line);
-    apop_query("commit;");
+#if SQLITE_VERSION_NUMBER >= 3003009
 	if (use_sqlite_prepared_statements){
         Apop_assert_c(sqlite3_finalize(statement) ==SQLITE_OK, -1, apop_errorlevel, "SQLite error.");
     }
+#endif
     if (strcmp(text_file,"-")) fclose(infile);
 	return rows;
 }

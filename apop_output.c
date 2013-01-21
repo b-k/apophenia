@@ -201,10 +201,9 @@ This takes a lot of machinery. I write every last element to a text array, then 
 
 So, I produce an \ref apop_data set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use \ref apop_print to dump your data to a text file, and view the text file, or print subsets.
 
-For more machine-readable printing, see \ref apop_print.
+For more machine-readable printing, see \ref apop_data_print.
 
 \ingroup output
-
 */
 void apop_data_show(const apop_data *in){
     if (!in) {printf("NULL\n"); return;}

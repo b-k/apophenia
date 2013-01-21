@@ -3,7 +3,6 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 /* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
-#include <regex.h>
 
 /** Here are where the options are initially set. See the \ref apop_opts_type
     documentation for details.*/
@@ -27,7 +26,7 @@ apop_opts_type apop_opts	=
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
-#include "apop_db_sqlite.c"
+#include "apop_db_sqlite.c" // callback_t is defined here, btw.
 
 //This macro declares the query string and fills it from the printf part of the call.
 #define Fillin(query, fmt)        \
@@ -37,14 +36,6 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 	vasprintf(&query, fmt, argp); \
 	va_end(argp);                 \
 	Apop_notify(2, "%s", query);
-
-typedef struct {
-    int        firstcall;
-    size_t     currentrow;
-    regmatch_t result[3];
-    regex_t    *regex;
-    apop_data  *outdata;
-} callback_t;
 
 /** Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
 
@@ -255,38 +246,36 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 
 //apop_query_to_data callback.
 static int db_to_table(void *qinfo, int argc, char **argv, char **column){
+    Apop_stopif(!argv, return -1, apop_errorlevel, "Got NULL data from SQLite.");
     int i, ncfound = 0;
     callback_t *qi= qinfo;
     if (qi->firstcall){
         qi->firstcall--;
-        namecol = -1;
         for(i=0; i<argc; i++)
             if (!strcasecmp(column[i], apop_opts.db_name_column)){
-                namecol = i;
+                qi->namecol = i;
                 ncfound = 1;
                 break;
             }
 	    qi->outdata = argc-ncfound ? apop_data_alloc(1, argc-ncfound) : apop_data_alloc( );
         for(i=0; i<argc; i++)
-            if (namecol != i)
+            if (qi->namecol != i)
                 apop_name_add(qi->outdata->names, column[i], 'c');
     } else 
         if (qi->outdata->matrix)
             apop_matrix_realloc(qi->outdata->matrix, qi->currentrow+1, qi->outdata->matrix->size2);
-	if (argv !=NULL){
-        ncfound =0;
-		for (int jj=0;jj<argc;jj++)
-            if (jj != namecol){
-                double valor = 
-                    !argv[jj] || !strcmp(argv[jj], "NULL")|| !regexec(qi->regex, argv[jj], 1, qi->result, 0)
-				     ? GSL_NAN : atof(argv[jj]);
-                gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
-            } else {
-                apop_name_add(qi->outdata->names, argv[jj], 'r');
-                ncfound = 1;
-            }
-		(qi->currentrow)++;
-	}
+    ncfound =0;
+    for (int jj=0;jj<argc;jj++)
+        if (jj != qi->namecol){
+            double valor = 
+                !argv[jj] || !strcmp(argv[jj], "NULL")|| !strcasecmp(apop_opts.db_nan, argv[jj])
+                 ? GSL_NAN : atof(argv[jj]);
+            gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
+        } else {
+            apop_name_add(qi->outdata->names, argv[jj], 'r');
+            ncfound = 1;
+        }
+    (qi->currentrow)++;
 	return 0;
 }
 
@@ -307,15 +296,9 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 
     //else
     char *err=NULL;
-    char full_divider[103];
-    callback_t  qinfo = {.firstcall = 1,
-                       .regex = malloc(sizeof(regex_t))};
+    callback_t qinfo = {.firstcall = 1, .namecol=-1};
 	if (db==NULL) apop_db_open(NULL);
-    sprintf(full_divider, "^%s$", apop_opts.db_nan);
-    regcomp(qinfo.regex, full_divider, REG_EXTENDED+REG_ICASE+REG_NOSUB);
     sqlite3_exec(db, query,db_to_table,&qinfo, &err); 
-    regfree(qinfo.regex);
-    free(qinfo.regex);
     free (query);
     ERRCHECK_SET_ERROR(qinfo.outdata)
 	return qinfo.outdata;
@@ -481,6 +464,50 @@ static void add_a_number (char **q, char *comma, double v){
     *comma = ',';
 }
 
+static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
+#if SQLITE_VERSION_NUMBER < 3003009
+     Apop_stopif(1, return -1, 0, "Attempting to use prepared statements, but using a version of SQLite that doesn't support them.");
+#else
+    Get_vmsizes(set) //firstcol, msize1, maxsize
+    for (size_t row=0; row < maxsize; row++){
+        size_t field =1;
+        if (set->names->rowct>row){
+            if (!strlen(set->names->row[row])) field++; //leave NULL and cleared
+            Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->names->row[row], -1, SQLITE_TRANSIENT),
+                    return -1, apop_errorlevel, 
+                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->names->row[row])
+        }
+        if (set->vector && set->vector->size > row)
+                Apop_stopif(sqlite3_bind_double(p_stmt, field++, apop_data_get(set, row, -1)),
+                    return -1, apop_errorlevel, 
+                    "Something wrong with the vector element on line %zu, [%g].\n" ,row,  apop_data_get(set, row, -1))
+        if (msize1 > row)
+            for (size_t col=0; col < msize2; col++)
+                Apop_stopif(sqlite3_bind_double(p_stmt, field++, apop_data_get(set, row, col)),
+                    return -1, apop_errorlevel, 
+                    "Something wrong with the matrix element %zu on line %zu, [%g].\n" ,col, row,  apop_data_get(set, row, col))
+        if (*set->textsize > row)
+            for (size_t col=0; col < set->textsize[1]; col++){
+                if (!strlen(set->text[row][col])) field++; //leave NULL and cleared
+                Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->text[row][col], -1, SQLITE_TRANSIENT),
+                    return -1, apop_errorlevel, 
+                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->text[row][col])
+            }
+        if (set->weights && set->weights->size > row)
+                Apop_stopif(sqlite3_bind_double(p_stmt, field++, gsl_vector_get(set->weights, row)),
+                    return -1, apop_errorlevel, 
+                    "Something wrong with the weight element on line %zu, [%g].\n" ,row,  gsl_vector_get(set->weights, row))
+        int err = sqlite3_step(p_stmt);
+        Apop_stopif(err!=0 && err != 101 //0=ok, 101=done
+                    , , 0, "prepared sqlite insert query gave error code %i.\n", err);
+        Apop_stopif(sqlite3_reset(p_stmt), return -1, apop_errorlevel, "SQLite error.");
+        Apop_stopif(sqlite3_clear_bindings(p_stmt), return -1, apop_errorlevel, "SQLite error."); //needed for NULLs
+    }
+    Apop_assert_c(sqlite3_finalize(p_stmt) ==SQLITE_OK, -1, apop_errorlevel, "SQLite error.");
+    return 0;
+#endif
+}
+
 /** Dump an \ref apop_data set into the database.
 
 This function is basically preempted by \ref apop_data_print. Use that one; this may soon no longer be available.
@@ -495,67 +522,71 @@ Column names are inserted if there are any. If there are, all dots are converted
 
 \li You can also call this via \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt> to overwrite a new table or with <tt>.output_append='a'</tt> to append.
 
-\param set 	    The name of the matrix
-\param tabname	The name of the db table to be created
+
+\li Especially if you are using a pre-2007 version of SQLite, there may be a spe
+
+\code
+apop_query("begin;");
+apop_data_print(dataset, .output_file="dbtab", .output_type='d');
+apop_query("commit;");
+\endcode
+
+
+\param set 	         The name of the matrix
+\param tabname	     The name of the db table to be created
+\param output_append See \ref apop_prep_output.
+\return 0=OK, -1=error
 \ingroup apop_data
 \ingroup conversions
 */
-void apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
-    Apop_assert_c(set, , 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
+int apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
+    Apop_stopif(!set, return -1, 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
     int	i,j; 
-    int	ctr		   = 0;
-    int	batch_size = 100;
-    char *q 	   = malloc(1000);
-    char comma     = ' ';
-    int use_row    = strlen(apop_opts.db_name_column) 
+    char *q;
+    char comma = ' ';
+    int use_row = strlen(apop_opts.db_name_column) 
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 
-    int tab_exists = apop_table_exists(tabname);
-
-//To start, q will either be "begin;" if the table exists or "create table ... ; begin;" if it doesn't.
-//Except mysql doesn't like transactions like this, so elide the "begin;" in that case.
-    if (tab_exists && !apop_opts.db_engine == 'm')
-        asprintf(&q, "begin;");
-    else if (tab_exists && apop_opts.db_engine == 'm')
+    if (apop_table_exists(tabname))
         asprintf(&q, " ");
     else if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-    if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname))){
-        asprintf(&q, " ");
-    else {
-        asprintf(&q, "create table %s (", tabname);
-        if (use_row) {
-            qxprintf(&q, "%s\n %s varchar(1000)", q, apop_opts.db_name_column);
-            comma = ',';
-        }
-        if (set->vector){
-            if(!set->names->vector) 
-                qxprintf(&q, "%s%c\n vector double ", q, comma);
-            else
-                qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, apop_strip_dots(set->names->vector,'d'));
-            comma = ',';
-        }
-        if (set->matrix)
-            for(i=0;i< set->matrix->size2; i++){
-                if(set->names->colct <= i) 
-                    qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
-                 else
-                    qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->column[i],'d'));
+        if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname)))
+            asprintf(&q, " ");
+        else {
+            asprintf(&q, "create table %s (", tabname);
+            if (use_row) {
+                qxprintf(&q, "%s\n %s varchar(1000)", q, apop_opts.db_name_column);
                 comma = ',';
             }
-        for(i=0;i< set->textsize[1]; i++){
-            if (set->names->textct <= i)
-                qxprintf(&q, "%s%c\n tc%i varchar(1000) ", q, comma,i);
-            else
-                qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma,apop_strip_dots(set->names->text[i],'d'));
-            comma = ',';
+            if (set->vector){
+                if(!set->names->vector) 
+                    qxprintf(&q, "%s%c\n vector double ", q, comma);
+                else
+                    qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, apop_strip_dots(set->names->vector,'d'));
+                comma = ',';
+            }
+            if (set->matrix)
+                for(i=0;i< set->matrix->size2; i++){
+                    if(set->names->colct <= i) 
+                        qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
+                     else
+                        qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                    comma = ',';
+                }
+            for(i=0;i< set->textsize[1]; i++){
+                if (set->names->textct <= i)
+                    qxprintf(&q, "%s%c\n tc%i varchar(1000) ", q, comma,i);
+                else
+                    qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma,apop_strip_dots(set->names->text[i],'d'));
+                comma = ',';
+            }
+            apop_query("%s); ", q);
+            sprintf(q, " ");
         }
-        apop_query("%s); ", q);
-        sprintf(q, " ");
-    }
 #else 
-        Apop_assert_c(0, , 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return -1, apop_errorlevel, "Apophenia was compiled without mysql support.")
 #endif
     else {
         if (db==NULL) apop_db_open(NULL);
@@ -587,114 +618,55 @@ void apop_data_to_db(const apop_data *set, const char *tabname, const char outpu
             }
             if (set->weights)
                 qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
-            qxprintf(&q,"%s);  begin;",q);
+            qxprintf(&q,"%s);",q);
+            apop_query(q);
+            qxprintf(&q," ");
         }
     }
 
-    int lim = GSL_MAX(set->vector ? set->vector->size : 0,
-                GSL_MAX(set->matrix ? set->matrix->size1 : 0, 
-                        set->textsize[0]));
-	for(i=0; i< lim; i++){
-        comma = ' ';
-		qxprintf(&q, "%s \n insert into %s values(",q, tabname);
-        if (use_row){
-            char *fixed= prep_string_for_sqlite(0, set->names->row[i]);
-			qxprintf(&q, "%s %s ",q, fixed);
-            free(fixed);
-            comma = ',';
+
+    Get_vmsizes(set) //firstcol, msize2, maxsize
+    int col_ct = !!set->names->rowct + set->textsize[1] + msize2 - firstcol + !!set->weights;
+    if(apop_use_sqlite_prepared_statements(col_ct)){
+        sqlite3_stmt *statement;
+        Apop_stopif(
+            apop_prepare_prepared_statements(tabname, col_ct, &statement), 
+            return -1, 0, "Trouble preparing prepared statements.");
+        Apop_stopif(
+            run_prepared_statements(set, statement), 
+            return -1, 0, "error in insertions.");
+    } else {
+        for(i=0; i< maxsize; i++){
+            comma = ' ';
+            qxprintf(&q, "%s \n insert into %s values(",q, tabname);
+            if (use_row){
+                char *fixed= prep_string_for_sqlite(0, set->names->row[i]);
+                qxprintf(&q, "%s %s ",q, fixed);
+                free(fixed);
+                comma = ',';
+            }
+            if (set->vector)
+               add_a_number (&q, &comma, gsl_vector_get(set->vector,i));
+            if (set->matrix)
+                for(j=0; j< set->matrix->size2; j++)
+                   add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
+            for(j=0; j< set->textsize[1]; j++){
+                char *fixed= prep_string_for_sqlite(0, set->text[i][j]);
+                qxprintf(&q, "%s%c %s ",q, comma,fixed ? fixed : "''");
+                free(fixed);
+                comma = ',';
+            }
+            if (set->weights)
+               add_a_number (&q, &comma, gsl_vector_get(set->weights,i));
+            qxprintf(&q,"%s);",q);
+            apop_query("%s", q); 
+            q[0]='\0';
         }
-        if (set->vector)
-           add_a_number (&q, &comma, gsl_vector_get(set->vector,i));
-        if (set->matrix)
-            for(j=0; j< set->matrix->size2; j++)
-               add_a_number (&q, &comma, gsl_matrix_get(set->matrix,i,j));
-		for(j=0; j< set->textsize[1]; j++){
-            char *fixed= prep_string_for_sqlite(0, set->text[i][j]);
-			qxprintf(&q, "%s%c %s ",q, comma,fixed ? fixed : "''");
-            free(fixed);
-            comma = ',';
-        }
-        if (set->weights)
-           add_a_number (&q, &comma, gsl_vector_get(set->weights,i));
-        qxprintf(&q,"%s);",q);
-		ctr++;
-        apop_query("%s", q); 
-        q[0]='\0';
-		if(ctr==batch_size && apop_opts.db_engine != 'm') {
-            ctr = 0;
-            apop_query("commit;");
-            qxprintf(&q,"begin; \n");
-        }
-	}
-    if ( !(apop_opts.db_engine == 'm') && ctr>0) 
-        apop_query("%s commit;",q);
+    }
 	free(q);
+    return 0;
 }
 
-/** Merge a single table from a database on the hard drive with the database currently open.
-
-\param db_file	The name of a file on disk. [default = \c NULL]
-\param tabname	The name of the table in that database to be merged in. [No default]
-\param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
-
-If the table exists in the new database but not in the currently open one, then it is simply copied over. If there is a table with the same name in the currently open database, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
-
-\ingroup db
-This function uses the \ref designated syntax for inputs.
-*/
-APOP_VAR_HEAD void apop_db_merge_table(char *db_file, char *tabname, char inout){
-    char * apop_varad_var(tabname, NULL);
-    Apop_assert_n(tabname, "I need a non-NULL tabname");
-    char * apop_varad_var(db_file, NULL);
-    char apop_varad_var(inout, 'i');
-APOP_VAR_ENDHEAD
-    char maine[] = "main";
-    char merge_me[] = "merge_me";
-    char *from = inout == 'i' ? merge_me : maine;
-    char *to = inout == 'i' ? maine : merge_me ;
-	if (db_file !=NULL)
-		apop_query("attach database \"%s\" as merge_me;", db_file);
-	int d = apop_query_to_float("select count(*) from %s.sqlite_master where name == \"%s\";", to, tabname);
-	if (!d){	//just import table
-		Apop_notify(2, "adding in %s", tabname);
-		apop_query("create table %s.%s as select * from %s.%s;", to, tabname, from, tabname);
-	}
-	else	{			//merge tables.
-		Apop_notify(2, "merging in %s", tabname);
-		apop_query("insert into %s.%s select * from %s.%s;", to, tabname, from, tabname);
-	}
-	if (db_file !=NULL)
-		apop_query("detach database merge_me;");
-}
-
-/** Merge a database on the hard drive with the database currently open.
-
-\param db_file	The name of a file on disk. [No default; can't be \c NULL]
-\param inout  Do we copy data in to the currently-open main db [\c 'i'] or out to the specified auxiliary db[\c 'o']?  [default = 'i']
-
-If a table exists in the new database but not in the currently open one, then it is simply copied over. If there are  tables with the same name in both databases, then the data from the new table is inserted into the main database's table with the same name. [The function just calls <tt>insert into main.tab select * from merge_me.tab</tt>.]
-
-\li This is sqlite-only; I'm not sure if it really makes much sense for mySQL.
-
-This function uses the \ref designated syntax for inputs.
-\ingroup db
-*/
-APOP_VAR_HEAD void apop_db_merge(char *db_file, char inout){
-    char * apop_varad_var(db_file, NULL);
-    Apop_assert_n(db_file, "This function copies from a named database file to the currently in-memory database. You need to give me the name of that named db.")
-    char apop_varad_var(inout, 'i');
-APOP_VAR_ENDHEAD
-  apop_data	*tab_list;
-	apop_query("attach database \"%s\" as filedb;", db_file);
-	tab_list= apop_query_to_text("select name from %s.sqlite_master where type==\"table\";"
-              , inout == 'i' ? "filedb" : "main" );
-    if(!tab_list) return; //No tables to merge.
-	for(int i=0; i< tab_list->textsize[0]; i++)
-		apop_db_merge_table(db_file, (tab_list->text)[i][0], inout);
-	apop_query("detach database filedb;");
-	apop_data_free(tab_list);
-}
-                                                                                                                               
 // Some stats wrappers
 
 /** Do a \f$t\f$-test entirely inside the database.
