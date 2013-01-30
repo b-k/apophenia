@@ -509,6 +509,13 @@ typedef struct {
 } apop_arms_settings;
 
 
+typedef struct {
+    char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
+    apop_model *model1; /**< The first model in the stack.*/
+    apop_model *model2; /**< The second model.*/
+} apop_stack_settings;
+
+
 /** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
@@ -519,6 +526,7 @@ Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_loess)
+Apop_settings_declarations(apop_stack)
 Apop_settings_declarations(apop_update)
 Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_parts_wanted)

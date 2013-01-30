@@ -285,6 +285,7 @@ apop_model apop_ols;
 apop_model apop_pmf;
 apop_model apop_poisson;
 apop_model apop_probit;
+apop_model apop_stack;
 apop_model apop_t_distribution;
 apop_model apop_uniform;
 apop_model apop_waring;
