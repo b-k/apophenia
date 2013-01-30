@@ -231,7 +231,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
 #define apop_line_to_vector apop_array_to_vector
 gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols);
-apop_data * apop_array_to_data(const double **in, const int rows, const int cols);
 
 //From line
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
@@ -255,10 +254,8 @@ APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d, char 
 
 #define apop_vector_fill(in, ...) apop_vector_fill_base((in), (double []) {__VA_ARGS__})
 #define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
-#define apop_matrix_fill(in, ...) apop_matrix_fill_base((in), (double []) {__VA_ARGS__})
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
-gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double []);
 
 int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 

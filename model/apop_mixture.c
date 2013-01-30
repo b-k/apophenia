@@ -54,6 +54,9 @@ first N are the weights, and then we have each model's parameters packed in, in 
 There are pack/unpack functions that run as needed. Given the estimated mixture model \c m over three models, the weights are:
 \code
     gsl_vector weightsvector = gsl_vector_subvector(m->parameters->vector, 0, 3).vector;
+
+\adoc   Examples
+\include hills.c
 \endcode
 */
 
@@ -162,7 +165,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
 void unpack(apop_model *min){
     apop_mixture_settings *ms = Apop_settings_get_group(min, apop_mixture);
     int posn=ms->model_count, i=0;
-    if (!min->parameters) return; //Trusting user that the user has just added already-esimated models.
+    if (!min->parameters) return; //Trusting user that the user has added already-esimated models.
     for (apop_model **m = ms->model_list; *m; m++){
         gsl_vector v = gsl_vector_subvector(min->parameters->vector, posn, ms->param_sizes[i]).vector;
         apop_data_unpack(&v, (*m)->parameters);
@@ -189,8 +192,18 @@ static double mixture_log_likelihood(apop_data *d, apop_model *model_in){
     Apop_stopif(!ms, model_in->error='p'; return GSL_NAN, 0, "No apop_mixture_settings group. "
                                               "Did you estimate this with apop_model_mixture?");
     unpack(model_in);
-    weighted_sum(apop_log_likelihood);
-    return total;
+    long double total=0;
+    if (model_in->parameters) {
+        gsl_vector vforsum = gsl_vector_subvector(model_in->parameters->vector, 0, ms->model_count).vector;
+        long double total_weight = apop_vector_sum(&vforsum);
+        size_t i=0;
+        for (apop_model **m = ms->model_list; *m; m++)
+            total += apop_p(d, *m) * vforsum.data[i++]/total_weight;
+    } else {   /*assume equal weights.*/
+        for (apop_model **m = ms->model_list; *m; m++)
+            total += apop_p(d, *m)/ms->model_count;
+    }
+    return log(total);
 }
 
 static void mixture_draw (double *out, gsl_rng *r, apop_model *m){

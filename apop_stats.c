@@ -569,89 +569,11 @@ double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, cons
     return (sumsq/len  - sum1*sum2/gsl_pow_2(len)) *(len/(len-1));
 }
 
-/** Returns the variance/covariance matrix relating each column with each other.
-
-This is the \c gsl_matrix  version of \ref apop_data_covariance; if you have column names, use that one.
-
-\param in 	A data matrix: rows are observations, columns are variables. (No default, must not be \c NULL)
-\param normalize
-'n', 'N', or 1 = subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
-anything else (like 0)= don't modify the input data (default = no modification)
-
-\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
-This is the sample version---dividing by \f$n-1\f$, not \f$n\f$.
-It uses the \ref designated syntax for inputs.
-\ingroup matrix_moments */
-APOP_VAR_HEAD gsl_matrix *apop_matrix_covariance(gsl_matrix *in, const char normalize){
-    gsl_matrix *apop_varad_var(in, NULL)
-    Apop_assert_c(in,  NULL, 0, "Input matrix is NULL. Returning same.");
-    const char apop_varad_var(normalize, 0)
-APOP_VAR_ENDHEAD
-    gsl_matrix *out;
-    double means[in->size2];
-    gsl_vector_view	v1, v2;
-	if (normalize == 1 || normalize=='n' || normalize == 'N'){
-		out	= gsl_matrix_alloc(in->size2, in->size2);
-		apop_matrix_normalize(in,'c', 0);
-		gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, in, in, 0, out);
-	    gsl_matrix_scale(out, 1.0/(in->size1-1));
-	}
-	else{
-		out	= gsl_matrix_calloc(in->size2, in->size2);
-		for(size_t i=0; i< in->size2; i++){
-			Apop_matrix_col(in, i, v);
-			means[i]	= apop_mean(v);
-		}
-		for(size_t i=0; i< in->size2; i++){
-			v1		= gsl_matrix_column(in, i);
-			for(size_t j=i; j< in->size2; j++){
-			    v2		= gsl_matrix_column(in, j);
-                apop_matrix_increment(out, i, j, 
-					   gsl_stats_covariance_m (v1.vector.data, v1.vector.stride, v2.vector.data,  v2.vector.stride,
-                                                    v2.vector.size, means[i], means[j]));
-				if (i != j)	//set the symmetric element.
-					gsl_matrix_set(out, j, i, gsl_matrix_get(out, i, j));
-			}
-	    }
-    }
-	return out;
-}
-
-/** Returns the matrix of correlation coefficients \f$(\sigma^2_{xy}/(\sigma_x\sigma_y))\f$ relating each column with each other.
-
-This is the \c gsl_matrix  version of \ref apop_data_correlation; if you have column names, use that one.
-
-\param in 	A data matrix: rows are observations, columns are variables. (No default, must not be \c NULL)
-\param normalize
-'n' or 'N' = subtract the mean from each column, thus changing the input data but speeding up the computation.<br>
-anything else (like 0)= don't modify the input data (default = no modification)
-
-\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
-
-This function uses the \ref designated syntax for inputs.
-\ingroup matrix_moments */
-APOP_VAR_HEAD gsl_matrix *apop_matrix_correlation(gsl_matrix *in, const char normalize){
-    gsl_matrix *apop_varad_var(in, NULL)
-    apop_assert_c(in,  NULL, 0, "Input matrix is NULL; returning NULL.");
-    const char apop_varad_var(normalize, 0)
-APOP_VAR_ENDHEAD
-    gsl_matrix *out = apop_matrix_covariance(in, normalize);
-    for(size_t i=0; i< in->size2; i++){
-        APOP_MATRIX_COL(in, i, cvin);
-        APOP_MATRIX_COL(out, i, cvout);
-        APOP_MATRIX_ROW(out, i, rvout);
-        double std_dev = sqrt(apop_var(cvin));
-        gsl_vector_scale(cvout, 1.0/std_dev);
-        gsl_vector_scale(rvout, 1.0/std_dev);
-    }
-    return out;
-}
-
-/** Returns the variance/covariance matrix relating each column of the matrix to each other column.
-
-This is the \ref apop_data version of \ref apop_matrix_covariance; if you don't have column names or weights, or would like to use the speed-saving and data-destroying normalization option, use that one.
+/** Returns the sample variance/covariance matrix relating each column of the matrix to each other column.
 
 \param in 	An \ref apop_data set. If the weights vector is set, I'll take it into account.
+
+\li This is the sample covariance---dividing by \f$n-1\f$, not \f$n\f$.
 
 \return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
 \exception out->error='a'  Allocation error.
@@ -676,8 +598,6 @@ apop_data *apop_data_covariance(const apop_data *in){
 }
 
 /** Returns the matrix of correlation coefficients \f$(\sigma^2_{xy}/(\sigma_x\sigma_y))\f$ relating each column with each other.
-
-This is the \ref apop_data version of \ref apop_matrix_correlation; if you don't have column names or weights, (or want the option for the faster, data-destroying version), use that one.
 
 \param in 	A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.
 

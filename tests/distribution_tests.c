@@ -162,12 +162,13 @@ void test_distributions(gsl_rng *r){
         }
         test_one_distribution(r, dist+i, true_params);
         test_cdf(r, true_params);
-        if (verbose) {printf("passed.\n"); fflush(NULL);}
+        if (verbose) {printf("\nPASS.   "); fflush(NULL);}
     }
 }
 static void got_bored(){ exit(0); }
 
 int main(int argc, char **argv){
+    apop_opts.verbose=0;
     char c, opts[] = "sqt:";
     if (argc==1)
         printf("Distribution tests.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\n");

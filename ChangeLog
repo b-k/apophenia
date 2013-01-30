@@ -9,6 +9,10 @@
 --Defaults for simulated annealing try 1600x fewer points. Prior settings were overkill.
 --configure.ac checks for native asprintf and uses it if it is present
 **Removed apop_db_merge and apop_db_merge_table. Get them from http://modelingwithdata.org/arch/00000141.html .
+**Removed apop_matrix_fill; use apop_data_fill
+**Removed apop_array_to_data; use apop_array_to_matrix + apop_matrix_to_data
+**Removed apop_matrix_correlation; use apop_data_correlation
+**Deprecated apop_rank_compress; use apop_data_to_dummies(..., .keep_first='y').
 
 	December 2012
 --Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).

@@ -22,6 +22,12 @@ int main(){
     assert(!strcmp(*subs->text[3], "four"));
     apop_data_free(subs);
 
+    //Get a parenthetical. For EREs, \( \) match plain parens in the text.
+    char string3[] = " one (but secretly, two)";
+    apop_regex(string3, "(\\([^)]*\\))", &subs);
+    assert(!strcmp(*subs->text[0], "(but secretly, two)"));
+    apop_data_free(subs);
+
     //NULL input string ==> no-op.
     int match_count = apop_regex(NULL, " *([^,]*[^ ]) *(,|$) *", &subs);
     assert(!match_count);

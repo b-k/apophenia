@@ -133,8 +133,11 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
-//    Apop_model_add_group(fixed, apop_mle, .want_cov='n', .dim_cycle_tolerance=1);
-    Apop_settings_set(fixed, apop_mle, want_cov, 'n');
+/*    if(apop_settings_get_group(mvn, apop_mle))
+        apop_settings_copy_group(fixed, mvn, "apop_mle");
+    else Apop_model_add_group(fixed, apop_mle);
+    */Apop_settings_set(fixed, apop_mle, want_cov, 'n');
+    Apop_model_add_group(fixed, apop_parts_wanted);
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_model *filled = apop_model_fix_params_get_base(m);
     apop_data_memcpy(d, filled->parameters); //A bit inefficient.

@@ -2,7 +2,7 @@ rsid | chr  | a_allele | b_allele | aa   | ab   | bb   | treatment
 rs1933024|1|A|G|0|37|1830|cases
 rs11497407|1|A|G|0|39|1828|cases
 rs12565286|1|C|G|2|190|1674|cases
-rs11804171|1|A|T|1|179|1686|cases
+rs\'11804171|1|A|T|1|179|1686|cases
 rs2977656|1|C|T|1836|31|0|cases
 rs12138618|1|A|G|0|201|1660|cases
 rs3094315|1|A|G|1230|570|60|cases

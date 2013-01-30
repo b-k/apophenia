@@ -49,14 +49,13 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 
 /** This function is used internally by the macro \ref Apop_settings_get_group. Use that.  */
 void * apop_settings_get_grp(apop_model *m, char *type, char fail){
+    //Used only for finding the non-blank groups.
     Apop_stopif(!m, return NULL, 0, "you gave me a NULL model as input.");
     if (!m->settings) return NULL;
     int i;
     for (i=0; m->settings[i].name[0] !='\0'; i++)
        if (!strcmp(type, m->settings[i].name))
            return m->settings[i].setting_group;
-    if (!strlen(type)) //requesting the blank sentinel.
-       return m->settings[i].setting_group;
     Apop_assert(fail != 'f', "I couldn't find the settings group %s in the given model.", type);
     return NULL; //else, just return NULL and let the caller sort it out.
 }
@@ -68,9 +67,11 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
  \exception outm->error=='s'  Error copying settings group.
  */
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
+    if (!copyme || !strlen(copyme)) return; //apop_settings_group_alloc takes care of the blank sentinel.
     Apop_stopif(!inm, if (outm) outm->error = 's'; return, 0, "you asked me to copy the settings of a NULL model.");
     Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
-    void *g =  apop_settings_get_grp(inm, copyme, 'f');
+    void *g =  apop_settings_get_grp(inm, copyme, 'c');
+    Apop_stopif(!g, outm->error='s'; return, 0, "Couldn't find the group you wanted me to copy. Not copying anything; setting outmodel->error='s'.");
     int i;
     for (i=0; inm->settings[i].name[0] !='\0'; i++)//retrieve the index.
        if (!strcmp(copyme, inm->settings[i].name))

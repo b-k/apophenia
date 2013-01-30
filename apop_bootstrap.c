@@ -46,13 +46,12 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     Apop_stopif(!in, apop_data *out = apop_data_alloc(); out->error='n'; return out, 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
-    apop_model *e              = apop_model_copy(model);
-    int         i, n           = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
-    apop_model *overall_est    = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
+    apop_model *e = apop_model_copy(model);
+    int i, n = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
+    apop_model *overall_est = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
     gsl_vector *overall_params = apop_data_pack(overall_est->parameters);
     gsl_vector_scale(overall_params, n); //do it just once.
-    int         paramct        = overall_params->size;
-    gsl_vector  *pseudoval     = gsl_vector_alloc(paramct);
+    gsl_vector *pseudoval = gsl_vector_alloc(overall_params->size);
 
     //Copy the original, minus the first row.
     Apop_data_rows(in, 1, n-1, allbutfirst);
@@ -60,7 +59,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
     apop_name *tmpnames = in->names; 
     in->names = NULL;  //save on some copying below.
 
-    apop_data *array_of_boots = apop_data_alloc(n, paramct);
+    apop_data *array_of_boots = apop_data_alloc(n, overall_params->size);
 
     for(i = -1; i< n-1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
@@ -79,17 +78,17 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
         gsl_vector_free(estp);
     }
     in->names = tmpnames;
-    apop_data   *out    = apop_data_covariance(array_of_boots);
+    apop_data *out = apop_data_covariance(array_of_boots);
     gsl_matrix_scale(out->matrix, 1./(n-1.));
     apop_data_free(subset);
     gsl_vector_free(pseudoval);
+    apop_data_free(array_of_boots);
     if (e!=overall_est)
         apop_model_free(overall_est);
     apop_model_free(e);
     gsl_vector_free(overall_params);
     return out;
 }
-
 
 /** Give me a data set and a model, and I'll give you the bootstrapped covariance matrix of the parameter estimates.
 
@@ -112,6 +111,7 @@ apop_vector_print(row_27);
 \param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \exception out->error=='n'   \c NULL input data.
+\exception out->error=='N'   \c too many Nans.
 \li This function uses the \ref designated syntax for inputs.
 \see apop_jackknife_cov
  */
@@ -158,7 +158,7 @@ APOP_VAR_END_HEAD
                 apop_name_stack(array_of_boots->names, est->parameters->names, 'c', 'r');
             }
             gsl_matrix_set_row(array_of_boots->matrix, i, estp);
-        } else {
+        } else if (ignore_nans=='y'){
             i--; 
             nan_draws++;
         }
@@ -168,16 +168,21 @@ APOP_VAR_END_HEAD
     data->names = tmpnames;
     apop_data_free(subset);
     apop_model_free(e);
-    if (nan_draws == iterations){
-        Apop_notify(1, "I ran into %i NaNs, and so stopped. Returning results based "
+    int set_error=0;
+    Apop_stopif(i == 0 && nan_draws == iterations, 
+                apop_data *out = apop_data_alloc(); out->error='N'; return out,
+                1, "I ran into %i NaNs and no not-NaN estimations, and so stopped. "
+                       , iterations);
+    Apop_stopif(nan_draws == iterations,  set_error++;
+            apop_matrix_realloc(array_of_boots->matrix, i, array_of_boots->matrix->size2),
+                1, "I ran into %i NaNs, and so stopped. Returning results based "
                        "on %zu bootstrap iterations.", iterations, i);
-        apop_matrix_realloc(array_of_boots->matrix, i, array_of_boots->matrix->size2);
-    }
 	summary	= apop_data_covariance(array_of_boots);
     gsl_matrix_scale(summary->matrix, 1./i);
     if (keep_boots == 'n' || keep_boots == 'N')
         apop_data_free(array_of_boots);
     else
         apop_data_add_page(summary, array_of_boots, "<Bootstrapped statistics>");
+    if (set_error) summary->error = 'N';
 	return summary;
 }

@@ -27,7 +27,9 @@ apop_model pack_counter ={"Optimum is that each element equals its pack order", 
 
 int main(){
     apop_model *list = apop_estimate(NULL, pack_counter);
-    //apop_data_show(list->parameters);
+    #ifndef Testing
+    apop_data_show(list->parameters);
     printf("%g", fabs( 1- 1/apop_p(NULL, list)));
+    #endif
     assert(fabs( 1- 1/apop_p(NULL, list))< 4e-2); //lousy.
 }

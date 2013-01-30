@@ -103,10 +103,6 @@ APOP_VAR_ENDHEAD
         setme->vector = gsl_vector_calloc(vsize);
         apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
-    else if (msize2==-1 && msize1>0){
-        setme->vector = gsl_vector_calloc(msize1);
-        apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", msize1);
-    }
     setme->names = apop_name_alloc();
     return setme;
 }
@@ -404,7 +400,7 @@ APOP_VAR_ENDHEAD
             apop_name_stack(out->names, m2->names, 't');
         }
     }
-    if ((posn=='r' && m2->names->rowct) || (posn=='c' && m2->names->colct)){
+    if ((posn=='r' && m2->names && m2->names->rowct) || (posn=='c' && m2->names && m2->names->colct)){
         int min = posn =='r' ? m1->names->rowct : m1->names->colct;
         int max = posn =='r' ? GSL_MAX(vsize, msize1) : msize2;
         for (int k = min; k < max; k++)          //pad so the name stacking is aligned (if needed)

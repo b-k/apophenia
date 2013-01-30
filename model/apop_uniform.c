@@ -28,7 +28,7 @@ static double unif_ll(apop_data *d, apop_model *m){
     Get_vmsizes(d) //tsize
     double min, max;
     getminmax(d, &min, &max);
-    if (min> m->parameters->vector->data[0] && max < m->parameters->vector->data[1])
+    if (min>= m->parameters->vector->data[0] && max <= m->parameters->vector->data[1])
         return -log(m->parameters->vector->data[1] - m->parameters->vector->data[0]) * tsize;
     return GSL_NEGINF;
 }
@@ -38,7 +38,7 @@ static double unif_p(apop_data *d, apop_model *m){
     Get_vmsizes(d) //tsize
     double min, max;
     getminmax(d, &min, &max);
-    if (min> m->parameters->vector->data[0] && max< m->parameters->vector->data[1])
+    if (min>= m->parameters->vector->data[0] && max<= m->parameters->vector->data[1])
         return pow(m->parameters->vector->data[1] - m->parameters->vector->data[0], -tsize);
     return 0;
 }
@@ -97,7 +97,7 @@ static double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
 static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
-    Apop_assert_n(0, "It doesn't make sense to make random draws from an improper Uniform.");
+    Apop_stopif(1, *out=GSL_NAN, 0, "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
 apop_model apop_improper_uniform = {"Improper uniform distribution", 2, 0, 0,  .dsize=1,

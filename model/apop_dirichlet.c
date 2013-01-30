@@ -11,18 +11,14 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "apop_internal.h"
 
 static double dirichletlnmap(gsl_vector *v, void *pin) {
+    //we used gsl_matrix_row to get here==>guaranteed that v->stride==1.
     gsl_vector *params = pin;
-    if (v->stride ==1)
-        return gsl_ran_dirichlet_lnpdf (params->size, params->data, v->data);
-    //else:
-    double t[v->size]; 
-    for(size_t i=0; i < v->size; i ++)
-        t[i] = v->data[i];
-    return gsl_ran_dirichlet_lnpdf (params->size, params->data, t);
+    return gsl_ran_dirichlet_lnpdf (params->size, params->data, v->data);
 }
 
 static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
+    Apop_stopif(!p->parameters->vector, return GSL_NAN, 0, "parameters should be in inmodel->parameters->vector.");
 	return apop_map_sum(d, .fn_vp = dirichletlnmap, .param=p->parameters->vector, .part='r');
 }
 

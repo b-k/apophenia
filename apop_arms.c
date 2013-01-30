@@ -116,7 +116,7 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
       Apop_assert_c(i==0, ,-5, "envelope error - violation without metropolis")
     msamp ++;
     Apop_notify(3, " point rejected.");
-  } while (msamp < 1e4);
+  } while (msamp < 1e3);
   Apop_notify(1, "I just rejected 1,000 samples. Something is wrong.");
 }
 

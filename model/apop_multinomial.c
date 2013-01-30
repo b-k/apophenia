@@ -177,7 +177,7 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
   The number of draws of type zero are in column zero, the number of draws of type one in column one, et cetera.
 
 \li You may have a set of several Bernoulli-type draws, which could be summed together to form a single Binomial draw.
-See \ref apop_data_rank_compress to do the aggregation.
+See \ref apop_data_to_dummies to do the aggregation (using the <tt>.keep_first='y'</tt> option).
 
 \adoc    Parameter_format
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;

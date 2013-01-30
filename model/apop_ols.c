@@ -85,7 +85,7 @@ static void prep_names (apop_model *e){
             apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
         if ((pwant && pwant->covariance) || (!pwant && p && p->want_cov== 'y')){
             apop_data *cov = apop_data_get_page(e->parameters, "<Covariance>");
-            if (e->data->names){
+            if (cov && e->data->names){
                 apop_name_stack(cov->names, e->data->names, 'c');
                 apop_name_stack(cov->names, e->data->names, 'r', 'c');
             }
@@ -188,7 +188,8 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
     apop_model_free(norm);
 }
 
-static void xpxinvxpy(apop_data *data, gsl_vector *y_data, gsl_matrix *xpx, apop_data* xpy, apop_model *out){
+//xpx may be destroyed by the HH transformation.
+static void xpxinvxpy(apop_data const*data, gsl_matrix *xpx, apop_data const* xpy, apop_model *out){
     apop_lm_settings   *p =  apop_settings_get_group(out, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(out, apop_parts_wanted);
 	if ( (pwant && pwant->covariance!='y' && pwant->predicted != 'y') 
@@ -198,6 +199,7 @@ static void xpxinvxpy(apop_data *data, gsl_vector *y_data, gsl_matrix *xpx, apop
 		return;
 	} //else:
     double s_sq;
+    gsl_vector const *y_data = data->vector; //just an alias
     apop_data	*cov = apop_data_alloc();
     double det = apop_det_and_inv(xpx, &cov->matrix, 1, 1);// not yet cov, just (X'X)^-1.
     if (det < 1e-4) Apop_notify(1, "Determinant of X'X is small (%g), so matrix is near singular. "
@@ -308,7 +310,6 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         for (size_t i =0; i< weights->size; i++)
             gsl_vector_set(weights, i, sqrt(gsl_vector_get(weights, i)));
 
-    gsl_vector *y_data = apop_vector_copy(set->vector);
     if ((pwant &&pwant->predicted) || (!pwant && olp && olp->want_expected_value=='y'))
         apop_data_add_page(ep->info, apop_data_alloc(0, set->matrix->size1, 3), "<Predicted>");
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
@@ -321,9 +322,8 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
     apop_data *xpx_d = apop_dot(set, set, .form1='t'); //(X'X)
     apop_data *xpy_d = apop_dot(set, set, .form1='t', .form2='v'); //(X'y)
-    xpxinvxpy(set, y_data, xpx_d->matrix, xpy_d, ep);
+    xpxinvxpy(set, xpx_d->matrix, xpy_d, ep);
     prep_names(ep);
-    gsl_vector_free(y_data); 
     apop_data_free(xpx_d);
     apop_data_free(xpy_d);
 
@@ -405,19 +405,9 @@ copying the entire data set.
 \adoc    Estimate_results  As per \ref apop_ols 
 \adoc    Prep_routine  Focuses on the data shunting. 
 \adoc    settings  \ref apop_lm_settings 
-\adoc Examples \code
-apop_data *submatrix =apop_data_alloc(0, data->matrix->size1, 2);
-APOP_COL(submatrix, 0, firstcol);
-gsl_vector_memcpy(firstcol, your_data_vector);
-APOP_COL(submatrix, 1, secondcol);
-gsl_vector_memcpy(firstcol, your_other_data_vector);
-apop_name_add(submatrix->names, "subme_1", 'r');
-apop_name_add(submatrix->names, "subme_2", 'r');
-
-Apop_model_add_group(&apop_iv, apop_lm, .instruments = submatrix);
-apop_model *est = apop_estimate(data, apop_iv);
-apop_model_show(est);
-\endcode */
+\adoc Examples 
+\include  iv.c
+*/
 
 static apop_data *prep_z(apop_data *x, apop_data *instruments){
     apop_data *out = apop_data_copy(x);
@@ -472,12 +462,35 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
         }
     }
 
-    apop_data *zpx    = apop_dot(z, set, .form1='t');
-    apop_data *zpy    = apop_dot(z, set, .form1='t', .form2='v'); //z'y
+    apop_data *zpx = apop_dot(z, set, .form1='t');
+    apop_data *zpy = apop_dot(z, set, .form1='t', .form2='v'); //z'y
+
+    xpxinvxpy(inset, zpx->matrix, zpy, ep);
+
+    //covariance matrix right now is sigma (Z'X)^-1. We need
+    //sigma (Z'X)^-1 (Z'Z) (X'Z)^-1
+
+    apop_data *zpz = apop_dot(z, z, .form1='t');
+    apop_data zpxinv = (apop_data) {.matrix=apop_matrix_inverse(zpx->matrix)};
+    apop_data *zpz_xpzinv = apop_dot(zpz, &zpxinv, .form2='t');
+    apop_data *halfcov = apop_data_get_page(ep->parameters, "<Covariance>");
+    apop_data *cov = apop_dot(halfcov, zpz_xpzinv);
+    apop_data_rm_page(ep->parameters, "<Covariance>");
+    apop_data_add_page(ep->parameters, cov, "<Covariance>");
+
+    gsl_matrix_free(zpxinv.matrix);
+    apop_data_free(zpx);
+    apop_data_free(zpy);
+    apop_data_free(zpz);
+
+
+/*
     apop_data *zpxinv = apop_matrix_to_data(apop_matrix_inverse(zpx->matrix));
     ep->parameters = apop_dot(zpxinv, zpy);
     //cov = sigma^2 (Z'X)^-1 Z'Z (X'Z)^-1
+    */
 
+    /*
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y')){
         apop_data *zpz = apop_dot(z, z, .form1='t');
         apop_data *zpz_zpxinv = apop_dot(zpz, zpxinv, .form2='t');
@@ -485,9 +498,9 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
                 , "<Covariance>");
         apop_data_free(zpz); apop_data_free(zpz_zpxinv);
     }
+    */
 
-
-    apop_data_free(zpx); apop_data_free(zpxinv);
+    apop_data_free(zpx);// apop_data_free(zpxinv);
     apop_data_free(zpy);
 
     if (!olp->destroy_data) apop_data_free(set);

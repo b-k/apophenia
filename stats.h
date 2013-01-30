@@ -139,8 +139,6 @@ APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_ve
 APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
-APOP_VAR_DECLARE gsl_matrix * apop_matrix_covariance(gsl_matrix *in, const char normalize);
-APOP_VAR_DECLARE  gsl_matrix * apop_matrix_correlation(gsl_matrix *in, const char normalize);
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
 long double apop_matrix_sum(const gsl_matrix *m);

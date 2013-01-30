@@ -128,22 +128,6 @@ gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int c
     return out;
 }
 
-/** Convert a <tt>double **</tt> array to an \ref apop_data set. It will
-have no names. Input data is copied.
-
-\param in	the array to read in
-\param rows, cols	the size of the array.
-\return the \ref apop_data set, allocated for you and ready to use.
-
-usage: \code apop_data *d = apop_array_to_data(indata, 34, 4); \endcode
-\ingroup conversions
-
-If you want to initialize on the allocation line, this isn't what you want. See \ref apop_line_to_data.
-*/
-apop_data * apop_array_to_data(const double **in, const int rows, const int cols){
-    return apop_matrix_to_data(apop_array_to_matrix(in, rows, cols));
-}
-
 /** Convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>. Input data is copied.
 
 \param line	the array to read in
@@ -764,6 +748,7 @@ APOP_VAR_END_HEAD
                 }
             } else gsl_matrix_set(set->matrix, row-1, col-hasrows, GSL_NAN);
         }
+        if (L.eof) break;//hit when the last line has elements and is terminated by EOF.
         L=parse_a_line(infile, buffer, &ptr, add_this_line, field_ends, delimiters);
 	}
     apop_data_free(add_this_line);
@@ -990,28 +975,6 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
         gsl_vector_set(in, i, ap[i]);
     return in;
 }
-
-/** \def apop_matrix_fill(in, ap)
- Fill a pre-allocated \c gsl_matrix with values. 
- 
-The values should be in row-major order (i.e., list the entire first row, followed by the second row, et cetera). If your data is column-major, then try calling \c gsl_matrix_transpose after this function.
-
-  See \c apop_data_alloc for a relevant example. See also \c apop_vector_alloc.
-
-  I need as many arguments as the size of the matrix. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
-
-\param in   A \c gsl_matrix (that you have already allocated).
-\param ...  A series of exactly as many floating-point values as there are blanks in the matrix.
-\return     A pointer to the same matrix that was input.
-*/
-gsl_matrix *apop_matrix_fill_base(gsl_matrix *in, double ap[]){
-    if (!in) return NULL;
-    gsl_matrix_view	m = gsl_matrix_view_array(ap, in->size1, in->size2);
-	gsl_matrix_memcpy(in,&(m.matrix));
-    return in;
-}
-
-
 
 ///////The rest of this file is for apop_text_to_db
 extern sqlite3 *db;

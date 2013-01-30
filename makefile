@@ -30,7 +30,7 @@ install: auto
 	cd $(workdir) && sudo make install
 
 auto:
-	rm -rf $(distdir)
+	sudo rm -rf $(distdir)
 	mkdir $(distdir)
 	mkdir $(workdir)
 	cp -rf `ls -I $(distdir)` $(workdir)

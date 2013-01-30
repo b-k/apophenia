@@ -287,12 +287,6 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     gsl_matrix *rm_columns( int *drop){
     return apop_matrix_rm_columns($self, drop);}
 
-    gsl_matrix *covariance(const char normalize=0){
-        return apop_matrix_covariance_base($self, normalize);}
-
-    gsl_matrix * correlation(const char normalize=0){
-        return apop_matrix_correlation_base($self, normalize);}
-
     void    mean_and_var (double *mean, double *var)    { apop_matrix_mean_and_var($self, mean, var);}
     _gsl_vector_view __row (const size_t i)             {return gsl_matrix_row ($self, i);}
     _gsl_vector_view __column (const size_t j)          {return gsl_matrix_column ($self, j);}

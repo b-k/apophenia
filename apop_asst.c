@@ -330,7 +330,7 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \param substrings   Parens in the regex indicate that I should return matching substrings. Give me the _address_ of an \ref apop_data* set, and I will allocate and fill the text portion with matches. Default= \c NULL, meaning do not return substrings (even if parens exist in the regex). If no match, return an empty \ref apop_data set, so <tt>output->textsize[0]==0</tt>.
 \param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
 
-\return         1 == match; 0 == no match. \c substrings may be allocated and filled if needed.
+\return         Count of matches found. 0 == no match. \c substrings may be allocated and filled if needed.
 \ingroup names
 
 
@@ -358,18 +358,19 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
     const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
     regex_t re;
-    int     matchcount=count_parens(regex);
-    int     found;
+    int matchcount=count_parens(regex);
+    int found, found_ct=0;
     regmatch_t result[matchcount];
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
-    Apop_assert_negone(compiled_ok, "This regular expression didn't compile: \"%s\"", regex)
+    Apop_stopif(!compiled_ok, return -1, 0, "This regular expression didn't compile: \"%s\"", regex)
 
     int matchrow = 0;
     if (substrings) *substrings = apop_data_alloc();
     do {
-        found = !regexec(&re, string, matchcount+1, result, matchrow ? REG_NOTBOL : 0);
+        found_ct+=
+        found    = !regexec(&re, string, matchcount+1, result, matchrow ? REG_NOTBOL : 0);
         if (substrings && found){
             *substrings = apop_text_alloc(*substrings, matchrow+1, matchcount);
             //match zero is the whole string; ignore.
@@ -387,7 +388,7 @@ APOP_VAR_ENDHEAD
         }
     } while (substrings && found && string[0]!='\0');
     regfree(&re);
-    return found;
+    return found_ct;
 }
 
 /** RNG from a Generalized Hypergeometric type B3.

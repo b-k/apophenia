@@ -80,8 +80,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(max_iterations, 5000);
     Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
-    Apop_varad_set(use_score, 'y');
-    if (in.use_score == 1) out->use_score = 'y';
+    Apop_varad_set(use_score, 'y'); //deprecated.
     Apop_varad_set(step_size, 0.05);
     Apop_varad_set(delta, default_delta);
     Apop_varad_set(want_cov, 'y');
@@ -393,9 +392,11 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     infostruct *i = in;
     apop_mle_settings *mp =  apop_settings_get_group(i->model, apop_mle);
     apop_data_unpack(beta, i->model->parameters);
+    /* In all cases, negshell gets called first, so the constraint is already
+       checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
-            apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y');
-    if (mp->use_score=='y' && i->model->score)
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
+    if (i->model->score)
         i->model->score(i->data, g, i->model);
     else {
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
@@ -506,7 +507,7 @@ Inside the infostruct, you'll find these elements:
             printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
         if (status == GSL_SUCCESS){
             apopstatus	= 1;
-            Apop_notify(1, "Minimum found.\n");
+            Apop_notify(2, "Minimum found.\n");
         }
     } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);

@@ -191,11 +191,12 @@ delta;
                              will be at least two cycles.
                              */
 //simulated annealing (also uses step_size);
-    int         n_tries, use_score, iters_fixed_T;
+    int         n_tries, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
     char        *trace_path; ///< See \ref trace_path
-    apop_model  *parent;   ///< Deprecated. Does nothing.
+    apop_model  *parent;   ///< Deprecated; does nothing.
+    int         use_score; ///< Deprecated; now does nothing. If you don't want to use the score, set it to \c NULL.
 } apop_mle_settings;
 
 /** Settings for least-squares type models 
