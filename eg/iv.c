@@ -90,7 +90,4 @@ int main(){
             for (int k =0; k< 2; k++)
                 assert(gsl_matrix_get(cov, j, k) < 1);
     }
-
-        //Diff(apop_data_get(est->parameters, .row=0,.col=-1), -1.4, 1e-7);
-        //Diff(apop_data_get(est->parameters, .row=1,.col=-1), 2.3, 1e-7);
 }

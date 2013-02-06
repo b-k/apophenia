@@ -307,7 +307,7 @@ typedef struct{
  */
 typedef struct{
     apop_data *data;
-    apop_data *starting_pt; /**< The first parameter to check in the MCMC routine */
+    apop_data *starting_pt; /**< Deprecated and ignored. Starting point is drawn from your prior. */
     long int periods; /**< For how many steps should the MCMC chain run? */
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
                          as initialization. That is, this is a number between zero and one. */

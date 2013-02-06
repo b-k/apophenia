@@ -65,10 +65,7 @@ static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 
-/* \adoc RNG Just a wrapper for gsl_ran_exponential.
-
-See the notes for \ref apop_exponential on a popular alternate form.
-*/
+/* \adoc RNG Just a wrapper for \c gsl_ran_exponential.  */
 static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }

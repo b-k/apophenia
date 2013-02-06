@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	February 2012
+--Starting_point in Bayesian updating no longer does anything, but it was never significant to begin with. Added some verbosity options to apop_update.
+
 	January 2012
 --Logit regression much smarter about picking a starting point.
 --Defaults for simulated annealing try 1600x fewer points. Prior settings were overkill.
@@ -13,6 +16,7 @@
 **Removed apop_array_to_data; use apop_array_to_matrix + apop_matrix_to_data
 **Removed apop_matrix_correlation; use apop_data_correlation
 **Deprecated apop_rank_compress; use apop_data_to_dummies(..., .keep_first='y').
+--apop_model_stack
 
 	December 2012
 --Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).

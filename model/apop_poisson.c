@@ -43,6 +43,7 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     double mean = data_mean(data);
 	gsl_vector_set(est->parameters->vector, 0, mean);
+    apop_data_add_names(est->parameters, 'r', "λ");
     apop_data_add_named_elmt(est->info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the bootstrap needs to be flagged to not run itself. 
     apop_parts_wanted_settings *p = apop_settings_get_group(est, apop_parts_wanted);

@@ -103,15 +103,10 @@ void apop_name_print(apop_name * n){
 \ingroup names 	*/
 void  apop_name_free(apop_name * free_me){
     if (!free_me) return; //only needed if users are doing tricky things like newdata = (apop_data){.matrix=...};
-    int	i;
-	for (i=0; i < free_me->colct; i++)
-		free(free_me->column[i]);
-	for (i=0; i < free_me->textct; i++)
-		free(free_me->text[i]);
-	for (i=0; i < free_me->rowct; i++)
-		free(free_me->row[i]);
-    if (free_me->vector)
-        free(free_me->vector);
+	for (size_t i=0; i < free_me->colct; i++)  free(free_me->column[i]);
+	for (size_t i=0; i < free_me->textct; i++) free(free_me->text[i]);
+	for (size_t i=0; i < free_me->rowct; i++)  free(free_me->row[i]);
+    if (free_me->vector) free(free_me->vector);
 	free(free_me->column);
 	free(free_me->text);
 	free(free_me->row);

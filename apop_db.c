@@ -20,9 +20,9 @@ apop_opts_type apop_opts	=
 #include "apop_db_mysql.c"
 #endif
 
-#define ERRCHECK {Apop_assert_c(err==NULL, 1, 0, "%s: %s",query, err);}
-#define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err);}
-#define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; return outdata, 0, "%s: %s",query, err);}
+#define ERRCHECK {Apop_assert_c(err==NULL, 1, 0, "%s: %s",query, err); }
+#define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err); }
+#define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; sqlite3_free(err); return outdata, 0, "%s: %s",query, err); }
 
 static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 
@@ -141,8 +141,8 @@ APOP_VAR_END_HEAD
         else
             asprintf(&q2, "drop view %s;", name);
 		sqlite3_exec(db, q2, NULL, NULL, &err); 
-        ERRCHECK
         free(q2);
+        ERRCHECK
     }
 	return (te.isthere||tev.isthere);
 }
@@ -522,8 +522,9 @@ Column names are inserted if there are any. If there are, all dots are converted
 
 \li You can also call this via \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt> to overwrite a new table or with <tt>.output_append='a'</tt> to append.
 
+\li If your data set has zero data (i.e., is just a list of column names or is entirely blank), I return -1 without creating anything in the database.
 
-\li Especially if you are using a pre-2007 version of SQLite, there may be a spe
+\li Especially if you are using a pre-2007 version of SQLite, there may be a speed gain to wrapping the call to this function in a begin/commit pair:
 
 \code
 apop_query("begin;");
@@ -624,9 +625,9 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
         }
     }
 
-
     Get_vmsizes(set) //firstcol, msize2, maxsize
     int col_ct = !!set->names->rowct + set->textsize[1] + msize2 - firstcol + !!set->weights;
+    Apop_stopif(!col_ct, return -1, 0, "Input data set has zero columns of data (no rownames, text, matrix, vector, or weights). I can't create a table like that, sorry.");
     if(apop_use_sqlite_prepared_statements(col_ct)){
         sqlite3_stmt *statement;
         Apop_stopif(

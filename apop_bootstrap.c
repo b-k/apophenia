@@ -13,12 +13,12 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 \ingroup convenience_fns
 */
 gsl_rng *apop_rng_alloc(int seed){
-    static int first_use    = 1;
+    static int first_use = 1;
     if (first_use){
        first_use = 0;
        gsl_rng_env_setup();
     }
-    gsl_rng *setme  =  gsl_rng_alloc(gsl_rng_taus2);
+    gsl_rng *setme = gsl_rng_alloc(gsl_rng_taus2);
     gsl_rng_set(setme, seed);
     return setme;
 }

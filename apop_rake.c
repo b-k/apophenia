@@ -204,19 +204,17 @@ static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, d
 */
 static void one_set_of_values(mnode_t *const * const margincons, int ctr, void *in){
     rake_t *r = in;
-    int marginsize = r->indata->matrix->size1;
-    int fitsize = r->fit->matrix->size1;
-    static bool *melmts = NULL;
-    if (!melmts) melmts = malloc(marginsize * sizeof(bool));
-    static bool *fitelmts = NULL;
-    if (!fitelmts) fitelmts = malloc(fitsize * sizeof(bool));
-	long int first_pass = 0;
+    size_t marginsize = r->indata->matrix->size1;
+    size_t fitsize = r->fit->matrix->size1;
+    bool melmts[marginsize];
+    bool fitelmts[fitsize];
+	bool first_pass = false;
     double in_sum;
 	if (ctr < r->ct)
 		in_sum = gsl_vector_get(r->indata_values, ctr);
     else {
         r->ct++;
-        if (ctr >= r->al) rakeinfo_grow(r);
+        if (ctr >= r->al || r->al==0) rakeinfo_grow(r);
    		index_get_element_list(margincons, melmts, marginsize, true);
    		index_get_element_list(margincons, fitelmts, fitsize, false);
         in_sum = 0;
@@ -236,7 +234,7 @@ static void one_set_of_values(mnode_t *const * const margincons, int ctr, void *
             }
         r->elmtlist_sizes[ctr] = n;
         r->indata_values->data[ctr] = in_sum;
-		first_pass++;
+		first_pass = true;
 	}
     if (!r->elmtlist_sizes[ctr]) return;
     if (!first_pass && !in_sum)  return;
@@ -290,7 +288,7 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
     //fit->weights is either all 1 (if no count_col) or the initial counts from the db.
-    double x = apop_vector_sum(indata->weights);
+    double x = apop_sum(indata->weights);
     double y = apop_sum(fit->weights);
     gsl_vector_scale(fit->weights, x/y);
 
@@ -320,7 +318,7 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
     }
     cleanup(index, rakeinfos,contrast_ct);
     gsl_vector_free(previous);
-    Apop_stopif(k < maxit, fit->error='c', 0, "Maximum number of iterations reached.");
+    Apop_stopif(k == maxit, fit->error='c', 0, "Maximum number of iterations reached.");
 }
 
 char *pipe_parse = "[ \n\t]*([^| \n\t]+)[ \n\t]*([|]|$)";
@@ -650,7 +648,7 @@ APOP_VAR_ENDHEAD
                                 : apop_data_copy(d);
     apop_vector_apply(fit->weights, nan_to_zero);
     Apop_assert(fit, "Query \"%s\" returned a blank table.", init_q);
-    if (!init_table) gsl_vector_set_all(fit->weights, 1);
+    //if (!init_table && !count_col) gsl_vector_set_all(fit->weights, 1);
     if (nudge) apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
 
     contrast_grid = apop_data_calloc(var_ct, contrast_ct);

@@ -330,6 +330,8 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
+//apop_model_stack.c Subject to change.
+apop_model *apop_model_stack(apop_model *m1, apop_model *m2);
 
         // Map and apply
 #include <pthread.h>

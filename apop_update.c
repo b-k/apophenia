@@ -102,7 +102,7 @@ Carlo to sample from the posterior distribution, and then outputs a histogram
 model for further analysis. Notably, the histogram can be used as
 the input to this function, so you can chain Bayesian updating procedures.
 
-To change the default settings (MCMC starting point, periods, burnin...),
+To change the default settings (periods, burnin...),
 add an \ref apop_update_settings struct to the prior.
 
 \li If the likelihood model no parameters, I will allocate them. That means you can use
@@ -112,6 +112,8 @@ model, run prep, and then allocate parameters for that copy of a model.
 
 \li Consider the state of the \c parameters element of your likelihood model to be
 undefined when this exits. This may be settled at a later date.
+
+\li If you set <tt>apop_opts.verbose=2</tt>, I will report the accept rate of the Gibbs sampler. It is a common rule of thumb to select a prior so that this is between 20% and 50%. Set <tt>apop_opts.verbose=3</tt> to see the proposal points, their likelihoods, and the acceptance odds.
 
 Here are the conjugate distributions currently defined:
 
@@ -177,28 +179,32 @@ APOP_VAR_END_HEAD
     double    *draw          = malloc(sizeof(double)* (vsize+msize1*msize2));
     apop_data *current_param = apop_data_alloc(vsize , msize1, msize2);
     apop_data *out           = apop_data_alloc(s->periods*(1-s->burnin), vsize+msize1*msize2);
-    if (s->starting_pt)
-        apop_data_memcpy(current_param, s->starting_pt);
-    else {
-        if (current_param->vector) gsl_vector_set_all(current_param->vector, 1);
-        if (current_param->matrix) gsl_matrix_set_all(current_param->matrix, 1);
-    }
+    int accept_count = 0;
+
+    apop_draw(draw, rng, prior); //set starting point.
+    apop_data_fill_base(current_param, draw);
+
     for (int i=0; i< s->periods; i++){     //main loop
         newdraw:
         apop_draw(draw, rng, prior);
         apop_data_fill_base(likelihood->parameters, draw);
-        ll    = apop_log_likelihood(data,likelihood);
-        if (gsl_isnan(ll)){
-            Apop_notify(1, "Trouble evaluating the "
+        ll = apop_log_likelihood(data,likelihood);
+
+        Apop_notify(3, "ll=%g for parameters:\t", ll);
+        if (apop_opts.verbose >=3) apop_data_print(likelihood->parameters);
+
+        Apop_stopif(gsl_isnan(ll), goto newdraw, 
+                1, "Trouble evaluating the "
                 "likelihood function at vector beginning with %g. "
                 "Throwing it out and trying again.\n"
                 , likelihood->parameters->vector->data[0]);
-            goto newdraw;
-        }
         ratio = ll - cp_ll;
         if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){
             apop_data_memcpy(current_param, likelihood->parameters);
             cp_ll = ll;
+            accept_count++;
+        } else {
+            Apop_notify(3, "reject, with exp(ll_now-ll_prior) = exp(%g-%g) = %g.", ll, cp_ll, exp(ratio));
         }
         if (i >= s->periods * s->burnin){
             APOP_ROW(out, i-(s->periods *s->burnin), v)
@@ -210,5 +216,6 @@ APOP_VAR_END_HEAD
     apop_model *outp   = apop_estimate(out, apop_pmf);
     free(draw);
     if (ll_is_a_copy) apop_model_free(likelihood);
+    Apop_notify(2, "Gibbs sampling accept percent = %3.3f%%\n", 100*(0.0+accept_count)/s->periods);
     return outp;
 }

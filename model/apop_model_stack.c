@@ -118,5 +118,6 @@ apop_model apop_stack = {"Stack of models", .p=stack_p, .log_likelihood=stack_ll
 apop_model *apop_model_stack(apop_model *m1, apop_model *m2){
     apop_model *out = apop_model_copy(apop_stack);
     Apop_model_add_group(out, apop_stack, .model1=m1, .model2=m2);
+    if (m1->dsize >=0 && m2->dsize >=0) out->dsize = m1->dsize + m2->dsize;
     return out;
 }

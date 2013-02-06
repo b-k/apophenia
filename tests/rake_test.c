@@ -19,7 +19,6 @@ void test_raking_further(){
         .output_file="raked", .output_type='d');
     apop_model *base= apop_estimate(apop_query_to_mixed_data("mmw", "select * from rake_test"), apop_pmf);
     apop_model *fitted= apop_estimate(apop_query_to_mixed_data("mmw", "select * from raked"), apop_pmf);
-    gsl_vector_set_all(base->data->weights, 1);
     //apop_data_show(apop_query_to_data("select * from raked"));
 
     //individual margins should match.
@@ -29,7 +28,7 @@ void test_raking_further(){
     Diff(apop_query_to_float("select sum(weights) from raked where first=2"), 20, 1e-4);\
     Diff(apop_query_to_float("select sum(weights) from raked where second=1"), 25, 1e-4);\
     Diff(apop_query_to_float("select sum(weights) from raked where second=2"), 7, 1e-4); \
-    assert(apop_kl_divergence(base, fitted) < apop_kl_divergence(base,                   \
+    assert(apop_kl_divergence(base, fitted) <= apop_kl_divergence(base,                   \
                 apop_estimate(apop_query_to_mixed_data("mmw", "select * from rake_test"), apop_pmf)));
 
     rake_check
@@ -99,7 +98,7 @@ int main(){
             for (c=0; c < 10; c++)
                 apop_query("insert into inequals values (%i, %i, %i, %g)", a,b,c, a/2.+gsl_rng_uniform(r));
     char *contrasts[] ={"a|b"};
-    apop_data *inequal_weights = apop_rake("inequals", .all_vars="a|b|c",.contrasts=contrasts, .count_col="weights", .contrast_ct=1);
+    apop_data *inequal_weights = apop_rake("inequals", .var_list=(char*[]){"a", "b", "c"}, .var_ct=3, .contrasts=contrasts, .count_col="weights", .contrast_ct=1, .tolerance=1e-8);
 
 
     //regress using the estimates from the raking
@@ -118,7 +117,7 @@ int main(){
     apop_data_to_dummies(t, .type='d', .append='y', .remove='y');
     apop_data_to_dummies(t, .col=apop_name_find(t->names, "b", 'c'), .type='d', .append='y', .remove='y');
 //    apop_data_to_dummies(t, .col=1, .type='d', .append='y', .remove='y'); //affine version.
-    apop_model *ols_out = apop_estimate(t, apop_ols);  
+    apop_model *ols_out = apop_estimate(t, apop_ols);
 
     apop_map(ols_out->parameters, .fn_rpi=compare_results, .param= raked_ols->parameters);
 

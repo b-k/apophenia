@@ -435,7 +435,6 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 
 
 ///////////////The text processing section
-static int  use_names_in_file;
 
 /** \page text_format Notes on input text file formatting
 
@@ -651,7 +650,6 @@ static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_d
 static void get_field_names(int has_col_names, char **field_names, FILE *infile, char *buffer, size_t *ptr,
                                 apop_data *add_this_line, apop_data *fn, int const *field_ends, char const *delimiters){
     if (has_col_names && field_names == NULL){
-        use_names_in_file++;
         while (fn->textsize[0] ==0) parse_a_line(infile, buffer, ptr, fn, field_ends, delimiters);
         parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
     } else{
@@ -1167,7 +1165,6 @@ APOP_VAR_END_HEAD
 
     //get names and the first row.
     if (prep_text_reading(text_file, &infile)) return -1;
-	use_names_in_file = 0;    //file-global.
     apop_data *fn = apop_data_alloc();
     get_field_names(has_col_names=='y', field_names, infile, buffer, &ptr,
                                     add_this_line, fn, field_ends, delimiters);
