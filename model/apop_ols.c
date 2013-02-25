@@ -69,7 +69,7 @@ Apop_settings_init(apop_lm,
 
 //shift first col to depvar, rename first col "one".
 static void prep_names (apop_model *e){
-    apop_lm_settings   *p = apop_settings_get_group(e, apop_lm);
+    apop_lm_settings *p = apop_settings_get_group(e, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(e, apop_parts_wanted);
     apop_data *predicted = apop_data_get_page(e->info, "<Predicted>");
     if (predicted){
@@ -200,7 +200,7 @@ static void xpxinvxpy(apop_data const*data, gsl_matrix *xpx, apop_data const* xp
 	} //else:
     double s_sq;
     gsl_vector const *y_data = data->vector; //just an alias
-    apop_data	*cov = apop_data_alloc();
+    apop_data *cov = apop_data_alloc();
     double det = apop_det_and_inv(xpx, &cov->matrix, 1, 1);// not yet cov, just (X'X)^-1.
     if (det < 1e-4) Apop_notify(1, "Determinant of X'X is small (%g), so matrix is near singular. "
                         "Expect the covariance matrix [based on (X'X)^-1] to be garbage.", det);

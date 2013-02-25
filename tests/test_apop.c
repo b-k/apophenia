@@ -965,16 +965,15 @@ int test_jack(gsl_rng *r){
 }
 
 void test_lognormal(gsl_rng *r){
-    int j;
     apop_model *source = apop_model_copy(apop_normal);
     apop_model_clear(NULL, source);
-    double mu    = gsl_ran_flat(r, -1, 1);
+    double mu = gsl_ran_flat(r, -1, 1);
     double sigma = gsl_ran_flat(r, .01, 1);
-    int n     = gsl_ran_flat(r,1,8e5);
+    int n = gsl_ran_flat(r,1,8e5);
     apop_data *data = apop_data_alloc(0,1,n);
     gsl_vector_set(source->parameters->vector, 0, mu);
     gsl_vector_set(source->parameters->vector, 1, sigma);
-    for (j=0; j< n; j++){
+    for (int j=0; j< n; j++){
         double *k   = gsl_matrix_ptr(data->matrix, 0, j);
         apop_draw(k, r, source);
         *k = exp(*k);

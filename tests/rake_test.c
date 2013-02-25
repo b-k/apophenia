@@ -29,7 +29,7 @@ void test_raking_further(){
     Diff(apop_query_to_float("select sum(weights) from raked where second=1"), 25, 1e-4);\
     Diff(apop_query_to_float("select sum(weights) from raked where second=2"), 7, 1e-4); \
     assert(apop_kl_divergence(base, fitted) <= apop_kl_divergence(base,                   \
-                apop_estimate(apop_query_to_mixed_data("mmw", "select * from rake_test"), apop_pmf)));
+                apop_estimate(apop_query_to_mixed_data("mmw", "select first, second, 1 from rake_test"), apop_pmf)));
 
     rake_check
 
@@ -64,7 +64,7 @@ double weights_are_one(apop_data *in){assert(gsl_vector_get(in->weights, 0)==1);
 double equal_or_absent(apop_data *in){
     assert(apop_data_get(in, .colname="a") != 3);
     assert(apop_data_get(in, .colname="b") != 7);
-    assert(gsl_vector_get(in->weights, 0)==1);
+    assert(gsl_vector_get(in->weights, 0)==100./81);
     return 0;
 }
 
@@ -82,7 +82,7 @@ int main(){
         for (b=0; b < 10; b++)
             for (c=0; c < 10; c++)
                 apop_query("insert into equals values (%i, %i, %i)", a,b,c);
-    apop_data *equal_weights = apop_rake("equals");
+    apop_data *equal_weights = apop_rake(.margin_table="equals", .init_table="equals");
     apop_map(equal_weights, .fn_r=weights_are_one);
 
     //structural zeros should be missing from the output table.

@@ -237,7 +237,7 @@ APOP_VAR_ENDHEAD
 }
 
 /** This function will normalize a vector, either such that it has mean
-zero and variance one, or such that it ranges between zero and one, or sums to one.
+zero and variance one, or ranges between zero and one, or sums to one.
 
 \param in 	A gsl_vector which you have already allocated and filled. \c NULL input gives \c NULL output. (No default)
 
@@ -296,8 +296,11 @@ APOP_VAR_END_HEAD
 	}
 	if ((normalization_type == 's')){
 		mu	= apop_vector_mean(in);
+        Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
-		gsl_vector_scale(*out, 1/(sqrt(apop_vector_var_m(in, mu))));
+        double scaling = 1/(sqrt(apop_vector_var_m(in, mu)));
+        Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
+		gsl_vector_scale(*out, scaling);
 	} 
 	else if ((normalization_type == 'r')){
         gsl_vector_minmax(in, &min, &max);
@@ -307,11 +310,12 @@ APOP_VAR_END_HEAD
 	}
 	else if ((normalization_type == 'p')){
 		long double sum	= apop_sum(in);
-        Apop_assert_n(sum, "The vector sums to zero, so I can't normalize it to sum to one.");
+        Apop_stopif(!sum, return, 0, "the vector sums to zero, so I can't normalize it to sum to one.");
 		gsl_vector_scale(*out, 1/sum);	
 	}
 	else if ((normalization_type == 'm')){
 		mu	= apop_vector_mean(in);
+        Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
 	}
 }

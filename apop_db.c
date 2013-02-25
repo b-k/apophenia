@@ -374,7 +374,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 /** Queries the database, and dumps the result into a single double-precision floating point number.
 \return		A double, actually.
 
-\li This calls \ref apop_query_to_data and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an {\em order by} clause in your query if you expect multiple lines).
+\li This calls \ref apop_query_to_data and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an <tt>order by</tt> clause in your query if you expect multiple lines).
 
   \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix element of that set. 
 

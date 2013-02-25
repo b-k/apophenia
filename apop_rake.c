@@ -287,7 +287,7 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
     mnode_t ** index = index_generate(indata, fit);
 
     /* Make a preliminary adjustment to obtain the fit to an empty configuration list */
-    //fit->weights is either all 1 (if no count_col) or the initial counts from the db.
+    //fit->weights is either all 1 (for synthetic data) or the initial counts from the db.
     double x = apop_sum(indata->weights);
     double y = apop_sum(fit->weights);
     gsl_vector_scale(fit->weights, x/y);
@@ -372,36 +372,34 @@ double nudge_zeros(apop_data *in, void *nudge){
     return 0;
 }
 
-//L.a=R.a and L.b = R.b ...
-char *vars_to_join(apop_data *varlist){
-    char *and= " ";
-    char *out = NULL;
-    for (int i=0; i< varlist->textsize[1]; i++){
-        xprintf(&out, "%s%s L.%s = R.%s", (out ? out: ""),
-                and, varlist->text[0][i], varlist->text[0][i]);
-        and = " and ";
-    }
-    return out;
-}
-
-int setup_nonzero_contrast(char const *margin_table, 
+/* If you are fully synthesizing or nudging zero cells, then calculate the set of 
+   cells that could be nonzero (given the margin information). 
+   * If using only an init_table, then that's your list of nonzero cells right there.
+   * If you have an init_table but want to nudge the zero cells up a bit, then you need
+     this, and have to merge with the init_table
+   * If you have no init_table, then this list is all the cells.
+ 
+ */
+static int setup_nonzero_contrast(char const *margin_table, 
               char * const *allvars, int allvars_ct, int run_number,
-              char const *list_of_fields, apop_data *const* contras, int contrast_ct){
+              char const *list_of_fields, apop_data *const* contras, int contrast_ct,
+              double nudge, char const * structural_zeros, bool have_init_table){
     char *q;
 	asprintf(&q, "create table apop_zerocontrasts_%i as select ", run_number);
     for (int i=0; i < allvars_ct; i++) xprintf(&q, "%s t%i.%s, ", q, i, allvars[i]); 
-	xprintf(&q, "%s 0\n from\n", q); 
+	xprintf(&q, "%s %g\n from\n", q, nudge); 
 	char comma = ' ';
     for (int i=0; i < allvars_ct; i++){
         xprintf(&q, "%s %c (select distinct %s as %s from %s) as t%i\n", 
                   q, comma, allvars[i], allvars[i], margin_table, i);
         comma = ',';
     } 
-     /*keep only rows that could have nonzero values in the design matrix margins (about 10%):
+    if (structural_zeros) xprintf(&q, "%s where not (%s)\n", q, structural_zeros);
+     /*keep only rows that could have nonzero values in the design matrix margins (about 10% for the Census data we used for development):
  		 where b.block||'.'||qa.qageshort||'.' || qs.qsex ||'.'|| r.racep in 
  		 (select block ||'.'|| qageshort ||'.'|| qsex ||'.'|| racep from d) and ...*/
     if (contrast_ct){
-        xprintf(&q, "%s\nwhere\n", q);
+        xprintf(&q, "%s\n%s\n", q, structural_zeros ? "and" : "where");
         char joiner[] = "||'.'||";
         char space[] = " ";
         for (int i=0; i< contrast_ct; i++){
@@ -412,10 +410,9 @@ int setup_nonzero_contrast(char const *margin_table,
                     contras[i]->text[j][0], j+1!=contras[i]->textsize[0]? joiner : space);
             }
             xprintf(&q, "%s %s in apop_m%i_%i\n ", q, merge, i, run_number);
-            if (i+1 < contrast_ct)
-                xprintf(&q, "%s and ", q);
+            if (i+1 < contrast_ct) xprintf(&q, "%s and ", q);
 
-            //While we're here, we should create these mi tables:
+            //While we're here, we should create the mi tables used in the query above:
             merge = strdup(" ");
             for (int j=0; j< contras[i]->textsize[0]; j++){
                 xprintf(&merge, "%s %s %s", 
@@ -431,10 +428,10 @@ int setup_nonzero_contrast(char const *margin_table,
             free(subq);
         }
     }
-/* Keep out margins with values for now; join them in below.
- 	    except  select block, qageshort, qsex, racep, qspanq, 0 from d"; */
-	xprintf(&q, "%s except\nselect ", q);
-	xprintf(&q, "%s %s, 0 from %s", q, list_of_fields, margin_table);
+    if (have_init_table){
+        //Keep out margins with values for now; join them in below.
+        xprintf(&q, "%s except\nselect %s %s, %g from %s",  list_of_fields, nudge, margin_table);
+    }
 	Apop_stopif(apop_query("%s", q), return 1, 0, "This query failed:\n%s", q);
     free(q);
     return 0;
@@ -479,6 +476,10 @@ given all of the above constraints. Then, raking is done using only that subset.
 This means that the work is done on a number of cells proportional to the number of data
 points, not to the full cross of all categories. Set <tt>apop_opts.verbose</tt> to 2 or greater to show the query on \c stderr.
 
+\li One could use raking to generate `fully synthetic' data: start with observation-level data in a margin table. Begin the raking with a starting data set of all-ones. Then rake until the all-ones set transforms into something that conforms to the margins and (if any) structural zeros. You now have a data set which matches the marginal totals but does not use any other information from the observation-level data. If you do not specify an <tt>.init_table</tt>, then an all-ones default table will be used.
+
+\li Set <tt>apop_opts.verbose=3</tt> to see the intermediate tables at the end of each round of raking.
+
 \param margin_table The name of the table in the database to use for calculating
 the margins.  The table should have one observation per row.  No default. (This used
 to be called \c table_name; that name is now deprecated.)
@@ -496,7 +497,9 @@ contrast is a pipe-delimited list of variable names. No default.
 
 \param structural_zeros a SQL clause indicating combinations that can never take a nonzero
 value. This will go into a \c where clause, so anything you could put there is OK, e.g.
-"age <65 and gets_soc_security=1 or age <15 and married=1". Default: no structural zeros.
+"age <65 and gets_soc_security=1 or age <15 and married=1". 
+Your margin data is not checked for structural zeros.  Default: no structural zeros.
+
 \param max_iterations Number of rounds of raking at which the algorithm halts. Default: 1000.
 
 \param tolerance I calculate the change for each cell from round to round;
@@ -511,8 +514,12 @@ running several instances simultaneously, don't worry about this; if you are, do
 value, since it's hard for the function to supply one in a race-proof manner. Default:
 internally-maintained values.
 
-\param init_table The default is to initially set all table elements to one and then rake from there. If you specify an \c init_table, then I will get the initial cell counts from it.  
-Default: if you specify \c init_count_col, the default is \c margin_table; if you do not the default is \c NULL. The use of a separate table for initial values is currently inadequately tested and use-at-your-own-risk.
+\param init_table The default is to initially set all table elements to one and then
+rake from there. This is effectively the `fully synthetic' approach, which uses only
+the information in the margins and derives the data set closest to the all-ones data
+set that is consistent with the margins. Care is taken to maintan sparsity in this
+case.  If you specify an \c init_table, then I will get the initial cell counts from
+it. Default: the fully-synthetic approach, using a starting point of an all-ones grid.
 
 \param init_count_col The column in \c init_table with the cell counts.
 
@@ -571,83 +578,61 @@ APOP_VAR_ENDHEAD
     int tt = all_vars_d->textsize[0]; all_vars_d->textsize[0] = 1; //mask all but the first row
     char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");
 
-	char *q;
-	apop_query("drop table if exists apop_zerocontrasts_%i", run_number);
-	apop_query("drop table if exists apop_contrasts_%i", run_number);
-     /*Start with every possible combination:
-         " select distinct b.block, qa.qageshort, qs.qsex, r.racep, hi.qspanq, 0"
-         " from "
- 		" (select distinct block as block from d) as b, "
- 		" (select distinct qageshort from d) qa, " ...*/
-
-    Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d->text[0], 
-                            all_vars_d->textsize[1], run_number, list_of_fields, contras, contrast_ct),
+    if (nudge || !init_table){
+        apop_query("drop table if exists apop_zerocontrasts_%i", run_number);
+        Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d->text[0],  
+                        all_vars_d->textsize[1], run_number, list_of_fields, contras, contrast_ct, (nudge ? nudge : 1), structural_zeros, init_table),
                  apop_data *out=apop_data_alloc(); out->error='q'; return out,
-                0, "Failed to set up tables of distinct values and the list of possibly nonzero contrasts.");
+                 0, "Couldn't calculate the set of nonzero cells.");
+    }
+
+    char *initt=NULL; //handle structural zeros via subquery
+    //note that margin data may have invalid rows.
+    if (init_table){
+        if (structural_zeros) 
+             asprintf(&initt, "(select * from %s where not (%s))", init_table, structural_zeros);
+        else asprintf(&initt, "%s", init_table);
+    }
+    char *init_q, *pre_init_q = NULL;
+    if (init_table){
+        char *countstr;
+        if (init_count_col) asprintf(&countstr, "sum(%s) as %s", init_count_col, init_count_col);
+        else                asprintf(&countstr, "count(%s)", **all_vars_d->text);
+        asprintf(&init_q, "select %s, %s from %s group by %s", 
+                           list_of_fields, countstr, initt, list_of_fields);
+        free(countstr);
+    }
+
+    char *marginq, *cc; 
+    if (count_col) asprintf(&cc, "sum(%s)", count_col);
+    else           cc = strdup("count(*)");
+    asprintf(&marginq, "select %s, %s  from %s\ngroup by %s", 
+                       list_of_fields, cc, margin_table, list_of_fields);
+    free(cc); free(initt);
 
     char *format=strdup("w");
     for (int i =0 ; i< var_ct; i++)
         xprintf(&format, "m%s", format);
-    /*create table contrasts as 
-			  select block, qageshort, qsex, racep, qspanq, count(*) from d
-              group by block, qageshort, qsex, racep, qspanq
-			      union 
-			  select * from zerocontrasts 
-		  Then,
-              delete from contrasts where [structural_zeros]
-     */
-    char *margint=NULL, *initt=NULL; //handle structural zeros via subquery
-    if (structural_zeros) {
-        asprintf(&margint, "(select * from %s where not (%s))", margin_table, structural_zeros);
-        if (init_table) asprintf(&initt, "(select * from %s where not (%s))", init_table, structural_zeros);
-    } else {
-        asprintf(&margint, "%s", margin_table);
-        if (init_table) asprintf(&initt, "%s", init_table);
-    }
-    char *init_q = strdup("select ");
-    char *pre_init_q = NULL;
-	asprintf(&q, "create table apop_contrasts_%i as select %s ", run_number, list_of_fields);
-    if (count_col)
-         xprintf(&q, "%s, sum(%s)  from %s\ngroup by %s", q, count_col, margint, list_of_fields);
-    else xprintf(&q, "%s, count(*) from %s\ngroup by %s", q,            margint, list_of_fields);
-    if (init_table){
-        char *countstr;
-        for (int i=0; i< all_vars_d->textsize[1]; i++){
-            xprintf(&pre_init_q, "%s create index apop_loj1_%s%i on %s(%s);", pre_init_q ? pre_init_q : "",
-                    (*all_vars_d->text)[i], run_number, initt, (*all_vars_d->text)[i]);
-            xprintf(&pre_init_q, "%s create index apop_loj2_%s%i on apop_contrasts_%i(%s);", pre_init_q,
-                    (*all_vars_d->text)[i], run_number, run_number, (*all_vars_d->text)[i]);
-        }
-        if (init_count_col) asprintf(&countstr, "sum(R.%s) as %s", init_count_col, init_count_col);
-        else                asprintf(&countstr, "count(R.%s)", **all_vars_d->text);
-        xprintf(&init_q, "%s %s, %s\n "
-            "from apop_contrasts_%i L left outer join %s R on %s\n"
-            "group by %s", 
-            init_q, apop_text_paste(all_vars_d, .before="L.", .between = ", L."), countstr, 
-            run_number, initt, vars_to_join(all_vars_d),
-            apop_text_paste(all_vars_d, .before="L.", .between = ", L."));
-        free(countstr);
-    } 
-	xprintf(&q, "%s\n  union\nselect * from apop_zerocontrasts_%i ", q, run_number);
-	Apop_stopif(apop_query("%s", q), 
-                 apop_data *out=apop_data_alloc(); out->error='q'; return out,
-                0, "This query failed:\n%s", q);
-
-    free(margint); free(initt);
-    Apop_notify(2, "Querying possible nonzero cells (after structural zeros are removed):\n%s", q);
-
-    //apop_contrasts... holds the cells of the grid we actually need. Query them to 
-    //an apop_data set and start doing the raking.
     apop_data *d, *contrast_grid;
-    d = apop_query_to_mixed_data(format, "select * from apop_contrasts_%i", run_number);
+    d = apop_query_to_mixed_data(format, "%s", marginq);
     Apop_stopif(!d || d->error, apop_data *out=apop_data_alloc(); out->error='q'; return out,
-            0, "This query:\nselect * from apop_contrasts_%i\ngenerated a blank or broken table.", run_number);
+            0, "This query:\n%s\ngenerated a blank or broken table.", marginq);
+    free(marginq);
 
     if (pre_init_q) apop_query(pre_init_q);
-    apop_data *fit = (init_table) ? apop_query_to_mixed_data(format, "%s", init_q)
-                                : apop_data_copy(d);
+    apop_data *fit;
+    if (init_table) {
+        fit = (nudge) 
+               ? apop_query_to_mixed_data(format, "%s\n  union\nselect * from apop_zerocontrasts_%i ", init_q, run_number)
+               : apop_query_to_mixed_data(format, "%s", init_q);
+        Apop_stopif(!fit, apop_data *out=apop_data_alloc(); out->error='q'; return out, 
+                    0, "Query returned a blank table.");
+    } else {
+        fit = apop_query_to_mixed_data(format, "select * from apop_zerocontrasts_%i ", run_number);
+        gsl_vector_set_all(fit->weights, nudge ? nudge : 1);
+    }
+    free(format);
     apop_vector_apply(fit->weights, nan_to_zero);
-    Apop_assert(fit, "Query \"%s\" returned a blank table.", init_q);
     //if (!init_table && !count_col) gsl_vector_set_all(fit->weights, 1);
     if (nudge) apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
 
@@ -655,19 +640,19 @@ APOP_VAR_ENDHEAD
 	for (int i=0; i< contrast_ct; i++)
 		for (int j=0; j< contras[i]->textsize[0]; j++)
 			apop_data_set(contrast_grid, get_var_index(*all_vars_d->text, all_vars_d->textsize[1], contras[i]->text[j][0]), i, 1);
-	//clean up
-	for (int i=0; i< contrast_ct; i++){
-		apop_query("drop table apop_m%i_%i", i, run_number);
-		apop_data_free(contras[i]);
-	}
+	
+    if (!init_table || nudge)
+        for (int i=0; i< contrast_ct; i++){
+            apop_query("drop table apop_m%i_%i", i, run_number);
+            apop_data_free(contras[i]);
+        }
 
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);
     
     all_vars_d->textsize[0] = tt;
     apop_data_free(all_vars_d);
-	apop_query("drop table apop_zerocontrasts_%i", run_number);
-	apop_query("drop table apop_contrasts_%i", run_number);
+    if (!init_table || nudge) apop_query("drop table apop_zerocontrasts_%i", run_number);
 	apop_data_free(contrast_grid);
 	return fit;
 }

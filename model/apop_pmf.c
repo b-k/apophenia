@@ -285,7 +285,7 @@ You would like to reduce this to a set of distinct values, with their weights ad
 
 \param in An \ref apop_data set that may have duplicate rows. As above, the data may be in text and/or numeric formats. If there is a \c weights vector, I will add those weights together as duplicates are merged. If there is no \c weights vector, I will create one, which is initially set to one for all values, and then aggregated as above.
 
-\return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref apop_data_copy before copying this function if you need to retain the original format. For your convenience, this function returns a pointer to your original data, which has now been pruned.
+\return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref apop_data_copy before calling this function if you need to retain the original format. For your convenience, this function returns a pointer to your original data, which has now been pruned.
 
 */
 apop_data *apop_data_pmf_compress(apop_data *in){
