@@ -27,7 +27,7 @@ function.
  
 #define Output_vars output_file, output_pipe, output_type, output_append
 
-#define Output_declares char * output_file, FILE * output_pipe, char output_type, char output_append
+#define Output_declares char const * output_file, FILE * output_pipe, char output_type, char output_append
 
 /** If you're reading this, it is probably because you were referred by another function
   that uses this internally. You should never call this function directly, but do read
@@ -54,22 +54,22 @@ ambiguous cases. Any function-specific option you send always overrules the glob
 At the end, \c output_file, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
-void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type, char *output_append){
+static void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append :
         ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
 
-    if (!*output_file && !*output_pipe){
+    if (!output_file && !*output_pipe){
         *output_pipe = apop_opts.output_pipe;                  
         if (!*output_type)              
             *output_type = apop_opts.output_type;              
-    } else if (*output_file && !*output_pipe){                  
+    } else if (output_file && !*output_pipe){                  
         *output_pipe = apop_opts.output_pipe;                  
         if (!*output_type){            
             if(*output_type == 'd' || apop_opts.output_type == 'd')  
                  *output_type = 'd';  
             else *output_type = 'f'; 
         }                        
-    } else if ((!*output_file && *output_pipe) && !*output_type) 
+    } else if ((!output_file && *output_pipe) && !*output_type) 
         *output_type = 'p';     
     if (*output_type =='p')    
         *output_pipe = *output_pipe ? *output_pipe: stdout;      
@@ -78,17 +78,17 @@ void apop_prep_output(char **output_file, FILE ** output_pipe, char *output_type
     else if (*output_type =='d')
         *output_pipe = stdout;  //won't be used.
     else       
-        *output_pipe = *output_file
-                        ? fopen(*output_file, *output_append == 'a' ? "a" : "w") 
+        *output_pipe = output_file
+                        ? fopen(output_file, *output_append == 'a' ? "a" : "w") 
                         : stdout;
 }
 
 #define Dispatch_output                        \
-    char * apop_varad_var(output_file, NULL);  \
+    char const *apop_varad_var(output_file, NULL);  \
     FILE * apop_varad_var(output_pipe, NULL);  \
     char apop_varad_var(output_type, 0);       \
     char apop_varad_var(output_append, 0);     \
-    apop_prep_output(&output_file, &output_pipe, &output_type, &output_append);
+    apop_prep_output(output_file, &output_pipe, &output_type, &output_append);
 
 /** Prep for Gnuplot one of those cute scatterplots with a regression line through it.
 
