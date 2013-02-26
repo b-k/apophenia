@@ -1188,7 +1188,7 @@ APOP_VAR_END_HEAD
 	while(L.ct && !L.eof){
         line_to_insert(L, add_this_line, tabname, statement, rows);
         if (!(ct++ % batch_size)){
-            if (apop_opts.verbose > 0) {Apop_notify(2, ".");fflush(NULL);}
+            if (apop_opts.verbose > 1) {fprintf(stderr, ".");fflush(NULL);}
         }
         if (use_sqlite_prepared_statements){
             int err = sqlite3_step(statement);
