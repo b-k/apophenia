@@ -38,7 +38,7 @@ APOP_VAR_DECLARE apop_model * apop_model_to_pmf(apop_model *model, apop_data *bi
 
 //text conveniences
 char * apop_strip_dots(char const *in, char strip_type);
-APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter);
+APOP_VAR_DECLARE char* apop_text_paste(apop_data const*strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter);
 /** Notify the user of errors, warning, or debug info. 
 
  \param verbosity   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
@@ -75,14 +75,16 @@ APOP_VAR_DECLARE char* apop_text_paste(apop_data *strings, char *between, char *
         onfail;  \
     } }
 
-#define Apop_assert_c(test, returnval, level, ...) \
-    Apop_stopif(!(test), return returnval, level, __VA_ARGS__)
-
 #define apop_errorlevel -5
+
+//For use in stopif, to return a blank apop_data set with an error attached.
+#define apop_return_data_error(E) {apop_data *out=apop_data_alloc(); out->error='E'; return out;}
 
 /* The Apop_stopif macro is currently favored, but there's a long history of prior
    error-handling setups. Consider all of the Assert... macros below to be deprecated.
 */
+#define Apop_assert_c(test, returnval, level, ...) \
+    Apop_stopif(!(test), return returnval, level, __VA_ARGS__)
 
 #define Apop_assert(test, ...) Apop_assert_c((test), 0, apop_errorlevel, __VA_ARGS__)
 

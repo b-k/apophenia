@@ -129,9 +129,9 @@ double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 /** Find the mean of the input vector.
 
 */
-#define apop_vector_mean(in)  gsl_stats_mean((in)->data,(in)->stride, (in)->size)
+#define apop_vector_mean(in)  ((!in) ? GSL_NAN : gsl_stats_mean((in)->data,(in)->stride, (in)->size))
 
-#define apop_vector_var(in)  gsl_stats_variance((in)->data,(in)->stride, (in)->size)
+#define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)->data,(in)->stride, (in)->size))
 #define apop_vector_kurt(in) apop_vector_kurtosis(in)
 
 APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);

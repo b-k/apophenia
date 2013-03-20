@@ -10,7 +10,6 @@
 
 #include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
-#define kickout(err) apop_data *out=apop_data_alloc(); out->error=err; return out
 
 /** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
 
@@ -288,7 +287,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
-    apop_assert_c(d, NULL, 0, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
+    Apop_stopif(!d, return NULL, 1, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
     int apop_varad_var(keep_first, 0)
@@ -297,13 +296,13 @@ APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type,
     if (remove =='y' && type == 't') Apop_notify(1, "Remove isn't implemented for text source columns yet.");
 APOP_VAR_ENDHEAD
     if (type == 'd'){
-        Apop_stopif((col == -1) && d->vector, kickout('d'),
+        Apop_stopif((col == -1) && d->vector, apop_return_data_error(d),
                                 0, "You asked for the vector element "
                                 "(col==-1) but the data's vector element is NULL.");
-        Apop_stopif((col != -1) && (col >= d->matrix->size2), kickout('d'),
+        Apop_stopif((col != -1) && (col >= d->matrix->size2), apop_return_data_error(d),
                                 0, "You asked for the matrix element %i "
                                 "but the data's matrix element has only %zu columns.", col, d->matrix->size2);
-    } else Apop_stopif(col >= d->textsize[1], kickout('d'),
+    } else Apop_stopif(col >= d->textsize[1], apop_return_data_error(d),
                                 0, "You asked for the text element %i but "
                                     "the data's text element has only %zu elements.", col, d->textsize[1]);
     apop_data *fdummy;
@@ -381,21 +380,21 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)
-    apop_assert_c(data, NULL, 0, "You sent me a NULL data set. Returning NULL.")
+    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.")
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
 APOP_VAR_ENDHEAD
     if (intype=='t'){
-        Apop_stopif(incol >= data->textsize[1], kickout('d'),
+        Apop_stopif(incol >= data->textsize[1], apop_return_data_error(d),
                         0, "You asked for the text column %i but the "
                            "data's text has only %zu elements.", incol, data->textsize[1]);
     } else {
-        Apop_stopif((incol == -1) && !data->vector, kickout('d'),
+        Apop_stopif((incol == -1) && !data->vector, apop_return_data_error(d),
                 0, "You asked for the vector of the data set but there is none.");
-        Apop_stopif((incol != -1) && !data->matrix, kickout('d'),
+        Apop_stopif((incol != -1) && !data->matrix, apop_return_data_error(d),
                 0, "You asked for the matrix column %i but the matrix is NULL.", incol);
-        Apop_stopif((incol != -1) && (incol >= data->matrix->size2), kickout('d'),
+        Apop_stopif((incol != -1) && (incol >= data->matrix->size2), apop_return_data_error(d),
                 0, "You asked for the matrix column %i but "
                             "the matrix has only %zu elements.", incol, data->matrix->size2);
     }
@@ -421,7 +420,7 @@ APOP_VAR_ENDHEAD
 */
 APOP_VAR_HEAD apop_data *apop_data_get_factor_names(apop_data *data, int col, char type){
     apop_data *apop_varad_var(data, NULL)
-    apop_assert_c(data, NULL, 0, "You sent me a NULL data set. Returning NULL.")
+    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.")
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 'd')
 APOP_VAR_ENDHEAD
@@ -454,9 +453,9 @@ Also, the <tt>more</tt> element is a reference table of names and column numbers
 \exception out->error=='d'  dimension error.
 */
 apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
-    Apop_stopif(textcol >= d->textsize[1],  kickout('d'),
+    Apop_stopif(textcol >= d->textsize[1],  apop_return_data_error(d),
                 0, "You asked for the text element %i but the data's "
-                                            "text has only %zu elements.", datacol, d->textsize[1]);
+                   "text has only %zu elements.", datacol, d->textsize[1]);
     if (!d->vector && datacol == -1) //allocate a vector for the user.
         d->vector = gsl_vector_alloc(d->textsize[0]);
     apop_data *out;
@@ -507,7 +506,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   apop_data       *out    = apop_data_alloc();
     gsl_vector *weights = m->data->weights; //typically NULL.
     apop_data *expected = apop_data_get_page(m->info, "<Predicted>");
-    apop_assert_c(expected,  NULL, 0, "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");
+    Apop_stopif(!expected, return NULL, 0, "I couldn't find a \"<Predicted>\" page in your data set. Returning NULL.\n");
     size_t obs = expected->matrix->size1;
     Apop_col_t(expected, "residual", v)
     if (!weights)

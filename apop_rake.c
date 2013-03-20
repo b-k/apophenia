@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <gsl/gsl_sort_vector.h>
 void xprintf(char **q, char *format, ...); //in apop_conversions.c
-#define kickout(err) apop_data *out=apop_data_alloc(); out->error=err; return out
 
 /* This is the internal documentation for apop_rake(). I assume you've read the usage
    documentation already (if you haven't, it's below, just above apop_rake).
@@ -142,6 +141,9 @@ void index_foreach(mnode_t *index[], index_apply_f f, void *args){
 
 /* Check whether an observation falls into all of the given margins.
 
+This is for a contrast. We've already calculated the in/out vector for each value on
+each margin, and now need to && each dimension into one vector.
+
 \param index Is actually a partial index: for each dimension, there should be only one value. Useful for the center of an index_foreach loop.
 \param d Should already be allocated to the right size, may be filled with garbage.
 \return d will be zero or one to indicate which rows of the indexed data set meet all criteria.  */
@@ -195,7 +197,6 @@ static void scaling(size_t const *elmts, size_t const n,  gsl_vector *weights, d
         weights->data[elmts[i]] *= in_sum/fit_sum;
     }
     *maxdev = GSL_MAX(fabs(fit_sum - out_sum), *maxdev);
-
 }
 
 /* Given one set of values from one margin, do the actual scaling.
@@ -325,8 +326,10 @@ char *pipe_parse = "[ \n\t]*([^| \n\t]+)[ \n\t]*([|]|$)";
 
 apop_data **generate_list_of_contrasts(char *const *contras_in, int contrast_ct){
   apop_data** out = malloc(sizeof(apop_data*)* contrast_ct);
-	for (int i=0; i< contrast_ct; i++) 
+	for (int i=0; i< contrast_ct; i++) {
         apop_regex(contras_in[i], pipe_parse, out+i);
+        apop_text_alloc(out[i], *out[i]->textsize, 1);
+    }
 	return out;
 }
 
@@ -334,8 +337,9 @@ apop_data *get_var_list(char const *margin_table, char const *count_col, char co
                         char * const *varlist, int *var_ct){
     apop_data *all_vars_d=NULL;
     if (!all_vars && !varlist){
-        Apop_assert(apop_opts.db_engine!='m', "I need a list of the full set of variable "
-                                            "names sent as .varlist= (char *[]){\"var1\", \"var2\",...}");
+        Apop_stopif(apop_opts.db_engine=='m', apop_return_data_error(y),
+                    0, "I need a list of the full set of variable "
+                       "names sent as .varlist= (char *[]){\"var1\", \"var2\",...}");
         //use SQLite's table_info, then shift the second col to the first.
         all_vars_d = apop_query_to_text("PRAGMA table_info(%s)", margin_table);
         int ctr=0;
@@ -353,7 +357,7 @@ apop_data *get_var_list(char const *margin_table, char const *count_col, char co
         all_vars_d = apop_text_alloc(NULL, 1, *var_ct); 
         for (int i=0; i<*var_ct; i++) apop_text_add(all_vars_d, 0, i, varlist[i]);
     }
-    Apop_stopif(!all_vars_d, , 0, "Trouble getting/parsing the list of variables.");
+    Apop_stopif(!all_vars_d, apop_return_data_error(y), 0, "Trouble getting/parsing the list of variables.");
     return all_vars_d;
 }
 
@@ -372,6 +376,13 @@ double nudge_zeros(apop_data *in, void *nudge){
     return 0;
 }
 
+int find_in_allvars(char const *in, apop_data const *allvars){
+    for (int i=0; i< allvars->textsize[1]; i++)
+        if (!strcmp(allvars->text[0][i], in)) return i;
+    Apop_stopif(1, return -1, 0, "Variable in your contrast list [%s] not in "
+                                 "your list of all variables.", in);
+}
+
 /* If you are fully synthesizing or nudging zero cells, then calculate the set of 
    cells that could be nonzero (given the margin information). 
    * If using only an init_table, then that's your list of nonzero cells right there.
@@ -381,53 +392,30 @@ double nudge_zeros(apop_data *in, void *nudge){
  
  */
 static int setup_nonzero_contrast(char const *margin_table, 
-              char * const *allvars, int allvars_ct, int run_number,
+              apop_data const * allvars, int run_number,
               char const *list_of_fields, apop_data *const* contras, int contrast_ct,
               double nudge, char const * structural_zeros, bool have_init_table){
     char *q;
-	asprintf(&q, "create table apop_zerocontrasts_%i as select ", run_number);
-    for (int i=0; i < allvars_ct; i++) xprintf(&q, "%s t%i.%s, ", q, i, allvars[i]); 
-	xprintf(&q, "%s %g\n from\n", q, nudge); 
-	char comma = ' ';
-    for (int i=0; i < allvars_ct; i++){
-        xprintf(&q, "%s %c (select distinct %s as %s from %s) as t%i\n", 
-                  q, comma, allvars[i], allvars[i], margin_table, i);
-        comma = ',';
-    } 
-    if (structural_zeros) xprintf(&q, "%s where not (%s)\n", q, structural_zeros);
-     /*keep only rows that could have nonzero values in the design matrix margins (about 10% for the Census data we used for development):
- 		 where b.block||'.'||qa.qageshort||'.' || qs.qsex ||'.'|| r.racep in 
- 		 (select block ||'.'|| qageshort ||'.'|| qsex ||'.'|| racep from d) and ...*/
-    if (contrast_ct){
-        xprintf(&q, "%s\n%s\n", q, structural_zeros ? "and" : "where");
-        char joiner[] = "||'.'||";
-        char space[] = " ";
-        for (int i=0; i< contrast_ct; i++){
-            char *merge = strdup(" ");
-            for (int j=0; j< contras[i]->textsize[0]; j++){
-                xprintf(&merge, "%s t%i.%s %s", 
-                    merge, get_var_index(allvars, allvars_ct, contras[i]->text[j][0]),
-                    contras[i]->text[j][0], j+1!=contras[i]->textsize[0]? joiner : space);
-            }
-            xprintf(&q, "%s %s in apop_m%i_%i\n ", q, merge, i, run_number);
-            if (i+1 < contrast_ct) xprintf(&q, "%s and ", q);
-
-            //While we're here, we should create the mi tables used in the query above:
-            merge = strdup(" ");
-            for (int j=0; j< contras[i]->textsize[0]; j++){
-                xprintf(&merge, "%s %s %s", 
-                    merge, 
-                    contras[i]->text[j][0], j+1!=contras[i]->textsize[0]? joiner : space);
-            }
-            apop_query("drop table if exists apop_m%i_%i", i, run_number);
-            char *subq;
-            asprintf(&subq, "create table apop_m%i_%i as select distinct %s as concatenated from %s; "
-                          "create index apop_mi%i_%i on apop_m%i_%i(concatenated);",
-                                i,run_number, merge, margin_table, i,run_number, i,run_number);
-            Apop_stopif(apop_query("%s", subq), return 1, 0, "This query failed:\n%s", subq);
-            free(subq);
+    bool used[allvars->textsize[1]];
+    memset(used, 0, sizeof(bool)*allvars->textsize[1]);
+	asprintf(&q, "create table apop_zerocontrasts_%i as select %s, %g from\n", 
+            run_number, apop_text_paste(allvars, .between=","), nudge);
+    for (int i=0; i < contrast_ct; i++){
+        xprintf(&q, "%s%s (select distinct %s  from %s) \n", 
+                  q, i>0 ? "natural join" : "", 
+                  apop_text_paste(contras[i], .between=","),  margin_table);
+        for (int j=0; j<*contras[i]->textsize; j++){
+            int val=find_in_allvars(*contras[i]->text[j], allvars);
+            Apop_stopif(val==-1, return -1, 0, "Error setting up contrasts");
+            used[val]=true; 
         }
-    }
+    } 
+    //make sure all variables are joined in. 
+    for (int i=0; i < allvars->textsize[1]; i++)
+        if (!used[i]) xprintf(&q, "%s%s (select distinct %s  from %s)\n", 
+                  q, (!contrast_ct && i==0) ? "" : "natural join",
+                  allvars->text[0][i],  margin_table);
+    if (structural_zeros) xprintf(&q, "%s where not (%s)\n", q, structural_zeros);
     if (have_init_table){
         //Keep out margins with values for now; join them in below.
         xprintf(&q, "%s except\nselect %s %s, %g from %s",  list_of_fields, nudge, margin_table);
@@ -549,15 +537,16 @@ APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_l
     static int defaultrun = 0;
     char const * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
     char const * apop_varad_var(margin_table, table_name);
-    Apop_stopif(!margin_table, kickout('i'), 0,  "I need the name of a table in the database that will be the data source.");
-    Apop_stopif(!apop_table_exists(margin_table), kickout('i'), 
-            0, "your margin_table, %s, doesn't exist in the database.", margin_table);
+    Apop_stopif(!margin_table, apop_return_data_error(i), 0,  
+                        "I need the name of a table in the database that will be the data source.");
+    Apop_stopif(!apop_table_exists(margin_table), apop_return_data_error(i), 
+                        0, "your margin_table, %s, doesn't exist in the database.", margin_table);
     char *const* apop_varad_var(var_list, NULL);
     int apop_varad_var(var_ct, 0);
     char const * apop_varad_var(all_vars, NULL); //deprecated; use var_list/var_ct
     char *const * apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
-    Apop_stopif(contrasts&&!contrast_ct, apop_data *out=apop_data_alloc(); out->error='i'; return out,
+    Apop_stopif(contrasts&&!contrast_ct, apop_return_data_error(i),
             0, "you gave me a list of contrasts but not the count. "
             "This is C--I can't count them myself. Please provide the count and re-run.");
     char const * apop_varad_var(structural_zeros, NULL);
@@ -567,22 +556,22 @@ APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_l
     int apop_varad_var(run_number, defaultrun++);
     char const * apop_varad_var(init_count_col, NULL);
     char const * apop_varad_var(init_table, NULL);
-    Apop_stopif(init_table && !apop_table_exists(init_table), kickout('i'),
-           0, "your init_table, %s, doesn't exist in the database.", init_table);
-    if (init_count_col && !init_table)
-        init_table = margin_table;
+    Apop_stopif(init_table && !apop_table_exists(init_table), apop_return_data_error(i),
+               0, "your init_table, %s, doesn't exist in the database.", init_table);
+    if (init_count_col && !init_table) init_table = margin_table;
     double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
     apop_data *all_vars_d = get_var_list(margin_table, count_col, init_count_col, all_vars, var_list, &var_ct);
+    Apop_stopif(all_vars_d->error, return all_vars_d, 0, "Trouble setting up the list of variables.");
     int tt = all_vars_d->textsize[0]; all_vars_d->textsize[0] = 1; //mask all but the first row
     char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");
 
     if (nudge || !init_table){
         apop_query("drop table if exists apop_zerocontrasts_%i", run_number);
-        Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d->text[0],  
-                        all_vars_d->textsize[1], run_number, list_of_fields, contras, contrast_ct, (nudge ? nudge : 1), structural_zeros, init_table),
-                 apop_data *out=apop_data_alloc(); out->error='q'; return out,
+        Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d,  
+                        run_number, list_of_fields, contras, contrast_ct, (nudge ? nudge : 1), structural_zeros, init_table),
+                 apop_return_data_error(q),
                  0, "Couldn't calculate the set of nonzero cells.");
     }
 
@@ -615,7 +604,7 @@ APOP_VAR_ENDHEAD
         xprintf(&format, "m%s", format);
     apop_data *d, *contrast_grid;
     d = apop_query_to_mixed_data(format, "%s", marginq);
-    Apop_stopif(!d || d->error, apop_data *out=apop_data_alloc(); out->error='q'; return out,
+    Apop_stopif(!d || d->error, apop_return_data_error(q),
             0, "This query:\n%s\ngenerated a blank or broken table.", marginq);
     free(marginq);
 
@@ -623,9 +612,9 @@ APOP_VAR_ENDHEAD
     apop_data *fit;
     if (init_table) {
         fit = (nudge) 
-               ? apop_query_to_mixed_data(format, "%s\n  union\nselect * from apop_zerocontrasts_%i ", init_q, run_number)
+               ? apop_query_to_mixed_data(format, "%s\nunion\nselect * from apop_zerocontrasts_%i ", init_q, run_number)
                : apop_query_to_mixed_data(format, "%s", init_q);
-        Apop_stopif(!fit, apop_data *out=apop_data_alloc(); out->error='q'; return out, 
+        Apop_stopif(!fit, apop_return_data_error(q), 
                     0, "Query returned a blank table.");
     } else {
         fit = apop_query_to_mixed_data(format, "select * from apop_zerocontrasts_%i ", run_number);
@@ -642,10 +631,7 @@ APOP_VAR_ENDHEAD
 			apop_data_set(contrast_grid, get_var_index(*all_vars_d->text, all_vars_d->textsize[1], contras[i]->text[j][0]), i, 1);
 	
     if (!init_table || nudge)
-        for (int i=0; i< contrast_ct; i++){
-            apop_query("drop table apop_m%i_%i", i, run_number);
-            apop_data_free(contras[i]);
-        }
+        for (int i=0; i< contrast_ct; i++) apop_data_free(contras[i]);
 
     c_loglin(contrast_grid, d, fit, tolerance, max_iterations);
     apop_data_free(d);

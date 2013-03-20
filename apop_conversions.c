@@ -168,7 +168,7 @@ apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
         return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
     if ((rows==0 || cols==0) && vsize>0)
         return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    Apop_stopif(vsize!=rows, apop_data *out=apop_data_alloc(); out->error='d'; return out, 
+    Apop_stopif(vsize!=rows, apop_return_data_error(d), 
             0, "apop_line_to_data expects either only a matrix, only a vector, or that matrix "
             "row count and vector size are equal. You gave me a row size of %i and a vector "
             "size of %i. Returning NULL.\n", rows, vsize);
@@ -696,7 +696,7 @@ APOP_VAR_END_HEAD
     apop_data *add_this_line= apop_data_alloc();
     int row = 0,
         hasrows = (has_row_names == 'y');
-    Apop_stopif(prep_text_reading(text_file, &infile), apop_data *out=apop_data_alloc();out->error='t'; return out,
+    Apop_stopif(prep_text_reading(text_file, &infile), apop_return_data_error(t),
             0, "trouble opening %s", text_file);
 
     line_parse_t L={ };

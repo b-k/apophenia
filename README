@@ -5,10 +5,12 @@ value decomposition) but gives the user more flexibility to be creative
 in model-building. The core functions are written in C, but bindings 
 exist for Python (and they should be easy to bind to in Perl/Ruby/&c.)
 
+http://apophenia.info/gentle.html provides an overview of the basics of using the library.  
 If you want to know more about the package, see the web site,
 http://apophenia.info, or have a look at the textbook from Princeton
 University Press that coevolved with Apophenia, downloadable from
 http://modelingwithdata.org . 
+
 
 Detailed setup instructions can be found at
 http://apophenia.sourceforge.net/doc/setup.html .

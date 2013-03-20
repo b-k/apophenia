@@ -43,7 +43,7 @@ int is_blank(apop_data *indata, int row, int col, void *ignore){
 \return A single string with the elements of the \c strings table joined as per your specification. Allocated by the function, to be freed by you if desired.
 
 \li If the table of strings is \c NULL or has no text, I will print only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
-\li if <tt> apop_opts.verbose >=2</tt>, then print the pasted text to stderr.
+\li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
 \li This function uses the \ref designated syntax for inputs.
 
 The sample snippet generates the SQL for a query using a list of column names (where
@@ -54,8 +54,8 @@ table, then produces the body of the table with the query result (pasting the
 
 \include sql_to_html.c
 */
-APOP_VAR_HEAD char *apop_text_paste(apop_data *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter){
-    apop_data *apop_varad_var(strings, NULL);
+APOP_VAR_HEAD char *apop_text_paste(apop_data const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter){
+    apop_data const *apop_varad_var(strings, NULL);
     char *apop_varad_var(between, " ");
     char *apop_varad_var(before, NULL);
     char *apop_varad_var(after, NULL);
@@ -67,7 +67,7 @@ APOP_VAR_ENDHEAD
     for (int i=0; i< strings->textsize[0]; i++){
         free(oneline); oneline = NULL;
         for (int j=0; j< strings->textsize[1]; j++){
-            if (prune && !prune(strings, i, j, prune_parameter)) continue;
+            if (prune && !prune((apop_data*)strings, i, j, prune_parameter)) continue;
             apop_tack_on(&oneline, strings->text[i][j]);
             if (j <strings->textsize[1]-1)  apop_tack_on(&oneline, between_cols);
         }
@@ -80,7 +80,7 @@ APOP_VAR_ENDHEAD
     }
     apop_tack_on(&out, oneline); //the final one never got a chance to be prior_line
     apop_tack_on(&out, after);
-    Apop_notify(2, "%s", out);
+    Apop_notify(3, "%s", out);
     return out;
 }
 

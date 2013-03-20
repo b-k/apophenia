@@ -164,7 +164,11 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
     double mean = 0, var = 0; 
     apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
     if (!p) p = Apop_model_add_group(est, apop_lm);
-    apop_matrix_mean_and_var(data->matrix, &mean, &var);
+    if (data->matrix) apop_matrix_mean_and_var(data->matrix, &mean, &var);
+    else if (data->vector) {
+        mean = apop_vector_mean(data->vector);
+        var = apop_vector_var(data->vector);
+    } else {Apop_stopif(1, est->error='d'; return est, 0, "Neither matrix nor vector in the input data.");}
     if (!est->parameters) est->parameters = apop_data_alloc(2);
     double sigsq = log(1+ var/gsl_pow_2(mean));
     apop_name_add(est->parameters->names, "mu", 'r');

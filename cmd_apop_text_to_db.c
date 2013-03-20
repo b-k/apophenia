@@ -77,7 +77,7 @@ int main(int argc, char **argv){
 			rownames    ++;
 			break;
 		  case 'v':
-			apop_opts.verbose ++;
+			apop_opts.verbose=2;
 			break;
 		  case 'O':
             tab_exists_check    ++;

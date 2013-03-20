@@ -394,7 +394,7 @@ double apop_query_to_float(const char * fmt, ...){
         Store_settings
         d = apop_query_to_data("%s", query);
         Restore_settings
-        Apop_assert_c(d, GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
+        Apop_assert_c(d && !d->error, GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
         out	= apop_data_get(d, 0, 0);
         apop_data_free(d);
     }

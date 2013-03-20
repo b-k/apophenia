@@ -129,7 +129,7 @@ APOP_VAR_ENDHEAD
     int by_apop_rows = fn_r || fn_rp || fn_rpi || fn_ri;
 
     Apop_stopif((part=='c' || part=='r') && (fn_d || fn_dp || fn_dpi || fn_di), 
-                        apop_data *out=apop_data_alloc(); out->error='p'; return out,
+                        apop_return_data_error(p),
                         0, "You asked for a vector-oriented operation (.part='r' or .part='c'), but "
                         "gave me a scalar-oriented function. Did you mean part=='a'?");
 

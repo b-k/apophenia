@@ -290,20 +290,20 @@ You would like to reduce this to a set of distinct values, with their weights ad
 */
 apop_data *apop_data_pmf_compress(apop_data *in){
     Apop_assert_c(in, NULL, 1,  "You sent me a NULL input data set; returning NULL output.");
-    Get_vmsizes(in);
-    size_t max = GSL_MAX(vsize, GSL_MAX(msize1, in->textsize[0]));
-    Apop_assert_c(max, in, 1, "You sent a non-NULL data set, but the vector, matrix, and text are all of length zero. Returning the original data set unchanged.");
+    Get_vmsizes(in); //maxsize
+    Apop_assert_c(maxsize, in, 1, "You sent a non-NULL data set, but the vector, matrix, and text are all of length zero. Returning the original data set unchanged.");
     if (!in->weights){
-        in->weights=gsl_vector_alloc(max);
+        in->weights=gsl_vector_alloc(maxsize);
         gsl_vector_set_all(in->weights, 1);
     }
-    int *cutme = calloc(max, sizeof(int));
+    if (maxsize==1) return in; //optional check.
+    int *cutme = calloc(maxsize, sizeof(int));
     int not_done = 1; //if we do a full j-loop and everything is to be cut, we're done.
-    for (int i=0; i< max && not_done;i++){
+    for (int i=0; i< maxsize && not_done;i++){
         if (cutme[i]) continue;
         Apop_data_row(in, i, subject);
         not_done = 0;
-        for (int j=i+1; j< max; j++){
+        for (int j=i+1; j< maxsize; j++){
             if (cutme[j]) continue;
             not_done = 1;
             Apop_data_row(in, j, compare_me);

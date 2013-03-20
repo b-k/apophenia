@@ -1910,7 +1910,7 @@ Outlineheader links Further references
 For your convenience, here are links to some other libraries you are probably using.
 
 \li <a href="http://www.gnu.org/software/libc/manual/html_node/index.html">The standard C library</a>
-\li <a href="c_precedence.html">The C operator precedence table</a>
+\li <a href="http://modelingwithdata.org/c_precedence.html">The C operator precedence table</a>
 \li <a href="http://www.gnu.org/software/gsl/manual/html_node/index.html">The
 GSL documentation</a>, and <a href="http://www.gnu.org/software/gsl/manual/html_node/Function-Index.html">its index</a>
 \li <a href="http://sqlite.org/lang.html">SQL understood by SQLite</a>
@@ -2470,7 +2470,7 @@ For reading individual elements, refer to the \f$(i,j)\f$th text element via <tt
 
 \par The whole structure
 
-In case you're wondering, here is a diagram of all of Apophenia's structures and how they
+Here is a diagram of all of Apophenia's structures and how they
 relate. It is taken from this
 <a href="http://modelingwithdata.org/pdfs/cheatsheet.pdf">cheat sheet</a> (2 page PDF),
 which will be useful to you if only because it lists some of the functions that act on
@@ -2514,14 +2514,14 @@ operations.  Its contents are not (entirely) arbitrary: the theoretical basis fo
 well as its overall intent, are described in this <a
 href="http://ben.klemens.org/klemens-model_objects.pdf">white paper</a>.
 
-But now that you've seen the internals, note that there are helper functions that will use those internals; you can call the helper functions and never think about the internals as a model user. For example, the \ref apop_estimate helper function means you never have to look at the model's \c estimate method (if it even has one), and you will simply pass the model to a function, as with the above form:
+There are helper functions that will allow you to avoid deailing with the model internals. For example, the \ref apop_estimate helper function means you never have to look at the model's \c estimate method (if it even has one), and you will simply pass the model to a function, as with the above form:
 
 \code
     apop_model *est = apop_estimate(data, apop_ols);
 \endcode
 
 \li Apophenia ships with a broad set of models, like \ref apop_ols, \ref apop_dirichlet,
-    \ref apop_loess, and \ref apop_pmf (probability mass function). You would estimate the
+    \ref apop_loess, and \ref apop_pmf (probability mass function); see the full list on <a href="http://apophenia.info/group__models.html">the models documentation page</a>. You would estimate the
 parameters of any of them using the form above, with the appropriate model in the second
 slot of the \ref apop_estimate call.
 \li The models that ship with Apophenia, like \ref apop_ols, include the procedures and some metadata, but are of course not yet estimated using a one data set (i.e., <tt>parameters == NULL</tt>). The line above generated a new
@@ -2531,13 +2531,13 @@ model, \c est, which is identical to the base OLS model but has estimated parame
 functions like \ref apop_estimate, \ref apop_draw, or \ref apop_predict; more examples below.
 After \ref apop_estimate, most require a parameterized model like \c est. After all, it doesn't make sense to
 draw from a Normal distribution until you've specified its mean and standard deviation.
-\li You can use \ref apop_model_show to print the various elements to screen.
+\li You can use \ref apop_model_print to print the various elements to screen.
 \li Writing your own models won't be covered in this introduction, but it can be pretty easy to
 copy and modify the procedures of an existing model to fit your needs. When in doubt, delete a procedure, because any procedures that are missing will have
 defaults filled when used by functions like \ref apop_estimate (which uses \ref
 apop_maximum_likelihood) or \ref apop_cdf (which uses integration via random draws).
 \li There's a simple rule of thumb for remembering the order of the arguments to most of
-Apophenia's functions, including \ref apop_estimate : the data comes first.
+Apophenia's functions, including \ref apop_estimate : the data always comes first.
 
 \par Settings
 
@@ -2562,9 +2562,9 @@ apop_model *posterior = apop_update(.prior= beta, .likelihood = my_pmf);
 \endcode
 
 You will encounter model settings often when doing nontrivial work with models. All
-can be set using a form like above, and each settings group has a reference page to give
-you the full list of options.
-There is a full discussion of settings groups on the outline page under the Models heading.
+can be set using a form like above. See the <a href="http://apophenia.info/group__settings.html">settings documentation page</a>
+for the full list of options.
+There is a full discussion of using and writing settings groups in the <a href="http://apophenia.info/outline.html">outline page</a> under the Models heading.
 
 
 \par Databases and models

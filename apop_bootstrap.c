@@ -44,7 +44,7 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \see apop_bootstrap_cov
  */
 apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
-    Apop_stopif(!in, apop_data *out = apop_data_alloc(); out->error='n'; return out, 0, "The data input can't be NULL.");
+    Apop_stopif(!in, apop_return_data_error(n), 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
     apop_model *e = apop_model_copy(model);
     int i, n = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
@@ -120,7 +120,7 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     apop_data * apop_varad_var(data, NULL);
     apop_model model = varad_in.model;
     int apop_varad_var(iterations, 1000);
-    Apop_stopif(!data, apop_data *out = apop_data_alloc(); out->error='n'; return out, 0, "The data input can't be NULL.");
+    Apop_stopif(!data, apop_return_data_error(n), 0, "The data input can't be NULL.");
     gsl_rng * apop_varad_var(rng, NULL);
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
@@ -169,8 +169,7 @@ APOP_VAR_END_HEAD
     apop_data_free(subset);
     apop_model_free(e);
     int set_error=0;
-    Apop_stopif(i == 0 && nan_draws == iterations, 
-                apop_data *out = apop_data_alloc(); out->error='N'; return out,
+    Apop_stopif(i == 0 && nan_draws == iterations, apop_return_data_error(N),
                 1, "I ran into %i NaNs and no not-NaN estimations, and so stopped. "
                        , iterations);
     Apop_stopif(nan_draws == iterations,  set_error++;

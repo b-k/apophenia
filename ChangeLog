@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	March 2012
+**apop_text_paste now prints the pasted string at verbosity level 3 (formerly 2).
+
 	February 2012
 --Starting_point in Bayesian updating no longer does anything, but it was never significant to begin with. Added some verbosity options to apop_update.
 
