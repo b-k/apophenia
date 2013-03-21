@@ -87,7 +87,7 @@ x = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44
 <p>Those of you coming from stats packages will enjoy working in C without having to give up all the conveniences of stats packages, such as the awesomeness of not having to think about arguments that will take their default value. C traditionalists may be surprised by this unfamiliar form, but can rest assured that the Apophenia internals build this with entirely standards-compliant C. Everybody can see the <a class="el" href="designated.html">Designated initializers</a> page for details.</p>
 <h2><a class="anchor" id="apop_data"></a>
 apop_data</h2>
-<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the <a class="el" href="gentle.html#apop_data">apop_data</a> set and its many support functions are intended to make data processing in C easy.</p>
+<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the <a class="el" href="gentle.html#apop_data">apop_data</a> set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its <a class="el" href="gentle.html#apop_data">apop_data</a> set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.</p>
 <p>The structure basically includes six parts:</p>
 <ul>
 <li>a vector </li>
@@ -98,59 +98,68 @@ apop_data</h2>
 <li>a link to a second page of data</li>
 </ul>
 <p>This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For example, here is some dummy data for a weighted OLS regression. It includes an outcome variable in the vector, dependent variables in the matrix and text grid, replicate weights, and column names in bold labeling the variables:</p>
-<table  frame="box">
+<table frame=box>
 <tr>
-<td>Rowname</td><td>Vector</td><td>Matrix</td><td>Text</td><td>Weights </td></tr>
-<tr valign="bottom">
-<td align="center"><table  frame="box">
+<td>Rowname</td><td>Vector</td><td> Matrix</td><td> Text</td><td>Weights</td>
+</tr><tr valign=bottom>
+<td align=center>
+<table frame=box>
+<tr><td> </td></tr>
 <tr>
-<td></td></tr>
-<tr>
-<td>"Steven" </td></tr>
-<tr>
-<td>"Sandra" </td></tr>
-<tr>
-<td>"Joe"</td><td></td></tr>
+<td>"Steven"</td>
+</tr><tr>
+<td>"Sandra"</td>
+</tr><tr>
+<td>"Joe"</td><td>
+</tr> 
 </table>
-</td><td align="center"><table  frame="box">
+</td><td align=center>
+<table frame=box>
 <tr>
-<th>Outcome  </th></tr>
-<tr>
-<td align="center">1 </td></tr>
-<tr>
-<td align="center">0 </td></tr>
-<tr>
-<td align="center">1  </td></tr>
+<th>Outcome</th>
+</tr> <tr>
+<td align=center>1</td>
+</tr><tr>
+<td align=center>0</td>
+</tr><tr>
+<td align=center>1</td>
+</tr> 
 </table>
-</td><td align="center"><table  frame="box">
+</td><td align=center>
+<table frame=box>
 <tr>
-<th>Age</th><th>Weight (kg)</th><th>Height (cm)  </th></tr>
-<tr>
-<td>32</td><td>65</td><td>175 </td></tr>
-<tr>
-<td>41</td><td>61</td><td>165 </td></tr>
-<tr>
-<td>40</td><td>73</td><td>181  </td></tr>
+<th> Age</th><th> Weight (kg)</th><th> Height (cm)</th>
+</tr> <tr>
+<td> 32</td><td> 65</td><td> 175</td>
+</tr><tr>
+<td> 41</td><td> 61</td><td> 165</td>
+</tr><tr>
+<td> 40</td><td> 73</td><td> 181</td>
+</tr> 
 </table>
-</td><td align="center"><table  frame="box">
+</td><td align=center>
+<table frame=box>
 <tr>
-<th>Sex</th><th>State  </th></tr>
+<th> Sex</th><th> State</th>
+</tr>
 <tr>
-<td>Male</td><td>Alaska</td><td></td></tr>
-<tr>
-<td>Female</td><td>Alabama </td></tr>
-<tr>
-<td>Male</td><td>Alabama  </td></tr>
+<td> Male</td><td> Alaska</td><td>
+</tr><tr>
+<td> Female</td><td> Alabama</td>
+</tr><tr>
+<td> Male</td><td> Alabama</td>
+</tr> 
 </table>
-</td><td align="center"><table  frame="box">
+</td><td align=center>
+<table frame=box>
+<tr><td> </td></tr>
 <tr>
-<td></td></tr>
-<tr>
-<td>1 </td></tr>
-<tr>
-<td>3.2 </td></tr>
-<tr>
-<td>2.4  </td></tr>
+<td>1</td>
+</tr><tr>
+<td>3.2</td>
+</tr><tr>
+<td>2.4</td>
+</tr> 
 </table>
 </td></tr>
 </table>
@@ -278,4 +287,4 @@ for (<span class="keywordtype">int</span> i=0; i&lt; matrix-&gt;size1; i++){
 <p>This introduction has shown you the <a class="el" href="gentle.html#apop_data">apop_data</a> set and some of the functions associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed numeric/text values. You've seen how Apophenia encapsulates as many of a model's characteristics as possible into a single <a class="el" href="structapop__model.html">apop_model</a> object, which you can send with data to functions like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, or <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>. Once you've got your data in the right form, you can use this to simply estimate model parameters, or as an input to later analysis. </p>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>

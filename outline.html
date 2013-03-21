@@ -172,6 +172,72 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <p></div>
 <p><h2><a class="anchor" name="dataoverview"><div class="trigger" onClick="showBranch('dataoverviewd');swapFolder('dataoverviewf')"><img src="right.png" border="0" id="dataoverviewf" alt="pip"> Data sets</div></a></h2><div class="branch" id="dataoverviewd">
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure represents a data set. It joins together a <code>gsl_vector</code>, a <code>gsl_matrix</code>, an <a class="el" href="structapop__name.html">apop_name</a>, and a table of strings. It tries to be lightweight, so you can use it everywhere you would use a <code>gsl_matrix</code> or a <code>gsl_vector</code>.</p>
+<p>If you are viewing the HTML documentation, here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.</p>
+<table frame=box>
+<tr>
+<td>Rowname</td><td>Vector</td><td> Matrix</td><td> Text</td><td>Weights</td>
+</tr><tr valign=bottom>
+<td align=center>
+<table frame=box>
+<tr><td> </td></tr>
+<tr>
+<td>"Steven"</td>
+</tr><tr>
+<td>"Sandra"</td>
+</tr><tr>
+<td>"Joe"</td><td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th>Outcome</th>
+</tr> <tr>
+<td align=center>1</td>
+</tr><tr>
+<td align=center>0</td>
+</tr><tr>
+<td align=center>1</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th> Age</th><th> Weight (kg)</th><th> Height (cm)</th>
+</tr> <tr>
+<td> 32</td><td> 65</td><td> 175</td>
+</tr><tr>
+<td> 41</td><td> 61</td><td> 165</td>
+</tr><tr>
+<td> 40</td><td> 73</td><td> 181</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr>
+<th> Sex</th><th> State</th>
+</tr>
+<tr>
+<td> Male</td><td> Alaska</td><td>
+</tr><tr>
+<td> Female</td><td> Alabama</td>
+</tr><tr>
+<td> Male</td><td> Alabama</td>
+</tr> 
+</table>
+</td><td align=center>
+<table frame=box>
+<tr><td> </td></tr>
+<tr>
+<td>1</td>
+</tr><tr>
+<td>3.2</td>
+</tr><tr>
+<td>2.4</td>
+</tr> 
+</table>
+</td></tr>
+</table>
 <p>For example, let us say that you are running a regression: there is a vector for the one dependent variable, and a matrix for the several independent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter <code>i</code> starts counting at -1.</p>
 <div class="fragment"><pre class="fragment">  <span class="keywordflow">for</span> (j = 0; j&lt; data-&gt;matrix-&gt;size1; j++){
     printf(<span class="stringliteral">&quot;%s\t&quot;</span>, apop_name_get(data-&gt;names, j, <span class="charliteral">&#39;r&#39;</span>));
@@ -179,7 +245,8 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
         printf(<span class="stringliteral">&quot;%g\t&quot;</span>, <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, j, i));
     printf(<span class="stringliteral">&quot;\n&quot;</span>);
     }
-</pre></div><p>We're generally assuming that the data vector and data matrix have the same row count: <code>data-&gt;vector-&gt;size==data-&gt;matrix-&gt;size1</code> . This means that the <a class="el" href="structapop__name.html">apop_name</a> structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.</p>
+</pre></div><p>Most functions assume that the data vector, data matrix, and text have the same row count: <code>data-&gt;vector-&gt;size==data-&gt;matrix-&gt;size1</code> and <code>data-&gt;vector-&gt;size==*data-&gt;textsize</code>. This means that the <a class="el" href="structapop__name.html">apop_name</a> structure doesn't have separate vector_names, row_names, and text_row_names elements: the rownames are assumed to apply for all.</p>
+<p>See below for notes on easily managing the <code>text</code> element.</p>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set includes a <code>more</code> pointer, which will typically be <code>NULL</code>, but may point to another <a class="el" href="gentle.html#apop_data">apop_data</a> set. This is intended for a main data set and a second or third page with auxiliary information: estimated parameters on the front page and their covariance matrix on page two, or predicted data on the front page and a set of prediction intervals on page two. <code>apop_data_copy</code> and <code>apop_data_free</code> will handle all the pages of information. The <code>more</code> pointer is not intended as a linked list for millions of data points---you can probably find a way to restructure your data to use a single table (perhaps via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> and <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>).</p>
 <p>Easy data manipulation is essential for enjoying life as a researcher. Thus, there are a great many functions to collate, copy, merge, sort, prune, and otherwise manipulate the <a class="el" href="gentle.html#apop_data">apop_data</a> structure and its components.</p>
 <ul>
@@ -537,7 +604,15 @@ gsl_rng *r;
 <p><h2><a class="anchor" name="textsec"><div class="trigger" onClick="showBranch('textsecd');swapFolder('textsecf')"><img src="right.png" border="0" id="textsecf" alt="pip"> Text data</div></a></h2><div class="branch" id="textsecd">
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set includes a grid of strings, <code>text</code>, for holding text data.</p>
 <p>UTF-8 strings are correctly handled.</p>
-<p>Here is a sample program that uses <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> and <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> to set up a data set; using these functions means that you never really have to worry about allocation issues. Notice how the number of rows of text data in <code>tdata</code> is <code>tdata-&gt;textsize[0]</code> (aka <code>*tdata-&gt;textsize</code>); the number of columns is <code>tdata-&gt;textsize[1]</code>. Refer to individual elements using the usual 2-D array notation, <code>tdata-&gt;text[row][col]</code>.</p>
+<p>There are a few simple forms for handling the <code>text</code> element of an <code><a class="el" href="structapop__data.html">apop_data</a></code> set, which handle the tædium of memory-handling for you.</p>
+<ul>
+<li>Use <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> to allocate the block of text. It is actually a realloc function, which you can use to resize an existing block without leaks. </li>
+<li>Use <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> to add text elements. It replaces any existing text in the given slot without memory leaks. </li>
+<li>The number of rows of text data in <code>tdata</code> is <code>tdata-&gt;textsize[0]</code>; the number of columns is <code>tdata-&gt;textsize[1]</code>. </li>
+<li>Refer to individual elements using the usual 2-D array notation, <code>tdata-&gt;text[row][col]</code>. </li>
+<li>Again, <code>x[0]</code> can always be written as <code>*x</code>, which may save some typing. The number of rows is <code>*tdata-&gt;textsize</code>. If you have a single column of text data (i.e., all data is in column zero), then item <code>i</code> is <code>*tdata-&gt;text[i]</code>. If you know you have exactly one cell of text, then it is <code>**tdata-&gt;text</code>.</li>
+</ul>
+<p>Here is a sample program that uses these forms, plus a few text-handling functions.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
@@ -569,6 +644,7 @@ gsl_rng *r;
     printf(<span class="stringliteral">&quot;\n States covered: %s\n&quot;</span>, states_as_list);
 }
 </pre></div><ul>
+<li><a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose()</a> </li>
 <li><a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc()</a> </li>
 <li><a class="el" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add()</a> </li>
@@ -1169,4 +1245,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>

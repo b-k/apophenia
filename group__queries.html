@@ -59,7 +59,10 @@ Functions</h2>
 <span class="keywordtype">int</span> min_height = 175;
 <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;select %s from %s where %s &gt; %i&quot;</span>, colname, tabname, colname, min_height);
 </pre></div><ul>
-<li>Blanks in the database (i.e., <code> NULL</code>s) and elements that match <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> are filled with <code>NAN</code>s in the matrix. </li>
+<li>Blanks in the database (i.e., <code> NULL</code>s) and elements that match <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> are filled with <code>NAN</code>s in the matrix.</li>
+</ul>
+<ul>
+<li>As with the <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query("create table %s(id, name, age);", tablename)</code>. </li>
 </ul>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="ga236452b3305ea7b791c781d91a819e3b"></a><!-- doxytag: member="apop_db.c::apop_query" ref="ga236452b3305ea7b791c781d91a819e3b" args="(const char *fmt,...)" -->
@@ -122,7 +125,18 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Queries the database, and dumps the result into an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
-<p>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.</p>
+<ul>
+<li>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.</li>
+</ul>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_data("select age from %s where id=%i;", tablename, id_number)</code>.</li>
+</ul>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error=='q'</td><td>Query error. A valid query that returns no rows is not an error; in that case, you get <code>NULL</code>. </td></tr>
@@ -156,15 +170,32 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Queries the database, and dumps the result into a single double-precision floating point number. </p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A double, actually.</dd></dl>
+<p>Queries the database, and dumps the result into a single double-precision floating point number.</p>
 <ul>
 <li>This calls <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an <code>order by</code> clause in your query if you expect multiple lines).</li>
 </ul>
 <ul>
 <li>If <code>apop_opts.db_name_column</code> is set, then I'll ignore that column. It gets put into the names of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, and then thrown away when I look at only the <code>gsl_matrix</code> element of that set.</li>
 </ul>
-<p>If the query returns no rows at all, the function returns <code>NAN</code>. </p>
+<ul>
+<li>If the query returns no rows at all, the function returns <code>NAN</code>.</li>
+</ul>
+<ul>
+<li>If the query produces a blank table, returns <code>NAN</code>, and if <code>apop_opts.verbose&gt;=2</code>, prints an error.</li>
+</ul>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_float("select age from %s where id=%i;", tablename, id_number)</code>.</li>
+</ul>
+<ul>
+<li>If the query produces an error, returns <code>NAN</code>, and if <code>apop_opts.verbose&gt;=0</code>, prints an error. If you need to distinguish between blank tables, NaNs in the data, and query errors, use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.</li>
+</ul>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A double, actually. </dd></dl>
 
 </div>
 </div>
@@ -197,7 +228,23 @@ Functions</h2>
 <ul>
 <li>If <code>apop_opts.db_name_column</code> is set, then I'll ignore that column. It gets put into the names of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, and then thrown away when I return only the <code>gsl_matrix</code> part of that set.</li>
 </ul>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_matrix("select age from %s where id=%i;", tablename, id_number)</code>.</li>
+</ul>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> </dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_matrix</code>. </dd></dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error=='q'</td><td>Query error. A valid query that returns no rows is not an error; in that case, you get <code>NULL</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -236,7 +283,15 @@ Functions</h2>
 <p>The first argument is a character string consisting of the letters <code>nvmtw</code>, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one n, v, and w.</p>
 <p>If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).</p>
 <p>The 'n' character indicates row, meaning that <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is ignored).</p>
-<p>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers.</p>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_mixed_data("tv", "select name, age from %s where id=%i", tablename, id_number)</code>.</li>
+</ul>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error=='d'</td><td>Dimension error. Your count of matrix parts didn't match what the query returned. </td></tr>
@@ -272,20 +327,37 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Dump the results of a query into an array of strings.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> structure with the <code>text</code> element filled. Notice that this is always a 2-D array, even if the query returns a single column. In that case, use <code>returned_tab-&gt;text[i][0]</code> to refer to row <code>i</code>.</dd></dl>
-<p>For example, the following function will list the tables in a database (much like you could do from the command line using <code>sqlite3 dbname.db ".table"</code>).</p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> structure with the <code>text</code> element filled.</dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query.</td></tr>
+  </table>
+  </dd>
+</dl>
+<ul>
+<li><code>query_output-&gt;text</code> is always a 2-D array, even if the query returns a single column. In that case, use <code>returned_tab-&gt;text[i][0]</code> (or equivalently, <code>*returned_tab-&gt;text[i]</code>) to refer to row <code>i</code>.</li>
+</ul>
+<ul>
+<li>If an element in the database is <code>NULL</code>, the corresponding cell in the output table will be filled with the text given by <code>apop_opts.db_nan</code>. The default is <code>"NaN"</code>, but you can use <code>sprintf(apop_opts.db_nan, "whatever you like")</code> to change the text to whatever you like.</li>
+</ul>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_text("select name from %s where id=%i;", tablename, id_number)</code>.</li>
+</ul>
+<p>For example, the following function will list the tables in an SQLite database (much like you could do from the command line using <code>sqlite3 dbname.db ".table"</code>).</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">void</span> print_table_list(<span class="keywordtype">char</span> *db_file){
     <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(db_file);
-    <a class="code" href="structapop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name from sqlite_master where type==\&quot;table\&quot;;&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name &quot;</span>
+                    <span class="stringliteral">&quot;from sqlite_master where type==&#39;table&#39;&quot;</span>);
     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; tab_list-&gt;textsize[0]; i++)
         printf(<span class="stringliteral">&quot;%s\n&quot;</span>, tab_list-&gt;text[i][0]);
 }
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span> **argv){
     <span class="keywordflow">if</span> (argc == 1){
-        printf(<span class="stringliteral">&quot;Give me a database name, and I will print out the list of tables contained therein.\n&quot;</span>);
+        printf(<span class="stringliteral">&quot;Give me a database name, and I will &quot;</span>
+               <span class="stringliteral">&quot;print out the list of tables contained therein.\n&quot;</span>);
         <span class="keywordflow">return</span> 0; 
     }
     print_table_list(argv[1]);
@@ -318,15 +390,34 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Queries the database, and dumps the first column of the result into a gsl_vector.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.</dd></dl>
 <ul>
-<li>Uses <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> internally, then throws away all but the first column of the matrix. </li>
+<li>Uses <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> internally, then throws away all but the first column of the matrix.</li>
+</ul>
+<ul>
 <li>If <code>apop_opts.db_name_column</code> is set, then I'll ignore that column. It gets put into the names of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, and then thrown away when I look at only the <code>gsl_matrix</code> part of that set.</li>
 </ul>
-<p>If the query returns no columns at all, the function returns <code>NULL</code>. </p>
+<ul>
+<li>If the query returns zero rows of data or no columns, the function returns <code>NULL</code>.</li>
+</ul>
+<ul>
+<li>As with the other <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query_to_vector("select age from %s where id=%i;", tablename, id_number)</code>.</li>
+</ul>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.</dd></dl>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error=='q'</td><td>Query error. A valid query that returns no rows is not an error; in that case, you get <code>NULL</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Mar 21 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
