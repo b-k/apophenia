@@ -62,8 +62,8 @@ APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     Apop_assert_c(in, NULL, 1, "You sent me NULL data; returning NULL.");
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
 APOP_VAR_END_HEAD
-    gsl_vector      *out = gsl_vector_alloc(size);
-    gsl_vector_view	v	 = gsl_vector_view_array((double*)in, size);
+    gsl_vector *out = gsl_vector_alloc(size);
+    gsl_vector_view	v = gsl_vector_view_array((double*)in, size);
 	gsl_vector_memcpy(out,&(v.vector));
     return out;
 }
@@ -651,7 +651,7 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
                                 apop_data *add_this_line, apop_data *fn, int const *field_ends, char const *delimiters){
     if (has_col_names && field_names == NULL){
         while (fn->textsize[0] ==0) parse_a_line(infile, buffer, ptr, fn, field_ends, delimiters);
-        parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
+        while (add_this_line->textsize[0] ==0) parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
     } else{
         while (add_this_line->textsize[0] ==0) 
             parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
@@ -704,7 +704,7 @@ APOP_VAR_END_HEAD
     if (has_col_names=='y'){
         apop_data *field_names = apop_data_alloc();
         get_field_names(1, NULL, infile, buffer, &ptr, add_this_line, field_names, field_ends, delimiters);
-        L.ct = add_this_line->textsize[0];
+        L.ct = *add_this_line->textsize;
         set = apop_data_alloc(0,1, L.ct - hasrows);
 	    set->names->colct   = 0;
 	    set->names->column	= malloc(sizeof(char*));
@@ -1169,6 +1169,7 @@ APOP_VAR_END_HEAD
     get_field_names(has_col_names=='y', field_names, infile, buffer, &ptr,
                                     add_this_line, fn, field_ends, delimiters);
     col_ct = L.ct = *add_this_line->textsize;
+    Apop_stopif(!col_ct, return -1, 0, "counted zero columns in the input file (%s).", tabname);
     if (apop_opts.db_engine=='m')
         not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
     else

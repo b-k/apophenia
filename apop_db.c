@@ -54,7 +54,7 @@ The trade-offs between an on-disk database and an in-memory db are as one would 
 
 MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set \c apop_opts.db_engine = 'm'.
 
-The Apophenia package assumes you are only using a single SQLite database at a time; if not, the \ref apop_db_merge and \ref apop_db_merge_table functions may help.
+The Apophenia package assumes you are only using a single SQLite database at a time. You can use the SQL <tt>attach</tt> function to load other databases, or see <a href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further suggestions and sample code.
 
 When you are done doing your database manipulations, be sure to call \ref apop_db_close if writing to disk.
 

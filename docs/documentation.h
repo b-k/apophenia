@@ -617,7 +617,6 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
 \li\ref apop_data_transpose()
 \li\ref apop_data_unpack()
 \li\ref apop_matrix_copy()
-\li\ref apop_matrix_fill()
 \li\ref apop_matrix_increment()
 \li\ref apop_matrix_realloc()
 \li\ref apop_matrix_rm_columns()
@@ -823,7 +822,7 @@ double sum_of_squares = apop_map_sum(dataset, gsl_pow_2); //given <tt> apop_data
 double sum_of_squares = apop_vector_map_sum(v, gsl_pow_2); //given <tt> gsl_vector *v</tt>
 \endcode
 
-Here, we create an index vector [0, 1, 2, \f$\dots\f$].
+Here, we create an index vector [\f$0, 1, 2, ...\f$].
 
 \code
 double index(double in, int index){return index;}
@@ -945,8 +944,6 @@ Outlineheader  moments  Moments
 \li\ref apop_data_correlation ()
 \li\ref apop_data_covariance ()
 \li\ref apop_data_summarize ()
-\li\ref apop_matrix_correlation ()
-\li\ref apop_matrix_covariance ()
 \li\ref apop_matrix_mean ()
 \li\ref apop_matrix_mean_and_var ()
 \li\ref apop_matrix_sum ()
@@ -974,7 +971,6 @@ endofdiv
 
 Outlineheader convsec   Conversion among types
 
-\li\ref apop_array_to_data()
 \li\ref apop_array_to_matrix()
 \li\ref apop_array_to_vector()
 \li\ref apop_line_to_data()
@@ -1006,8 +1002,14 @@ The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding te
 
 UTF-8 strings are correctly handled. 
 
-\include eg/text_demo.c
+Here is a sample program that uses \ref apop_text_alloc and \ref apop_text_add to set up
+a data set; using these functions means that you never really have to worry about allocation
+issues. Notice how the number of rows of text data in <tt>tdata</tt> is
+<tt>tdata->textsize[0]</tt> (aka <tt>*tdata->textsize</tt>); the number of columns is
+<tt>tdata->textsize[1]</tt>. Refer to individual elements using the usual 2-D array
+notation, <tt>tdata->text[row][col]</tt>.
 
+\include eg/text_demo.c
 
 \li\ref apop_query_to_text()
 \li\ref apop_text_alloc()
@@ -1049,8 +1051,6 @@ use when sending queries from Apophenia, such as \c pow, \c stddev, or \c sqrt.
 \li \ref apop_db_open : Optional, for when you want to use a database on disk.
 \li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
 \li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, the clean way to drop a table.
-\li \ref apop_db_merge : Import or merge the whole of another database into the currently open db.
-\li \ref apop_db_merge_table : Import/merge just one table.
 \li \ref apop_crosstab_to_db : Convert between two common data layouts
 \li \ref apop_db_rng_init : Apophenia maintains a database-side RNG; set its seed it with this.
 
@@ -1095,7 +1095,7 @@ the \c estimate function will estimate the parameters of your model. Just prep t
 
     apop_data *data = read_in_data();
     apop_model *the_estimate = apop_estimate(data, apop_probit);
-    apop_model_show(the_estimate);
+    apop_model_print(the_estimate);
 
 
 Along the way to estimating the parameters, most models also find covariance estimates for
@@ -1249,7 +1249,7 @@ Outlineheader Basicmodelmethods Basic object methods
 \li\ref apop_model_copy()
 \li\ref apop_model_free()
 \li\ref apop_model_set_parameters()
-\li\ref apop_model_show()
+\li\ref apop_model_print()
 
 endofdiv
 
@@ -2240,7 +2240,7 @@ The workflow of a typical fitting-a-model project using Apophenia's tools goes s
 \li Use SQL queries handled by \ref apop_query to massage the data as needed.
 \li Use \ref apop_query_to_data to pull some of the data into an in-memory \ref apop_data set.
 \li Call a model estimation such as \code apop_estimate (data_set, apop_ols)\endcode  or \code apop_estimate (data_set, apop_probit)\endcode to fit parameters to the data. This will return an \ref apop_model with parameter estimates.
-\li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_show, sending its parameters and variance-covariance matrices to additional tests (the \c estimate step runs a few for you), or send the model's output to be input to another model.
+\li Interrogate the returned estimate, by dumping it to the screen with \ref apop_model_print, sending its parameters and variance-covariance matrices to additional tests (the \c estimate step runs a few for you), or send the model's output to be input to another model.
 
 Here is a concrete example of most of the above steps, which you can compile and run. By the time you get to the end
 of this introduction, you will have a good idea of what every line of code is doing and why.

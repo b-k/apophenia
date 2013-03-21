@@ -1097,9 +1097,8 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 
 
 /** Add a string to the text element of an \ref apop_data set.  If you
- send me a \c NULL string, I will write the string <tt>"NaN"</tt> in the given slot.
- If there is already something in that slot, that string is freed (preventing memory
- leaks).
+ send me a \c NULL string, I will write the value of  <tt>apop_opts.db_nan</tt> in the given slot.
+ If there is already something in that slot, that string is freed, preventing memory leaks.
 
 \param in   The \ref apop_data set, that already has an allocated \c text element.
 \param row  The row
@@ -1116,7 +1115,7 @@ an error rather than reallocating the text matrix.
 \li Resizing a text matrix is annoying in C, so note that \ref apop_text_alloc will
 reallocate to a new size if you need. For example, this code will fill the diagonals of
 the text array with a message, resizing as it goes:
-\li The string added is a copy (via <tt>printf</tt>), not a pointer to the input(s).
+\li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
 \li If there had been a string at the grid point you are writing to, 
 the old one is effectively lost when the new one is placed. So, I free
 the old string to prevent leaks. Remember this if you had other pointers aliasing that

@@ -54,7 +54,7 @@ ambiguous cases. Any function-specific option you send always overrules the glob
 At the end, \c output_file, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
-static void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
+void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append :
         ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
 

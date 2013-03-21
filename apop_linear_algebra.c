@@ -477,8 +477,8 @@ as a column vector. Requests for transposition are ignored.
  which will be put in the zeroth element of the output vector;
 see the example. 
 
-\li If you want to multiply an $N \times 1\f$ vector \f$\cdot\f$ a \f$1 \times N$
-matrix produce an $N \times N$ matrix, then use \ref apop_vector_to_matrix to turn
+\li If you want to multiply an \f$N \times 1\f$ vector \f$\cdot\f$ a \f$1 \times N\f$
+matrix produce an \f$N \times N\f$ matrix, then use \ref apop_vector_to_matrix to turn
 your vectors into matrices; see the example.
 
 

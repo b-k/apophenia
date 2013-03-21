@@ -13,7 +13,7 @@
     set and refill it with the pruned elements. I'll still take up (up to)
     twice the size of the data set in memory during the function. If
     every row has an NaN, then your \c apop_data set will end up with
-    \c NULL vector, matrix, \dots. if \c inplace = 'n', then the original data set is left unmolested.
+    \c NULL vector, matrix, .... if \c inplace = 'n', then the original data set is left unmolested.
 \li I only look at the first page of data (i.e. the \c more element is ignored).
 \li This function uses the \ref designated syntax for inputs.
 

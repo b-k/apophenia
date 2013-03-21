@@ -54,10 +54,10 @@ first N are the weights, and then we have each model's parameters packed in, in 
 There are pack/unpack functions that run as needed. Given the estimated mixture model \c m over three models, the weights are:
 \code
     gsl_vector weightsvector = gsl_vector_subvector(m->parameters->vector, 0, 3).vector;
+\endcode
 
 \adoc   Examples
 \include hills.c
-\endcode
 */
 
 #include "apop_internal.h"
