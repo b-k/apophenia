@@ -69,7 +69,7 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
     if (!copyme || !strlen(copyme)) return; //apop_settings_group_alloc takes care of the blank sentinel.
     Apop_stopif(!inm, if (outm) outm->error = 's'; return, 0, "you asked me to copy the settings of a NULL model.");
-    Apop_assert_n(inm->settings, "The input model (i.e., the second argument to this function) has no settings.");
+    Apop_stopif(!inm->settings, return, 0, "The input model (i.e., the second argument to this function) has no settings.");
     void *g =  apop_settings_get_grp(inm, copyme, 'c');
     Apop_stopif(!g, outm->error='s'; return, 0, "Couldn't find the group you wanted me to copy. Not copying anything; setting outmodel->error='s'.");
     int i;

@@ -165,7 +165,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
 APOP_VAR_ENDHEAD
   Get_vmsizes(model->parameters); //tsize
   apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
-  Apop_assert_c(ll, 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
+  Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
   gsl_vector        *out= gsl_vector_alloc(tsize);
   infostruct    i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
@@ -310,8 +310,8 @@ static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
             if (apop_opts.output_type == 's' && !strcmp(tp, "NULL"))
                 *tf = stdout;
             else
-                if (!(*tf = fopen(tp, "a")))
-                    Apop_assert_c(0, , 0, "couldn't open %s for writing. Continuing without the path trace.", tp);
+                Apop_stopif(!(*tf = fopen(tp, "a")), /*keep going.*/,
+                    0, "couldn't open %s for writing. Continuing without the path trace.", tp);
         }
         if (beta->size == 1)
             fprintf(*tf, "%g\t %g\n",  gsl_vector_get(beta,0), out);
@@ -418,7 +418,7 @@ static int ctrl_c;
 static void mle_sigint(){ ctrl_c ++; }
 
 static int setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
-    Apop_assert_negone(x, "The vector I'm trying to optimize over is NULL.");
+    Apop_stopif(!x, return -1, 0, "The vector I'm trying to optimize over is NULL.");
 	if (!mp->starting_pt) gsl_vector_set_all (x, 1);
 	else for (int i=0; i< x->size; i++)
             x->data[i] = mp->starting_pt[i];
@@ -761,8 +761,9 @@ APOP_VAR_ENDHEAD
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
-    Apop_assert_c(apop_vector_bounded(v, boundary), e, 0, "Your model has diverged "
-                    "(element(s) > %g); returning your original model without restarting.", boundary);
+    Apop_stopif(!apop_vector_bounded(v, boundary), return e, 
+                0, "Your model has diverged (element(s) > %g);"
+                   " returning your original model without restarting.", boundary);
     gsl_vector_free(v);
         
     apop_model *newcopy = apop_estimate(e->data, *copy);

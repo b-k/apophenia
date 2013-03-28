@@ -1791,7 +1791,7 @@ L30:
         }
         ++m;
         goto L10;
-    } else Apop_assert_n(0, "This should never occur.");
+    } else Apop_stopif(1, return, 0, "This should never occur.");
     /* Use another segment */
 L40:
     --m;

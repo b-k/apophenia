@@ -118,14 +118,14 @@ This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
     char const *apop_varad_var(name, NULL)
-    Apop_assert_negone(name, "You gave me a NULL table name.");
+    Apop_stopif(!name, return -1, 0, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_table_exists(name, remove);
 #else
-        Apop_assert_negone(0, "Apophenia was compiled without mysql support.");
+        Apop_stopif(1, return -1, 0, "Apophenia was compiled without mysql support.");
 #endif
     char *err=NULL, *q2;
     tab_exists_t te = { .name = name };
@@ -165,7 +165,7 @@ APOP_VAR_END_HEAD
         {apop_mysql_db_close(0);
         return 0;}
 #else
-        {Apop_assert_negone(0, "Apophenia was compiled without mysql support.");}
+        {Apop_stopif(1, return -1, 0, "Apophenia was compiled without mysql support.");}
 #endif
     else {
         char *err, *query = "db close";//for errcheck.
@@ -318,6 +318,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
  
 \return A \c gsl_matrix.
+\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
  */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
     Fillin(query, fmt)
@@ -342,12 +343,15 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 
 /** Queries the database, and dumps the first column of the result into a gsl_vector.
 
-\return		A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
-
 \li Uses \ref apop_query_to_data internally, then throws away all but the first column of the matrix.
-  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix part of that set. 
 
-If the query returns no columns at all, the function returns \c NULL.  */
+\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix part of that set. 
+
+\li If the query returns zero rows of data or no columns, the function returns \c NULL.  
+
+\return	 A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
+
+\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL. */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
@@ -372,13 +376,18 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 }
 
 /** Queries the database, and dumps the result into a single double-precision floating point number.
-\return		A double, actually.
 
 \li This calls \ref apop_query_to_data and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an <tt>order by</tt> clause in your query if you expect multiple lines).
 
-  \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix element of that set. 
+\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix element of that set. 
 
-If the query returns no rows at all, the function returns <tt>NAN</tt>.  */
+\li If the query returns no rows at all, the function returns <tt>NAN</tt>.
+
+\li If the query produces a blank table, returns \c NAN, and if <tt>apop_opts.verbose>=2</tt>, prints an error.
+
+\li If the query produces an error, returns \c NAN, and if <tt>apop_opts.verbose>=0</tt>, prints an error. If you need to distinguish between blank tables, NaNs in the data, and query errors, use \ref apop_query_to_data.
+
+\return		A double, actually.*/
 double apop_query_to_float(const char * fmt, ...){
     double out;
     Fillin(query, fmt)
@@ -394,7 +403,8 @@ double apop_query_to_float(const char * fmt, ...){
         Store_settings
         d = apop_query_to_data("%s", query);
         Restore_settings
-        Apop_assert_c(d && !d->error, GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
+        Apop_stopif(!d, return GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
+        Apop_stopif(d->error, return GSL_NAN, 0, "Query [%s] failed. Returning NaN.", query);
         out	= apop_data_get(d, 0, 0);
         apop_data_free(d);
     }

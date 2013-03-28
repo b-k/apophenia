@@ -1066,8 +1066,9 @@ static void line_to_insert(line_parse_t L, apop_data const*addme, char const *ta
         if (p_stmt){
             if (!prepped || !strlen(prepped))
                 field++; //leave NULL and cleared
-            else if (sqlite3_bind_text(p_stmt, field++, prepped, -1, SQLITE_TRANSIENT))
-                Apop_notify(0, "Something wrong on line %i, field %i [%s].\n"
+            else 
+               Apop_stopif(sqlite3_bind_text(p_stmt, field++, prepped, -1, SQLITE_TRANSIENT)!=SQLITE_OK,
+                /*keep going */, 0, "Something wrong on line %i, field %i [%s].\n"
                                             , row, field-1, *addme->text[col]);
         } else {
             if (prepped && strlen(prepped)) 

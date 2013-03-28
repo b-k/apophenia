@@ -181,7 +181,7 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 
 \ingroup names */
 int apop_name_find(const apop_name *n, const char *in, const char type){
-    Apop_assert_negone(in, "Searching for NULL.");
+    Apop_stopif(!in, return -1, 0, "You asked me to search for NULL.");
     regex_t re;
     char **list;
     int  listct;
@@ -198,7 +198,7 @@ int apop_name_find(const apop_name *n, const char *in, const char type){
         listct  = n->colct;
     }
     int compiled_ok = !regcomp(&re, in, REG_EXTENDED + REG_ICASE);
-    Apop_assert_negone(compiled_ok, "Regular expression \"%s\" didn't compile.", in);
+    Apop_stopif(!compiled_ok, return -1, 0, "Regular expression \"%s\" didn't compile.", in);
     for (int i = 0; i < listct; i++)
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);

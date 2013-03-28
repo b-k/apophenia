@@ -169,7 +169,7 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
     gsl_vector * apop_varad_var(v, NULL);
-    Apop_assert_n(v, "You sent me a NULL vector.");
+    Apop_stopif(!v, return, 0, "You sent me a NULL vector.");
     int apop_varad_var(i, 0);
     double apop_varad_var(amt, 1);
 APOP_VAR_END_HEAD
@@ -193,7 +193,7 @@ APOP_VAR_END_HEAD
  */
 APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
     gsl_matrix * apop_varad_var(m, NULL);
-    Apop_assert_n(m, "You sent me a NULL matrix.");
+    Apop_stopif(!m, return, 0, "You sent me a NULL matrix.");
     int apop_varad_var(i, 0);
     int apop_varad_var(j, 0);
     double apop_varad_var(amt, 1);

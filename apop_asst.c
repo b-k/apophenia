@@ -354,7 +354,7 @@ APOP_VAR_HEAD int  apop_regex(const char *string, const char* regex, apop_data *
         return 0;
     }
     const char * apop_varad_var(regex, NULL);
-    Apop_assert_negone(regex, "You gave me a NULL regex.");
+    Apop_stopif(!regex, return -1, 0, "You gave me a NULL regex.");
     const char apop_varad_var(use_case, 'n');
 APOP_VAR_ENDHEAD
     regex_t re;
@@ -393,17 +393,16 @@ APOP_VAR_ENDHEAD
 
 /** RNG from a Generalized Hypergeometric type B3.
 
- Devroye uses this as the base for many of his
- distribution-generators, including the Waring.
+Devroye uses this as the base for many of his distribution-generators, including the Waring.
 
 \li If one of the inputs is <=0, error. Returns \c GSL_NAN if the function doesn't stop.
 */  //Header in stats.h
 double apop_rng_GHgB3(gsl_rng * r, double* a){
-    Apop_assert_nan((a[0]>0) && (a[1] > 0) && (a[2] > 0), "apop_GHgB3_rng took a zero parameter; bad.");
-double		aa	= gsl_ran_gamma(r, a[0], 1),
-		b	= gsl_ran_gamma(r, a[1], 1),
-		c	= gsl_ran_gamma(r, a[2], 1);
-int		p	= gsl_ran_poisson(r, aa*b/c);
+    Apop_stopif(!((a[0]>0) && (a[1] > 0) && (a[2] > 0)), return GSL_NAN, 0, "all inputs must be positive.");
+    double aa = gsl_ran_gamma(r, a[0], 1),
+		   b  = gsl_ran_gamma(r, a[1], 1),
+		   c  = gsl_ran_gamma(r, a[2], 1);
+    int	p = gsl_ran_poisson(r, aa*b/c);
 	return p;
 }
 
