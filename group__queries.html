@@ -59,10 +59,7 @@ Functions</h2>
 <span class="keywordtype">int</span> min_height = 175;
 <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;select %s from %s where %s &gt; %i&quot;</span>, colname, tabname, colname, min_height);
 </pre></div><ul>
-<li>Blanks in the database (i.e., <code> NULL</code>s) and elements that match <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> are filled with <code>NAN</code>s in the matrix.</li>
-</ul>
-<ul>
-<li>As with the <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query("create table %s(id, name, age);", tablename)</code>. </li>
+<li>Blanks in the database (i.e., <code> NULL</code>s) and elements that match <a class="el" href="structapop__opts__type.html">apop_opts.db_nan</a> are filled with <code>NAN</code>s in the matrix. </li>
 </ul>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="ga236452b3305ea7b791c781d91a819e3b"></a><!-- doxytag: member="apop_db.c::apop_query" ref="ga236452b3305ea7b791c781d91a819e3b" args="(const char *fmt,...)" -->
@@ -89,7 +86,10 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Send a query to the database that returns no data. </p>
+<p>Send a query to the database that returns no data.</p>
+<ul>
+<li>As with the <code>apop_query_to_</code>... functions, the query can include printf-style format specifiers, such as <code>apop_query("create table %s(id, name, age);", tablename)</code>.</li>
+</ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">fmt</td><td>A <code>printf</code>-style SQL query. </td></tr>
@@ -356,8 +356,8 @@ Functions</h2>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span> **argv){
     <span class="keywordflow">if</span> (argc == 1){
-        printf(<span class="stringliteral">&quot;Give me a database name, and I will &quot;</span>
-               <span class="stringliteral">&quot;print out the list of tables contained therein.\n&quot;</span>);
+        printf(<span class="stringliteral">&quot;Give me a database name, and I will print out &quot;</span>
+               <span class="stringliteral">&quot;the list of tables contained therein.\n&quot;</span>);
         <span class="keywordflow">return</span> 0; 
     }
     print_table_list(argv[1]);
