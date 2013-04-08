@@ -182,142 +182,133 @@ urchinTracker();
 <a name="l00269"></a><a class="code" href="structapop__pmf__settings.html">00269</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
 <a name="l00270"></a><a class="code" href="structapop__pmf__settings.html#a32add9d68b616be1ad71c52bb76e446f">00270</a>     gsl_vector *<a class="code" href="structapop__pmf__settings.html#a32add9d68b616be1ad71c52bb76e446f">cmf</a>;  
 <a name="l00271"></a><a class="code" href="structapop__pmf__settings.html#a8e878300e25018c0124acf2379f52db2">00271</a>     <span class="keywordtype">char</span> draw_index;  
-<a name="l00273"></a><a class="code" href="structapop__pmf__settings.html#a7c9aff596f897d1ca5273c2e6f805d98">00273</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__pmf__settings.html#a7c9aff596f897d1ca5273c2e6f805d98">cmf_refct</a>;    
-<a name="l00274"></a>00274 } <a class="code" href="structapop__pmf__settings.html">apop_pmf_settings</a>;
-<a name="l00275"></a>00275 
-<a name="l00276"></a>00276 <span class="preprocessor">#include &lt;gsl/gsl_histogram.h&gt;</span>
-<a name="l00281"></a><a class="code" href="structapop__histogram__settings.html">00281</a> <span class="keyword">typedef</span> <span class="keyword">struct</span>{
-<a name="l00282"></a>00282     <a class="code" href="structapop__data.html">apop_data</a>           *data;
-<a name="l00283"></a><a class="code" href="structapop__histogram__settings.html#a4883054d3697ae4945f05cf05e7f49ce">00283</a>     gsl_histogram       *<a class="code" href="structapop__histogram__settings.html#a4883054d3697ae4945f05cf05e7f49ce">pdf</a>; 
-<a name="l00284"></a><a class="code" href="structapop__histogram__settings.html#acf9df657156549235e898b509dddd6c5">00284</a>     gsl_histogram_pdf   *<a class="code" href="structapop__histogram__settings.html#acf9df657156549235e898b509dddd6c5">cdf</a>; 
-<a name="l00285"></a>00285     <a class="code" href="structapop__model.html">apop_model</a>          *histobase;
-<a name="l00286"></a>00286     <span class="keywordtype">int</span>                 ownerbase; 
-<a name="l00287"></a><a class="code" href="structapop__histogram__settings.html#a87252896e56dc7a972257837e6fa6397">00287</a>     <span class="keywordtype">int</span>                 <a class="code" href="structapop__histogram__settings.html#a87252896e56dc7a972257837e6fa6397">bins_in</a>; 
-<a name="l00288"></a>00288 } <a class="code" href="structapop__histogram__settings.html">apop_histogram_settings</a>;
-<a name="l00289"></a>00289 
-<a name="l00293"></a><a class="code" href="structapop__kernel__density__settings.html">00293</a> <span class="keyword">typedef</span> <span class="keyword">struct</span>{
-<a name="l00294"></a><a class="code" href="structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e">00294</a>     <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e">base_data</a>; 
-<a name="l00295"></a><a class="code" href="structapop__kernel__density__settings.html#ad04717a9a79e699559fd28b060c4a683">00295</a>     <a class="code" href="structapop__model.html">apop_model</a> *base_pmf; 
-<a name="l00297"></a><a class="code" href="structapop__kernel__density__settings.html#a3aa105f6ca87b95f942c1301651d56c2">00297</a>     <a class="code" href="structapop__model.html">apop_model</a> *kernel; 
-<a name="l00299"></a><a class="code" href="structapop__kernel__density__settings.html#a645ce1a7f00e3a4dce575df9aacad52c">00299</a>     void (*set_fn)(<a class="code" href="structapop__data.html">apop_data</a>*, <a class="code" href="structapop__model.html">apop_model</a>*); 
-<a name="l00301"></a><a class="code" href="structapop__kernel__density__settings.html#a93d16f1ad5b02a21543a557d3541adc2">00301</a>     <span class="keywordtype">int</span> own_pmf, <a class="code" href="structapop__kernel__density__settings.html#a93d16f1ad5b02a21543a557d3541adc2">own_kernel</a>; 
-<a name="l00302"></a>00302 }<a class="code" href="structapop__kernel__density__settings.html">apop_kernel_density_settings</a>;
-<a name="l00303"></a>00303 
-<a name="l00304"></a>00304 
-<a name="l00308"></a><a class="code" href="structapop__update__settings.html">00308</a> <span class="keyword">typedef</span> <span class="keyword">struct</span>{
-<a name="l00309"></a>00309     <a class="code" href="structapop__data.html">apop_data</a> *data;
-<a name="l00310"></a><a class="code" href="structapop__update__settings.html#a6ad730e188a7f768893d8e2a7bdf6c38">00310</a>     <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="structapop__update__settings.html#a6ad730e188a7f768893d8e2a7bdf6c38">starting_pt</a>; 
-<a name="l00311"></a><a class="code" href="structapop__update__settings.html#a9a98ed182a53611123d54815ab303deb">00311</a>     <span class="keywordtype">long</span> <span class="keywordtype">int</span> <a class="code" href="structapop__update__settings.html#a9a98ed182a53611123d54815ab303deb">periods</a>; 
-<a name="l00312"></a><a class="code" href="structapop__update__settings.html#a82cf3dbeca947feeaedc19c0ed79b566">00312</a>     <span class="keywordtype">double</span> burnin; 
-<a name="l00314"></a><a class="code" href="structapop__update__settings.html#a271a2ecf6377409a70f5867934b85694">00314</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__update__settings.html#a271a2ecf6377409a70f5867934b85694">histosegments</a>; 
-<a name="l00315"></a>00315     <span class="keywordtype">char</span> method;
-<a name="l00316"></a>00316 } <a class="code" href="structapop__update__settings.html">apop_update_settings</a>;
-<a name="l00317"></a>00317 
-<a name="l00318"></a>00318 <span class="comment">//Loess, including the old FORTRAN-to-C.</span>
-<a name="l00319"></a><a class="code" href="structloess__struct.html">00319</a> <span class="keyword">struct </span><a class="code" href="structloess__struct.html">loess_struct</a> {
-<a name="l00320"></a>00320      <span class="keyword">struct </span>{
-<a name="l00321"></a>00321           <span class="keywordtype">long</span>    n, p;
-<a name="l00322"></a>00322         <span class="keywordtype">double</span>  *y, *x;
-<a name="l00323"></a>00323           <span class="keywordtype">double</span>    *weights;
-<a name="l00324"></a>00324      } in;
-<a name="l00325"></a>00325      <span class="keyword">struct </span>{
-<a name="l00326"></a>00326              <span class="keywordtype">double</span>  span;
-<a name="l00327"></a>00327              <span class="keywordtype">long</span>    degree;
-<a name="l00328"></a>00328              <span class="keywordtype">long</span>    normalize;
-<a name="l00329"></a>00329              <span class="keywordtype">long</span>    parametric[8];
-<a name="l00330"></a>00330              <span class="keywordtype">long</span>    drop_square[8];
-<a name="l00331"></a>00331              <span class="keywordtype">char</span>    *family;
-<a name="l00332"></a>00332      } model;
-<a name="l00333"></a>00333      <span class="keyword">struct </span>{
-<a name="l00334"></a>00334              <span class="keywordtype">char</span>    *surface;
-<a name="l00335"></a>00335              <span class="keywordtype">char</span>    *statistics;
-<a name="l00336"></a>00336              <span class="keywordtype">double</span>  cell;
-<a name="l00337"></a>00337              <span class="keywordtype">char</span>    *trace_hat;
-<a name="l00338"></a>00338              <span class="keywordtype">long</span>    iterations;
-<a name="l00339"></a>00339      } control;
-<a name="l00340"></a>00340      <span class="keyword">struct </span>{
-<a name="l00341"></a>00341           <span class="keywordtype">long</span> *parameter, *a;
-<a name="l00342"></a>00342           <span class="keywordtype">double</span>    *xi, *vert, *vval;
-<a name="l00343"></a>00343      } kd_tree;
-<a name="l00344"></a>00344      <span class="keyword">struct </span>{
-<a name="l00345"></a>00345           <span class="keywordtype">double</span>    *fitted_values;
-<a name="l00346"></a>00346         <span class="keywordtype">double</span>  *fitted_residuals;
-<a name="l00347"></a>00347           <span class="keywordtype">double</span>  enp, s;
-<a name="l00348"></a>00348           <span class="keywordtype">double</span>  one_delta, two_delta;
-<a name="l00349"></a>00349           <span class="keywordtype">double</span>    *pseudovalues;
-<a name="l00350"></a>00350           <span class="keywordtype">double</span>    trace_hat;
-<a name="l00351"></a>00351           <span class="keywordtype">double</span>    *diagonal;
-<a name="l00352"></a>00352           <span class="keywordtype">double</span>    *robust;
-<a name="l00353"></a>00353           <span class="keywordtype">double</span>  *divisor;
-<a name="l00354"></a>00354      } out;
-<a name="l00355"></a>00355 };
-<a name="l00356"></a>00356 
-<a name="l00465"></a><a class="code" href="structapop__loess__settings.html">00465</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
-<a name="l00466"></a>00466     <a class="code" href="structapop__data.html">apop_data</a> *data;
-<a name="l00467"></a>00467     <span class="keyword">struct  </span><a class="code" href="structloess__struct.html">loess_struct</a> lo_s;
-<a name="l00468"></a><a class="code" href="structapop__loess__settings.html#a0c8cc70a4be852404cc7cf1bd54e6008">00468</a>     <span class="keywordtype">int</span>     want_predict_ci; 
-<a name="l00470"></a><a class="code" href="structapop__loess__settings.html#ace7009d9ce26d3af9d7bd9c12baa7bcf">00470</a>     <span class="keywordtype">double</span>  ci_level; 
-<a name="l00472"></a>00472 } <a class="code" href="structapop__loess__settings.html">apop_loess_settings</a>;
-<a name="l00473"></a>00473 
-<a name="l00474"></a>00474 
-<a name="l00476"></a>00476 <span class="keyword">typedef</span> <span class="keyword">struct </span>point {    <span class="comment">/* a point in the x,y plane */</span>
-<a name="l00477"></a>00477   <span class="keywordtype">double</span> x,y;             <span class="comment">/* x and y coordinates */</span>
-<a name="l00478"></a>00478   <span class="keywordtype">double</span> ey;              <span class="comment">/* exp(y-ymax+YCEIL) */</span>
-<a name="l00479"></a>00479   <span class="keywordtype">double</span> cum;             <span class="comment">/* integral up to x of rejection envelope */</span>
-<a name="l00480"></a>00480   <span class="keywordtype">int</span> f;                  <span class="comment">/* is y an evaluated point of log-density */</span>
-<a name="l00481"></a>00481   <span class="keyword">struct </span>point *pl,*pr;   <span class="comment">/* envelope points to left and right of x */</span>
-<a name="l00482"></a>00482 } POINT;
-<a name="l00483"></a>00483 
-<a name="l00484"></a>00484 <span class="comment">/* This includes the envelope info and the metropolis steps. */</span>
-<a name="l00485"></a>00485 <span class="keyword">typedef</span> <span class="keyword">struct </span>{  <span class="comment">/* attributes of the entire rejection envelope */</span>
-<a name="l00486"></a>00486   <span class="keywordtype">int</span> cpoint;              <span class="comment">/* number of POINTs in current envelope */</span>
-<a name="l00487"></a>00487   <span class="keywordtype">int</span> npoint;              <span class="comment">/* max number of POINTs allowed in envelope */</span>
-<a name="l00488"></a>00488   <span class="keywordtype">double</span> ymax;             <span class="comment">/* the maximum y-value in the current envelope */</span>
-<a name="l00489"></a>00489   POINT *p;                <span class="comment">/* start of storage of envelope POINTs */</span>
-<a name="l00490"></a>00490   <span class="keywordtype">double</span> *convex;          <span class="comment">/* adjustment for convexity */</span>
-<a name="l00491"></a>00491   <span class="keywordtype">double</span> metro_xprev;      <span class="comment">/* previous Markov chain iterate */</span>
-<a name="l00492"></a>00492   <span class="keywordtype">double</span> metro_yprev;      <span class="comment">/* current log density at xprev */</span>
-<a name="l00493"></a>00493 } arms_state;
-<a name="l00497"></a><a class="code" href="structapop__arms__settings.html">00497</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
-<a name="l00498"></a><a class="code" href="structapop__arms__settings.html#a6b08cf58875f52e8d8a1148ea1b631af">00498</a>     <span class="keywordtype">double</span> *<a class="code" href="structapop__arms__settings.html#a6b08cf58875f52e8d8a1148ea1b631af">xinit</a>;  
-<a name="l00499"></a><a class="code" href="structapop__arms__settings.html#a0677eaab084f07f5f5ecc690124980be">00499</a>     <span class="keywordtype">double</span>  <a class="code" href="structapop__arms__settings.html#a0677eaab084f07f5f5ecc690124980be">xl</a>;     
-<a name="l00500"></a><a class="code" href="structapop__arms__settings.html#a845179acca7b0bdcb730cacc232bc4d0">00500</a>     <span class="keywordtype">double</span>  <a class="code" href="structapop__arms__settings.html#a845179acca7b0bdcb730cacc232bc4d0">xr</a>;     
-<a name="l00501"></a><a class="code" href="structapop__arms__settings.html#a85e13f4fb666d93db985a9dd4c904be4">00501</a>     <span class="keywordtype">double</span> <a class="code" href="structapop__arms__settings.html#a85e13f4fb666d93db985a9dd4c904be4">convex</a>;  
-<a name="l00502"></a><a class="code" href="structapop__arms__settings.html#a1d01a0b27137d6c2c02f1829aca20915">00502</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#a1d01a0b27137d6c2c02f1829aca20915">ninit</a>;      
-<a name="l00503"></a><a class="code" href="structapop__arms__settings.html#af73cebea0280bf908c2ebd6c059c134f">00503</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#af73cebea0280bf908c2ebd6c059c134f">npoint</a>;     
-<a name="l00504"></a><a class="code" href="structapop__arms__settings.html#aedd47a0a4ff37b0b371d3731b1938f9c">00504</a>    <span class="keywordtype">char</span> <a class="code" href="structapop__arms__settings.html#aedd47a0a4ff37b0b371d3731b1938f9c">do_metro</a>;   
-<a name="l00505"></a><a class="code" href="structapop__arms__settings.html#a040d22cb543f58ce882c2d9a7cdd4d80">00505</a>    <span class="keywordtype">double</span> <a class="code" href="structapop__arms__settings.html#a040d22cb543f58ce882c2d9a7cdd4d80">xprev</a>;    
-<a name="l00506"></a><a class="code" href="structapop__arms__settings.html#a79ea448f38bf9339a6adf350c406720b">00506</a>    <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#a79ea448f38bf9339a6adf350c406720b">neval</a>;       
-<a name="l00507"></a>00507    arms_state *state;
-<a name="l00508"></a><a class="code" href="structapop__arms__settings.html#aafb2fcc9c3cf2afb73848595f56b3810">00508</a>    <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__arms__settings.html#aafb2fcc9c3cf2afb73848595f56b3810">model</a>; 
-<a name="l00509"></a>00509 } <a class="code" href="structapop__arms__settings.html">apop_arms_settings</a>;
-<a name="l00510"></a>00510 
-<a name="l00511"></a>00511 
-<a name="l00512"></a><a class="code" href="structapop__stack__settings.html">00512</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
-<a name="l00513"></a><a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">00513</a>     <span class="keywordtype">char</span> *<a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">splitpage</a>;    
-<a name="l00514"></a><a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">00514</a>     <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">model1</a>; 
-<a name="l00515"></a><a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">00515</a>     <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">model2</a>; 
-<a name="l00516"></a>00516 } <a class="code" href="structapop__stack__settings.html">apop_stack_settings</a>;
-<a name="l00517"></a>00517 
-<a name="l00518"></a>00518 
-<a name="l00521"></a>00521 <span class="comment">//Doxygen drops whatever is after these declarations, so I put them last.</span>
-<a name="l00522"></a>00522 Apop_settings_declarations(apop_lm)
-<a name="l00523"></a>00523 Apop_settings_declarations(apop_pm)
-<a name="l00524"></a>00524 Apop_settings_declarations(<a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>)
-<a name="l00525"></a>00525 Apop_settings_declarations(apop_mle)
-<a name="l00526"></a>00526 Apop_settings_declarations(<a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>)
-<a name="l00527"></a>00527 Apop_settings_declarations(apop_arms)
-<a name="l00528"></a>00528 Apop_settings_declarations(<a class="code" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>)
-<a name="l00529"></a>00529 Apop_settings_declarations(<a class="code" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>)
-<a name="l00530"></a>00530 Apop_settings_declarations(<a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>)
-<a name="l00531"></a>00531 Apop_settings_declarations(<a class="code" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a>)
-<a name="l00532"></a>00532 Apop_settings_declarations(apop_parts_wanted)
-<a name="l00533"></a>00533 Apop_settings_declarations(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>)
-<a name="l00534"></a>00534 
-<a name="l00535"></a>00535 <span class="preprocessor">#ifdef    __cplusplus</span>
-<a name="l00536"></a>00536 <span class="preprocessor"></span>}
-<a name="l00537"></a>00537 <span class="preprocessor">#endif</span>
-<a name="l00538"></a>00538 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00273"></a><a class="code" href="structapop__pmf__settings.html#a94c6f1dfbd4096ad2bef8f1676595e0f">00273</a>     <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="structapop__pmf__settings.html#a94c6f1dfbd4096ad2bef8f1676595e0f">total_weight</a>; 
+<a name="l00274"></a><a class="code" href="structapop__pmf__settings.html#a7c9aff596f897d1ca5273c2e6f805d98">00274</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__pmf__settings.html#a7c9aff596f897d1ca5273c2e6f805d98">cmf_refct</a>;    
+<a name="l00275"></a>00275 } <a class="code" href="structapop__pmf__settings.html">apop_pmf_settings</a>;
+<a name="l00276"></a>00276 
+<a name="l00277"></a>00277 
+<a name="l00281"></a><a class="code" href="structapop__kernel__density__settings.html">00281</a> <span class="keyword">typedef</span> <span class="keyword">struct</span>{
+<a name="l00282"></a><a class="code" href="structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e">00282</a>     <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e">base_data</a>; 
+<a name="l00283"></a><a class="code" href="structapop__kernel__density__settings.html#ad04717a9a79e699559fd28b060c4a683">00283</a>     <a class="code" href="structapop__model.html">apop_model</a> *base_pmf; 
+<a name="l00285"></a><a class="code" href="structapop__kernel__density__settings.html#a3aa105f6ca87b95f942c1301651d56c2">00285</a>     <a class="code" href="structapop__model.html">apop_model</a> *kernel; 
+<a name="l00287"></a><a class="code" href="structapop__kernel__density__settings.html#a645ce1a7f00e3a4dce575df9aacad52c">00287</a>     void (*set_fn)(<a class="code" href="structapop__data.html">apop_data</a>*, <a class="code" href="structapop__model.html">apop_model</a>*); 
+<a name="l00289"></a><a class="code" href="structapop__kernel__density__settings.html#a93d16f1ad5b02a21543a557d3541adc2">00289</a>     <span class="keywordtype">int</span> own_pmf, <a class="code" href="structapop__kernel__density__settings.html#a93d16f1ad5b02a21543a557d3541adc2">own_kernel</a>; 
+<a name="l00290"></a>00290 }<a class="code" href="structapop__kernel__density__settings.html">apop_kernel_density_settings</a>;
+<a name="l00291"></a>00291 
+<a name="l00292"></a>00292 
+<a name="l00296"></a><a class="code" href="structapop__update__settings.html">00296</a> <span class="keyword">typedef</span> <span class="keyword">struct</span>{
+<a name="l00297"></a>00297     <a class="code" href="structapop__data.html">apop_data</a> *data;
+<a name="l00298"></a><a class="code" href="structapop__update__settings.html#a6ad730e188a7f768893d8e2a7bdf6c38">00298</a>     <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="structapop__update__settings.html#a6ad730e188a7f768893d8e2a7bdf6c38">starting_pt</a>; 
+<a name="l00299"></a><a class="code" href="structapop__update__settings.html#a9a98ed182a53611123d54815ab303deb">00299</a>     <span class="keywordtype">long</span> <span class="keywordtype">int</span> <a class="code" href="structapop__update__settings.html#a9a98ed182a53611123d54815ab303deb">periods</a>; 
+<a name="l00300"></a><a class="code" href="structapop__update__settings.html#a82cf3dbeca947feeaedc19c0ed79b566">00300</a>     <span class="keywordtype">double</span> burnin; 
+<a name="l00302"></a><a class="code" href="structapop__update__settings.html#a271a2ecf6377409a70f5867934b85694">00302</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__update__settings.html#a271a2ecf6377409a70f5867934b85694">histosegments</a>; 
+<a name="l00303"></a>00303     <span class="keywordtype">char</span> method;
+<a name="l00304"></a>00304 } <a class="code" href="structapop__update__settings.html">apop_update_settings</a>;
+<a name="l00305"></a>00305 
+<a name="l00306"></a>00306 <span class="comment">//Loess, including the old FORTRAN-to-C.</span>
+<a name="l00307"></a><a class="code" href="structloess__struct.html">00307</a> <span class="keyword">struct </span><a class="code" href="structloess__struct.html">loess_struct</a> {
+<a name="l00308"></a>00308      <span class="keyword">struct </span>{
+<a name="l00309"></a>00309           <span class="keywordtype">long</span>    n, p;
+<a name="l00310"></a>00310         <span class="keywordtype">double</span>  *y, *x;
+<a name="l00311"></a>00311           <span class="keywordtype">double</span>    *weights;
+<a name="l00312"></a>00312      } in;
+<a name="l00313"></a>00313      <span class="keyword">struct </span>{
+<a name="l00314"></a>00314              <span class="keywordtype">double</span>  span;
+<a name="l00315"></a>00315              <span class="keywordtype">long</span>    degree;
+<a name="l00316"></a>00316              <span class="keywordtype">long</span>    normalize;
+<a name="l00317"></a>00317              <span class="keywordtype">long</span>    parametric[8];
+<a name="l00318"></a>00318              <span class="keywordtype">long</span>    drop_square[8];
+<a name="l00319"></a>00319              <span class="keywordtype">char</span>    *family;
+<a name="l00320"></a>00320      } model;
+<a name="l00321"></a>00321      <span class="keyword">struct </span>{
+<a name="l00322"></a>00322              <span class="keywordtype">char</span>    *surface;
+<a name="l00323"></a>00323              <span class="keywordtype">char</span>    *statistics;
+<a name="l00324"></a>00324              <span class="keywordtype">double</span>  cell;
+<a name="l00325"></a>00325              <span class="keywordtype">char</span>    *trace_hat;
+<a name="l00326"></a>00326              <span class="keywordtype">long</span>    iterations;
+<a name="l00327"></a>00327      } control;
+<a name="l00328"></a>00328      <span class="keyword">struct </span>{
+<a name="l00329"></a>00329           <span class="keywordtype">long</span> *parameter, *a;
+<a name="l00330"></a>00330           <span class="keywordtype">double</span>    *xi, *vert, *vval;
+<a name="l00331"></a>00331      } kd_tree;
+<a name="l00332"></a>00332      <span class="keyword">struct </span>{
+<a name="l00333"></a>00333           <span class="keywordtype">double</span>    *fitted_values;
+<a name="l00334"></a>00334         <span class="keywordtype">double</span>  *fitted_residuals;
+<a name="l00335"></a>00335           <span class="keywordtype">double</span>  enp, s;
+<a name="l00336"></a>00336           <span class="keywordtype">double</span>  one_delta, two_delta;
+<a name="l00337"></a>00337           <span class="keywordtype">double</span>    *pseudovalues;
+<a name="l00338"></a>00338           <span class="keywordtype">double</span>    trace_hat;
+<a name="l00339"></a>00339           <span class="keywordtype">double</span>    *diagonal;
+<a name="l00340"></a>00340           <span class="keywordtype">double</span>    *robust;
+<a name="l00341"></a>00341           <span class="keywordtype">double</span>  *divisor;
+<a name="l00342"></a>00342      } out;
+<a name="l00343"></a>00343 };
+<a name="l00344"></a>00344 
+<a name="l00453"></a><a class="code" href="structapop__loess__settings.html">00453</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l00454"></a>00454     <a class="code" href="structapop__data.html">apop_data</a> *data;
+<a name="l00455"></a>00455     <span class="keyword">struct  </span><a class="code" href="structloess__struct.html">loess_struct</a> lo_s;
+<a name="l00456"></a><a class="code" href="structapop__loess__settings.html#a0c8cc70a4be852404cc7cf1bd54e6008">00456</a>     <span class="keywordtype">int</span>     want_predict_ci; 
+<a name="l00458"></a><a class="code" href="structapop__loess__settings.html#ace7009d9ce26d3af9d7bd9c12baa7bcf">00458</a>     <span class="keywordtype">double</span>  ci_level; 
+<a name="l00460"></a>00460 } <a class="code" href="structapop__loess__settings.html">apop_loess_settings</a>;
+<a name="l00461"></a>00461 
+<a name="l00462"></a>00462 
+<a name="l00464"></a>00464 <span class="keyword">typedef</span> <span class="keyword">struct </span>point {    <span class="comment">/* a point in the x,y plane */</span>
+<a name="l00465"></a>00465   <span class="keywordtype">double</span> x,y;             <span class="comment">/* x and y coordinates */</span>
+<a name="l00466"></a>00466   <span class="keywordtype">double</span> ey;              <span class="comment">/* exp(y-ymax+YCEIL) */</span>
+<a name="l00467"></a>00467   <span class="keywordtype">double</span> cum;             <span class="comment">/* integral up to x of rejection envelope */</span>
+<a name="l00468"></a>00468   <span class="keywordtype">int</span> f;                  <span class="comment">/* is y an evaluated point of log-density */</span>
+<a name="l00469"></a>00469   <span class="keyword">struct </span>point *pl,*pr;   <span class="comment">/* envelope points to left and right of x */</span>
+<a name="l00470"></a>00470 } POINT;
+<a name="l00471"></a>00471 
+<a name="l00472"></a>00472 <span class="comment">/* This includes the envelope info and the metropolis steps. */</span>
+<a name="l00473"></a>00473 <span class="keyword">typedef</span> <span class="keyword">struct </span>{  <span class="comment">/* attributes of the entire rejection envelope */</span>
+<a name="l00474"></a>00474   <span class="keywordtype">int</span> cpoint;              <span class="comment">/* number of POINTs in current envelope */</span>
+<a name="l00475"></a>00475   <span class="keywordtype">int</span> npoint;              <span class="comment">/* max number of POINTs allowed in envelope */</span>
+<a name="l00476"></a>00476   <span class="keywordtype">double</span> ymax;             <span class="comment">/* the maximum y-value in the current envelope */</span>
+<a name="l00477"></a>00477   POINT *p;                <span class="comment">/* start of storage of envelope POINTs */</span>
+<a name="l00478"></a>00478   <span class="keywordtype">double</span> *convex;          <span class="comment">/* adjustment for convexity */</span>
+<a name="l00479"></a>00479   <span class="keywordtype">double</span> metro_xprev;      <span class="comment">/* previous Markov chain iterate */</span>
+<a name="l00480"></a>00480   <span class="keywordtype">double</span> metro_yprev;      <span class="comment">/* current log density at xprev */</span>
+<a name="l00481"></a>00481 } arms_state;
+<a name="l00485"></a><a class="code" href="structapop__arms__settings.html">00485</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l00486"></a><a class="code" href="structapop__arms__settings.html#a6b08cf58875f52e8d8a1148ea1b631af">00486</a>     <span class="keywordtype">double</span> *<a class="code" href="structapop__arms__settings.html#a6b08cf58875f52e8d8a1148ea1b631af">xinit</a>;  
+<a name="l00487"></a><a class="code" href="structapop__arms__settings.html#a0677eaab084f07f5f5ecc690124980be">00487</a>     <span class="keywordtype">double</span>  <a class="code" href="structapop__arms__settings.html#a0677eaab084f07f5f5ecc690124980be">xl</a>;     
+<a name="l00488"></a><a class="code" href="structapop__arms__settings.html#a845179acca7b0bdcb730cacc232bc4d0">00488</a>     <span class="keywordtype">double</span>  <a class="code" href="structapop__arms__settings.html#a845179acca7b0bdcb730cacc232bc4d0">xr</a>;     
+<a name="l00489"></a><a class="code" href="structapop__arms__settings.html#a85e13f4fb666d93db985a9dd4c904be4">00489</a>     <span class="keywordtype">double</span> <a class="code" href="structapop__arms__settings.html#a85e13f4fb666d93db985a9dd4c904be4">convex</a>;  
+<a name="l00490"></a><a class="code" href="structapop__arms__settings.html#a1d01a0b27137d6c2c02f1829aca20915">00490</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#a1d01a0b27137d6c2c02f1829aca20915">ninit</a>;      
+<a name="l00491"></a><a class="code" href="structapop__arms__settings.html#af73cebea0280bf908c2ebd6c059c134f">00491</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#af73cebea0280bf908c2ebd6c059c134f">npoint</a>;     
+<a name="l00492"></a><a class="code" href="structapop__arms__settings.html#aedd47a0a4ff37b0b371d3731b1938f9c">00492</a>    <span class="keywordtype">char</span> <a class="code" href="structapop__arms__settings.html#aedd47a0a4ff37b0b371d3731b1938f9c">do_metro</a>;   
+<a name="l00493"></a><a class="code" href="structapop__arms__settings.html#a040d22cb543f58ce882c2d9a7cdd4d80">00493</a>    <span class="keywordtype">double</span> <a class="code" href="structapop__arms__settings.html#a040d22cb543f58ce882c2d9a7cdd4d80">xprev</a>;    
+<a name="l00494"></a><a class="code" href="structapop__arms__settings.html#a79ea448f38bf9339a6adf350c406720b">00494</a>    <span class="keywordtype">int</span> <a class="code" href="structapop__arms__settings.html#a79ea448f38bf9339a6adf350c406720b">neval</a>;       
+<a name="l00495"></a>00495    arms_state *state;
+<a name="l00496"></a><a class="code" href="structapop__arms__settings.html#aafb2fcc9c3cf2afb73848595f56b3810">00496</a>    <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__arms__settings.html#aafb2fcc9c3cf2afb73848595f56b3810">model</a>; 
+<a name="l00497"></a>00497 } <a class="code" href="structapop__arms__settings.html">apop_arms_settings</a>;
+<a name="l00498"></a>00498 
+<a name="l00499"></a>00499 
+<a name="l00500"></a><a class="code" href="structapop__stack__settings.html">00500</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l00501"></a><a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">00501</a>     <span class="keywordtype">char</span> *<a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">splitpage</a>;    
+<a name="l00502"></a><a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">00502</a>     <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">model1</a>; 
+<a name="l00503"></a><a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">00503</a>     <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">model2</a>; 
+<a name="l00504"></a>00504 } <a class="code" href="structapop__stack__settings.html">apop_stack_settings</a>;
+<a name="l00505"></a>00505 
+<a name="l00506"></a>00506 
+<a name="l00509"></a>00509 <span class="comment">//Doxygen drops whatever is after these declarations, so I put them last.</span>
+<a name="l00510"></a>00510 Apop_settings_declarations(apop_lm)
+<a name="l00511"></a>00511 Apop_settings_declarations(apop_pm)
+<a name="l00512"></a>00512 Apop_settings_declarations(<a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>)
+<a name="l00513"></a>00513 Apop_settings_declarations(apop_mle)
+<a name="l00514"></a>00514 Apop_settings_declarations(<a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>)
+<a name="l00515"></a>00515 Apop_settings_declarations(apop_arms)
+<a name="l00516"></a>00516 Apop_settings_declarations(<a class="code" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>)
+<a name="l00517"></a>00517 Apop_settings_declarations(<a class="code" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>)
+<a name="l00518"></a>00518 Apop_settings_declarations(<a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>)
+<a name="l00519"></a>00519 Apop_settings_declarations(apop_parts_wanted)
+<a name="l00520"></a>00520 Apop_settings_declarations(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>)
+<a name="l00521"></a>00521 
+<a name="l00522"></a>00522 <span class="preprocessor">#ifdef    __cplusplus</span>
+<a name="l00523"></a>00523 <span class="preprocessor"></span>}
+<a name="l00524"></a>00524 <span class="preprocessor">#endif</span>
+<a name="l00525"></a>00525 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>

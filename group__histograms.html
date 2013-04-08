@@ -34,101 +34,11 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *template, gsl_vector *indata)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> (<a class="el" href="structapop__model.html">apop_model</a> *base, <a class="el" href="structapop__model.html">apop_model</a> *m, long int draws, gsl_rng *rng)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit</a> (<a class="el" href="structapop__model.html">apop_model</a> *observed, <a class="el" href="structapop__model.html">apop_model</a> *expected)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> (<a class="el" href="structapop__model.html">apop_model</a> *m1, <a class="el" href="structapop__model.html">apop_model</a> *m2)
 </ul>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="gab99340f82c48dd858329ff9c48d437fd"></a><!-- doxytag: member="apop_hist.c::apop_histogram_model_reset" ref="gab99340f82c48dd858329ff9c48d437fd" args="(apop_model *base, apop_model *m, long int draws, gsl_rng *rng)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>base</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">long int&#160;</td>
-          <td class="paramname"><em>draws</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Give me an existing histogram (i.e., an <code><a class="el" href="structapop__model.html">apop_model</a></code>) and I'll create a new histogram with the same bins, but with data from <code>draws</code> random draws from the parametrized model you provide.</p>
-<p>This function will normalize the output histogram to integrate to one.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">base</td><td>An <code><a class="el" href="structapop__model.html">apop_model</a></code> produced using a form like <code>apop_estimate(yourdata, apop_histogram)</code>. I.e. a histogram model to be used as a template. (No default) </td></tr>
-    <tr><td class="paramname">m</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
-    <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 100,000) </td></tr>
-    <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
-  </table>
-  </dd>
-</dl>
-<ul>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
-<a class="anchor" id="ga1dbc03ae9a23652f85c70a20d9685ff6"></a><!-- doxytag: member="apop_hist.c::apop_histogram_vector_reset" ref="ga1dbc03ae9a23652f85c70a20d9685ff6" args="(apop_model *template, gsl_vector *indata)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>template</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>indata</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Give me an existing histogram (as a filled-in copy of the <code>apop_histogram</code> model) and I'll create a new histogram with the same bins, but with data from the vector you provide</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">template</td><td>An <code><a class="el" href="structapop__model.html">apop_model</a></code> produced using a form like <code>apop_estimate(yourdata, apop_histogram)</code>. </td></tr>
-    <tr><td class="paramname">indata</td><td>The new data to be binned. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="gad999220164049ce7b22d2cd11bf74c26"></a><!-- doxytag: member="apop_hist.c::apop_histograms_test_goodness_of_fit" ref="gad999220164049ce7b22d2cd11bf74c26" args="(apop_model *observed, apop_model *expected)" -->
 <div class="memitem">
 <div class="memproto">
@@ -153,9 +63,9 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Test the goodness-of-fit between either two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models or two <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histogram</a> models.</p>
-<p>I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set. For histograms, you've use <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> or <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a> to ensure histograms in sync.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
+<p>Test the goodness-of-fit between two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models.</p>
+<p>If you send two histograms, I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set.</p>
+<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_20.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
 <ul>
 <li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
 </ul>
@@ -211,7 +121,7 @@ Functions</h2>
     <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
     <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
     <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_19.png"/>) </td></tr>
     <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
   </table>
   </dd>
@@ -254,8 +164,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<p>I will also give special handling to two synced <a class="el" href="group__models.html#gafa54b2573ed0868774a9a78d07d07e62">apop_histograms</a> (probably produced via <a class="el" href="group__histograms.html#ga1dbc03ae9a23652f85c70a20d9685ff6">apop_histogram_vector_reset</a> or <a class="el" href="group__histograms.html#gab99340f82c48dd858329ff9c48d437fd">apop_histogram_model_reset</a>), using the histogram bins to define how the CDF is built.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_21.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
 <div class="fragment"><pre class="fragment"> <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data1);
  <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data2);
  <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data1, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
@@ -273,4 +182,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>

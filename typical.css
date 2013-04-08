@@ -32,6 +32,8 @@ padding: 2px;
        border: 1px solid #a6cb5e; padding: 4px;
 }
 
+.paramtype {text-align: right}
+
 .memdoc { padding-left: 40px; padding-right: 40px; }
 
 h6{ display: inline; font-size:100%; font-style:italic; }

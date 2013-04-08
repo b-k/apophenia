@@ -39,7 +39,6 @@ Defines</h2>
 <li>#define <a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)
 <li>#define <a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>(in)
 <li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>(in)
-<li>#define <a class="el" href="group__vector__moments.html#ga04b4c93f39a7003f0180124ec502db31">apop_vector_kurt</a>(in)&#160;&#160;&#160;<a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(in)
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
@@ -54,7 +53,6 @@ Functions</h2>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.</p>
-<p><a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> and <a class="el" href="group__vector__moments.html#ga04b4c93f39a7003f0180124ec502db31">apop_vector_kurt</a> are identical; pick the one which sounds better to you.</p>
 <dl class="see"><dt><b>See also:</b></dt><dd>db_moments</dd></dl>
 <p>For <a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a><code>(vector, mean)</code>, <code>mean</code> is the mean of the vector. This saves the trouble of re-calculating the mean if you've already done so. E.g.,</p>
 <div class="fragment"><pre class="fragment">gsl_vector *v;
@@ -102,25 +100,6 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 
 </div>
 </div>
-<a class="anchor" id="ga04b4c93f39a7003f0180124ec502db31"></a><!-- doxytag: member="stats.h::apop_vector_kurt" ref="ga04b4c93f39a7003f0180124ec502db31" args="(in)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__vector__moments.html#ga04b4c93f39a7003f0180124ec502db31">apop_vector_kurt</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">in</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(in)</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_59.png"/>) of the data in the given vector. This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_60.png"/> is three, not zero.</p>
-<p>An alias for <a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>. </p>
-
-</div>
-</div>
 <a class="anchor" id="ga92c6abe8ada7ed8121c6881bcc6daf93"></a><!-- doxytag: member="stats.h::apop_vector_mean" ref="ga92c6abe8ada7ed8121c6881bcc6daf93" args="(in)" -->
 <div class="memitem">
 <div class="memproto">
@@ -156,7 +135,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 <div class="memdoc">
 <p>Returns the variance of the data in the given vector.</p>
-<p>This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using <img class="formulaInl" alt="$\bar x$" src="form_53.png"/> instead of <img class="formulaInl" alt="$\mu$" src="form_54.png"/>.</p>
+<p>This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using <img class="formulaInl" alt="$\bar x$" src="form_54.png"/> instead of <img class="formulaInl" alt="$\mu$" src="form_55.png"/>.</p>
 <p>At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.</p>
 <p>Returns the sample variance of the elements of the vector <code>v</code>. </p>
 
@@ -187,7 +166,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_62.png"/> </p>
+<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_63.png"/> </p>
 
 </div>
 </div>
@@ -233,9 +212,9 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_59.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result.</p>
+<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_60.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
 <ul>
-<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_60.png"/> is three <img class="formulaInl" alt="$\sigma^4$" src="form_61.png"/>, not three, one, or zero. </li>
+<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_61.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_62.png"/>, not three, one, or zero. </li>
 </ul>
 
 </div>
@@ -254,7 +233,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_58.png"/>) of the data in the given vector.</p>
+<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_59.png"/>) of the data in the given vector.</p>
 <p>Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are not done here, so you'll have to do them separately if need be. </p>
 
 </div>
@@ -273,7 +252,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_55.png"/>) of the data in the given vector. </p>
+<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_56.png"/>) of the data in the given vector. </p>
 
 </div>
 </div>
@@ -291,8 +270,8 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_56.png"/> of the data in the given vector.</p>
-<p>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_57.png"/>; that's not done here, so you'll have to do so separately if need be. </p>
+<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_57.png"/> of the data in the given vector.</p>
+<p>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_58.png"/>; that's not done here, so you'll have to do so separately if need be. </p>
 
 </div>
 </div>
@@ -333,4 +312,4 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>

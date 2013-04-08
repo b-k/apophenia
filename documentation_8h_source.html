@@ -30,52 +30,52 @@ urchinTracker();
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="comment">/* Apophenia&#39;s documentation</span>
-<a name="l00002"></a>00002 <span class="comment">Copyright (c) 2005--2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */</span>
+<a name="l00002"></a>00002 <span class="comment">Copyright (c) 2005--2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */</span>
 <a name="l00003"></a>00003 
-<a name="l02176"></a>02176 <span class="comment">/* To finish and add to the dataprep section:</span>
-<a name="l02177"></a>02177 <span class="comment">\paragraph Probit, logit, and other -obits</span>
-<a name="l02178"></a>02178 <span class="comment">The dependent variable for these models is a list of categories; this option is not relevant to continuous-valued dependent variables. </span>
+<a name="l02174"></a>02174 <span class="comment">/* To finish and add to the dataprep section:</span>
+<a name="l02175"></a>02175 <span class="comment">\paragraph Probit, logit, and other -obits</span>
+<a name="l02176"></a>02176 <span class="comment">The dependent variable for these models is a list of categories; this option is not relevant to continuous-valued dependent variables. </span>
+<a name="l02177"></a>02177 <span class="comment"></span>
+<a name="l02178"></a>02178 <span class="comment">Your data source may include a list of numeric categories, in which case you can pick one of the above cases.</span>
 <a name="l02179"></a>02179 <span class="comment"></span>
-<a name="l02180"></a>02180 <span class="comment">Your data source may include a list of numeric categories, in which case you can pick one of the above cases.</span>
-<a name="l02181"></a>02181 <span class="comment"></span>
-<a name="l02182"></a>02182 <span class="comment">The main exception is when your data is a list of text factors, in which case your dependent variable isn&#39;t even a part of the data matrix.  In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like </span>
-<a name="l02183"></a>02183 <span class="comment">\code</span>
-<a name="l02184"></a>02184 <span class="comment">int textcol = 3; //where is the list of dependent categories</span>
-<a name="l02185"></a>02185 <span class="comment">apop_model *setmodel = apop_model_copy(apop_probit);</span>
-<a name="l02186"></a>02186 <span class="comment">Apop_settings_add_group(setmodel, apop_category, textcol);</span>
-<a name="l02187"></a>02187 <span class="comment">apop_estimate(yourdata, setmodel);</span>
-<a name="l02188"></a>02188 <span class="comment">\endcode</span>
-<a name="l02189"></a>02189 <span class="comment"></span>
+<a name="l02180"></a>02180 <span class="comment">The main exception is when your data is a list of text factors, in which case your dependent variable isn&#39;t even a part of the data matrix.  In this case, you can prep the data yourself, via a call to \c apop_text_to_factors, and then insert the column yourself (and pick a constant column or not as you prefer). Or, you can have the system do it for you, via a form like </span>
+<a name="l02181"></a>02181 <span class="comment">\code</span>
+<a name="l02182"></a>02182 <span class="comment">int textcol = 3; //where is the list of dependent categories</span>
+<a name="l02183"></a>02183 <span class="comment">apop_model *setmodel = apop_model_copy(apop_probit);</span>
+<a name="l02184"></a>02184 <span class="comment">Apop_settings_add_group(setmodel, apop_category, textcol);</span>
+<a name="l02185"></a>02185 <span class="comment">apop_estimate(yourdata, setmodel);</span>
+<a name="l02186"></a>02186 <span class="comment">\endcode</span>
+<a name="l02187"></a>02187 <span class="comment"></span>
+<a name="l02188"></a>02188 <span class="comment"></span>
+<a name="l02189"></a>02189 <span class="comment">You&#39;ll see that there are two questions here: should there be a constant column of ones, and where is the dependent column to be found?</span>
 <a name="l02190"></a>02190 <span class="comment"></span>
-<a name="l02191"></a>02191 <span class="comment">You&#39;ll see that there are two questions here: should there be a constant column of ones, and where is the dependent column to be found?</span>
+<a name="l02191"></a>02191 <span class="comment">Here are the rules for preparing the data set. </span>
 <a name="l02192"></a>02192 <span class="comment"></span>
-<a name="l02193"></a>02193 <span class="comment">Here are the rules for preparing the data set. </span>
+<a name="l02193"></a>02193 <span class="comment">The first item is the </span>
 <a name="l02194"></a>02194 <span class="comment"></span>
-<a name="l02195"></a>02195 <span class="comment">The first item is the </span>
-<a name="l02196"></a>02196 <span class="comment"></span>
+<a name="l02195"></a>02195 <span class="comment"></span>
+<a name="l02196"></a>02196 <span class="comment">There are two methods:</span>
 <a name="l02197"></a>02197 <span class="comment"></span>
-<a name="l02198"></a>02198 <span class="comment">There are two methods:</span>
+<a name="l02198"></a>02198 <span class="comment">\li If the data set has no vector, </span>
 <a name="l02199"></a>02199 <span class="comment"></span>
-<a name="l02200"></a>02200 <span class="comment">\li If the data set has no vector, </span>
-<a name="l02201"></a>02201 <span class="comment"></span>
+<a name="l02200"></a>02200 <span class="comment"></span>
+<a name="l02201"></a>02201 <span class="comment">for the -obit and -ogit models</span>
 <a name="l02202"></a>02202 <span class="comment"></span>
-<a name="l02203"></a>02203 <span class="comment">for the -obit and -ogit models</span>
+<a name="l02203"></a>02203 <span class="comment">   If there is a vector in place, then I won&#39;t touch anything.</span>
 <a name="l02204"></a>02204 <span class="comment"></span>
-<a name="l02205"></a>02205 <span class="comment">   If there is a vector in place, then I won&#39;t touch anything.</span>
-<a name="l02206"></a>02206 <span class="comment"></span>
-<a name="l02207"></a>02207 <span class="comment">   If there is no vector in place, then:</span>
-<a name="l02208"></a>02208 <span class="comment">        --If you don&#39;t tell me where to find the dependent column, I&#39;ll go with column zero, and</span>
-<a name="l02209"></a>02209 <span class="comment">            --move the data to the vector</span>
-<a name="l02210"></a>02210 <span class="comment">            --replace the data there with ones, creating a constant column.</span>
-<a name="l02211"></a>02211 <span class="comment">        --If you do tell me where to find the dependent column, via the settings, I&#39;ll turn that into a list of factors.</span>
-<a name="l02212"></a>02212 <span class="comment"></span>
-<a name="l02213"></a>02213 <span class="comment"> */</span>
-<a name="l02214"></a>02214 
-<a name="l02215"></a>02215 
-<a name="l02631"></a>02631 <span class="comment">/*&lt;!--</span>
-<a name="l02632"></a>02632 <span class="comment">If you would like a more in-depth discussion of Apophenia&#39;s raison d&#39;etre and logic, have a look at these</span>
-<a name="l02633"></a>02633 <span class="comment">&lt;a href=&quot;http://apophenia.info/apop_notes.html&quot;&gt;design notes&lt;/a&gt;. --&gt;</span>
-<a name="l02634"></a>02634 <span class="comment">*/</span>
+<a name="l02205"></a>02205 <span class="comment">   If there is no vector in place, then:</span>
+<a name="l02206"></a>02206 <span class="comment">        --If you don&#39;t tell me where to find the dependent column, I&#39;ll go with column zero, and</span>
+<a name="l02207"></a>02207 <span class="comment">            --move the data to the vector</span>
+<a name="l02208"></a>02208 <span class="comment">            --replace the data there with ones, creating a constant column.</span>
+<a name="l02209"></a>02209 <span class="comment">        --If you do tell me where to find the dependent column, via the settings, I&#39;ll turn that into a list of factors.</span>
+<a name="l02210"></a>02210 <span class="comment"></span>
+<a name="l02211"></a>02211 <span class="comment"> */</span>
+<a name="l02212"></a>02212 
+<a name="l02213"></a>02213 
+<a name="l02629"></a>02629 <span class="comment">/*&lt;!--</span>
+<a name="l02630"></a>02630 <span class="comment">If you would like a more in-depth discussion of Apophenia&#39;s raison d&#39;etre and logic, have a look at these</span>
+<a name="l02631"></a>02631 <span class="comment">&lt;a href=&quot;http://apophenia.info/apop_notes.html&quot;&gt;design notes&lt;/a&gt;. --&gt;</span>
+<a name="l02632"></a>02632 <span class="comment">*/</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>

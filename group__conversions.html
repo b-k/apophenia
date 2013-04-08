@@ -34,10 +34,8 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>double * <a class="el" href="group__conversions.html#gab48a3b2c6619dba38053eccf86734adc">apop_vector_to_array</a> (const gsl_vector *in)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
-<li>gsl_matrix * <a class="el" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a> (const double **in, const int rows, const int cols)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> (double *line, int rows, int cols)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
@@ -52,51 +50,6 @@ Functions</h2>
 
 <h3><a class="anchor" id="dbtomatrix"></a>Converting from database table to &lt;tt&gt;gsl_matrix&lt;/tt&gt; or \ref apop_data</h3><div class="textblock"><p>Use <code>fill_me = apop_query_to_matrix("select * from table_name;");</code> or <code>fill_me = apop_query_to_data("select * from table_name;");</code>. [See <a class="el" href="group__queries.html#ga8a1da4d925dbafdd2b3318672eac751f">apop_query_to_matrix</a>; <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.] </p>
 </div><hr/><h2>Function Documentation</h2>
-<a class="anchor" id="ga5c7ed1341ef1be13e2e277f9f31e42df"></a><!-- doxytag: member="apop_conversions.c::apop_array_to_matrix" ref="ga5c7ed1341ef1be13e2e277f9f31e42df" args="(const double **in, const int rows, const int cols)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a> </td>
-          <td>(</td>
-          <td class="paramtype">const double **&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int&#160;</td>
-          <td class="paramname"><em>cols</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Convert a <code>double **</code> array to a <code>gsl_matrix</code></p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>the array to read in </td></tr>
-    <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>the <code>gsl_matrix</code>, allocated for you and ready to use.</dd></dl>
-<p>usage: </p>
-<div class="fragment"><pre class="fragment"> gsl_matrix *m = <a class="code" href="group__conversions.html#ga5c7ed1341ef1be13e2e277f9f31e42df">apop_array_to_matrix</a>(indata, 34, 4); 
-</pre></div><p>If you want to initialize on the allocation line, this isn't what you want. See <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a>. </p>
-
-</div>
-</div>
 <a class="anchor" id="ga8abdcdbaceaaf0dd3882a164bc2565de"></a><!-- doxytag: member="apop_conversions.c::apop_array_to_vector" ref="ga8abdcdbaceaaf0dd3882a164bc2565de" args="(double *in, int size)" -->
 <div class="memitem">
 <div class="memproto">
@@ -562,7 +515,7 @@ Functions</h2>
     <tr><td class="paramname">has_col_names</td><td>Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1) </td></tr>
     <tr><td class="paramname">field_names</td><td>The list of field names, which will be the columns for the table. If <code>has_col_names==1</code>, read the names from the file (and just set this to <code>NULL</code>). If has_col_names == 1 &amp;&amp; field_names !=NULL, I'll use the field names. (default = NULL) </td></tr>
     <tr><td class="paramname">field_ends</td><td>If fields have a fixed size, give the end of each field, e.g. {3, 8 11}. </td></tr>
-    <tr><td class="paramname">field_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is the <code>text</code> grid, which should be <img class="formulaInl" alt="$N \times 2$" src="form_7.png"/>. The first item in each row (<code>your_params-&gt;text[n][0]</code>, for each <img class="formulaInl" alt="$n$" src="form_8.png"/>) is a regular expression to match against the variable names; the second item (<code>your_params-&gt;text[n][1]</code>) is the type, constraint, and/or key (i.e., what comes after the name in the <code>create</code> query). Not all variables need be mentioned; the default type if nothing matches is <code>numeric</code>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <code>.*</code>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> on details of matching. </td></tr>
+    <tr><td class="paramname">field_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is the <code>text</code> grid, which should be <img class="formulaInl" alt="$N \times 2$" src="form_8.png"/>. The first item in each row (<code>your_params-&gt;text[n][0]</code>, for each <img class="formulaInl" alt="$n$" src="form_9.png"/>) is a regular expression to match against the variable names; the second item (<code>your_params-&gt;text[n][1]</code>) is the type, constraint, and/or key (i.e., what comes after the name in the <code>create</code> query). Not all variables need be mentioned; the default type if nothing matches is <code>numeric</code>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <code>.*</code>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> on details of matching. </td></tr>
     <tr><td class="paramname">table_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a table constraint or key, such as <code>not null primary key (age, sex)</code>, put that here. </td></tr>
     <tr><td class="paramname">delimiters</td><td>A string listing the characters that delimit fields. default = <code>"|,\t"</code></td></tr>
   </table>
@@ -570,34 +523,6 @@ Functions</h2>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns the number of rows on success, -1 on error.</dd></dl>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
-<a class="anchor" id="gab48a3b2c6619dba38053eccf86734adc"></a><!-- doxytag: member="apop_conversions.c::apop_vector_to_array" ref="gab48a3b2c6619dba38053eccf86734adc" args="(const gsl_vector *in)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double* <a class="el" href="group__conversions.html#gab48a3b2c6619dba38053eccf86734adc">apop_vector_to_array</a> </td>
-          <td>(</td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>in</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Converts a <code>gsl_vector</code> to an array.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>A <code>gsl_vector</code> </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A <code>double*</code>, which will be <code>malloc</code>ed inside the function.</dd></dl>
-<ul>
-<li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>. </li>
-</ul>
 
 </div>
 </div>
@@ -645,4 +570,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Apr 8 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>
