@@ -76,7 +76,7 @@ Apop_settings_copy(apop_mle, )
 Apop_settings_free(apop_mle, )
 Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
-    Apop_varad_set(tolerance, 1e-2);
+    Apop_varad_set(tolerance, 1e-5);
     Apop_varad_set(max_iterations, 5000);
     Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);

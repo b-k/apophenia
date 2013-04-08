@@ -141,5 +141,6 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_model *filled = apop_model_fix_params_get_base(m);
     apop_data_memcpy(d, filled->parameters); //A bit inefficient.
+    apop_model_free(fixed);
     return m;
 }

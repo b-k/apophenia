@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	April 2012
+--plugged some memory leaks
+--default tolerance for MLE is much finer (1e-5).
+
 	March 2012
 **apop_text_paste now prints the pasted string at verbosity level 3 (formerly 2).
 

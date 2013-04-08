@@ -897,8 +897,7 @@ double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
 
     apop_data *eigenvecs = apop_data_alloc(size, size);
     gsl_vector *eigenvals = gsl_vector_calloc(size);
-    gsl_matrix *junk_copy = apop_matrix_copy(d);
-    find_eigens(&junk_copy, eigenvals, eigenvecs->matrix);
+    find_eigens(&d, eigenvals, eigenvecs->matrix);//free d here.
     //make eigenvalues more positive
     double score =0;
     for (int i=0; i< eigenvals->size; i++){

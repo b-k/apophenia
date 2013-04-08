@@ -327,14 +327,16 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
     apop_data_free(xpx_d);
     apop_data_free(xpy_d);
 
-    if (!olp->destroy_data)
-        apop_data_free(set);
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
         apop_estimate_parameter_tests(ep);
     apop_data_add_named_elmt(ep->info, "log likelihood", ols_log_likelihood(ep->data, ep));
     apop_data *r_sq = apop_estimate_coefficient_of_determination(ep); //Add R^2-type info to info page.
     apop_data_stack(ep->info, r_sq, .inplace='y');
     apop_data_free(r_sq);
+    if (!olp->destroy_data){
+        if (weights) gsl_vector_free(weights);
+        apop_data_free(set);
+    }
     return ep;
 }
 

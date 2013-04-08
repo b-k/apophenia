@@ -238,6 +238,7 @@ static double multilogit_log_likelihood(apop_data *d, apop_model *p){
 	return ll;
 }
 
+/*
 static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop_data *factor_list){
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_i e^(x\beta_j)/\sum_k e^(x\beta_k)
@@ -282,10 +283,10 @@ static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
         Apop_data_row(d, i, onerow);
         dlogit_foreach(onerow, gradient_matrix, p->parameters->matrix, cats);
     }
-//printf("----\nfinal for beta=."); apop_data_show(p->parameters); apop_data_show(gradient_matrix);
     apop_data_pack(gradient_matrix, gradient);
     apop_data_free(gradient_matrix);
 }
+*/
 
 //Should this be available everywhere?
 static size_t get_draw_size(apop_model *in){
@@ -373,5 +374,5 @@ Here is an artifical example:
 \include fake_logit.c
 */
 apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-.score = logit_dlog_likelihood, .predict=multilogit_expected, .prep = logit_prep, .draw=logit_rng
+/*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = logit_prep, .draw=logit_rng
 };

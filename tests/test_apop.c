@@ -117,6 +117,7 @@ void test_transform(){
                                 34, 14,
                                 30, 10);
     apop_estimate(test_data, *mm);
+    apop_data_free(test_data);
     /*
     apop_model *out = apop_estimate(test_data, *mm);
     printf("pre-transform: inches\n");
@@ -254,6 +255,7 @@ void test_ml_imputation(gsl_rng *r){
     apop_model *est2 = apop_estimate(fillme, apop_multivariate_normal);
     //apop_data_show(est2->parameters);
     compare_mvn_estimates(est2, mvn, 1e-1);
+    apop_data_free(fillme);
 }
 
 void test_percentiles(){
@@ -304,19 +306,17 @@ void test_score(){
 }
 
 //This tests the database-side functions.
-void test_skew_and_kurt(){
-  gsl_rng *r  = apop_rng_alloc(time(0));
-  int     i;
+void test_skew_and_kurt(gsl_rng *r){
     apop_table_exists(.remove=1, .name="t");
     apop_query("create table t(vals)");
-    for(i=0;i<1e4; i++){
+    for(int i=0; i<1e4; i++)
         apop_query("insert into t values(%g)", gsl_rng_uniform(r));
-    }
-  gsl_vector  *v    = apop_query_to_vector("select * from t");
-    Diff (apop_var(v) ,apop_query_to_float("select var(vals) from t"),tol6);
-    Diff (apop_vector_skew(v) ,apop_query_to_float("select skew(vals) from t"),tol6);
-    Diff (apop_vector_kurt(v) ,apop_query_to_float("select kurt(vals) from t"),tol5);
+    gsl_vector *v = apop_query_to_vector("select * from t");
+    Diff (apop_var(v), apop_query_to_float("select var(vals) from t"), tol6);
+    Diff (apop_vector_skew(v), apop_query_to_float("select skew(vals) from t"), tol6);
+    Diff (apop_vector_kurt(v), apop_query_to_float("select kurt(vals) from t"), tol5);
     apop_table_exists("t",1);
+    gsl_vector_free(v);
 }
 
 void test_listwise_delete(){
@@ -479,6 +479,8 @@ void test_split_and_stack(gsl_rng *r){
             }
         }
     }
+    apop_data_free(splits[0]);
+    apop_data_free(splits[1]);
     for(i=-1; i< 13; i++){
         splits  = apop_data_split(d1, i, 'c');
         if (i>0 && i< 10){
@@ -632,44 +634,47 @@ void test_OLS(gsl_rng *r){
     out = apop_estimate(bkup, apop_ols);
     Diff (apop_data_get(out->parameters, 0,-1) , -1.4 , tol5);
     Diff (apop_data_get(out->parameters, 1,-1) , 2.3 , tol5);
+    apop_data_free(bkup);
+    apop_data_free(set);
     apop_model_free(out);
 }
 
 #define INVERTSIZE 100
 void test_inversion(gsl_rng *r){
-  gsl_matrix  *invme   = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
-  gsl_matrix  *inved;
-  gsl_matrix  *inved_back;
-  int         i,j;
-  double      error   = 0;
-  apop_data *four     = apop_data_alloc(1);
+    gsl_matrix *invme = gsl_matrix_alloc(INVERTSIZE, INVERTSIZE);
+    gsl_matrix *inved;
+    gsl_matrix *inved_back;
+    apop_data *four = apop_data_alloc(1);
     apop_data_set(four, 0, -1, 4);
-  apop_model *fourp    = apop_model_copy(apop_zipf);
-    fourp->parameters  = four;
-    for(i=0; i<INVERTSIZE; i++)
-        for(j=0; j<INVERTSIZE; j++)
+    apop_model *fourp = apop_model_copy(apop_zipf);
+    fourp->parameters = four;
+    for(int i=0; i<INVERTSIZE; i++)
+        for(int j=0; j<INVERTSIZE; j++)
             apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
     apop_det_and_inv(invme, &inved, 0, 1);
     apop_det_and_inv(inved, &inved_back, 0, 1);
-    for(i=0; i<INVERTSIZE; i++)
-        for(j=0; j<INVERTSIZE; j++)
-            error    += gsl_matrix_get(invme, i,j) - gsl_matrix_get(inved_back, i,j);
+    apop_model_free(fourp);
+    double error = 0;
+    for(int i=0; i<INVERTSIZE; i++)
+        for(int j=0; j<INVERTSIZE; j++)
+            error += gsl_matrix_get(invme, i,j) - gsl_matrix_get(inved_back, i,j);
     assert (error < 1e-5);
+    gsl_matrix_free(invme);
+    gsl_matrix_free(inved);
+    gsl_matrix_free(inved_back);
 }
 
 void test_summarize(){
-gsl_matrix      *m;
-apop_data       *s;
-double          t, v;
     apop_text_to_db("test_data", .has_row_names= 0,1, .tabname = "td");
-    m    = apop_query_to_matrix("select * from td");
-    s    = apop_data_summarize(apop_matrix_to_data(m));
-    //apop_matrix_print(s,"\t", NULL);
-    t    = gsl_matrix_get(s->matrix, 1,0);
+    gsl_matrix *m = apop_query_to_matrix("select * from td");
+    apop_data *s = apop_data_summarize(apop_matrix_to_data(m));
+    gsl_matrix_free(m);
+    double t = gsl_matrix_get(s->matrix, 1,0);
     assert (t ==3);
-    t    = gsl_matrix_get(s->matrix, 2, 1);
-    v    = sqrt((2*2 +3*3 +3*3 +4.*4.)/3.);
-    assert (t == v) ;
+    t = gsl_matrix_get(s->matrix, 2, 1);
+    double v = sqrt((2*2 +3*3 +3*3 +4.*4.)/3.);
+    assert (t == v);
+    apop_data_free(s);
 }
 
 void test_dot(){
@@ -879,11 +884,14 @@ void test_histograms(gsl_rng *r){
         apop_draw(gsl_matrix_ptr(out, i,0), r, hp2);
         assert(gsl_finite(gsl_matrix_get(out, i,0)));
     }
-    apop_model *outparams2 = apop_estimate(apop_matrix_to_data(out), apop_normal);
+    apop_data *md =apop_matrix_to_data(out);
+    apop_model *outparams2 = apop_estimate(md, apop_normal);
     assert(fabs(outparams2->parameters->vector->data[0]-mu) < 1e2);
     assert(fabs(outparams2->parameters->vector->data[1]-sigmasq) < 1e2);
     apop_model_free(hp2);
     apop_model_free(outparams2);
+    apop_data_free(md);
+    apop_data_free(d);
 //    apop_plot_histogram(out, 100, NULL); 
 }
 
@@ -916,11 +924,7 @@ void test_jackknife(gsl_rng *r){
     pp->parameters = p;
     for (size_t i =0; i< len; i++)
         m->draw(apop_data_ptr(d, i, 0), r, pp); 
-    //apop_data *out = apop_jackknife_cov(d, *pp);
     apop_data *out = apop_jackknife_cov(d, *m);
-    //apop_data_show(out);
-    //printf("%g\n",  2*gsl_pow_2(pv[1])/(len-1));
-    //fflush(NULL);
     //Notice that the jackknife just ain't a great estimator here.
 assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2 
             && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2*100);
@@ -944,7 +948,9 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
     apop_opts.verbose = vvv;
 
     apop_data_free(d);
+    apop_data_free(out);
     apop_data_free(out2);
+    apop_data_free(out3);
     apop_model_free(m);
 }
 
@@ -961,6 +967,8 @@ int test_jack(gsl_rng *r){
     double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
                 + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
                 +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
+    apop_data_free(d);
+    apop_data_free(out);
     return (error < 1e-3);
 }
 
@@ -996,6 +1004,7 @@ void test_lognormal(gsl_rng *r){
     Diff(mu, muhat, 1e-2);
     Diff(sigma, sigmahat, 1e-2);
     apop_model_free(out2);
+    apop_data_free(data);
 }
 
 void test_multivariate_normal(gsl_rng *r){
@@ -1022,6 +1031,7 @@ void test_multivariate_normal(gsl_rng *r){
                   +fabs(est->parameters->matrix->data[3] - p->matrix->data[3]);
     assert (error < 3e-2); //yes, unimpressive, but we don't wanna be here all day.
     apop_model_free(est);
+    apop_data_free(rdraws);
 }
 
 static void common_binomial_bit(apop_model *out, int n, double p){
@@ -1091,6 +1101,7 @@ void test_uniform(apop_data *d){
 }
 
 void db_to_text(){
+    apop_db_close();
     apop_db_open(NULL);
     if (!apop_table_exists("d")){
         apop_data *field_params = apop_text_alloc(NULL,2,2);
@@ -1145,6 +1156,7 @@ void db_to_text(){
 }
 
 void test_blank_db_queries(){
+    apop_db_close();
     apop_db_open(NULL);
     apop_query("create table t (a, b, c)");
     apop_data *d = apop_query_to_data("select * from t");
@@ -1293,6 +1305,7 @@ void test_probit_and_logit(gsl_rng *r){
     m = apop_estimate(data2, apop_probit);
     APOP_COL(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
+    gsl_vector_free(true_params);
     apop_model_free(m);
     apop_data_free(data2);
 }
@@ -1429,16 +1442,19 @@ void test_pmf(){
     apop_vector_normalize(v);
     for (size_t i=0; i < v->size; i ++)
         Diff(d->vector->data[i], v->data[i], tol2);
+    apop_model_free(m);
+    apop_data_free(d);
+    gsl_vector_free(v);
 }
 
 void test_arms(gsl_rng *r){
-    size_t i;
     gsl_vector *o = gsl_vector_alloc(3e5);
     apop_model *ncut = apop_model_set_parameters(apop_normal, 1.1, 1.23);
     ncut->draw = NULL; //testing the default.
-    for(i=0; i < 3e5; i ++)
+    for(size_t i=0; i < 3e5; i ++)
         apop_draw(o->data+i, r, ncut);
-    apop_model *back_out = apop_estimate(apop_vector_to_data(o), apop_normal);
+    apop_data *ov = apop_vector_to_data(o);
+    apop_model *back_out = apop_estimate(ov, apop_normal);
     Diff(back_out->parameters->vector->data[0] , 1.1, 1e-2)
     Diff(back_out->parameters->vector->data[1] , 1.23, 1e-2)
 
@@ -1446,9 +1462,11 @@ void test_arms(gsl_rng *r){
     apop_model *bcut = apop_model_set_parameters(apop_beta, 0.4, 0.43); //bimodal
     Apop_model_add_group(bcut, apop_arms, .model=bcut, .xl=1e-5, .xr=1-1e-5);
     bcut->draw = NULL; //testing the default.
-    for(i=0; i < 3e5; i ++)
+    for(size_t i=0; i < 3e5; i ++)
         apop_draw((o->data)+i, r, bcut);
-    apop_model *back_outb = apop_estimate(apop_vector_to_data(o), apop_beta);
+    ov = apop_vector_to_data(o);
+    apop_model *back_outb = apop_estimate(ov, apop_beta);
+    apop_data_free(ov);
     Diff(back_outb->parameters->vector->data[0] , 0.4, 1e-2)
     Diff(back_outb->parameters->vector->data[1] , 0.43, 1e-2)
     apop_opts.verbose --;
@@ -1560,6 +1578,10 @@ void test_ols_offset(gsl_rng *r){
     assert(apop_vector_distance(zcov, wcov) < 1e-4);
     assert(apop_data_get(zero_off->parameters, 0, -1) - (apop_data_get(way_off->parameters, 0, -1)+20./3)  < 5e-3);
     assert(apop_data_get(zero_off->parameters, 1, -1) - apop_data_get(way_off->parameters, 1, -1)  < 1e-4);
+    apop_model_free(zero_off);
+    apop_model_free(way_off);
+    apop_data_free(cp);
+    apop_data_free(useme);
 }
 
 #define do_test(text, fn) {if (verbose) printf("%s:", text); \
@@ -1629,7 +1651,7 @@ int main(int argc, char **argv){
     do_test("test jackknife covariance", test_jack(r));
     do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
-    do_test("database skew and kurtosis", test_skew_and_kurt());
+    do_test("database skew and kurtosis", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
     do_test("multivariate gamma", test_mvn_gamma());
@@ -1643,4 +1665,5 @@ int main(int argc, char **argv){
         do_test("Test score (dlog likelihood) calculation", test_score());
     }
     printf("\nApophenia has passed all of the sundry tests. Yay.\n");
+    apop_db_close();
 }
