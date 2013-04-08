@@ -579,6 +579,10 @@ Outlineheader dataoverview Data sets
 
 The \ref apop_data structure represents a data set.  It joins together a \c gsl_vector, a \c gsl_matrix, an \ref apop_name, and a table of strings. It tries to be lightweight, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
+If you are viewing the HTML documentation, here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
+
+\htmlinclude apop_data_fig.html
+
 For example, let us say that you are running a regression: there is a vector for the one dependent variable, and a matrix for the several independent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
 
   \code
@@ -590,7 +594,9 @@ For example, let us say that you are running a regression: there is a vector for
     }
     \endcode
 
-We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
+Most functions assume that the data vector, data matrix, and text have the same row count: \c data->vector->size==data->matrix->size1  and \c data->vector->size==*data->textsize. This means that the \ref apop_name structure doesn't have separate vector_names, row_names, and text_row_names elements: the rownames are assumed to apply for all.
+
+See below for notes on easily managing the \c text element.
 
 The \ref apop_data set includes a \c more pointer, which will typically
 be \c NULL, but may point to another \ref apop_data set. This is
@@ -1002,15 +1008,21 @@ The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding te
 
 UTF-8 strings are correctly handled. 
 
-Here is a sample program that uses \ref apop_text_alloc and \ref apop_text_add to set up
-a data set; using these functions means that you never really have to worry about allocation
-issues. Notice how the number of rows of text data in <tt>tdata</tt> is
-<tt>tdata->textsize[0]</tt> (aka <tt>*tdata->textsize</tt>); the number of columns is
-<tt>tdata->textsize[1]</tt>. Refer to individual elements using the usual 2-D array
-notation, <tt>tdata->text[row][col]</tt>.
+There are a few simple forms for handling the \c text element of an \c apop_data set, which handle the tædium of memory-handling for you.
+
+\li Use \ref apop_text_alloc to allocate the block of text. It is actually a realloc function, which you can use to resize an existing block without leaks.
+\li Use \ref apop_text_add to add text elements. It replaces any existing text in the given slot without memory leaks.
+\li The number of rows of text data in <tt>tdata</tt> is
+<tt>tdata->textsize[0]</tt>; 
+the number of columns is <tt>tdata->textsize[1]</tt>.
+\li Refer to individual elements using the usual 2-D array notation, <tt>tdata->text[row][col]</tt>.
+\li Again, <tt>x[0]</tt> can always be written as <tt>*x</tt>, which may save some typing. The number of rows is <tt>*tdata->textsize</tt>. If you have a single column of text data (i.e., all data is in column zero), then item \c i is <tt>*tdata->text[i]</tt>. If you know you have exactly one cell of text, then it is <tt>**tdata->text</tt>.
+
+Here is a sample program that uses these forms, plus a few text-handling functions.
 
 \include eg/text_demo.c
 
+\li\ref apop_data_transpose()
 \li\ref apop_query_to_text()
 \li\ref apop_text_alloc()
 \li\ref apop_text_add()
@@ -2311,7 +2323,7 @@ see the \ref designated page for details.
 
 \section apop_data
 
-The \ref apop_data set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy.
+The \ref apop_data set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the package only for its \ref apop_data set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.
 
 The structure basically includes six parts:
 
@@ -2328,71 +2340,7 @@ example, here is some dummy data for a weighted OLS regression. It includes an o
 variable in the vector, dependent variables in the matrix and text grid,
 replicate weights, and column names in bold labeling the variables:
 
-<table frame=box>
-<tr>
-<td>Rowname</td><td>Vector</td><td> Matrix</td><td> Text</td><td>Weights</td>
-</tr><tr valign=bottom>
-<td align=center>
-<table frame=box>
-<tr><td> </td></tr>
-<tr>
-<td>"Steven"</td>
-</tr><tr>
-<td>"Sandra"</td>
-</tr><tr>
-<td>"Joe"</td><td>
-</tr> 
-</table>
-</td><td align=center>
-<table frame=box>
-<tr>
-<th>Outcome</th>
-</tr> <tr>
-<td align=center>1</td>
-</tr><tr>
-<td align=center>0</td>
-</tr><tr>
-<td align=center>1</td>
-</tr> 
-</table>
-</td><td align=center>
-<table frame=box>
-<tr>
-<th> Age</th><th> Weight (kg)</th><th> Height (cm)</th>
-</tr> <tr>
-<td> 32</td><td> 65</td><td> 175</td>
-</tr><tr>
-<td> 41</td><td> 61</td><td> 165</td>
-</tr><tr>
-<td> 40</td><td> 73</td><td> 181</td>
-</tr> 
-</table>
-</td><td align=center>
-<table frame=box>
-<tr>
-<th> Sex</th><th> State</th>
-</tr>
-<tr>
-<td> Male</td><td> Alaska</td><td>
-</tr><tr>
-<td> Female</td><td> Alabama</td>
-</tr><tr>
-<td> Male</td><td> Alabama</td>
-</tr> 
-</table>
-</td><td align=center>
-<table frame=box>
-<tr><td> </td></tr>
-<tr>
-<td>1</td>
-</tr><tr>
-<td>3.2</td>
-</tr><tr>
-<td>2.4</td>
-</tr> 
-</table>
-</td></tr>
-</table>
+\htmlinclude apop_data_fig.html
 
 As per the example above, Apophenia will generally assume that one row across all of these elements
 describes a single observation or data point.

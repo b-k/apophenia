@@ -27,20 +27,13 @@ typedef struct{
 
 /** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
+If you are viewing the HTML documentation, here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
+
+\htmlinclude apop_data_fig.html
+
 Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 
-For example, let us say that you are running a regression: there is a vector for the dependent variable, and a matrix for the dependent variables. Think of them as a partitioned matrix, where the vector is column -1, and the first column of the matrix is column zero. Here is some code to print the entire matrix. Notice that the column counter \c i starts counting at -1.
-
-\code
-for (j = 0; j< data->matrix->size1; j++){
-  printf("%s\t", data->names->row[j]);
-  for (i = -1; i< data->matrix->size2; i++)
-      printf("%g\t", apop_data_get(data, j, i));
-  printf("\n");
-}
-\endcode
-
-We're generally assuming that the data vector and data matrix have the same row count: \c data->vector->size==data->matrix->size1 . This means that the \ref apop_name structure doesn't have separate vector_names and row_names elements: the rownames are assumed to apply for both.
+See also the Data Sets section of the outline page (also in the header links) for further notes on getting and manipulating the elements of an \ref apop_data set.
 */
 typedef struct apop_data{
     gsl_vector  *vector;
@@ -66,7 +59,7 @@ typedef struct {
 /** A statistical model. */
 typedef struct apop_model apop_model;
 
-/** The elements of the \ref apop_model type. */
+/** The elements of the \ref apop_model type, representing a statistical model. */
 struct apop_model{
     char        name[101]; 
     int         vbase, m1base, m2base, dsize; /**< The size of the parameter set.

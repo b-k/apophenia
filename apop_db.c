@@ -192,8 +192,9 @@ int min_height = 175;
 apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
 \endcode
 
-\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan"
-are filled with <tt>NAN</tt>s in the matrix.
+\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan" are filled with <tt>NAN</tt>s in the matrix.
+
+\li As with the \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query("create table %s(id, name, age);", tablename)</tt>.
 
   \{
   */
@@ -223,10 +224,18 @@ int apop_query(const char *fmt, ...){
 
 /** Dump the results of a query into an array of strings.
 
-\return		An \ref apop_data structure with the <tt>text</tt> element filled. Notice that this is always a 2-D array, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> to refer to row <tt>i</tt>.
+\return	 An \ref apop_data structure with the <tt>text</tt> element filled.
 
-For example,
-the following function will list the tables in a database (much like you could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
+\param fmt A <tt>printf</tt>-style SQL query.
+
+\li <tt>query_output->text</tt> is always a 2-D array, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
+
+\li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.db_nan. The default is \c "NaN", but you can use <tt>sprintf(apop_opts.db_nan, "whatever you like")</tt> to change the text to whatever you like.
+
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_text("select name from %s where id=%i;", tablename, id_number)</tt>.
+
+For example, the following function will list the tables in an SQLite database (much like you
+could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
 \include ls_tables.c
 */
@@ -281,8 +290,11 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 
 /** Queries the database, and dumps the result into an \ref apop_data set.
 
-If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
+\li If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
 
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_data("select age from %s where id=%i;", tablename, id_number)</tt>.
+
+\param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
@@ -316,7 +328,11 @@ apop_data * apop_query_to_data(const char * fmt, ...){
   Uses \ref apop_query_to_data and returns just the matrix part; see that function for notes.
 
 \li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
+
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_matrix("select age from %s where id=%i;", tablename, id_number)</tt>.
  
+\deprecated Use \ref apop_query_to_data
+\param fmt A <tt>printf</tt>-style SQL query.
 \return A \c gsl_matrix.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
  */
@@ -349,8 +365,11 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 
 \li If the query returns zero rows of data or no columns, the function returns \c NULL.  
 
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_vector("select age from %s where id=%i;", tablename, id_number)</tt>.
+
 \return	 A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
 
+\param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL. */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Fillin(query, fmt)
@@ -385,8 +404,11 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 
 \li If the query produces a blank table, returns \c NAN, and if <tt>apop_opts.verbose>=2</tt>, prints an error.
 
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_float("select age from %s where id=%i;", tablename, id_number)</tt>.
+
 \li If the query produces an error, returns \c NAN, and if <tt>apop_opts.verbose>=0</tt>, prints an error. If you need to distinguish between blank tables, NaNs in the data, and query errors, use \ref apop_query_to_data.
 
+\param fmt A <tt>printf</tt>-style SQL query.
 \return		A double, actually.*/
 double apop_query_to_float(const char * fmt, ...){
     double out;
@@ -424,8 +446,9 @@ If the query produces more columns than there are elements in the column specifi
 
 The 'n' character indicates row, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
 
-As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers.
+\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_mixed_data("tv", "select name, age from %s where id=%i", tablename, id_number)</tt>.
 
+\param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='d' Dimension error. Your count of matrix parts didn't match what the query returned.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */

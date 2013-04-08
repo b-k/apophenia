@@ -478,9 +478,10 @@ void test_split_and_stack(gsl_rng *r){
                 assert(gsl_vector_get(splits[1]->weights, tr-start) == gsl_vector_get(d1->weights,tr));
             }
         }
+        apop_data_free(dv2);
+        apop_data_free(splits[0]);
+        apop_data_free(splits[1]);
     }
-    apop_data_free(splits[0]);
-    apop_data_free(splits[1]);
     for(i=-1; i< 13; i++){
         splits  = apop_data_split(d1, i, 'c');
         if (i>0 && i< 10){
@@ -931,6 +932,7 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
     apop_data *out2 = apop_bootstrap_cov(d, *m, .keep_boots='y');
     assert (fabs(apop_data_get(out2) - gsl_pow_2(pv[1])/len) < tol2
                 && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2);
+    apop_data_free(out2);
 
     //bootstrap should recover gracefully from a small number of NaNs...
     m->estimate = broken_est;

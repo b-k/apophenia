@@ -147,17 +147,14 @@ static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
   size_t total_cols       = mysql_num_fields(res_set);
   size_t total_rows       = mysql_num_rows(res_set);
   char ***out      = malloc(sizeof(char**) * total_rows );
-  apop_data *output= apop_data_alloc(0,0,0);
+  apop_data *output= apop_data_alloc();
     while ((row = mysql_fetch_row (res_set)) ) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
 		for (size_t jj=0;jj<total_cols;jj++){
-			if (row[jj]==NULL){
-				out[currentrow][jj]	= malloc(sizeof(char));
-				strcpy(out[currentrow][jj], "\0");
-			} else {
-				out[currentrow][jj]	= malloc(1+strlen(row[jj]));
-				strcpy(out[currentrow][jj], row[jj]);
-			}
+			if (row[jj]==NULL)
+				asprintf(&(out[currentrow][jj]), "%s", apop_opts.db_nan);
+			else
+				asprintf(&(out[currentrow][jj]), "%s", row[jj]);
 		}
 		currentrow++;
     }

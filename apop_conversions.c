@@ -733,7 +733,7 @@ APOP_VAR_END_HEAD
         } else Apop_stopif(L.ct > set->matrix->size2, set->error='t'; return set, 1,
                  "row %i has %i elements, "
                  "but I thought this was a data set with %zu elements per row. "
-                 "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct-1, set->matrix->size2);
+                 "Stopping the file read; returning what I have so far. Set has_row_names?", row, L.ct, set->matrix->size2);
         for (int col=hasrows; col < L.ct; col++){
             char *thisstr = *add_this_line->text[col];
             if (strlen(thisstr)){

@@ -69,6 +69,7 @@ apop_plot_query_LDADD = libapophenia.la
 VPATH= @srcdir@
 
 EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
+		$(srcdir)/docs/*.js 	\
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
 		eg apop_db_mysql.c apop_db_sqlite.c apop.i tests/apophenia \
