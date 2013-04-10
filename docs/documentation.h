@@ -2323,7 +2323,7 @@ see the \ref designated page for details.
 
 \section apop_data
 
-The \ref apop_data set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the package only for its \ref apop_data set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.
+The \ref apop_data set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its \ref apop_data set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.
 
 The structure basically includes six parts:
 
@@ -2350,7 +2350,7 @@ so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, 
 
 \par Reading in data
 
-As per the example, use \ref apop_text_to_data or \ref apop_text_to_db and then \ref apop_query_to_data.
+As per the example below, use \ref apop_text_to_data or \ref apop_text_to_db and then \ref apop_query_to_data.
 
 \par Subsets
 
@@ -2381,7 +2381,7 @@ int main(){
 }
 \endcode
 
-As noted, all of these slicing routines are macros, because they generate several
+All of these slicing routines are macros, because they generate several
 background variables in the current scope (something a function can't do). Traditional
 custom is to put macro names in all caps, like \c APOP_DATA_ROWS, which to modern
 sensibilities looks like yelling. The custom has a logic: there are ways to hang

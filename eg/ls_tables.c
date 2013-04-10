@@ -10,8 +10,8 @@ void print_table_list(char *db_file){
 
 int main(int argc, char **argv){
     if (argc == 1){
-        printf("Give me a database name, and I will "
-               "print out the list of tables contained therein.\n");
+        printf("Give me a database name, and I will print out "
+               "the list of tables contained therein.\n");
         return 0; 
     }
     print_table_list(argv[1]);

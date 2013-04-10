@@ -126,9 +126,7 @@ Apop_settings_init(apop_fix_params,
     Apop_assert(in.base_model, "I can't fix a NULL model's parameters.");
 )
 Apop_settings_copy(apop_fix_params, )
-Apop_settings_free(apop_fix_params, 
-        apop_model_free(in->base_model);
-        )
+Apop_settings_free(apop_fix_params, )
 
 static double fix_params_ll(apop_data *d, apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);

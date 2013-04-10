@@ -420,7 +420,7 @@ static int setup_nonzero_contrast(char const *margin_table,
         //Keep out margins with values for now; join them in below.
         xprintf(&q, "%s except\nselect %s %s, %g from %s",  list_of_fields, nudge, margin_table);
     }
-	Apop_stopif(apop_query("%s", q), return 1, 0, "This query failed:\n%s", q);
+	Apop_stopif(apop_query("%s", q), return 1, 0, "query failed.");
     free(q);
     return 0;
 }

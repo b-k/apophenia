@@ -182,7 +182,7 @@ APOP_VAR_END_HEAD
 
 /** \defgroup queries Queries
  
-  These functions query the database, and most return a value for use on the C-side.
+These functions query the database, and most return a value for use on the C-side.
 
 In all cases, your query may be in <tt>printf</tt> form. For example:
 \code
@@ -194,12 +194,13 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 
 \li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan" are filled with <tt>NAN</tt>s in the matrix.
 
-\li As with the \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query("create table %s(id, name, age);", tablename)</tt>.
-
   \{
   */
 
 /** Send a query to the database that returns no data.
+
+\li As with the \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query("create table %s(id, name, age);", tablename)</tt>.
+
 \param fmt A <tt>printf</tt>-style SQL query.
 \return 0 on success, 1 on failure.
 */
@@ -228,7 +229,9 @@ int apop_query(const char *fmt, ...){
 
 \param fmt A <tt>printf</tt>-style SQL query.
 
-\li <tt>query_output->text</tt> is always a 2-D array, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
+\li If <tt>apop_opts.db_name_column</tt> matches a column of the output table, then that column is used for row names, and therefore will not be included in the <tt>text</tt>.
+
+\li <tt>query_output->text</tt> is always a 2-D array of strings, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
 
 \li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.db_nan. The default is \c "NaN", but you can use <tt>sprintf(apop_opts.db_nan, "whatever you like")</tt> to change the text to whatever you like.
 
@@ -294,6 +297,8 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 
 \li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_data("select age from %s where id=%i;", tablename, id_number)</tt>.
 
+\return If no rows are returned, \c NULL; else an \ref apop_data set with the data in place. Most data will be in the \c matrix element of the output. Column names are appropriately placed. If <tt>apop_opts.db_name_column</tt> matches one of the fields in your query's output, then that column will be used for row names (and therefore will not appear in the \c matrix).
+
 \param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */ 
@@ -316,12 +321,15 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 	return qinfo.outdata;
 }
 
+
+    /** \cond doxy_ignore */
 //These used to do more, but I'll leave them as a macro anyway in case of future expansion.
 #define Store_settings  \
     int v = apop_opts.verbose; apop_opts.verbose=0;/*hack to prevent double-printing.*/ \
 
 #define Restore_settings  \
     apop_opts.verbose=v;
+    /** \endcond */
 
 /** Queries the database, and dumps the result into a matrix.
 
@@ -357,7 +365,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
     return outm;
 }
 
-/** Queries the database, and dumps the first column of the result into a gsl_vector.
+/** Queries the database, and dumps the first column of the result into a \c gsl_vector.
 
 \li Uses \ref apop_query_to_data internally, then throws away all but the first column of the matrix.
 
@@ -409,7 +417,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 \li If the query produces an error, returns \c NAN, and if <tt>apop_opts.verbose>=0</tt>, prints an error. If you need to distinguish between blank tables, NaNs in the data, and query errors, use \ref apop_query_to_data.
 
 \param fmt A <tt>printf</tt>-style SQL query.
-\return		A double, actually.*/
+\return		A \c double, actually.*/
 double apop_query_to_float(const char * fmt, ...){
     double out;
     Fillin(query, fmt)
