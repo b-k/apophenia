@@ -21,25 +21,3 @@ gsl_vector *apop_vector_moving_average(gsl_vector *v, size_t bandwidth){
     }
     return vout;
 }
-
-/** Return a new histogram that is the moving average of the input histogram.
- \param m A histogram, in \c apop_model form.
- \param bandwidth The number of elements to be smoothed. 
- */
-apop_model *apop_histogram_moving_average(apop_model *m, size_t bandwidth){
-    apop_assert_c(m && !strcmp(m->name, "Histogram"), NULL, 0, "The first argument needs to be an apop_histogram model.");
-    apop_assert_s(bandwidth, "bandwidth must be an integer >=1.");
-    apop_model *out = apop_model_copy(*m);
-    gsl_histogram *h     = Apop_settings_get(m, apop_histogram, pdf);
-    gsl_histogram *hout  = Apop_settings_get(out, apop_histogram, pdf);
-    gsl_vector *bins     = apop_array_to_vector(h->bin, h->n);
-    gsl_vector *smoothed = apop_vector_moving_average(bins, bandwidth);
-    for (int i=0; i< h->n; i++)
-        if (i < bandwidth/2 || i>= smoothed->size+bandwidth/2)
-            hout->bin[i] = 0;
-        else
-            hout->bin[i] = gsl_vector_get(smoothed, i-bandwidth/2);
-    gsl_vector_free(bins);
-    gsl_vector_free(smoothed);
-    return out;
-}

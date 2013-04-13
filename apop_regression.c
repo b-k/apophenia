@@ -13,27 +13,25 @@
 
 /** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
 
-\param est  The \ref apop_estimate, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
+\param est  The \ref apop_model, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
 
 Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
 
 */
 void apop_estimate_parameter_tests (apop_model *est){
-  Nullcheck_p(est, )
-  if (!est->data)
-      return;
+    Nullcheck_p(est, )
+    if (!est->data) return;
     apop_data *ep = apop_data_add_page(est->info, apop_data_alloc(est->parameters->vector->size, 2), "<test info>");
     apop_name_add(ep->names, "p value", 'c');
     apop_name_add(ep->names, "confidence", 'c');
     apop_name_stack(ep->names, est->parameters->names, 'r', 'r');
-    int df   = est->data->matrix   ?
-                    est->data->matrix->size1:
-                    est->data->vector->size;
-    df      -= est->parameters->vector->size;
-    df       = df < 1 ? 1 : df; //some models aren't data-oriented.
+    Get_vmsizes(est->data); //msize1, vsize
+    int df = msize1 ? msize1 : vsize;
+    df -= est->parameters->vector->size;
+    df  = df < 1 ? 1 : df; //some models aren't data-oriented.
     apop_data_add_named_elmt(est->info, "df", df);
 
-    apop_data *one_elmt = apop_data_calloc(1, 1);
+    Staticdef(apop_data *, one_elmt, apop_data_calloc(1, 1))
     gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
         apop_model_add_group(est, apop_pm, .index=i);

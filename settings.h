@@ -270,6 +270,7 @@ typedef struct {
     gsl_vector *cmf;  /**< A cumulative mass function, for the purposes of making random draws.*/
     char draw_index;  /**< If \c 'y', then draws from the PMF return the integer index of the row drawn. 
                            If \c 'n' (the default), then return the data in the vector/matrix elements of the data set. */
+    long double total_weight; /**< Keep the total weight, in case the input weights aren't normalized to sum to one. */
     int cmf_refct;    /**< For internal use, so I can garbage-collect the CMF when needed. */
 } apop_pmf_settings;
 

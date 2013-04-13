@@ -131,6 +131,7 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
     out -= log(ws->paramdet) * ws->df/2.;
     out -= apop_multivariate_lngamma(ws->df/2., ws->len);
     gsl_matrix_free(inv);
+    gsl_matrix_free(inv_dot_params);
     apop_data_free(square);
     assert(isfinite(out));
     return out;
@@ -308,6 +309,8 @@ apop_model apop_t_distribution  = {"t distribution", 3, .dsize=1, .estimate = ap
          .constraint=apop_t_dist_constraint };
 
 /*\amodel apop_f_distribution The F distribution, for descriptive purposes.
+
+This model is under development, and is of beta-quality.
 
  If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
 

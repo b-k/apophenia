@@ -4,7 +4,6 @@
 
 //The reader will find a few function headers for this file in asst.h
 #include "apop_internal.h"
-#include <gsl/gsl_histogram.h>
 
 /** \defgroup output		Printing to the screen or a text file
 
@@ -172,9 +171,8 @@ APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char 
     char * apop_varad_var(with, "boxes");
     Dispatch_output
 APOP_VAR_ENDHEAD
-    apop_data *histodata = apop_data_alloc();
-    histodata->vector = apop_vector_copy(data);
-    apop_data_to_bins(histodata, .bin_count=bin_count, .close_top_bin='y');
+    apop_data vector_as_data = (apop_data){.vector=data};
+    apop_data *histodata = apop_data_to_bins(&vector_as_data, .bin_count=bin_count, .close_top_bin='y');
     apop_data_sort(histodata);
     apop_data_free(histodata->more); //the binspec.
 

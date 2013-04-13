@@ -1,5 +1,5 @@
 /* Apophenia's documentation
-Copyright (c) 2005--2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 /**  \mainpage  Apophenia--the intro
 
@@ -64,6 +64,9 @@ To really go in depth, download or pick up a copy of
 <a href="http://modelingwithdata.org">Modeling with Data</a>,
 which discusses general methods for doing statistics in C with the GSL 
 and SQLite, as well as Apophenia itself.
+
+There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience
+functions, tips, and so on.
 
 <h5>Contribute!</h5> 
 
@@ -549,11 +552,11 @@ When these transformations are more complete and usable, Apophenia will be at 1.
 and at that point it will be more than a library for conveniently estimating and
 drawing from distributions, but a language for expressing how models are developed.
 
-There are vigorous tests on the code base, which currently cover over 80% of the lines
+There are vigorous tests on the code base, which currently cover over 83% of the lines
 of code. A broad rule of thumb for any code base is that the well-worn parts, in this
 case functions like \ref apop_data_get and \ref apop_normal's <tt>log_likelihood</tt>,
-are likely to be entirely reliable, while the out-of-the-way functions (maybe the RNG
-for the Yule distribution) are worth a bit of caution. Close to all of the code has been
+are likely to be entirely reliable, while the out-of-the-way functions (maybe the score
+for the Beta distribution) are worth a bit of caution. Close to all of the code has been
 used in production, so all of it was at least initially tested against real-world data.
 
 endofdiv
@@ -977,14 +980,12 @@ endofdiv
 
 Outlineheader convsec   Conversion among types
 
-\li\ref apop_array_to_matrix()
 \li\ref apop_array_to_vector()
 \li\ref apop_line_to_data()
 \li\ref apop_line_to_matrix()
 \li\ref apop_matrix_to_data()
 \li\ref apop_text_to_data()
 \li\ref apop_text_to_db()
-\li\ref apop_vector_to_array()
 \li\ref apop_vector_to_data()
 \li\ref apop_vector_to_matrix()
 
@@ -1247,7 +1248,6 @@ endofdiv
 
 Outlineheader moremodels More
 
-\li\ref apop_histogram  (see the histogram section below)
 \li\ref apop_pmf  (see the histogram section below)
 \li\ref apop_kernel_density
 
@@ -1618,9 +1618,12 @@ endofdiv
 
 Outlineheader Histosec Histograms and PMFs (probability mass functions)
 
-A data set can be read as an empirical model, where each row of the data set has some odds of being drawn. The \ref apop_pmf model wraps a \ref apop_data set so that it can be used as a model in this manner. In fact, when you call \ref apop_estimate(\c your_data, \ref apop_pmf), all that really happens is that the data set is attached to the returned copy of the model (plus some minor details). 
+The \ref apop_pmf model wraps a \ref apop_data set 
+so it can be read as an empirical model, where each row of the data set has some
+odds of being drawn. This counts as a model estimation from data like any other, done via 
+\ref apop_estimate(\c your_data, \ref apop_pmf).
 
-You might want to clean up the data before turning it into a PMF. For example...
+You have the option of cleaning up the data before turning it into a PMF. For example...
 
 \code
 apop_data_pmf_compress(your_data);
@@ -1629,51 +1632,38 @@ apop_vector_normalize(your_data->weights);
 apop_model *a_pmf = apop_estimate(your_data, apop_pmf);
 \endcode
 
-...would remove all duplicates, and set the weights column to reflect the original number of copies for each observation, then sort the data, then turn it into a PMF. Compression produces a corresponding improvement in efficiency when calculating CDFs or making draws. Sorting is not necessary for making draws or getting a likelihood or log likelihood.
+...would remove all duplicates and set the weights column to reflect the original
+number of copies for each observation, then sort the data, then normalize the weights
+to sum to one, turn it into a PMF. Compression produces a corresponding improvement in
+efficiency when calculating CDFs or making draws. Sorting or normalizing is not
+necessary for making draws or getting a likelihood or log likelihood.
 
-It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no \c weights segment, then I assume that all rows have equal weight. So, for example, if you find a need to normalize the data into a sums-to-one PMF, then you can use \ref apop_vector_normalize on the \c weights vector to implement that. [But notice that even the PMF's \c draw function doesn't need this.]
+It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no \c weights segment, then I assume that all rows have equal weight.
 
 Using \ref apop_data_pmf_compress puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram. A binspec has as many columns as the data set being binned, and has one or two rows. The first row gives a bin width for the given column, so each column may have a different bin width. The second row, if present, gives the offset from zero for the bins. All bins, both above and below zero, are shifted accordingly. If there is no second row, the offset is zero.
 
-Send this binspec to \ref apop_data_to_bins. If you send a \c NULL binspec, then the offset is zero and the bin size is big enough to ensure that there are \f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formulae for bin widths that minimize MSE, which might be added as a future extension.  The binspec will be added as a page to the data set, named <tt>"<binspec>"</tt>
+Send this binspec to \ref apop_data_to_bins. If you send a \c NULL binspec, then the offset is zero and the bin size is big enough to ensure that there are \f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formulæ for bin widths that minimize MSE, which might be added as a future extension.  The binspec will be added as a page to the data set, named <tt>"<binspec>"</tt>
 
 There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec. 
 
-For example, if you do not have a prior binspec in mind, then you can use the one generaged by the first call to the histogram binning function to make sure that the second data set is in sync:
+For example, if you do not have a prior binspec in mind, then you can use the one generated by the first call to the histogram binning function to make sure that the second data set is in sync:
 
 \code
 apop_data_to_bins(first_set, NULL);
 apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 \endcode
 
-If you have a model and data, use the \ref apop_histogram_model_reset convenience function to make random draws and bin them appropriately.
-Once you have two distributions so formed, you can use \ref apop_test_kolmogorov or \ref apop_histograms_test_goodness_of_fit to generate the appropriate statistics from the pairs of bins.
+You can use \ref apop_test_kolmogorov or \ref apop_histograms_test_goodness_of_fit to generate the appropriate statistics from the pairs of bins.
 
 Kernel density estimation will produce a smoothed PDF. See \ref apop_kernel_density for details.
 Or, use \ref apop_histogram_moving_average for a simpler smoothing method.
 
-Outlineheader gslhistos GSL histograms
 
-The GSL provides a <tt>gsl_histogram</tt> structure, that produces a PDF by accumulating data into bins. Apophenia wraps this into its \ref apop_model struct, so that the model-family machinery can be applied to Bayesian updating, kernel smoothing, or other methods that could take in a PDF.
-To produce a GSL histogram-based PMF from \c your_data, use \ref apop_estimate(\c your_data, \ref apop_histogram). 
+Here are some functions to deal with the \ref apop_pmf.
 
-The GSL histogram is one-dimensional. The GSL also provides a two-dimensional version, but this is still short of the \f$N\f$ dimensions of the typical data set. Also, especially for larger dimensions, we need a sparse representation, while the GSL histogram structure choses the speed of a complete representation over the scalability of a sparse representation. For these and a few technical reasons, the \ref apop_histogram model is considered to be deprecated---for most purposes, you are better off using the \ref apop_pmf, which is at this point better supported. 
-
-
-As an aside, the GSL provides a closely-related 
-second structure that incrementally sums up the PMF's bins to produce a CMF. The CMF can be used to map from a draw from a Uniform[0,1] to a draw from the PMF.  Because it can be used to draw from the PMF, the GSL calls this the <tt>gsl_histogram_pdf</tt> structure. That's right: the data in the <tt>gsl_histogram_pdf</tt> structure is a cumulative sum---a CMF. This is handled internally by the \ref apop_histogram, but you can retrieve it if need be.
-
-As with the \ref apop_pmf, if you want to compare this histogram to other data (observed or theoretical), then you'll need to produce a second synced histogram. You can use \ref apop_histogram_model_reset to make random draws from a model and bin them. Producing a second histogram with matching bins is not as easy as just re-calling \ref apop_data_to_bins with the same binspec, so there is the \ref apop_histogram_vector_reset function to produce a second synced \ref apop_histogram.
-
-
-endofdiv
-
-Here are some functions to deal with both the \ref apop_pmf and \ref apop_histogram (most handle both). See also the GSL documentation, linked at the bottom of this outline, for other uses of the GSL's histogram structure.
-
-\li\ref apop_histogram_moving_average(): generate a model that is a moving average of an input pmf/histogram
-\li\ref apop_histogram_normalize(): reweight a \ref apop_histogram to weight one. For the \ref apop_pmf, use \ref apop_vector_normalize(your_pmf->data->weights)
-\li\ref apop_histogram_model_reset(): bin random draws from a continuous model into an existing pmf/histogram binspec.
-\li\ref apop_histogram_vector_reset(): For the \ref apop_histogram only.
+\li\ref apop_data_pmf_compress(): merge together redundant rows in a data set before calling 
+                \ref apop_estimate(\c your_data, \ref apop_pmf); optional.
+\li\ref apop_vector_moving_average(): smooth a vector (e.g., your_pmf->data->weights) via moving average.
 \li\ref apop_histograms_test_goodness_of_fit(): goodness-of-fit via \f$\chi^2\f$ statistic
 \li\ref apop_test_kolmogorov(): goodness-of-fit via Kolmogorov-Smirnov statistic
 

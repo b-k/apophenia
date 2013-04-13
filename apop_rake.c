@@ -622,7 +622,6 @@ APOP_VAR_ENDHEAD
     }
     free(format);
     apop_vector_apply(fit->weights, nan_to_zero);
-    //if (!init_table && !count_col) gsl_vector_set_all(fit->weights, 1);
     if (nudge) apop_map(fit, .fn_rp=nudge_zeros, .param=&nudge);
 
     contrast_grid = apop_data_calloc(var_ct, contrast_ct);

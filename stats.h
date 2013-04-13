@@ -172,7 +172,7 @@ APOP_VAR_DECLARE apop_data * apop_data_get_factor_names(apop_data *data, int col
 
 APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
 
-APOP_VAR_DECLARE double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng);
+APOP_VAR_DECLARE double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom);
 
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
 void apop_estimate_parameter_tests (apop_model *est);

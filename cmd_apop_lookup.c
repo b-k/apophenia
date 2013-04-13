@@ -9,13 +9,11 @@ Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_multimin.h>
-#include <gsl/gsl_histogram.h>
 #include <gsl/gsl_statistics_double.h>
 #include "apop_internal.h"
 #include <unistd.h>
 
 char *plot_type = NULL;
-int histobins   = 0;
 
 typedef enum {Beta, Binomial, F, Negbinom, Normal, Poisson, T} distlist ;
 

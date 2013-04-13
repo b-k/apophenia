@@ -90,13 +90,6 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
         Apop_data_row(draws, i, one_data_pt);
         apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
     }
-    /*apop_model *h = apop_estimate(cdfs, apop_histogram);
-    gsl_histogram *histo = Apop_settings_get(h, apop_histogram, pdf);
-    for (int i=0; i< histo->n; i++)
-        if(fabs(histo->bin[i]- (drawct+0.0)/histo->n)> drawct/1000.)
-        printf("%g %g %g\n", histo->bin[i], (drawct+0.0)/histo->n, drawct/1000.);
-        //Diff(histo->bin[i], (drawct+0.0)/histo->n, drawct/100.);
-        */
 }
 
 double true_parameter_v[] = {1.82,2.1};

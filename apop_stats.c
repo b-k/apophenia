@@ -633,32 +633,36 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   Notice that it is not a distance, because there is an asymmetry
   between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
 
-  \param top the \f$p\f$ in the above formula. (No default; must not be \c NULL)
-  \param bottom the \f$q\f$ in the above formula. (No default; must not be \c NULL)
+  \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
+  \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
   \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+  \param top deprecated synonym for \c from.
+  \param bottom deprecated synonym for \c to.
 
-  This function can take empirical histogram-type models---\ref apop_pmf and \ref apop_histogram ---or continuous models like \ref apop_loess
+  This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
   or \ref apop_normal.
 
- If there is an empirical model (I'll try \c top first, under the presumption that you are measuring the divergence of data from a `true' distribution), then I'll step
+ If there is a PMF (I'll try \c from first, under the presumption that you are measuring the divergence of data from an observed data distribution), then I'll step
 through it for the points in the summation.
 
 \li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
 but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1</tt>
 I print a message as well.
 
-If neither distribution is empirical, then I'll take \c draw_ct random draws from \c bottom and evaluate at those points.
+If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c to and evaluate at those points.
 
 \li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
 
 This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int draw_ct, gsl_rng *rng){
+APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
     apop_model * apop_varad_var(top, NULL);
     apop_model * apop_varad_var(bottom, NULL);
-    Apop_assert(top, "The first model is NULL.");
-    Apop_assert(bottom, "The second model is NULL.");
+    apop_model * apop_varad_var(from, (top ? top : NULL));
+    apop_model * apop_varad_var(to, (bottom ? bottom : NULL));
+    Apop_assert(from, "The first model is NULL.");
+    Apop_assert(to, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
     static gsl_rng * spare_rng = NULL;
     gsl_rng * apop_varad_var(rng, NULL);
@@ -667,33 +671,34 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *top, apop_model *bottom, int
     if (!rng)  rng = spare_rng;
 APOP_VAR_ENDHEAD
     double div = 0;
-    Apop_notify(3, "p(top)\tp(bot)\ttop*log(top/bot)\n");
-    if (top->name && !strcmp(top->name, "PDF or sparse matrix")){
-        apop_data *p = top->data;
-        Get_vmsizes(p); //firstcol, vsize, msize1, msize2
+    Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
+    if (from->name && !strcmp(from->name, "PDF or sparse matrix")){
+        apop_data *p = from->data;
+        apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
+        Get_vmsizes(p); //maxsize
         apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);
         for (int i=0; i < (vsize ? vsize : msize1); i++){
-            double pi = p->weights ? gsl_vector_get(p->weights, i) : 1./(vsize ? vsize : msize1);
+            double pi = p->weights ? gsl_vector_get(p->weights, i)/settings->total_weight : 1./maxsize;
             if (!pi){
                 Apop_notify(3, "0\t--\t0");
                 continue;
             } //else:
             get_one_row(p, a_row, i, firstcol, msize2);
-            double qi = apop_p(a_row, bottom);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
-                                                "top doesn't (which produces infinite divergence).");
+            double qi = apop_p(a_row, to);
+            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
+                                                "from-distribution doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             div += pi * log(pi/qi);
         }
         apop_data_free(a_row);
     } else { //the version with the RNG.
-        apop_data *a_row = apop_data_alloc(1, top->dsize);
+        apop_data *a_row = apop_data_alloc(1, from->dsize);
         for (int i=0; i < draw_ct; i++){
-            apop_draw(a_row->matrix->data, rng, top);
-            double pi = apop_p(a_row, top);
-            double qi = apop_p(a_row, bottom);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: bottom has a value where "
-                                                "top doesn't (which produces infinite divergence).");
+            apop_draw(a_row->matrix->data, rng, from);
+            double pi = apop_p(a_row, from);
+            double qi = apop_p(a_row, to);
+            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
+                                                "from-distribution doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.
                 div += pi * log(pi/qi);

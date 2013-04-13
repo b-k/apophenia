@@ -48,6 +48,7 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 
 \li If the \c weights element is \c NULL, then I assume that all rows of the data set are
 equally probable.
+\li If the \c weights are present but sum to a not-finite value, the model's \c error element is set to \c 'w' when the estimation is run, and a warning printed.
 
 \li Be careful: the weights are in the \c weights element of the \c apop_data set, not in
 the \c vector element. If you put the weights in the \c vector and have \c NULL \c
@@ -83,7 +84,14 @@ Apop_settings_init(apop_pmf,
 static apop_model *estim (apop_data *d, apop_model *out){
     out->data = d;
     apop_data_free(out->parameters); //may have been auto-alloced by prep.
-    //out->parameters = apop_data_copy(d);
+
+    apop_pmf_settings *settings = Apop_settings_get_group(out, apop_pmf);
+    if (!settings) settings = Apop_model_add_group(out, apop_pmf);
+    if (d->weights) {
+        settings->total_weight = apop_sum(d->weights);
+        Apop_stopif(!isfinite(settings->total_weight),
+            out->error='w', 0, "total weight in the input data is %Lg.\n", settings->total_weight);
+    }
     return out;
 }
 
@@ -216,21 +224,22 @@ static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one 
     return -1;
 }
 double pmf_p(apop_data *d, apop_model *m){
+    apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
     Nullcheck_d(d, GSL_NAN) 
     Nullcheck_m(m, GSL_NAN) 
     int model_pmf_length;
     {
-        Get_vmsizes(m->data);
-        model_pmf_length = GSL_MAX(vsize, GSL_MAX(m->data->textsize[0], msize1));
+        Get_vmsizes(m->data);//maxsize
+        model_pmf_length = maxsize;
     }
-    Get_vmsizes(d)//firstcol, vsize, vsize1, msize2
+    Get_vmsizes(d)//maxsize
     long double p = 1;
-    for (int i=0; i< GSL_MAX(msize1, d->textsize[0]); i++){
+    for (int i=0; i< maxsize; i++){
         Apop_data_row(d, i, onerow);
         int elmt = find_in_data(m->data, onerow);
         if (elmt == -1) return 0; //Can't find one observation: prob=0;
         p *= m->data->weights
-                 ? m->data->weights->data[elmt]
+                 ? m->data->weights->data[elmt] /settings->total_weight 
                  : 1./model_pmf_length; //no weights means any known event is equiprobable
     }
     return p;

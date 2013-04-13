@@ -859,43 +859,6 @@ void test_data_sort(){
     assert(apop_data_get(d, 0,1)== 55);
 }
 
-void test_histograms(gsl_rng *r){
-//create a million draws 
-    int n = 5e5;
-    double mu = 2.8, sigmasq = 1.34;
-    apop_data *d = apop_data_alloc(0,n,1);
-    gsl_matrix *out = gsl_matrix_alloc(n,1);
-    for (int i=0; i< n; i++)
-        //gsl_matrix_set(d->matrix, i, 0, gsl_rng_uniform(r));
-        gsl_matrix_set(d->matrix, i, 0, gsl_ran_gaussian(r, sqrt(sigmasq))+mu);
-    apop_model *hp = apop_estimate(d, apop_histogram);
-    for (int i=0; i< n; i++){
-        apop_histogram.draw(gsl_matrix_ptr(out, i,0), r, hp);
-        assert(gsl_finite(gsl_matrix_get(out, i,0)));
-    }
-    apop_model *outparams   = apop_estimate(apop_matrix_to_data(out), apop_normal);
-    assert(fabs(outparams->parameters->vector->data[0]-mu) < 1e2);
-    assert(fabs(outparams->parameters->vector->data[1]-sigmasq) < 1e2);
-    apop_model_free(hp);
-    apop_model_free(outparams);
-
-    apop_model   *hp2 = apop_model_copy(apop_histogram);
-    Apop_model_add_group(hp2, apop_histogram, .data=d, .bins_in=100);
-    for (int i=0; i< n; i++){
-        apop_draw(gsl_matrix_ptr(out, i,0), r, hp2);
-        assert(gsl_finite(gsl_matrix_get(out, i,0)));
-    }
-    apop_data *md =apop_matrix_to_data(out);
-    apop_model *outparams2 = apop_estimate(md, apop_normal);
-    assert(fabs(outparams2->parameters->vector->data[0]-mu) < 1e2);
-    assert(fabs(outparams2->parameters->vector->data[1]-sigmasq) < 1e2);
-    apop_model_free(hp2);
-    apop_model_free(outparams2);
-    apop_data_free(md);
-    apop_data_free(d);
-//    apop_plot_histogram(out, 100, NULL); 
-}
-
 static apop_model * broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 1./100.) {
@@ -1107,10 +1070,8 @@ void db_to_text(){
     apop_db_open(NULL);
     if (!apop_table_exists("d")){
         apop_data *field_params = apop_text_alloc(NULL,2,2);
-        apop_text_add(field_params,0, 0, "[ab][ab]");
-        apop_text_add(field_params,0, 1, "numeric");
-        apop_text_add(field_params,1, 0, ".*");
-        apop_text_add(field_params,1, 1, "character");
+        apop_text_fill(field_params, "[ab][ab]", "numeric",
+                                     ".*",        "character");
         apop_text_to_db("data-mixed", "d", 0, 1, NULL, .field_params=field_params);
     }
     apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
@@ -1428,22 +1389,26 @@ void row_manipulations(){
     assert (!apop_map_sum(test2, .fn_d=is_even, .part='v'));
 }
 
+
 void test_pmf(){
     double x[] = {0, 0.2, 0 , 0.4, 1, .7, 0 , 0, 0};
-	apop_data *d= apop_data_alloc();
- 	double out;
-	gsl_rng *r = apop_rng_alloc(1234);
-	d->vector = apop_array_to_vector(x, 9);
-	apop_model *m = apop_crosstab_to_pmf(d);
-	gsl_vector *v = gsl_vector_calloc(d->vector->size);
-	for (size_t i=0; i< 1e5; i++){
-		apop_draw(&out, r, m);
-		apop_vector_increment(v, out);
-	}
-    apop_vector_normalize(d->vector);
+    gsl_rng *r = apop_rng_alloc(1234);
+    apop_data *d = apop_data_alloc();
+    d->weights = apop_array_to_vector(x, 9);
+    apop_model *mc = apop_model_copy(apop_pmf);
+    Apop_model_add_group(mc, apop_pmf, .draw_index= 'y');
+    mc->dsize=0;
+    apop_model *m = apop_estimate(d, *mc);
+    gsl_vector *v = gsl_vector_calloc(d->weights->size);
+    for (size_t i=0; i< 1e5; i++){
+        double out;
+        apop_draw(&out, r, m);
+        apop_vector_increment(v, out);
+    }
+    apop_vector_normalize(d->weights);
     apop_vector_normalize(v);
     for (size_t i=0; i < v->size; i ++)
-        Diff(d->vector->data[i], v->data[i], tol2);
+        Diff(d->weights->data[i], v->data[i], 1e-2);
     apop_model_free(m);
     apop_data_free(d);
     gsl_vector_free(v);
@@ -1483,15 +1448,11 @@ void test_pmf_compress(gsl_rng *r){
     apop_data *d = apop_data_alloc();
     apop_text_alloc(d, 9, 1);
     d->vector = apop_array_to_vector((double []){12., 1., 2., 2., 1., 1., 2., 2., NAN}, 9);
-    apop_text_add(d, 0, 0, "Dozen");
-    apop_text_add(d, 1, 0, "Single");
-    apop_text_add(d, 4, 0, "Single");
-    apop_text_add(d, 5, 0, "Single");
-    apop_text_add(d, 2, 0, "Pair");
-    apop_text_add(d, 3, 0, "Pair");
-    apop_text_add(d, 6, 0, "Pair");
-    apop_text_add(d, 7, 0, "Pair");
-    apop_text_add(d, 8, 0, "Nada");
+    apop_text_fill(d, "Dozen", "Single", "Pair", "Pair",
+                      "Single", "Single", "Pair", "Pair",
+                      "Nada");
+
+
     apop_data_pmf_compress(d);
 
     assert(d->vector->data[0]==12);
@@ -1518,14 +1479,15 @@ void test_pmf_compress(gsl_rng *r){
     Apop_data_row(b, 0, arow);
     apop_data *spec = apop_data_copy(arow);
     gsl_vector_set_all(spec->vector, 1);
-    apop_data_to_bins(b, .binspec=spec);
-    assert(apop_strcmp(b->text[0][0], "Type 1"));
-    assert(apop_strcmp(b->text[1][0], "Type 1"));
-    assert(apop_strcmp(b->text[2][0], "Type 2"));
-    assert(b->weights->data[0]==2);
-    assert(b->weights->data[1]==2);
-    assert(b->weights->data[2]==1);
-    
+    apop_data *c = apop_data_to_bins(b, .binspec=spec);
+    apop_data_free(b);
+    assert(apop_strcmp(c->text[0][0], "Type 1"));
+    assert(apop_strcmp(c->text[1][0], "Type 1"));
+    assert(apop_strcmp(c->text[2][0], "Type 2"));
+    assert(c->weights->data[0]==2);
+    assert(c->weights->data[1]==2);
+    assert(c->weights->data[2]==1);
+    apop_data_free(c);
 
     //I assert that if I use the default binspec returned by a call to apop_data_to_bins,
     //then re-binning with the binspec explicitly stated will give identical results.
@@ -1651,7 +1613,6 @@ int main(int argc, char **argv){
     do_test("test lognormal estimations", test_lognormal(r));
     do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
-    do_test("test apop_histogram model", test_histograms(r));
     do_test("test apop_data sort", test_data_sort());
     do_test("database skew and kurtosis", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());

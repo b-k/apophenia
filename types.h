@@ -213,7 +213,6 @@ APOP_VAR_DECLARE void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)
 
 //From vector
 gsl_vector *apop_vector_copy(const gsl_vector *in);
-double * apop_vector_to_array(const gsl_vector *in);
 APOP_VAR_DECLARE gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col);
 
 //From matrix
@@ -223,7 +222,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 //From array
 APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
 #define apop_line_to_vector apop_array_to_vector
-gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols);
 
 //From line
 gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
@@ -245,13 +243,15 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 APOP_VAR_DECLARE gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages);
 APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages);
 
-#define apop_vector_fill(in, ...) apop_vector_fill_base((in), (double []) {__VA_ARGS__})
-#define apop_data_fill(in, ...) apop_data_fill_base((in), (double []) {__VA_ARGS__})
+#define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})
+#define apop_data_fill(adfin, ...) apop_data_fill_base((adfin), (double []) {__VA_ARGS__})
+#define apop_text_fill(dataset, ...)   apop_text_fill_base((dataset), (char* []) {__VA_ARGS__, NULL})
+    
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
+apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
 int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
-
 
     // Models and model support functions
 
@@ -263,7 +263,6 @@ apop_model apop_dirichlet;
 apop_model apop_exponential;
 apop_model apop_f_distribution;
 apop_model apop_gamma;
-apop_model apop_histogram;
 apop_model apop_improper_uniform;
 apop_model apop_iv;
 apop_model apop_kernel_density;

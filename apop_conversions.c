@@ -24,24 +24,6 @@ void xprintf(char **q, char *format, ...){
 /** \defgroup conversions Conversion functions
 The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
 
-/** Converts a \c gsl_vector to an array.
-
-\param in A \c gsl_vector
-\return A \c double*, which will be <tt>malloc</tt>ed inside the function.
-
-\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
-
-\ingroup conversions
-*/
-double * apop_vector_to_array(const gsl_vector *in){
-//Does not use memcpy, because we don't know the stride of the vector.
-    Apop_assert_c(in, NULL, 1, "You sent me a NULL vector; returning NULL");
-    double *out = malloc(sizeof(double) * in->size);
-	for (size_t i=0; i < in->size; i++)
-		out[i]	= gsl_vector_get(in, i);
-	return out;
-}
-
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
@@ -96,35 +78,6 @@ APOP_VAR_ENDHEAD
         gsl_matrix_set_row(out, 0, in);
     else
         gsl_matrix_set_col(out, 0, in);
-    return out;
-}
-
-static void convert_array_to_line(const double **in, double **out, const int rows, const int cols){
-	//go from in[i][j] form to the GSL's preferred out[i*cols + j] form
-	*out = malloc(sizeof(double) * rows * cols);
-	for (size_t i=0; i<rows; i++)
-		for (size_t j=0; j<cols; j++)
-			(*out)[i * cols + j]	= in[i][j];
-}
-
-/** Convert a <tt>double **</tt> array to a <tt>gsl_matrix</tt>
-
-\param in	the array to read in
-\param rows, cols	the size of the array.
-\return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
-
-usage: \code gsl_matrix *m = apop_array_to_matrix(indata, 34, 4); \endcode
-
-If you want to initialize on the allocation line, this isn't what you want. See \ref apop_line_to_matrix.
-\ingroup conversions
-*/
-gsl_matrix * apop_array_to_matrix(const double **in, const int rows, const int cols){
-    double *line;
-    gsl_matrix  *out = gsl_matrix_alloc(rows, cols);
-	convert_array_to_line(in, &line, rows, cols);
-    gsl_matrix_view m = gsl_matrix_view_array(line, rows,cols);
-	gsl_matrix_memcpy(out,&(m.matrix));
-	free(line);
     return out;
 }
 
@@ -932,7 +885,7 @@ there is no leak or loss to a form like this example, which generates a unit vec
 apop_data *unit_vector = apop_data_fill(apop_data_alloc(3), 1, 1, 1);
 \endcode
 
-\see apop_line_to_data
+\see apop_line_to_data, apop_text_fill
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){
@@ -973,6 +926,52 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
         gsl_vector_set(in, i, ap[i]);
     return in;
 }
+
+
+/** \def apop_text_fill(in, ap)
+Fill the text part of an already-allocated \ref apop_data set with a list of strings. 
+
+\param dataset A data set that you already prepared with \ref apop_text_alloc.
+\param ... A list of strings. The first row is filled first, then the second, and so on to the end of the text grid.
+
+\li No \c NULL strings. A blank string, <tt>""</tt> is OK.
+\li If you provide more or fewer strings than are needed to fill the text grid and
+     <tt>apop_opts.verbose >=1</tt>, I print a warning and continue to 
+     the end of the text grid or data set, whichever is shorter.
+\li If the data set is \c NULL, I return \c NULL. If you provide a \c NULL data set
+    but a non-NULL list of text elements, and <tt>apop_opts.verbose >=1</tt>, I print
+    a warning and return \c NULL.
+\li Remember that the C preprocessor concatenates two adjacent strings into one. Here
+    is an attempt to fill a \f$ 2\times 3\f$ grid:
+\code
+  apop_data *one23 = apop_text_fill(apop_data_alloc(NULL, 2, 3),
+                                     "one", "two", "three"   //missing comma!
+                                     "two", "four", "six");
+\endcode
+The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo", leaving you with only five strings.
+
+\li If you have a \c NULL-delimited array of strings (not just a loose list as above),
+then use \ref apop_text_fill_base. 
+
+*/
+   
+apop_data *apop_text_fill_base(apop_data *data, char* text[]){
+    int textct = 0;
+    for (char **textptr = text; *textptr; textptr++) textct++;
+    Apop_stopif(!data && textct, return NULL, 1, "NULL data set input; returning NULL.");
+    if (!data) return NULL;
+    int gridsize = data ? data->textsize[0]*data->textsize[1] : 0;
+    Apop_stopif(textct != gridsize, /*continue*/, 1, "Data set has a text grid "
+            "of size %i but you gave me %i strings.", gridsize, textct);
+
+    int ctr=0;
+    for (int i=0; i< data->textsize[0]; i++)
+        for (int j=0; j< data->textsize[1]; j++)
+            apop_text_add(data, i, j, text[ctr++]);
+    return data;
+}
+
+
 
 ///////The rest of this file is for apop_text_to_db
 extern sqlite3 *db;

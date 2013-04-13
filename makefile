@@ -19,9 +19,8 @@ all:
 	@echo This is the \'backstage\' version of the Apophenia repository.
 	@echo It builds the .deb, .rpm, and autoconf-able .tgz versions.
 	@echo Therefore, it may require package-making tools that you don\'t have.
-	@echo If you just want to use the library, check the download page at
-	@echo https://github.com/b-k/Apophenia/downloads
-	@echo [but ignore the buttons at the top of the page].
+	@echo If you just want to use the library, check the \'download 
+	@echo Apophenia here\' link from http://apophenia.info
 	@echo If you want to hack the library itself, welcome---the makefile 
 	@echo will show you what targets are available.
 
