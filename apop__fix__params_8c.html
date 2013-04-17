@@ -50,8 +50,8 @@ Functions</h2>
 <li><a class="anchor" id="aecd3ae25fd5de59b942752aec6e4e3dd"></a><!-- doxytag: member="apop_fix_params.c::Apop_settings_init" ref="aecd3ae25fd5de59b942752aec6e4e3dd" args="(Apop_settings_copy(apop_fix_params, Apop_assert(in.base_model,&quot;I can't fix a NULL model's parameters.&quot;);)" -->
 <b>Apop_settings_init</b> (<a class="el" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(apop_fix_params, Apop_assert(in.base_model,&quot;I can't fix a NULL model's parameters.&quot;);)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
-<li><a class="anchor" id="af676505faea1c7e30ffbd8690a092ed8"></a><!-- doxytag: member="apop_fix_params.c::apop_model_fix_params_get_base" ref="af676505faea1c7e30ffbd8690a092ed8" args="(apop_model *model_in)" -->
-<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_fix_params_get_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
+<li><a class="anchor" id="ae70ae98621cd8ee628d1a5d9c8e82111"></a><!-- doxytag: member="apop_fix_params.c::apop_model_fix_params_get_base" ref="ae70ae98621cd8ee628d1a5d9c8e82111" args="(apop_model *fixed_model)" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_fix_params_get_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *fixed_model)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Set some of the parameters of a model to fixed values. </p>
@@ -73,11 +73,14 @@ Functions</h2>
 <p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
 <p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_17.png"/> but <img class="formulaInl" alt="$p_1$" src="form_18.png"/> allowed to float freely:</p>
-<div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *bi30 = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, 30, GSL_NAN));
-    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(bi30, apop_mle, .starting_pt=(<span class="keywordtype">double</span>[]){.5}); <span class="comment">// The Binomial doesn&#39;t like the default </span>
-                                                                       <span class="comment">// starting point of 1.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, bi30);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *bi30 = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, 30, GSL_NAN));
+<a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(bi30, apop_mle, .starting_pt=(<span class="keywordtype">double</span>[]){.5}); <span class="comment">// The Binomial doesn&#39;t like the default </span>
+                                                                   <span class="comment">// starting point of 1.</span>
+<a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, bi30);
 </pre></div><p>The output is an <code><a class="el" href="structapop__model.html">apop_model</a></code> that can be estimated, Bayesian updated, et cetera.</p>
+<ul>
+<li>Rather than using this model, you may simply want a now-filled-in copy of the original model. Use apop_model_fix_params_get_base to retrieve the original model's parameters.</li>
+</ul>
 <ul>
 <li>The <code>estimate</code> method always uses an MLE, and it never calls the base model's <code>estimate</code> method.</li>
 </ul>
@@ -85,7 +88,7 @@ Functions</h2>
 <li>If the input model has MLE-style settings attached, I'll use them for the <code>estimate</code> method. Otherwise, I'll set my own.</li>
 </ul>
 <ul>
-<li>If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any search; else the defaults start from <b>1</b> as usual.</li>
+<li>If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any MLE search; the defaults for the variables without fixed values starts from <b>1</b> as usual.</li>
 </ul>
 <ul>
 <li>I do check the <code>more</code> pointer of the <code>parameters</code> for additional pages and <code>NaN</code>s on those pages.</li>
@@ -135,4 +138,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>

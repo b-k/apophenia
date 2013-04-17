@@ -47,10 +47,55 @@ group by whatever
 <ul>
 <li>For bonus points, there are the <code>sqrt(x)</code>, <code>pow(x,y)</code>, <code>exp(x)</code>, <code>log(x)</code>, and trig functions. They call the standard math library function of the same name to calculate <img class="formulaInl" alt="$\sqrt{x}$" src="form_11.png"/>, <img class="formulaInl" alt="$x^y$" src="form_12.png"/>, <img class="formulaInl" alt="$e^x$" src="form_13.png"/>, <img class="formulaInl" alt="$\ln(x)$" src="form_14.png"/>, <img class="formulaInl" alt="$\sin(x)$" src="form_15.png"/>, <img class="formulaInl" alt="$\arcsin(x)$" src="form_16.png"/>, et cetera.</li>
 </ul>
+<ul>
+<li>The random() function keepts its own <code>gsl_rng</code>, which is intialized on first call using the value of <code>apop_ots.rng_seed</code> (which is then incremented, so the next function to use it will get a different seed).</li>
+</ul>
 <div class="fragment"><pre class="fragment">select sqrt(x), pow(x,0.5), exp(x), log(x), 
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
-</pre></div><p>Some more realistic sample code:</p>
+</pre></div><p>Here is a test script using many of the above.</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+
+<span class="preprocessor">#define Diff(L, R) assert(fabs((L)-(R)&lt;1e-4));</span>
+<span class="preprocessor"></span><span class="preprocessor">#define getrow(rowname) apop_data_get(row, .colname=#rowname)</span>
+<span class="preprocessor"></span>
+<span class="keywordtype">double</span> test_all(<a class="code" href="structapop__data.html">apop_data</a> *row){
+    Diff(gsl_pow_2(getrow(root)), getrow(rr))
+    Diff(getrow(ln), getrow(l10)*log(10))
+    Diff(getrow(rr), getrow(rragain))
+    Diff(getrow(one), 1)
+    return 0;
+}
+
+<span class="keywordtype">int</span> main(){
+    <span class="comment">//create a table with two rows.</span>
+    <span class="comment">//We didn&#39;t explicitly open a db with apop_db_open,</span>
+    <span class="comment">//so this will be an in-memory SQLite db.</span>
+    <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;create table a(b); &quot;</span>
+               <span class="stringliteral">&quot;insert into a values(1); &quot;</span>
+               <span class="stringliteral">&quot;insert into a values(1); &quot;</span>
+
+                <span class="stringliteral">&quot;create table randoms as &quot;</span>
+                <span class="stringliteral">&quot;select ran() as rr &quot;</span>
+                <span class="comment">/* join to create 2^13=8192 rows*/</span>
+                <span class="stringliteral">&quot;from a,a,a,a,a,a,a,a,a,a,a,a,a;&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(
+            <span class="stringliteral">&quot;select rr, sqrt(rr) as root, &quot;</span>
+            <span class="stringliteral">&quot;log(rr) as ln, log10(rr) as l10, &quot;</span>
+            <span class="stringliteral">&quot;exp(log(rr)) as rragain, &quot;</span>
+            <span class="stringliteral">&quot;pow(sin(rr),2)+pow(cos(rr),2) as one &quot;</span>
+            <span class="stringliteral">&quot;from randoms&quot;</span>);
+    <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_r=test_all);
+
+    <span class="comment">//the pop variance of a Uniform[0,1]=1/12; kurtosis=1/80.</span>
+    <a class="code" href="stats_8h.html#afdacf526f18ea8c5bd16bd2572e5d4b3">Apop_col_t</a>(d, <span class="stringliteral">&quot;rr&quot;</span>, rrow);
+    Diff(<a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(rrow)*8191./8192., 1/12. );
+    Diff(<a class="code" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(rrow)*8191./8192., 1/80.);<span class="comment">//approx.</span>
+
+    Diff(<a class="code" href="group__queries.html#ga1ad75f9dfba696a3741e28896ed5b75d">apop_query_to_float</a>(<span class="stringliteral">&quot;select stddev(rr) from randoms&quot;</span>), 
+                sqrt(1/12.)*8192./8191);
+}
+</pre></div><p>Here is some more realistic sample code:</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
@@ -70,7 +115,7 @@ from table
     <span class="keywordtype">double</span> matrix_pop_stddev = sqrt(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(cov)*(d-&gt;matrix-&gt;size1/(d-&gt;matrix-&gt;size1-1.)));
     assert(fabs(db_pop_stddev - matrix_pop_stddev) &lt; 1e-4);
     <span class="keywordtype">double</span> actual_stddev = sqrt(2*gsl_pow_3(.5)/3);
-    assert(fabs(db_pop_stddev - actual_stddev) &lt; 1e-4);
+    assert(fabs(db_pop_stddev - actual_stddev) &lt; 1e-3);
 
     <span class="keywordtype">float</span> sq_mean = <a class="code" href="group__queries.html#ga1ad75f9dfba696a3741e28896ed5b75d">apop_query_to_float</a>(<span class="stringliteral">&quot;select avg(sq) from powa&quot;</span>);
     <span class="keywordtype">float</span> actual_sq_mean = 1./3;
@@ -82,4 +127,4 @@ from table
 }
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Wed Apr 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
