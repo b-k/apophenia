@@ -21,15 +21,33 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
         .use_score    = 1
         );
     Apop_model_add_group(dist, apop_parts_wanted);
-    apop_model *e    = apop_estimate(data,*dist);
-    if (verbose) printf( method==APOP_SIMPLEX_NM ? "(Simplex"
-                        :method==APOP_CG_PR      ? ", Gradients"
-                        :method==APOP_RF_HYBRID  ? ", Newton's)  "
-                        : "default method\t");
+    if (verbose) printf( method==APOP_SIMPLEX_NM ? "Simplex [basic"
+                        :method==APOP_CG_PR      ? "; Gradients [basic"
+                        :method==APOP_RF_HYBRID  ? "; Newton's [basic"
+                        : "default method [basic");
     fflush(NULL);
+    apop_model *e    = apop_estimate(data,*dist);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
+    printf("][restart");fflush(NULL);
     e = apop_estimate_restart(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
+
+        if (!strcmp(e->name, "Dirichlet distribution")
+            || !strcmp(e->name, "Waring distribution")
+            ||(!strcmp(e->name, "Bernoulli distribution") && method==APOP_RF_HYBRID)
+            || !strcmp(e->name, "Yule distribution")){
+            //cycle takes all day.
+            printf("][skip EM]");fflush(NULL);
+            return 0;
+        }
+
+    apop_model *dc  = apop_model_copy(*dist);
+    Apop_settings_add(dc, apop_mle, dim_cycle_tolerance, fabs(apop_log_likelihood(data, e))/50.); //w/in 2%.
+    Apop_settings_add(dc, apop_mle, tolerance, 5e-1);
+    printf("][EM cycle");fflush(NULL);
+    apop_model *dce = apop_estimate(data,*dc);
+    printf("]");fflush(NULL);
+    Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(dce->parameters)), 1e-2); 
     return 0;
 }
 
@@ -81,7 +99,7 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     if (!m->cdf || !strcmp(m->name, "Bernoulli distribution")
                 || !strcmp(m->name, "Binomial distribution"))
         return;
-    int drawct = 1e5;
+    int drawct = 1e4;
     apop_data *draws = apop_data_alloc(drawct, m->dsize);
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
@@ -98,14 +116,14 @@ void test_distributions(gsl_rng *r){
   if (verbose) printf("\n");
   apop_model* true_params;
   apop_model null_model = {"the null model"};
-  apop_model *beta_no_est = apop_model_copy(apop_beta);
-  beta_no_est->estimate=NULL;
+  apop_model *bernie_no_est = apop_model_copy(apop_bernoulli);
+  bernie_no_est->estimate=NULL;
   apop_model *exp_no_est = apop_model_copy(apop_exponential);
   exp_no_est->estimate=NULL;
   apop_model *fish_no_est = apop_model_copy(apop_poisson);
   fish_no_est->estimate=NULL;
   apop_model dist[] = {
-                apop_beta, apop_bernoulli,
+                apop_bernoulli, *bernie_no_est, apop_beta, 
                 apop_binomial, apop_chi_squared,
                 apop_dirichlet, apop_exponential, *exp_no_est,
                 /*apop_f_distribution,*/

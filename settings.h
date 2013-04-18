@@ -274,19 +274,6 @@ typedef struct {
     int cmf_refct;    /**< For internal use, so I can garbage-collect the CMF when needed. */
 } apop_pmf_settings;
 
-#include <gsl/gsl_histogram.h>
-/** Settings for the histogram and kernel density structures, mostly opaque. 
-  On setup, you must set the \c .data and \c .bins_in items. 
-  
-  \ingroup settings */
-typedef struct{
-    apop_data           *data;
-    gsl_histogram       *pdf; /**< Where the histogram is kept */
-    gsl_histogram_pdf   *cdf; /**< If you make random draws, I need a CDF aggregation of the main PDF. I keep it here. */
-    apop_model          *histobase;
-    int                 ownerbase; 
-    int                 bins_in; /**< Used as input. May not equal the final number of bins (\c pdf->bins) due to the infinibins.*/
-} apop_histogram_settings;
 
 /** Settings for the \ref apop_kernel_density model. 
 
@@ -312,7 +299,7 @@ typedef struct{
     long int periods; /**< For how many steps should the MCMC chain run? */
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
                          as initialization. That is, this is a number between zero and one. */
-    int histosegments; /**< If outputting a \ref apop_histogram, how many segments should it have? */
+    int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
     char method;
 } apop_update_settings;
 
@@ -529,7 +516,6 @@ Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_stack)
 Apop_settings_declarations(apop_update)
-Apop_settings_declarations(apop_histogram)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_kernel_density)
 

@@ -17,7 +17,7 @@ int main(){
     double matrix_pop_stddev = sqrt(apop_data_get(cov)*(d->matrix->size1/(d->matrix->size1-1.)));
     assert(fabs(db_pop_stddev - matrix_pop_stddev) < 1e-4);
     double actual_stddev = sqrt(2*gsl_pow_3(.5)/3);
-    assert(fabs(db_pop_stddev - actual_stddev) < 1e-4);
+    assert(fabs(db_pop_stddev - actual_stddev) < 1e-3);
 
     float sq_mean = apop_query_to_float("select avg(sq) from powa");
     float actual_sq_mean = 1./3;

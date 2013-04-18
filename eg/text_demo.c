@@ -6,7 +6,7 @@ int main(){
             "insert into data values ('Bill Berry', 'Athens', 'GA');"
             "insert into data values ('Michael Stipe', 'Reckoning', 'GA');");
     apop_data *tdata = apop_query_to_text("select name, city, state from data");
-    printf("Customer #1: %s\n\n", *tdata->text[0]); //equivalent to tdata->text[0][0]
+    printf("Customer #1: %s\n\n", *tdata->text[0]);
 
     printf("The data, via apop_data_print:\n");
     apop_data_print(tdata);

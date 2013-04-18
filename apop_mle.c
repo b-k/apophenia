@@ -583,7 +583,7 @@ find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
     if (apop_name_find(est->info->names, "Info", 'r')){
         int index = apop_name_find(est->info->names, "log likelihood", 'r');
-        if (index) return apop_data_get(est->info, index);
+        if (index>-2) return apop_data_get(est->info, index);
     }
     //last resort: recalculate
     return apop_log_likelihood(d, est);
@@ -594,7 +594,6 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
     int iteration = 0;
     apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
     double tol = mp->dim_cycle_tolerance;
-    apop_data *p = est->parameters;
     int betasize = info.beta->size;
     do {
         if (mp->verbose){
@@ -606,16 +605,18 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
         Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
         for (int i=0; i< betasize; i++){
             gsl_vector_set(info.beta, i, GSL_NAN);
-            apop_data_unpack(info.beta, p);
+            apop_data_unpack(info.beta, est->parameters);
             apop_model *m_onedim = apop_model_fix_params(est);
+            apop_prep(d, m_onedim);
             apop_maximum_likelihood(d, m_onedim);
             gsl_vector_set(info.beta, i, m_onedim->parameters->vector->data[0]);
-            this_ll = get_ll(d, est);//only used on the last iteration.
+            apop_model *full_est = apop_model_fix_params_get_base(m_onedim);//points to est, but filled.
+            this_ll = get_ll(d, full_est);//only used on the last iteration.
             if (mp->verbose) printf("(%i):%g\t", i, this_ll), fflush(NULL);
             apop_model_free(m_onedim);
         }
         if (mp->verbose) printf("\n");
-    } while (fabs(this_ll - last_ll) < tol);
+    } while (fabs(this_ll - last_ll) > tol);
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
     return est;
 }
@@ -669,7 +670,7 @@ apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
     if (mp->method == APOP_UNKNOWN_ML)
         mp->method = (dist->score) ? APOP_CG_FR : APOP_SIMPLEX_NM;
 
-    Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize.")
+    Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,
                        .use_constraint = 1,
                        .trace_file     = malloc(sizeof(FILE *)),

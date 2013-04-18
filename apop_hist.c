@@ -209,7 +209,7 @@ apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 
 Here is a sample program highlighting the difference between \ref apop_data_to_bins and \ref apop_data_pmf_compress .
 
-\include binned.c
+\include binning.c
 */
 APOP_VAR_HEAD apop_data *apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin){
     apop_data *apop_varad_var(indata, NULL);

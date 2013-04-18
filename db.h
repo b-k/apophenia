@@ -13,8 +13,6 @@ extern "C" {
 
 APOP_VAR_DECLARE int apop_table_exists(char const *name, char remove);
 
-void apop_db_rng_init(int seed);
-
 int apop_db_open(char const *filename);
 APOP_VAR_DECLARE int apop_db_close(char vacuum);
 
@@ -34,5 +32,4 @@ double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
 #ifdef __cplusplus
 }
 #endif
-
 #endif

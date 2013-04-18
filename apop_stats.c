@@ -10,8 +10,6 @@
 
 These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
 
-\ref apop_vector_kurtosis and \ref apop_vector_kurt are identical; pick the one which sounds better to you.
-
 \see db_moments
 
 For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
@@ -116,9 +114,10 @@ double apop_vector_kurtosis_pop(const gsl_vector *in){
 }
 
 
-/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector. Corrections are made to produce an unbiased result.
+/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given
+vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.
 
-  \li This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three \f$\sigma^4\f$, not three, one, or zero.
+  \li This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
 \ingroup vector_moments
 */
 double apop_vector_kurtosis(const gsl_vector *in){
@@ -128,14 +127,6 @@ double apop_vector_kurtosis(const gsl_vector *in){
     long double coeff2= n*(6*n-9);
     return  coeff0 *(coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n));
 }
-
-/** \def apop_vector_kurt(in)
-  Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given vector.
-  This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is three, not zero.
-
-  An alias for \ref apop_vector_kurtosis.
-\ingroup vector_moments
-*/
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
@@ -298,7 +289,7 @@ APOP_VAR_END_HEAD
 		mu	= apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
-        double scaling = 1/(sqrt(apop_vector_var_m(in, mu)));
+        double scaling = 1./(sqrt(apop_vector_var_m(in, mu)));
         Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
 		gsl_vector_scale(*out, scaling);
 	} 
@@ -425,8 +416,15 @@ apop_data * apop_data_summarize(apop_data *indata){
 	apop_name_add(out->names, "min", 'c');
 	apop_name_add(out->names, "median", 'c');
 	apop_name_add(out->names, "max", 'c');
-	if (indata->names !=NULL)
+	if (indata->names !=NULL){
         apop_name_stack(out->names,indata->names, 'r', 'c');
+        if (indata->names->title && strlen(indata->names->title)){
+            char *title;
+            asprintf(&title, "summary for %s", indata->names->title);
+            apop_name_add(out->names, title, 'h');
+            free(title);
+        }
+    }
 	else
 		for (size_t i=0; i< indata->matrix->size2; i++){
 			sprintf(rowname, "col %zu", i);
@@ -502,9 +500,9 @@ double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
 
 static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
     long double   wsum = 0, sumcu = 0, vv, ww, mu;
-    Apop_assert_c(v,  0, 1, "%s: data vector is NULL. Returning zero.", fn_name);
-    Apop_assert_c(v->size,  0, 1,"%s: data vector has size 0. Returning zero.", fn_name);
-    Apop_assert_c(w->size == v->size,  0, 1,"%s: data vector has size %zu; weighting vector has size %zu. Returning zero.", fn_name, v->size, w->size);
+    Apop_stopif(!v, return GSL_NAN, 1, "%s: data vector is NULL. Returning NaN.", fn_name);
+    Apop_stopif(!v->size, return GSL_NAN, 1,"%s: data vector has size 0. Returning NaN.", fn_name);
+    Apop_stopif(w->size != v->size, return GSL_NAN, 1,"%s: data vector has size %zu; weighting vector has size %zu. Returning NaN.", fn_name, v->size, w->size);
     //Using the E(x - \bar x)^3 form, which is lazy.
     mu  = apop_vector_weighted_mean(v, w);
     for (size_t i=0; i< w->size; i++){
@@ -528,7 +526,7 @@ as standard weightings or to represent elements that appear repeatedly.
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted skew. No sample adjustment given weights.
-\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
+\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurtosis are lazily written.
 */
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
     return wskewkurt(v,w,3, "apop_vector_weighted_skew");
@@ -539,10 +537,9 @@ double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
 \param  v   The data vector
 \param  w   the weight vector. If NULL, assume equal weights.
 \return     The weighted kurtosis. No sample adjustment given weights.
-\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurt are lazily written.
 */
-double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w){
-    return wskewkurt(v,w,4, "apop_vector_weighted_kurt");
+double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w){
+    return wskewkurt(v,w,4, "apop_vector_weighted_kurtosis");
 }
 
 /** Find the sample covariance of a pair of weighted vectors. This only

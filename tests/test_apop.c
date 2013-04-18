@@ -305,6 +305,22 @@ void test_score(){
     apop_data_free(data);
 }
 
+void test_normalizations(gsl_vector *v){
+    //let's check out normalizations, while we have a vector for it
+    gsl_vector_scale(v, 23);
+    gsl_vector_add_constant(v, 8);
+    apop_data dv = (apop_data){.matrix=apop_vector_to_matrix(v)};
+    apop_data_transpose(&dv);
+    apop_matrix_normalize(dv.matrix, 'r', 's');
+    apop_data_transpose(&dv);
+    apop_data *sum = apop_data_summarize(&dv);
+    Diff(apop_data_get(sum, .colname="mean"), 0, 1e-5);
+    Diff(apop_data_get(sum, .colname="std dev"), 1, 1e-5);
+    Diff(apop_data_get(sum, .colname="variance"), 1, 1e-5);
+    apop_data_free(sum);
+    gsl_matrix_free(dv.matrix);
+}
+
 //This tests the database-side functions.
 void test_skew_and_kurt(gsl_rng *r){
     apop_table_exists(.remove=1, .name="t");
@@ -314,8 +330,9 @@ void test_skew_and_kurt(gsl_rng *r){
     gsl_vector *v = apop_query_to_vector("select * from t");
     Diff (apop_var(v), apop_query_to_float("select var(vals) from t"), tol6);
     Diff (apop_vector_skew(v), apop_query_to_float("select skew(vals) from t"), tol6);
-    Diff (apop_vector_kurt(v), apop_query_to_float("select kurt(vals) from t"), tol5);
+    Diff (apop_vector_kurtosis(v), apop_query_to_float("select kurt(vals) from t"), tol5);
     apop_table_exists("t",1);
+    test_normalizations(v);
     gsl_vector_free(v);
 }
 
@@ -398,7 +415,7 @@ static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gs
     Diff (apop_vector_var(av), apop_vector_weighted_var(v,w), tol5);
     Diff (apop_vector_cov(av,av2), apop_vector_weighted_cov(v,v2,w), tol5);
     Diff (apop_vector_skew_pop(av), apop_vector_weighted_skew(v,w), tol5);
-    Diff (apop_vector_kurtosis_pop(av), apop_vector_weighted_kurt(v,w), tol5);
+    Diff (apop_vector_kurtosis_pop(av), apop_vector_weighted_kurtosis(v,w), tol5);
 }
 
 void test_weigted_moments(){
@@ -879,7 +896,7 @@ static apop_model * super_broken_est(apop_data *d, apop_model *m){
 
 void test_jackknife(gsl_rng *r){
     double pv[] = {3.09,2.8762};
-    int len = 3000;
+    int len = 2000;
     apop_model *m = apop_model_copy(apop_normal);
     apop_data *d = apop_data_alloc(0, len, 1);
     apop_data *p = apop_data_alloc();
@@ -921,8 +938,8 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
 
 //In my inattention, I wrote two jackknife tests. So you get double the checks.
 int test_jack(gsl_rng *r){
-  int i, draws     = 2000;
-  apop_data *d  =apop_data_alloc(0, draws, 1);
+  int i, draws     = 1000;
+  apop_data *d  =apop_data_alloc(draws, 1);
   apop_model  m   = apop_normal;
   double      pv[] = {1., 3.};
     m.parameters = apop_line_to_data(pv, 2,0,0);
@@ -934,7 +951,7 @@ int test_jack(gsl_rng *r){
                 +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
     apop_data_free(d);
     apop_data_free(out);
-    return (error < 1e-3);
+    return (error < 1e-2);//still not very accurate.
 }
 
 void test_lognormal(gsl_rng *r){
@@ -1203,7 +1220,7 @@ void test_transpose(){
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){
   int i, j;
   double val;
-  int samples = 1.5e5;
+  int samples = 8e4;
   apop_data *data = apop_data_alloc(samples, true_params->size);
         //generate a random vector of data X, then set the outcome to one if the probit/logit condition holds
         for (i = 0; i < samples; i++){
@@ -1614,7 +1631,7 @@ int main(int argc, char **argv){
     do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
     do_test("test apop_data sort", test_data_sort());
-    do_test("database skew and kurtosis", test_skew_and_kurt(r));
+    do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
     do_test("multivariate gamma", test_mvn_gamma());

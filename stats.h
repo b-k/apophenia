@@ -119,7 +119,7 @@ double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
 double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
 double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
 double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
+double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w);
 
 #define apop_sum(in) apop_vector_sum(in)
 #define apop_var(in) apop_vector_var(in) 
@@ -132,7 +132,6 @@ double apop_vector_weighted_kurt(const gsl_vector *v, const gsl_vector *w);
 #define apop_vector_mean(in)  ((!in) ? GSL_NAN : gsl_stats_mean((in)->data,(in)->stride, (in)->size))
 
 #define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)->data,(in)->stride, (in)->size))
-#define apop_vector_kurt(in) apop_vector_kurtosis(in)
 
 APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
 

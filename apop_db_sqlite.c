@@ -34,13 +34,19 @@ group by whatever
 of the same name to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$,
 \f$\sin(x)\f$, \f$\arcsin(x)\f$, et cetera.
 
+\li The random() function keepts its own <tt>gsl_rng</tt>, which is intialized on first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented, so the next function to use it will get a different seed).
+
 \code
 select sqrt(x), pow(x,0.5), exp(x), log(x), 
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
 \endcode
 
-Some more realistic sample code:
+Here is a test script using many of the above.
+
+\include db_fns.c
+
+Here is some more realistic sample code:
 
 \include normalizations.c
 */
@@ -167,8 +173,8 @@ static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 }
 
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
-    if (!db_rng) apop_db_rng_init(0);
-    sqlite3_result_double(context, gsl_rng_uniform(db_rng));
+    Staticdef(gsl_rng *, rng, apop_rng_alloc(apop_opts.rng_seed++));
+    sqlite3_result_double(context, gsl_rng_uniform(rng));
 }
 
 #define sqfn(name) static void name##Fn(sqlite3_context *context, int argc, sqlite3_value **argv){ \

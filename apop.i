@@ -328,7 +328,6 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     double      kurtosis()              { return apop_vector_kurtosis($self) ; }
     double      skew()                  { return apop_vector_skew($self) ; }
     double      skew_pop()              { return apop_vector_skew_pop($self) ; }
-    double      kurt()                  { return apop_vector_kurt($self) ; }
     double      cov(const gsl_vector *inb)   { return apop_vector_cov($self, inb) ; }
 
     double correlation(const gsl_vector *inb) { return apop_vector_correlation($self, inb) ; }
@@ -352,8 +351,8 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
         return apop_vector_weighted_skew($self, w);
     }
 
-    double weighted_kurt( const gsl_vector *w) {
-        return apop_vector_weighted_kurt($self, w);
+    double weighted_kurtosis( const gsl_vector *w) {
+        return apop_vector_weighted_kurtosis($self, w);
     }
 
     double distance(const gsl_vector *inb){

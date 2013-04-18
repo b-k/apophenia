@@ -710,16 +710,18 @@ double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
 assert(apop_data_get(d, 0, 7) == 270);
 \endcode
 
-Q: How does <tt> apop_data_set(in, row, col, data)</tt> differ from
- <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>?<br>
-A: It's seven characters shorter.
+A call like <tt> apop_data_set(in, row, col, data)</tt> is much like the GSL's
+ <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>,
+but with some differences:
 
-OK, there are a few other differences: the \ref apop_data set has names, so we can get/set elements using those names, and it has both matrix and vector elements.
 
+\li It's seven characters shorter.
+\li The \ref apop_data set has names, so we can get/set elements using those names.
 \li The versions that take a column/row name use  \ref apop_name_find
 for the search; see notes there on the name matching rules.
+\li The \ref apop_data set has both matrix and vector elements.
 \li For those that take a column number, column -1 is the vector element. 
-\li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return -1.
+\li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return column -1.
 \li If you give me both a .row and a .rowname, I go with the name; similarly for .col and
 .colname.
 \li You can give me the name of a page, e.g.
@@ -1250,7 +1252,7 @@ APOP_VAR_ENDHEAD
     for (int r=0; r< in->textsize[0]; r++)
         for (int c=0; c< in->textsize[1]; c++)
             apop_text_add(out, c, r, in->text[r][c]);
-    if (in->names->textct && !in->names->textct)
+    if (in->names && in->names->textct && !in->names->colct)
         apop_name_stack(out->names, in->names, 't', 'r');
     return out;
 }

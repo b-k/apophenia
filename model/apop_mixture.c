@@ -152,6 +152,10 @@ static apop_model *mixture_estimate(apop_data *d, apop_model *m){
 static void mixture_prep(apop_data * data, apop_model *model){
     apop_mixture_settings *ms = Apop_settings_get_group(model, apop_mixture);
     model->parameters=apop_data_alloc(ms->model_count);
+
+    //scaffolding, to remove later
+    gsl_vector_set_all(model->parameters->vector, 1./ms->model_count);
+
     int i=0;
     for (apop_model **m = ms->model_list; *m; m++){
         if (!(*m)->parameters) apop_prep(data, *m);

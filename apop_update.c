@@ -1,5 +1,5 @@
 /** \file 
-  The \c apop_update function.  The header is in asst.h. */ 
+  The \ref apop_update function.  The header is in asst.h. */ 
 /* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
@@ -91,16 +91,15 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     return NULL;
 }
 
-/** Take in a prior and likelihood distribution, and output a posterior
- distribution.
+/** Take in a prior and likelihood distribution, and output a posterior distribution.
 
-This function first checks a table of conjugate distributions for the pair
-you sent in. If the names match the table, then the function returns a
-closed-form model with updated parameters.  If the parameters aren't in
-the table of conjugate priors/likelihoods, then it uses Markov Chain Monte
-Carlo to sample from the posterior distribution, and then outputs a histogram
-model for further analysis. Notably, the histogram can be used as
-the input to this function, so you can chain Bayesian updating procedures.
+This function first checks a table of conjugate distributions for the pair you
+sent in. If the names match the table, then the function returns a closed-form
+model with updated parameters.  If the parameters aren't in the table of conjugate
+priors/likelihoods, then it uses Markov Chain Monte Carlo to sample from the posterior
+distribution, and then outputs a histogram model for further analysis. Notably,
+the histogram can be used as the input to this function, so you can chain Bayesian
+updating procedures.
 
 To change the default settings (periods, burnin...),
 add an \ref apop_update_settings struct to the prior.

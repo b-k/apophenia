@@ -19,6 +19,9 @@ static double dirichletlnmap(gsl_vector *v, void *pin) {
 static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
     Apop_stopif(!p->parameters->vector, return GSL_NAN, 0, "parameters should be in inmodel->parameters->vector.");
+    double paramsum = apop_sum(p->parameters->vector);
+    Apop_stopif(fabs(paramsum)<1e-5, return GSL_NAN, 0, "Parameter total is too close to zero.");
+    Apop_stopif(isnan(paramsum), return GSL_NAN, 0, "NaN parameter.");
 	return apop_map_sum(d, .fn_vp = dirichletlnmap, .param=p->parameters->vector, .part='r');
 }
 

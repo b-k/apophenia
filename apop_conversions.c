@@ -50,7 +50,7 @@ APOP_VAR_END_HEAD
     return out;
 }
 
-/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types in C. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
+/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types to the GSL. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
 
   For the reverse, try \ref apop_data_pack.
 
@@ -66,18 +66,15 @@ This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
-    Apop_assert_c(in,  NULL, 1, "Converting NULL vector to NULL matrix.");
+    Apop_assert_c(in, NULL, 1, "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
 APOP_VAR_ENDHEAD
-    gsl_matrix *out = 
-        (row_col == 'r' || row_col == 'R') 
-           ? gsl_matrix_alloc(1, in->size)
-           : gsl_matrix_alloc(in->size, 1);
-    Apop_assert(out,  "gsl_matrix_alloc failed; probably out of memory.");
-    if (row_col == 'r' || row_col == 'R') 
-        gsl_matrix_set_row(out, 0, in);
-    else
-        gsl_matrix_set_col(out, 0, in);
+    bool isrow = (row_col == 'r' || row_col == 'R');
+    gsl_matrix *out = isrow ? gsl_matrix_alloc(1, in->size)
+                            : gsl_matrix_alloc(in->size, 1);
+    Apop_assert(out, "gsl_matrix_alloc failed; probably out of memory.");
+    (isrow ? gsl_matrix_set_row
+           : gsl_matrix_set_col)(out, 0, in);
     return out;
 }
 
@@ -839,7 +836,7 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** \def apop_data_fill (in, ap)
+/** \def apop_data_fill
 Fill a pre-allocated data set with values.
 
   For example:
@@ -873,7 +870,7 @@ int main(){
 }
 \endcode
 
-\param in   An \c apop_data set (that you have already allocated).
+\param adfin  An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
 \return     A pointer to the same data set that was input.
 
@@ -908,7 +905,7 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
     return in;
 }
 
-/** \def apop_vector_fill(in, ap)
+/** \def apop_vector_fill
  Fill a pre-allocated \c gsl_vector with values.
 
   See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
@@ -916,9 +913,9 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your vector with garbage or a simple segfault.
 
 
-\param in   A \c gsl_vector (that you have already allocated).
-\param ...  A series of exactly as many values as there are spaces in the vector.
-\return     A pointer to the same vector that was input.
+\param avfin   A \c gsl_vector (that you have already allocated).
+\param ...     A series of exactly as many values as there are spaces in the vector.
+\return        A pointer to the same vector that was input.
 */
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     if (!in) return NULL;
@@ -948,7 +945,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
                                      "one", "two", "three"   //missing comma!
                                      "two", "four", "six");
 \endcode
-The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo", leaving you with only five strings.
+The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo"</tt>, leaving you with only five strings.
 
 \li If you have a \c NULL-delimited array of strings (not just a loose list as above),
 then use \ref apop_text_fill_base. 

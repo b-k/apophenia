@@ -37,9 +37,7 @@ to:
 
 #define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
 
-apop_histogram_settings *apop_histogram_settings_alloc(apop_data *data, int bins);
 apop_mle_settings *apop_mle_settings_alloc(apop_model *model);
-
 
 #define apop_ls_settings apop_lm_settings
 #define apop_ls_settings_init apop_lm_settings_init

@@ -24,8 +24,6 @@ apop_opts_type apop_opts	=
 #define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err); }
 #define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; sqlite3_free(err); return outdata, 0, "%s: %s",query, err); }
 
-static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
-
 #include "apop_db_sqlite.c" // callback_t is defined here, btw.
 
 //This macro declares the query string and fills it from the printf part of the call.
@@ -37,16 +35,8 @@ static gsl_rng* db_rng  = NULL;     //the RNG for the RNG function.
 	va_end(argp);                 \
 	Apop_notify(2, "%s", query);
 
-/** Random numbers are generated inside the database using a separate RNG. This will initialize it for you, just like \ref apop_rng_alloc, except the RNG it produces is kept for internal use. If you don't call it, then it will be called at first use, with seed zero.
-
-\param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
-\return The RNG ready for your use.
-\ingroup db
-*/
-void apop_db_rng_init(int seed){ db_rng  = apop_rng_alloc(seed); }
-
-/**
-If you want to use a database on the hard drive instead of memory, then call this once and only once before using any other database utilities. 
+/** If you want to use a database on the hard drive instead of memory, then call this
+once and only once before using any other database utilities.
 
 If you want a disposable database which you won't use after the program ends, don't bother with this function.
 
