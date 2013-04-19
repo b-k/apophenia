@@ -188,6 +188,7 @@ void <b>apop_data_print</b> (const <a class="el" href="structapop__data.html">ap
 <li>void <a class="el" href="group__apop__print.html#gae7f619a8c83d791ce3d07bf4f6eecb32">apop_matrix_show</a> (const gsl_matrix *data)
 <li>void <a class="el" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a> (const gsl_vector *data)
 <li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="types_8h.html#ad7cfd53384923e4e65b7cf9545d20674">apop_model_coordinate_transform</a> (<a class="el" href="structapop__model.html">apop_model</a> *base_model, <a class="el" href="structapop__data.html">apop_data</a> *(*transformed_to_base)(<a class="el" href="structapop__data.html">apop_data</a> *), <a class="el" href="structapop__data.html">apop_data</a> *(*base_to_transformed)(<a class="el" href="structapop__data.html">apop_data</a> *), double(*jacobian_to_base)(<a class="el" href="structapop__data.html">apop_data</a> *))
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
@@ -222,8 +223,6 @@ Variables</h2>
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_logit</b>
 <li><a class="anchor" id="aa0105d7ec4cc71b1296741cb18f36461"></a><!-- doxytag: member="types.h::apop_lognormal" ref="aa0105d7ec4cc71b1296741cb18f36461" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_lognormal</b>
-<li><a class="anchor" id="a512735ec39d262f944977c40e35a8b00"></a><!-- doxytag: member="types.h::apop_mixture" ref="a512735ec39d262f944977c40e35a8b00" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_mixture</b>
 <li><a class="anchor" id="abe6160b1267ed2300409579604b2a942"></a><!-- doxytag: member="types.h::apop_multinomial" ref="abe6160b1267ed2300409579604b2a942" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_multinomial</b>
 <li><a class="anchor" id="a7a58f1e9c305ccf3bd5005fd8e5a29ab"></a><!-- doxytag: member="types.h::apop_multivariate_normal" ref="a7a58f1e9c305ccf3bd5005fd8e5a29ab" args="" -->
@@ -238,8 +237,6 @@ Variables</h2>
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_poisson</b>
 <li><a class="anchor" id="aa63d7c4b441250bc7f2d675a251ce279"></a><!-- doxytag: member="types.h::apop_probit" ref="aa63d7c4b441250bc7f2d675a251ce279" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_probit</b>
-<li><a class="anchor" id="ae2e7beada1c7e620f3cb14f0eee9f311"></a><!-- doxytag: member="types.h::apop_stack" ref="ae2e7beada1c7e620f3cb14f0eee9f311" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_stack</b>
 <li><a class="anchor" id="af07580a49421d735403eda5d2046a809"></a><!-- doxytag: member="types.h::apop_t_distribution" ref="af07580a49421d735403eda5d2046a809" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_t_distribution</b>
 <li><a class="anchor" id="ade0939f1e8544338d59f8a788b60c81f"></a><!-- doxytag: member="types.h::apop_uniform" ref="ade0939f1e8544338d59f8a788b60c81f" args="" -->
@@ -254,6 +251,12 @@ Variables</h2>
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_yule</b>
 <li><a class="anchor" id="a25244d70952aed1caca47f54de710fb0"></a><!-- doxytag: member="types.h::apop_zipf" ref="a25244d70952aed1caca47f54de710fb0" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> <b>apop_zipf</b>
+<li><a class="anchor" id="a0cf14417e36148b508c6ce454bb44160"></a><!-- doxytag: member="types.h::apop_coordinate_transform" ref="a0cf14417e36148b508c6ce454bb44160" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> <b>apop_coordinate_transform</b>
+<li><a class="anchor" id="a512735ec39d262f944977c40e35a8b00"></a><!-- doxytag: member="types.h::apop_mixture" ref="a512735ec39d262f944977c40e35a8b00" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> <b>apop_mixture</b>
+<li><a class="anchor" id="ae2e7beada1c7e620f3cb14f0eee9f311"></a><!-- doxytag: member="types.h::apop_stack" ref="ae2e7beada1c7e620f3cb14f0eee9f311" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> <b>apop_stack</b>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"></div><hr/><h2>Define Documentation</h2>
@@ -1588,7 +1591,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
       </table>
 </div>
 <div class="memdoc">
-<p>Transpose the matrix element of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set, including the row/column names. Returns a copy of the element(s) that got transposed. The vector and weights elements of the input data set are completely ignored (but see also <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>, which can convert a vector to a 1 X N matrix.)</p>
+<p>Produce a copy of the input set where the matrix and text elements are transposed, including the row/column names. The vector and weights elements of the input data set are completely ignored (but see also <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>, which can convert a vector to a 1 X N matrix.)</p>
 <p>This is mostly just a friendly wrapper for <code>gsl_matrix_transpose_memcpy</code>; if you have a <code>gsl_matrix</code> with no names or text, you may prefer to just use that function.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -1746,6 +1749,47 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <li>If you give me a <code>NULL</code> matrix, I return a blank <a class="el" href="gentle.html#apop_data">apop_data</a> set, equivalent to <code><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, and print a warning if <code>apop_opts.verbosity &gt;=1</code> </li>
 </ul>
 </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad7cfd53384923e4e65b7cf9545d20674"></a><!-- doxytag: member="types.h::apop_model_coordinate_transform" ref="ad7cfd53384923e4e65b7cf9545d20674" args="(apop_model *base_model, apop_data *(*transformed_to_base)(apop_data *), apop_data *(*base_to_transformed)(apop_data *), double(*jacobian_to_base)(apop_data *))" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="types_8h.html#ad7cfd53384923e4e65b7cf9545d20674">apop_model_coordinate_transform</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramname"><em>base_model</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">d_to_d&#160;</td>
+          <td class="paramname"><em>transformed_to_base</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">d_to_d&#160;</td>
+          <td class="paramname"><em>base_to_transformed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">d_to_f&#160;</td>
+          <td class="paramname"><em>jacobian_to_base</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Build an apop_coordinate_transform model, qv.</p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="structapop__model.html">apop_model</a> that is a copy of apop_coordinate_transform and is appropriately set up. </dd></dl>
 
 </div>
 </div>
@@ -2235,4 +2279,4 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>

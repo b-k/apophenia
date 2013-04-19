@@ -170,10 +170,10 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Returns the mean of all elements of a matrix.</p>
-<p>Calculated to avoid overflow errors.</p>
+<p>Calculated with an eye toward avoiding overflow errors.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>the matrix to be averaged. </td></tr>
+    <tr><td class="paramname">data</td><td>the matrix to be averaged. If <code>NULL</code>, return zero. </td></tr>
   </table>
   </dd>
 </dl>
@@ -217,11 +217,14 @@ Functions</h2>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>the matrix to be averaged. </td></tr>
-    <tr><td class="paramname">mean</td><td>where to put the mean to be calculated </td></tr>
-    <tr><td class="paramname">var</td><td>where to put the variance to be calculated </td></tr>
+    <tr><td class="paramname">mean</td><td>where to put the mean to be calculated. </td></tr>
+    <tr><td class="paramname">var</td><td>where to put the variance to be calculated.</td></tr>
   </table>
   </dd>
 </dl>
+<ul>
+<li>If <code>NULL</code>, return (zero, NaN). </li>
+</ul>
 
 </div>
 </div>
@@ -427,7 +430,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_24.png"/>; zero otherwise.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_22.png"/>; zero otherwise.</dd></dl>
 <ul>
 <li>A <code>NULL</code> vector has no unbounded elements, so <code>NULL</code> input returns 1. You get a warning if <code>apop_opts.verbosity &gt;=1</code>. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -499,18 +502,18 @@ Functions</h2>
 <div class="memdoc">
 <p>Returns the distance between two vectors, where distance is defined based on the third (optional) parameter:</p>
 <ul>
-<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_64.png"/> where <img class="formulaInl" alt="$i$" src="form_65.png"/> iterates over dimensions.</li>
-<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_66.png"/> where <img class="formulaInl" alt="$i$" src="form_65.png"/> iterates over dimensions.</li>
-<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_67.png"/>, return zero, else return one.</li>
-<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_68.png"/> is largest, return the distance along that one dimension.</li>
-<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_69.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_70.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_21.png"/> is set by the fourth (optional) argument.</li>
+<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_62.png"/> where <img class="formulaInl" alt="$i$" src="form_63.png"/> iterates over dimensions.</li>
+<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_64.png"/> where <img class="formulaInl" alt="$i$" src="form_63.png"/> iterates over dimensions.</li>
+<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_65.png"/>, return zero, else return one.</li>
+<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_66.png"/> is largest, return the distance along that one dimension.</li>
+<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_67.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_68.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_19.png"/> is set by the fourth (optional) argument.</li>
 </ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">ina</td><td>First vector (No default, must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">inb</td><td>Second vector (Default = zero) </td></tr>
     <tr><td class="paramname">metric</td><td>The type of metric, as above. </td></tr>
-    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_69.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_21.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
+    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_67.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_19.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
   </table>
   </dd>
 </dl>
@@ -554,7 +557,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_23.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_23.png"/>).</p>
+<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_21.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_21.png"/>).</p>
 <ul>
 <li>If the input vector is <code>NULL</code>, do nothing. </li>
 </ul>
@@ -712,4 +715,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>
