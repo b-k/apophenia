@@ -1217,8 +1217,8 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     return in;
 }
 
-/** Transpose the matrix element of the input \ref apop_data set,
- including the row/column names. Returns a copy of the element(s) that got transposed.
+/** Produce a copy of the input set where the matrix and text elements are transposed,
+ including the row/column names. 
  The vector and weights elements of the input data set are completely ignored (but see also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.)
 
 This is mostly just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names or text, you may prefer to just use that function.

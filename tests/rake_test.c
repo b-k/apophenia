@@ -1,6 +1,6 @@
 #include <apop.h>
 
-#define Diff(L, R, eps) Apop_assert_n(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) Apop_assert_n(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 void rake_check(apop_model *base, apop_model *fitted){
     Diff(apop_query_to_float("select sum(weights) from raked where first=1"), 12, 1e-4);

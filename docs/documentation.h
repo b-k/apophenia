@@ -558,7 +558,7 @@ The Python library could use more testing and revision.
 
 endofdiv
 
-Outlineheader status How do I write extensions?
+Outlineheader ext How do I write extensions?
 
 It's not a package, so you don't need an API---write your code and <tt>include</tt> it like any
 other C code. The system is written to not require a registration or initialization step
@@ -1107,7 +1107,6 @@ use when sending queries from Apophenia, such as \c pow, \c stddev, or \c sqrt.
 \li \ref apop_db_open : Optional, for when you want to use a database on disk.
 \li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
 \li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, a clean way to drop a table.
-\li \ref apop_crosstab_to_db : Convert between two common data layouts
 
 \li Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
 

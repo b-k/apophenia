@@ -115,25 +115,22 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     int N = p[0];
 
     if (est->parameters->vector->size == 2) {
-        *out = gsl_ran_binomial_knuth(r, gsl_vector_get(est->parameters->vector, 1), N);
+        *out = gsl_ran_binomial_knuth(r, 1-gsl_vector_get(est->parameters->vector, 1), N);
+        out[1] = N-*out;
         return;
     }
     //else, multinomial
     //cut/pasted/modded from the GSL. Copyright them.
     p[0] = 1 - (apop_sum(est->parameters->vector)-N);
     double sum_p = 0.0;
-    int draw, ctr = 0;
-    unsigned int sum_n = 0;
+    int sum_n = 0;
 
-    for (int i = 0; sum_n < N; i++) {
-        if (p[i] > 0)
-            draw = gsl_ran_binomial (r, p[i] / (1 - sum_p), N - sum_n);
-        else
-            draw = 0;
-        for (int j=0; j< draw; j++)
-            out[ctr++] = i;
+    for (int i = 0; i < est->parameters->vector->size; i++) {
+        out[i] = (p[i] > 0)
+                ? gsl_ran_binomial (r, p[i] / (1 - sum_p), N - sum_n)
+                : 0;
         sum_p += p[i];
-        sum_n += draw;
+        sum_n += out[i];
     }
     p[0] = N;
 }

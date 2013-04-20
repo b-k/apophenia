@@ -57,8 +57,6 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     Get_vmsizes(data)
     double mmean=0, mvar=0, vmean=0, vvar=0;
-    apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
-    if (!p) p = Apop_model_add_group(est, apop_lm);
     if (vsize){
         vmean = apop_mean(data->vector);
         vvar = apop_var(data->vector);
@@ -70,6 +68,9 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
     est->parameters->vector->data[1] = sqrt(var);
 	apop_name_add(est->parameters->names, "mu", 'r');
 	apop_name_add(est->parameters->names, "sigma",'r');
+
+    apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
+    if (!p) p = Apop_model_add_group(est, apop_lm);
 	if (!p || p->want_cov=='y'){
         apop_data *cov = apop_data_get_page(est->parameters, "<Covariance>");
         if (!cov) cov = apop_data_add_page(est->parameters, apop_data_calloc(2, 2), "<Covariance>");
@@ -161,21 +162,33 @@ static double lognormal_log_likelihood(apop_data *d, apop_model *params){
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
-    double mean = 0, var = 0; 
-    apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
-    if (!p) p = Apop_model_add_group(est, apop_lm);
-    if (data->matrix) apop_matrix_mean_and_var(data->matrix, &mean, &var);
-    else if (data->vector) {
-        mean = apop_vector_mean(data->vector);
-        var = apop_vector_var(data->vector);
-    } else {Apop_stopif(1, est->error='d'; return est, 0, "Neither matrix nor vector in the input data.");}
-    if (!est->parameters) est->parameters = apop_data_alloc(2);
-    double sigsq = log(1+ var/gsl_pow_2(mean));
+    apop_data *cp = apop_data_copy(data);
+    Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return est, 
+            0, "Neither matrix nor vector in the input data.");
+    Get_vmsizes(cp); //vsize, msize1
+
+
+    double mmean=0, mvar=0, vmean=0, vvar=0;
+    if (vsize){
+        apop_vector_log(cp->vector);
+        vmean = apop_mean(cp->vector);
+        vvar = apop_var(cp->vector);
+    }
+    if (msize2){
+        for (int i=0; i< msize2; i++){
+            Apop_col(cp, i, onecol);
+            apop_vector_log(onecol);
+        }
+        apop_matrix_mean_and_var(cp->matrix, &mmean, &mvar);	
+    }
+    apop_data_free(cp);
+    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
+    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
+    est->parameters->vector->data[0] = mean;
+    est->parameters->vector->data[1] = sqrt(var);
+
     apop_name_add(est->parameters->names, "mu", 'r');
     apop_name_add(est->parameters->names, "sigma", 'r');
-	gsl_vector_set(est->parameters->vector, 0, log(mean)- sigsq/2);
-	gsl_vector_set(est->parameters->vector, 1, sqrt(sigsq));
-    est->data = data;
     apop_data_add_named_elmt(est->info, "log likelihood", lognormal_log_likelihood(data, est));
 	return est;
 }

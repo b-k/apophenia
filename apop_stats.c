@@ -122,10 +122,10 @@ vector. Corrections are made to produce an unbiased result as per <a href="http:
 */
 double apop_vector_kurtosis(const gsl_vector *in){
     size_t n = in->size;
-    long double coeff0= n*n/(gsl_pow_3(n)*(gsl_pow_2(n)-3*n+3));
+    long double coeff0= n*n/(gsl_pow_3(n-1)*(gsl_pow_2(n)-3*n+3));
     long double coeff1= n*gsl_pow_2(n-1)+ (6*n-9);
     long double coeff2= n*(6*n-9);
-    return  coeff0 *(coeff1 * apop_vector_kurtosis_pop(in) + coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n));
+    return  coeff0 *(coeff1 * apop_vector_kurtosis_pop(in) - coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n));
 }
 
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
@@ -289,7 +289,7 @@ APOP_VAR_END_HEAD
 		mu	= apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
-        double scaling = 1./(sqrt(apop_vector_var_m(in, mu)));
+        double scaling = 1./(sqrt(apop_vector_var_m(in, 0)));
         Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
 		gsl_vector_scale(*out, scaling);
 	} 
@@ -348,11 +348,12 @@ long double apop_matrix_sum(const gsl_matrix *m){
 
 /** Returns the mean of all elements of a matrix.
 
-  Calculated to avoid overflow errors.
+Calculated with an eye toward avoiding overflow errors.
 
-  \param data	the matrix to be averaged. 
+\param data	the matrix to be averaged. If \c NULL, return zero.
 \ingroup convenience_fns*/
 double apop_matrix_mean(const gsl_matrix *data){
+    if (!data) return 0;
     double  avg     = 0;
     int     cnt= 0;
     double  x, ratio;
@@ -371,12 +372,15 @@ double apop_matrix_mean(const gsl_matrix *data){
  
   \li If you want sample variance, multiply the result returned by <tt>(data->size1*data->size2)/(data->size1*data->size2-1.0)</tt>.
 
-  \param data	the matrix to be averaged. 
-\param	mean	where to put the mean to be calculated
-\param	var	where to put the variance to be calculated
+\param data	the matrix to be averaged. 
+\param	mean	where to put the mean to be calculated.
+\param	var	where to put the variance to be calculated.
+
+\li If \c NULL, return (zero, NaN).
 \ingroup convenience_fns
 */
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
+    if (!data) {*mean=0; *var=GSL_NAN; return;}
     long double avg     = 0,
                 avg2    = 0;
     size_t cnt= 0;

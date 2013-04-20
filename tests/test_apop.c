@@ -1,22 +1,18 @@
 #include <apop.h>
 
-//assertions never return a value.
-#undef Apop_assert
-#define Apop_assert(expr, ...) {if (!(expr)) {fprintf(stderr, __VA_ARGS__); abort();}}
-
-#define Diff(L, R, eps) Apop_assert(fabs((L)-(R)<(eps)), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
-
-//A NULL-tolerant strcmp, which used to be a fn and has been deleted.
-#define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
-
 /*
 Here are assorted unit tests, some mechanical and some much more computation-intensive.
-For example, let us say that we wish to verify the results of a regression. Some
-systems have a canned screenshot of the 'correct' regression results that ships with
-the test suite, and compare a screenshot of the run to the canned version. I don't get
-much confidence from this---what if the canned screenshot is wrong? Better would be
-to know something about the regression results (like the relation between the common
-F statistic, SSR, and SSE) and check that the fact always holds.
+
+The mechanical tests often do things in a convoluted manner for the purpose of touching
+as much of the code base as possible. If you want examples for using Apophenia, please 
+don't look in the tests---try the eg directory in this distribution or online. 
+
+For an example of the statistical tests, let us say that we wish to verify the results
+of a regression. Some systems have a canned screenshot of the 'correct' regression
+results that ships with the test suite, and compare a screenshot of the run to the
+canned version. I don't get much confidence from this---what if the canned screenshot is
+wrong? Better would be to know something about the regression results (like the relation
+between the common F statistic, SSR, and SSE) and check that the fact always holds.
 
 Those claims are true as N goes to infinity; for finite N the routines have to strike
 a balance. How many draws should I make, and how much user time should I waste, before
@@ -45,6 +41,16 @@ double tol3 = 1e-2;
 double tol2 = 1e-1;
 double tol1 = 1e-1;
 #endif
+
+//assertions never return a value.
+#undef Apop_assert
+#define Apop_assert(expr, ...) {if (!(expr)) {fprintf(stderr, __VA_ARGS__); abort();}}
+
+#define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+
+//A NULL-tolerant strcmp, which used to be a fn and has been deleted.
+#define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
+
 
 int len = 8000;
 int verbose = 1;
@@ -310,17 +316,18 @@ void test_normalizations(gsl_vector *v){
     gsl_vector_scale(v, 23);
     gsl_vector_add_constant(v, 8);
     apop_data dv = (apop_data){.matrix=apop_vector_to_matrix(v)};
-    apop_data_transpose(&dv);
-    apop_matrix_normalize(dv.matrix, 'r', 's');
-    apop_data_transpose(&dv);
-    apop_data *sum = apop_data_summarize(&dv);
+    apop_data *dvprime = apop_data_transpose(&dv);
+    apop_matrix_normalize(dvprime->matrix, 'r', 's');
+    apop_data *dvagain = apop_data_transpose(dvprime);
+    apop_data_free(dvprime);
+    apop_data *sum = apop_data_summarize(dvagain);
+    apop_data_free(dvagain);
     Diff(apop_data_get(sum, .colname="mean"), 0, 1e-5);
     Diff(apop_data_get(sum, .colname="std dev"), 1, 1e-5);
     Diff(apop_data_get(sum, .colname="variance"), 1, 1e-5);
     apop_data_free(sum);
     gsl_matrix_free(dv.matrix);
 }
-
 //This tests the database-side functions.
 void test_skew_and_kurt(gsl_rng *r){
     apop_table_exists(.remove=1, .name="t");
