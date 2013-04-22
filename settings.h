@@ -29,6 +29,8 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
 /** Removes a settings group from a model's list. 
+ 
+  If the so-named group is not found, do nothing.
 \hideinitializer \ingroup settings
  */
 #define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
@@ -58,6 +60,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
     apop_tmp_settings->setting = (data);    \
     } while (0);
 
+/** \cond doxy_ignore */
 #define Apop_settings_add Apop_settings_set
 #define APOP_SETTINGS_ADD Apop_settings_set
 #define apop_settings_set Apop_settings_set
@@ -69,6 +72,7 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 #define apop_settings_get_group Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
 #define apop_settings_rm_group Apop_settings_rm_group
+/** \endcond */ //End of Doxygen ignore.
 
 #define Apop_settings_declarations(ysg) \
    ysg##_settings * ysg##_settings_init(ysg##_settings); \

@@ -46,11 +46,11 @@ typedef struct apop_data{
     char        error;
 } apop_data;
 
-/** A description of a parametrized statistical model, including the input settings and the output parameters, predicted/expected values, et cetera.  The full declaration is given in the \c apop_model page, see the longer discussion on the \ref models page, or see the \ref apop_ols page for a sample program that uses an \ref apop_model.
-*/
-
+/* Settings groups. For internal use only; see apop_settings.c and 
+   settings.h for related machinery. */
 typedef struct {
     char name[101];
+    unsigned long name_hash;
     void *setting_group;
     void *copy;
     void *free;
