@@ -225,11 +225,14 @@ int apop_query(const char *fmt, ...){
 
 \li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.db_nan. The default is \c "NaN", but you can use <tt>sprintf(apop_opts.db_nan, "whatever you like")</tt> to change the text to whatever you like.
 
+\li Returns \c NULL if your query is valid but returns zero rows.
+
 \li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_text("select name from %s where id=%i;", tablename, id_number)</tt>.
 
 For example, the following function will list the tables in an SQLite database (much like you
 could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
+\exception out->error='q' The database engine was unable to run the query (e.g.,  invalid SQL syntax). Again, a valid query that returns zero rows is not an error, and \c NULL is returned.
 \include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){

@@ -28,27 +28,73 @@ Apop_settings_init(apop_composition,)
             "have an apop_compose settings group. Perhaps set up the " \
             "model using apop_model_dcompose");
 
+static int unpack(apop_model *m){
+   //predict table --> real param set
+   Get_cs(m, -1)
+   int generator_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
+   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+   Apop_stopif(generator_psize+ll_psize && !m->parameters, return -1,
+           0, "Trying to use parameters for an apop_dcompose model, but they are NULL. Run apop_estimate() first?");
+
+   if (generator_psize){
+       Apop_data_rows(m->parameters, 0, generator_psize, genparams);
+       apop_data_unpack(genparams->vector, cs->generator_m->parameters);
+   }
+   if (ll_psize){
+       Apop_data_rows(m->parameters, generator_psize, ll_psize, llparams);
+       apop_data_unpack(llparams->vector, cs->ll_m->parameters);
+   }
+   return 0;
+}
+
+static int pack(apop_model *m){
+    Get_cs(m, -1);
+   int generator_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
+   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+
+   if (generator_psize){
+       Apop_data_rows(m->parameters, 0, generator_psize, genparams);
+       apop_data_pack(cs->generator_m->parameters, genparams->vector);
+
+   }
+   if (ll_psize){
+       Apop_data_rows(m->parameters, generator_psize, ll_psize, llparams);
+       apop_data_pack(cs->ll_m->parameters, llparams->vector);
+   }
+   return 0;
+}
+
 static void compose_prep(apop_data *d, apop_model *m){
-    Get_cs(m, )
-    apop_prep(d, cs->ll_m);
-    m->parameters=cs->ll_m->parameters;
-    m->parameters = cs->ll_m->parameters;
-    m->vbase = cs->ll_m->vbase;
-    m->m1base = cs->ll_m->m1base;
-    m->m2base = cs->ll_m->m2base;
+    apop_composition_settings *cs = Apop_settings_get_group(m, apop_composition); 
+    Apop_stopif(!cs, m->error='s', 0, "missing apop_composition_settings group. "
+            "Maybe initialize this with apop_model_dcompose?");
+
+   int gen_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
+   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+
+    if (gen_psize && !cs->generator_m->parameters) apop_prep(d, cs->generator_m);
+    if (ll_psize && !cs->ll_m->parameters)         apop_prep(d, cs->ll_m);
+
+    m->vbase = gen_psize + ll_psize;
+    if (m->vbase) {
+        m->parameters = apop_data_alloc(m->vbase);
+        gsl_vector_set_all(m->parameters->vector, GSL_NAN);
+    }
+    pack(m);
+
     m->dsize = cs->ll_m->dsize;
 }
 
-static double compose_ll(apop_data *in, apop_model*composition){
+static double compose_ll(apop_data *indata, apop_model*composition){
     Get_cs(composition, GSL_NAN)
+    Apop_stopif(unpack(composition), return GSL_NAN, 
+            0, "Trouble unpacking parameters.");
     apop_data *draws = apop_data_alloc(cs->draw_ct, cs->generator_m->dsize);
     for (int i=0; i< cs->draw_ct; i++){
         Apop_row(draws, i, onerow);
         apop_draw(onerow->data, cs->rng, cs->generator_m);
     }
-    //apop_model *est = apop_estimate(draws, *cs->ll_m);
     double ll = apop_log_likelihood(draws, cs->ll_m);
-    //apop_model_free(est);
     apop_data_free(draws);
     return ll;
 }
