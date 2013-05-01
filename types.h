@@ -269,7 +269,6 @@ apop_model apop_kernel_density;
 apop_model apop_loess;
 apop_model apop_logit;
 apop_model apop_lognormal;
-apop_model apop_mixture;
 apop_model apop_multinomial;
 apop_model apop_multivariate_normal;
 apop_model apop_normal;
@@ -277,7 +276,6 @@ apop_model apop_ols;
 apop_model apop_pmf;
 apop_model apop_poisson;
 apop_model apop_probit;
-apop_model apop_stack;
 apop_model apop_t_distribution;
 apop_model apop_uniform;
 apop_model apop_waring;
@@ -285,6 +283,11 @@ apop_model apop_wishart;
 apop_model apop_wls;
 apop_model apop_yule;
 apop_model apop_zipf;
+
+//model transformations
+apop_model apop_coordinate_transform;
+apop_model apop_mixture;
+apop_model apop_stack;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */

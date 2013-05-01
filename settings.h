@@ -133,8 +133,7 @@ Apop_settings_copy (ysg,
 /** A convenience macro for declaring the delete function for a new settings group.
  See the documentation outline -> models -> model settings -> writing new settings group for details.
 
-
-    If you don't have internal structure elements to free, let your settings group be named \c ysg:
+If you don't have internal structure elements to free, let your settings group be named \c ysg:
   \code
   Apop_settings_free (ysg, )
   \endcode
@@ -257,6 +256,13 @@ typedef struct {
     int draws_owner; /**< For internal use.  Should I free \c draws_made when this copy of the settings group is freed?*/
 } apop_cdf_settings;
 
+typedef struct {
+    apop_data *(*base_to_transformed)(apop_data*);
+    apop_data *(*transformed_to_base)(apop_data*);
+    double (*jacobian_to_base)(apop_data*);
+    apop_model *base_model;
+} apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
+
 /** Settings for getting parameter models (i.e. the distribution of parameter estimates)
   \ingroup settings */
 typedef struct {
@@ -360,55 +366,47 @@ Grosse, and Shyu.
 
 <tt>.data</tt>: Mandatory. Your input data set.
 
-	<tt>.lo_s.model.span</tt>:		smoothing parameter. Default is 0.75.
+	<tt>.lo_s.model.span</tt>:	smoothing parameter. Default is 0.75.
 
-	<tt>.lo_s.model.degree</tt>:		overall degree of locally-fitted polynomial. 1 is 
-			locally-linear fitting and 2 is locally-quadratic 
-			fitting.  Default is 2.
+	<tt>.lo_s.model.degree</tt>: overall degree of locally-fitted polynomial. 1 is
+			locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
 
-	<tt>.lo_s.normalize</tt>:	Should numeric predictors 
-			be normalized?  If 'y' - the default - the 
-			standard normalization is used. If 'n', no
-			normalization is carried out.
+	<tt>.lo_s.normalize</tt>:	Should numeric predictors
+			be normalized?	If 'y' - the default - the standard normalization
+			is used. If 'n', no normalization is carried out.
 
 	\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
-			specifies those variables that should be 
-			conditionally-parametric. The argument should be a 
-			logical vector of length p, specified in the order 
-			of the predictor group ordered in x.
-			Default is a vector of 0's of length p.
+			specifies those variables that should be
+			conditionally-parametric. The argument should be a logical
+			vector of length p, specified in the order of the predictor
+			group ordered in x.  Default is a vector of 0's of length p.
 
-	\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more 
-			numeric predictors, this argument specifies those 
-			numeric predictors whose squares should be dropped 
-			from the set of fitting variables. The method of 
-			specification is the same as for parametric.
-			Default is a vector of 0's of length p.
+	\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
+			numeric predictors, this argument specifies those numeric
+			predictors whose squares should be dropped from the set of
+			fitting variables. The method of specification is the same as
+			for parametric.  Default is a vector of 0's of length p.
 
-	\c .lo_s.model.family:		the assumed distribution of the errors. The values 
-			are <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is 
-			the default.  If the second value is specified, 
-			a robust fitting procedure is used.
+	\c .lo_s.model.family: the assumed distribution of the errors. The values are
+	        <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
+            If the second value is specified, a robust fitting procedure is used.
 
-	\c lo_s.control.surface:	determines whether the fitted surface is computed 
-        <tt>"directly"</tt> at all points  or whether an 
-        <tt>"interpolation"</tt> method is used. 
-			The default, interpolation, is what most users should 
-			use unless special circumstances warrant.
+	\c lo_s.control.surface:	determines whether the fitted surface is computed
+            <tt>"directly"</tt> at all points  or whether an <tt>"interpolation"</tt>
+            method is used. The default, interpolation, is what most users should use
+			unless special circumstances warrant.
 
     \c lo_s.control.statistics:	determines whether the statistical quantities are 
-        computed <tt>"exactly"</tt> or approximately 
-        , where <tt>"approximate"</tt> is the default. The former
-        should only be used for testing the approximation in 
-        statistical development and is not meant for routine 
-        usage because computation time can be horrendous.
+        computed <tt>"exactly"</tt> or approximately, where <tt>"approximate"</tt>
+        is the default. The former should only be used for testing the approximation in
+        statistical development and is not meant for routine usage because computation
+        time can be horrendous.
 
-        \c lo_s.control.cell:		if interpolation is used to compute the surface, this
-        argument specifies the maximum cell size of the k-d 
-        tree.  Suppose k = floor(n*cell*span) where n is the 
-        number of observations.  Then a cell is further 
-        divided if the number of observations within it
-        is greater than or equal to k. default=0.2
+        \c lo_s.control.cell: if interpolation is used to compute the surface,
+        this argument specifies the maximum cell size of the k-d tree. Suppose k =
+        floor(n*cell*span) where n is the number of observations.  Then a cell is
+        further divided if the number of observations within it is greater than or
+        equal to k. default=0.2
 
 	\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
         When lo_s.control.surface is <tt>"approximate"</tt>, determines
@@ -511,6 +509,7 @@ typedef struct {
 /** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
+Apop_settings_declarations(apop_ct)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_pmf)

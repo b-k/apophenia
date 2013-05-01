@@ -7,13 +7,14 @@ libapophenia_la_SOURCES = \
             apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
 			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
 			apop_missing_data.c apop_mle.c apop_model.c   \
-			apop_fix_params.c apop_name.c apop_output.c apop_rake.c     \
+			apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c          \
-            apop_stats.c apop_tests.c apop_model_transform.c 		    \
-			apop_update.c	            \
+            apop_stats.c apop_tests.c apop_update.c	            \
 			asprintf.c 					\
+			transform/apop_dcompose.c   transform/apop_fix_params.c \
+			transform/apop_coordinate_transform.c 	\
 			model/apop_bernoulli.c      model/apop_beta.c			\
-			model/apop_dcompose.c       model/apop_dirichlet.c      \
+			model/apop_dirichlet.c      \
 			model/apop_exponential.c    model/apop_gamma.c          \
             model/apop_histogram.c      model/apop_loess.c          \
 			model/apop_mixture.c 	    model/apop_model_stack.c    \
@@ -57,10 +58,10 @@ endif
 
 #The programs
 bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_plot_query apop_lookup
-apop_text_to_db_SOURCES = cmd_apop_text_to_db.c
-apop_db_to_crosstab_SOURCES = cmd_apop_db_to_crosstab.c
-apop_plot_query_SOURCES = cmd_apop_plot_query.c
-apop_lookup_SOURCES = cmd_apop_lookup.c
+apop_text_to_db_SOURCES = cmd/apop_text_to_db.c
+apop_db_to_crosstab_SOURCES = cmd/apop_db_to_crosstab.c
+apop_plot_query_SOURCES = cmd/apop_plot_query.c
+apop_lookup_SOURCES = cmd/apop_lookup.c
 
 apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la

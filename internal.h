@@ -3,7 +3,6 @@
  & paste `em into your own code if you'd like.
  */
 
-
 /* Many Apop functions try to treat the vector and matrix equally, which
  requires knowing which exists and what the sizes are. */
 #define Get_vmsizes(d) \

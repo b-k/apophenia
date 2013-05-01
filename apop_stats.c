@@ -693,6 +693,8 @@ APOP_VAR_ENDHEAD
         }
         apop_data_free(a_row);
     } else { //the version with the RNG.
+        Apop_stopif(!from->dsize, return GSL_NAN, 0, "I need to make random draws from the 'from' model, "
+                                                     "but its dsize (draw size)==0. Returning NaN.");
         apop_data *a_row = apop_data_alloc(1, from->dsize);
         for (int i=0; i < draw_ct; i++){
             apop_draw(a_row->matrix->data, rng, from);
