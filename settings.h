@@ -256,13 +256,6 @@ typedef struct {
     int draws_owner; /**< For internal use.  Should I free \c draws_made when this copy of the settings group is freed?*/
 } apop_cdf_settings;
 
-typedef struct {
-    apop_data *(*base_to_transformed)(apop_data*);
-    apop_data *(*transformed_to_base)(apop_data*);
-    double (*jacobian_to_base)(apop_data*);
-    apop_model *base_model;
-} apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
-
 /** Settings for getting parameter models (i.e. the distribution of parameter estimates)
   \ingroup settings */
 typedef struct {
@@ -509,7 +502,6 @@ typedef struct {
 /** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
-Apop_settings_declarations(apop_ct)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_pmf)

@@ -365,6 +365,8 @@ void apop_matrix_show(const gsl_matrix *data);
 void apop_vector_show(const gsl_vector *data);
 void apop_data_show(const apop_data *data);
 
+APOP_VAR_DECLARE apop_model* apop_model_coordinate_transform(apop_model* base_model, apop_data* (*transformed_to_base)(apop_data*), apop_data* (*base_to_transformed)(apop_data*), double (*jacobian_to_base)(apop_data*));
+
 #ifdef	__cplusplus
 }
 #endif

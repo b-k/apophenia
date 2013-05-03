@@ -20,7 +20,10 @@ Apop_settings_copy(apop_composition,)
 
 Apop_settings_free(apop_composition,)
 
-Apop_settings_init(apop_composition,)
+Apop_settings_init(apop_composition,
+    Apop_varad_set(draws, 1e4);
+    Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
+)
 
 #define Get_cs(inmodel, outval) \
     apop_composition_settings *cs = Apop_settings_get_group(inmodel, apop_composition); \
@@ -111,12 +114,12 @@ the output of one model as the input data for another model.
 
 \ingroup model_transformations
 */
-apop_model *apop_model_dcompose(apop_model *datamod, apop_model *post, int draw_ct, gsl_rng *rng){
+apop_model *apop_model_dcompose(apop_model *datamodel, apop_model *post, int draw_ct, gsl_rng *rng){
     apop_model *out = apop_model_copy(apop_composition);
     Apop_model_add_group(out, apop_composition, 
-                .generator_m = datamod,
+                .generator_m = datamodel,
                 .ll_m = post,
                 .draw_ct = draw_ct,
-                .rng = rng ? rng : apop_rng_alloc(apop_opts.rng_seed++));
+                .rng = rng);
     return out;
 }
