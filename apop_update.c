@@ -177,7 +177,10 @@ APOP_VAR_END_HEAD
     double    ratio, ll, cp_ll = GSL_NEGINF;
     double    *draw          = malloc(sizeof(double)* (vsize+msize1*msize2));
     apop_data *current_param = apop_data_alloc(vsize , msize1, msize2);
-    apop_data *out           = apop_data_alloc(s->periods*(1-s->burnin), vsize+msize1*msize2);
+    Apop_stopif(s->burnin > 1, s->burnin/=(s->periods+0.0), 
+                1, "Burn-in should be a fraction of the number of periods, "
+                    "not a whole number of periods. Rescaling to burnin=%g", s->burnin/=(s->periods+0.0));
+    apop_data *out = apop_data_alloc(s->periods*(1-s->burnin), vsize+msize1*msize2);
     int accept_count = 0;
 
     apop_draw(draw, rng, prior); //set starting point.

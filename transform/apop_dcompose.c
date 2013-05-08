@@ -21,7 +21,7 @@ Apop_settings_copy(apop_composition,)
 Apop_settings_free(apop_composition,)
 
 Apop_settings_init(apop_composition,
-    Apop_varad_set(draws, 1e4);
+    Apop_varad_set(draw_ct, 1e4);
     Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
 )
 
@@ -90,8 +90,7 @@ static void compose_prep(apop_data *d, apop_model *m){
 
 static double compose_ll(apop_data *indata, apop_model*composition){
     Get_cs(composition, GSL_NAN)
-    Apop_stopif(unpack(composition), return GSL_NAN, 
-            0, "Trouble unpacking parameters.");
+    Apop_stopif(unpack(composition), return GSL_NAN, 0, "Trouble unpacking parameters.");
     apop_data *draws = apop_data_alloc(cs->draw_ct, cs->generator_m->dsize);
     for (int i=0; i< cs->draw_ct; i++){
         Apop_row(draws, i, onerow);
@@ -102,7 +101,20 @@ static double compose_ll(apop_data *indata, apop_model*composition){
     return ll;
 }
 
-apop_model apop_composition = {"Data-composed model", .prep=compose_prep, .log_likelihood=compose_ll};
+static double composed_constraint(apop_data *data, apop_model *m){
+    Get_cs(m, GSL_NAN)
+    Apop_stopif(unpack(m), return GSL_NAN, 0, "Trouble unpacking parameters.");
+    if(!cs->generator_m->constraint && !cs->ll_m->constraint) return 0;
+
+    double penalty = 
+            (cs->generator_m->constraint ? cs->generator_m->constraint(data, cs->generator_m) : 0)
+          + (cs->ll_m->constraint ? cs->ll_m->constraint(NULL, cs->ll_m) : 0);
+    pack(m);
+    return penalty;
+}
+
+
+apop_model apop_composition = {"Data-composed model", .prep=compose_prep, .log_likelihood=compose_ll, .constraint=composed_constraint};
 
 
 /** <em>Data composition</em> is using either random draws or parameter estimates from

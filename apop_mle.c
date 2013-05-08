@@ -338,40 +338,32 @@ static double negshell (const gsl_vector *beta, void * in){
            out     = 0; 
     double (*f)(apop_data *, apop_model *);
     f = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
-    if (!f){
-        Apop_notify(0, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
-        Apop_maybe_abort(-5);
-        longjmp(i->bad_eval_jump, -1);
-    }
+    Apop_stopif(!f, longjmp(i->bad_eval_jump, -1),
+                0, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
     if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
     double f_val = f(i->data, i->model);
     out = penalty - f_val; //negative llikelihood
-    if (gsl_isnan(out)){
-        Apop_notify(0, "I got a NaN in evaluating the objective function.");
-        if (!i->model->constraint)
-            {Apop_notify(0, "Maybe add a constraint to your model?");}
-        Apop_maybe_abort(0);
-        longjmp(i->bad_eval_jump, -1);
-    }
+    Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
+                0, "I got a NaN in evaluating the objective function.%s", 
+                    !i->model->constraint ? " Maybe add a constraint to your model?" : "");
     if (i->trace_path && strlen(i->trace_path))
         tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
     if (i->want_info =='y'){
         //I report the log likelihood under the assumption that the final param set 
         //matches the best ll evaluated.
         double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+
         if(gsl_isnan(this_ll)){
-            if (!i->model->log_likelihood && penalty > f_val)
-                Apop_notify(0, "Your model's p evaluates as %g, and your penalty is %g, for an "
-                        "adjusted p of %g. Please make sure that this is positive, perhaps by "
-                        "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
-            Apop_notify(0, "NaN resulted from the following value tried by the maximum likelihood system. "
-                        "Tighten your constraint? Log of a negative p?\n");
-            apop_data_show(i->model->parameters);
-            Apop_maybe_abort(0);
-            longjmp(i->bad_eval_jump, -1);
+            Apop_stopif(!i->model->log_likelihood && penalty > f_val, /*continue*/,
+                            0, "Your model's p evaluates as %g, and your penalty is %g, for an "
+                               "adjusted p of %g. Please make sure that this is positive, perhaps by "
+                               "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
+            Apop_stopif(1, apop_data_show(i->model->parameters); longjmp(i->bad_eval_jump, -1),
+                        0, "NaN resulted from the following value tried by the maximum likelihood system. "
+                           "Tighten your constraint? Log of a negative p?\n");
         }
         i->best_ll = GSL_MAX(i->best_ll, this_ll);
     }
@@ -505,16 +497,10 @@ Inside the infostruct, you'll find these elements:
         //Apop_stopif(status && status!=GSL_CONTINUE, break, 0, "GSL error: %s", gsl_strerror(status));
         if (mp->verbose)
             printf ("%5i %.5f  f()=%10.5f gradient=%.3f\n", iter, gsl_vector_get (s->x, 0),  s->f, gsl_vector_get(s->gradient,0));
-        if (status == GSL_SUCCESS){
-            apopstatus	= 1;
-            Apop_notify(2, "Minimum found.\n");
-        }
+        Apop_stopif(status == GSL_SUCCESS, apopstatus=0, 2, "Optimum found.");
     } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
-	if (iter==mp->max_iterations) {
-		apopstatus	= -1;
-        Apop_notify(1, "No min!!\n");
-	}
+	Apop_stopif(iter==mp->max_iterations, apopstatus = -1, 1, "Max iterations reached, implying that I did not find an optimum.");
 	//Clean up, copy results to output estimate.
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fdfminimizer_free(s);
@@ -569,8 +555,8 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
         }
     } while (status == GSL_CONTINUE && iter < mp->max_iterations && !ctrl_c);
     signal(SIGINT, NULL);
-	if (iter == mp->max_iterations && mp->verbose)
-		Apop_notify(1, "Optimization reached maximum number of iterations.");
+	Apop_stopif(iter == mp->max_iterations && mp->verbose, /*continue*/, 
+                1, "Optimization reached maximum number of iterations.");
     if (status == GSL_SUCCESS) apopstatus = 0;
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
@@ -881,7 +867,7 @@ static apop_model * apop_annealing(infostruct *i){
     //i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
     //setup_starting_point(mp, i->beta);
     int betasize = i->beta->size;
-    int apopstatus = 0;
+    int apopstatus = -1;
     i->starting_pt    = apop_vector_map(i->beta, set_start);
     i->use_constraint = 0; //negshell doesn't check it; annealing_step does.
     gsl_siman_print_t printing_fn = NULL;
@@ -942,7 +928,7 @@ static apop_model * find_roots (infostruct p) {
         status = gsl_multiroot_test_residual (s->f, mlep->tolerance);
     } while (status == GSL_CONTINUE && iter < mlep->max_iterations);
     if (GSL_SUCCESS) apopstatus = 0;
-    Apop_notify(2, "status = %s\n", gsl_strerror (status));
+    Apop_notify(2, "status = %s\n", gsl_strerror(status));
     apop_data_unpack(s->x, dist->parameters);
     gsl_multiroot_fsolver_free (s);
     gsl_vector_free (p.beta);

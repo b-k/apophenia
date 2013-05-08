@@ -38,7 +38,7 @@ auto:
 	sed "s/PKGNAME/apophenia-$(version)-$(date).tgz/" < install/rpm.spec > $(workdir)/rpm.spec
 	cd $(workdir) && cp ChangeLog NEWS
 	cd $(workdir) && sed -i "s/X\.XX/$(version)/" README apop_db.c configure.ac upload
-	cd $(workdir) && sed -i -f install/prep_variadics.sed *.c *h model/*.c
+	cd $(workdir) && sed -i -f install/prep_variadics.sed *.c *h model/*.c transform/*.c
 	#generate the internal header based on the public apop.h
 	sed -e 's/[<>]/"/g' -e 's/apophenia\///' -e '1i#include "variadic.h"' -e '1i#include "internal.h"\n' <apop.h > $(workdir)/apop_internal.h
 	#add a directory with links to all headers, for testing.

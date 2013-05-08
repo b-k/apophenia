@@ -13,10 +13,7 @@ apop_data *draw_exponentiated_normal(double mu, double sigma, double draws){
     return d;
 }
 
-/* The coordinate transformation model needs the transformed->base function and 
-  its derivative.
-
- */
+// The transformed->base function and its derivative for the Jacobian:
 apop_data *rev(apop_data *in){ return apop_map(in, .fn_d=log, .part='a'); }
 
 /*The derivative of the transformed_to_base function. */
@@ -24,17 +21,17 @@ double inv(double in){return 1./in;}
 double rev_j(apop_data *in){ return fabs(apop_map_sum(in, .fn_d=inv, .part='a')); }
 
 int main(){
-    Apop_model_add_group(&apop_coordinate_transform, apop_ct,
+    apop_model *ct = apop_model_coordinate_transform(
             .transformed_to_base= rev, .jacobian_to_base=rev_j,
             .base_model=&apop_normal);
-    Apop_model_add_group(&apop_coordinate_transform, apop_parts_wanted);//Speed up the MLE.
+    Apop_model_add_group(ct, apop_parts_wanted);//Speed up the MLE.
 
     //make fake data
     double mu=2, sigma=1;
     apop_data *d = draw_exponentiated_normal(mu, sigma, 2e5);
 
     //If we correctly replicated a Lognormal, mu and sigma will be right:
-    apop_model *est = apop_estimate(d, apop_coordinate_transform);
+    apop_model *est = apop_estimate(d, *ct);
     Diff(apop_data_get(est->parameters, 0, -1), mu);
     Diff(apop_data_get(est->parameters, 1, -1), sigma);
 

@@ -67,7 +67,7 @@ typedef double (*d_to_f)(apop_data*);
 */
 APOP_VAR_HEAD apop_model* apop_model_coordinate_transform(apop_model *base_model, d_to_d transformed_to_base, d_to_d base_to_transformed, d_to_f jacobian_to_base){ 
     apop_model * apop_varad_var(base_model, NULL);
-    Apop_stopif(base_model, apop_model *out=apop_model_copy(apop_coordinate_transform); out->error='b'; return out,
+    Apop_stopif(!base_model, apop_model *out=apop_model_copy(apop_coordinate_transform); out->error='b'; return out,
                     0, "No base model specified. Returning a composition model with error='b'.");
     //type-checked on the way in:
     void * apop_varad_var(transformed_to_base, NULL);
