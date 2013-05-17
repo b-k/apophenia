@@ -1,4 +1,5 @@
-/** \file cmd_apop_db_to_crosstab.c	Command line utility to convert a three-column table to a crosstab.*/
+/** \file 
+Command line utility to convert a three-column table to a crosstab.*/
 
 /*Copyright (c) 2005--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 

@@ -1,4 +1,5 @@
-/** \file cmd_apop_text_to_db.c	A command line script to read a text file into a database.
+/** \file 
+ A command line script to read a text file into a database.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 

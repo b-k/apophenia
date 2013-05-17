@@ -1,4 +1,5 @@
-/** \file cmd_apop_lookup.c	Command line utility to look things up in distribution tables. */
+/** \file 
+ Command line utility to look things up in distribution tables. */
 
 /*  As with many pleasant utility programs, it is mostly parsing of the input text, and then about three lines at the end doing actual work.
 

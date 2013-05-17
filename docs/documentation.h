@@ -68,6 +68,56 @@ and SQLite, as well as Apophenia itself.
 There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience
 functions, tips, and so on.
 
+<h5>Notable features</h5> 
+Much of what Apophenia does can be done in any typical statistics package. The \ref
+apop_data element is much like an R data frame, for example, and there is nothing special
+about being able to invert a matrix or take the product of two matrices with a single
+function call (\ref apop_matrix_inverse and \ref apop_dot, respectively). 
+Even more advanced features like Loess smoothing (\ref apop_loess) and the Fisher Exact
+Test (\ref apop_test_fisher_exact) are not especially Apophenia-specific. But here are
+some things that are noteworthy.
+
+\li The text file parser is flexible and effective. Such data files are typically
+called `CSV files', meaning <em>comma-separated values</em>, but the delimiter can be
+anything (or even some mix of things), and there is no requirement that text have
+"special delimiters". Missing data can be specified by a simple blank or a marker
+of your choosing (e.g., <tt>sprintf(apop_opts.db_nan, "N/A");</tt>). Or there can be
+no delimiters, as in the case of fixed-width files. If you are a heavy SQLite user,
+Apophenia may be useful to you simply for its \ref apop_text_to_db function.
+
+\li The Maximum likelihood system combines a lot of different subsystems into one
+form, which will do a few flavors of conjugate gradient search, Nelder-Mead Simplex,
+Newton's Method, or Simulated Annealing. You pick the method by a setting attached to
+your model. If you want to use a method that requires derivatives and you don't have
+a closed-form derivative, the ML subsystem will estimate a numerical gradient for
+you. If you would like to do EM-style maximization (all but the first parameter are
+fixed, that parameter is optimized, then all but the second parameter are fixed, that
+parameter is optimized, ..., looping through dimensions until the change in objective
+across cycles is less than <tt>eps</tt>), just set <tt>Apop_model_add_group(your_model,
+apop_mle, .dim_cycle_tolerance=eps)</tt>.
+
+\li The Iterative Proportional Fitting algorithm, \ref apop_rake, is best-in-breed,
+designed to handle large, sparse matrices.
+
+\li As well as the \ref apop_data structure, Apophenia is built around a model object,
+the \ref apop_model. This allows for consistent treatment of distributions, regressions,
+simulations, machine learning models, and who knows what other sorts of models you can
+dream up. By transforming and combining existing models, it is easy to build complex
+models from simple sub-models. An academic article on the utility of a model object
+is forthcoming.
+
+\li For example, the \ref apop_update function does Bayesian updating on any two
+well-formed models. If they are on the table of conjugates, that is correctly handled,
+and if they are not, Gibbs sampling produces an empirical distribution. The output is
+yet another model, from which you can make random draws, or which you can use as
+a prior for another round of Bayesian updating.
+
+\li Of course, it's a C library, meaning that you can build applications using
+Apophenia for the data-processing back-end of your program.
+
+
+
+
 <h5>Contribute!</h5> 
 
 \li Develop a new model object.
@@ -1153,6 +1203,15 @@ the \c estimate function will estimate the parameters of your model. Just prep t
 Along the way to estimating the parameters, most models also find covariance estimates for
 the parameters, calculate statistics like log likelihood, and so on, which the final print statement will show.
 
+The <tt>apop_probit</tt> model that ships with Apophenia is unparameterized:
+<tt>apop_probit.parameters==NULL</tt>. The output from the estimation,
+<tt>the_estimate</tt>, has the same form as <tt>apop_probit</tt>, but
+<tt>the_estimate->parameters</tt> has a meaningful value. It is easy to forget whether a
+model does or does not have parameters set, but as a general rule, an <tt>apop_model</tt>
+never has set parameters on startup, so if you find yourself using the <tt>&amp;</tt>
+to fit a model where a pointer-to-model is required, check that you are not using an
+un-parameterized model where parameters are needed.
+
 Outlineheader covandstuff More estimation output
 
 A call to \ref apop_estimate produces more than just the estimated parameters. Most will
@@ -1305,77 +1364,20 @@ Outlineheader mathmethods Model methods
 
 endofdiv
 
-Outlineheader write_likelihoods Writing your own 
+Outlineheader Update Filtering & updating
 
-As above, users are encouraged to
-always use models via the helper functions, like \ref apop_estimate or \ref
-apop_cdf.  The helper functions do some boilerplate error checking, and are where the
-defaults are called: if your model has a \c log_likelihood method but no \c p method, then
-\ref apop_p will use exp(\c log_likelihood). If you don't give an \c estimate method,
-then \c apop_estimate will call \ref apop_maximum_likelihood.
+It's easy to generate new models that are variants of prior models. Bayesian updating,
+for example, takes in one \ref apop_model that we call the prior, one \ref apop_model
+that we call a likelihood, and outputs an \ref apop_model that we call the posterior.
 
-So the game in writing a new model is to write just enough internal methods to give the helper functions what they need.
-In the not-uncommon best case, all you need to do is write a log likelihood function, and the model framework described to this point gets filled in via defaults.
+Many of these (after the first two) are undergoing active development right now.
 
-Here is how one would set up a model that could be estimated using maximum likelihood:
-
-\li Write a likelihood function. Its header will look like this:
-
-\code
-double apop_new_log_likelihood(apop_data *data, apop_model *m)
-\endcode
-
-where \c data is the input data, and \c
-m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
-This function will return the value of the log likelihood function at the given parameters.
-
-\li Is this a constrained optimization? See below under maximum likelihood methods \f$->\f$ Setting constraints on how to set them. Otherwise, no constraints will be assumed.
-
-\li Write the object. In your header file, include 
-
-\code
-apop_model your_new_model = {"The Me distribution", 
-            .vbase=n0, .mbase1=n1, .mbase2=n2, .dbase=nd,
-            .log_likelihood = new_log_likelihood };
-\endcode
-
-\li The first element is the human-language name for your model.
-\li the \c vbase, \c mbase1, and \c mbase2 specify the shape of the parameter set. For example, if it's three numbers in the vector, then set <tt>.vbase=3</tt> and omit the matrix sizes. The default model-prep routine will basically call 
-<tt>new_est->parameters = apop_data_alloc(vbase, mbase1, mbase2)</tt>. 
-\li The \c dbase is the size of one random draw from your model.
-\li It's common to have (the number of columns in your data set) parameters; this
-count will be filled in if you specify \c -1 for \c vbase, <tt>mbase(1|2)</tt>, or
-<tt>dsbase</tt>. If the allocation is exceptional in a different way, then you will
-need to allocate parameters via a \c prep method.
-
-\li If there are constraints, add an element for those too.
-
-You already have enough that something like this will work:
-\code
-apop_model *estimated = apop_mle(your_data, your_new_model);
-\endcode
-
-Once that baseline works, you can fill in other elements of the \ref apop_model as needed.
-
-For example, if you are using a maximum likelihood method to estimate parameters, you can get much faster estimates and better covariance estimates by specifying the dlog likelihood function (aka the score):
-
-\code
-void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-    //some algebra here to find df/dp0, df/dp1, df/dp2....
-    gsl_vector_set(gradient, 0, d_0);
-    gsl_vector_set(gradient, 1, d_1);
-}
-\endcode
-
-Because this is just for max. likelihood, it is clearly optional.
-
-In fact, everything is optional. The random number generator for a
-unidimensional case is filled in via adaptive-rejection sampling, there is a default
-print and prep, et cetera. You can improve upon the defaults as your time allows.
-
-The \ref apop_model is mostly functions, with few standard-across-models data elements. If your
-functions carry around specific data or settings, then you will have to read 
-how to initialize/copy/free settings groups below.
+\li\ref apop_update() : Bayesian updating
+\li\ref apop_model_coordinate_transform() : apply an invertible transformation to the data space
+\li\ref apop_model_fix_params() : hold some parameters constant
+\li\ref apop_model_mixture() : a linear combination of models
+\li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has a <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
+\li\ref apop_model_dcompose() : use the output of one model as a data set for another
 
 endofdiv
 
@@ -1559,19 +1561,77 @@ endofdiv
 
 endofdiv
 
-Outlineheader Update Filtering & updating
+Outlineheader write_likelihoods Writing your own 
 
-It's easy to generate new models that are variants of prior models. Bayesian updating,
-for example, takes in one \ref apop_model that we call the prior, one \ref apop_model
-that we call a likelihood, and outputs an \ref apop_model that we call the posterior.
+As above, users are encouraged to
+always use models via the helper functions, like \ref apop_estimate or \ref
+apop_cdf.  The helper functions do some boilerplate error checking, and are where the
+defaults are called: if your model has a \c log_likelihood method but no \c p method, then
+\ref apop_p will use exp(\c log_likelihood). If you don't give an \c estimate method,
+then \c apop_estimate will call \ref apop_maximum_likelihood.
 
-Many of these (after the first two) are undergoing active development right now.
+So the game in writing a new model is to write just enough internal methods to give the helper functions what they need.
+In the not-uncommon best case, all you need to do is write a log likelihood function, and the model framework described to this point gets filled in via defaults.
 
-\li\ref apop_update() : Bayesian updating
-\li\ref apop_model_fix_params() : hold some parameters constant
-\li\ref apop_model_mixture() : a linear combination of models
-\li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has a <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
-\li\ref apop_model_dcompose() : use the output of one model as a data set for another
+Here is how one would set up a model that could be estimated using maximum likelihood:
+
+\li Write a likelihood function. Its header will look like this:
+
+\code
+double apop_new_log_likelihood(apop_data *data, apop_model *m)
+\endcode
+
+where \c data is the input data, and \c
+m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
+This function will return the value of the log likelihood function at the given parameters.
+
+\li Is this a constrained optimization? See below under maximum likelihood methods \f$->\f$ Setting constraints on how to set them. Otherwise, no constraints will be assumed.
+
+\li Write the object. In your header file, include 
+
+\code
+apop_model your_new_model = {"The Me distribution", 
+            .vbase=n0, .mbase1=n1, .mbase2=n2, .dbase=nd,
+            .log_likelihood = new_log_likelihood };
+\endcode
+
+\li The first element is the human-language name for your model.
+\li the \c vbase, \c mbase1, and \c mbase2 specify the shape of the parameter set. For example, if it's three numbers in the vector, then set <tt>.vbase=3</tt> and omit the matrix sizes. The default model-prep routine will basically call 
+<tt>new_est->parameters = apop_data_alloc(vbase, mbase1, mbase2)</tt>. 
+\li The \c dbase is the size of one random draw from your model.
+\li It's common to have (the number of columns in your data set) parameters; this
+count will be filled in if you specify \c -1 for \c vbase, <tt>mbase(1|2)</tt>, or
+<tt>dsbase</tt>. If the allocation is exceptional in a different way, then you will
+need to allocate parameters via a \c prep method.
+
+\li If there are constraints, add an element for those too.
+
+You already have enough that something like this will work:
+\code
+apop_model *estimated = apop_mle(your_data, your_new_model);
+\endcode
+
+Once that baseline works, you can fill in other elements of the \ref apop_model as needed.
+
+For example, if you are using a maximum likelihood method to estimate parameters, you can get much faster estimates and better covariance estimates by specifying the dlog likelihood function (aka the score):
+
+\code
+void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
+    //some algebra here to find df/dp0, df/dp1, df/dp2....
+    gsl_vector_set(gradient, 0, d_0);
+    gsl_vector_set(gradient, 1, d_1);
+}
+\endcode
+
+Because this is just for max. likelihood, it is clearly optional.
+
+In fact, everything is optional. The random number generator for a
+unidimensional case is filled in via adaptive-rejection sampling, there is a default
+print and prep, et cetera. You can improve upon the defaults as your time allows.
+
+The \ref apop_model is mostly functions, with few standard-across-models data elements. If your
+functions carry around specific data or settings, then you will have to read 
+how to initialize/copy/free settings groups below.
 
 endofdiv
 
