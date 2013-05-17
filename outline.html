@@ -664,7 +664,7 @@ d-&gt;names-&gt;vector;
 <li>Use <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> to add text elements. It replaces any existing text in the given slot without memory leaks. </li>
 <li>The number of rows of text data in <code>tdata</code> is <code>tdata-&gt;textsize[0]</code>; the number of columns is <code>tdata-&gt;textsize[1]</code>. </li>
 <li>Refer to individual elements using the usual 2-D array notation, <code>tdata-&gt;text[row][col]</code>. </li>
-<li>Again, <code>x[0]</code> can always be written as <code>*x</code>, which may save some typing. The number of rows is <code>*tdata-&gt;textsize</code>. If you have a single column of text data (i.e., all data is in column zero), then item <code>i</code> is <code>*tdata-&gt;text[i]</code>. If you know you have exactly one cell of text, then its value is <code>**tdata-&gt;text</code>.</li>
+<li><code>x[0]</code> can always be written as <code>*x</code>, which may save some typing. The number of rows is <code>*tdata-&gt;textsize</code>. If you have a single column of text data (i.e., all data is in column zero), then item <code>i</code> is <code>*tdata-&gt;text[i]</code>. If you know you have exactly one cell of text, then its value is <code>**tdata-&gt;text</code>.</li>
 </ul>
 <p>Here is a sample program that uses these forms, plus a few text-handling functions.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
@@ -673,7 +673,7 @@ d-&gt;names-&gt;vector;
     <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;create table data (name, city, state);&quot;</span>
             <span class="stringliteral">&quot;insert into data values (&#39;Mike Mills&#39;, &#39;Rockville&#39;, &#39;MD&#39;);&quot;</span>
             <span class="stringliteral">&quot;insert into data values (&#39;Bill Berry&#39;, &#39;Athens&#39;, &#39;GA&#39;);&quot;</span>
-            <span class="stringliteral">&quot;insert into data values (&#39;Michael Stipe&#39;, &#39;Reckoning&#39;, &#39;GA&#39;);&quot;</span>);
+            <span class="stringliteral">&quot;insert into data values (&#39;Michael Stipe&#39;, &#39;Decatur&#39;, &#39;GA&#39;);&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *tdata = <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name, city, state from data&quot;</span>);
     printf(<span class="stringliteral">&quot;Customer #1: %s\n\n&quot;</span>, *tdata-&gt;text[0]);
 
@@ -683,8 +683,8 @@ d-&gt;names-&gt;vector;
     <span class="comment">//the text alloc can be used as a text realloc:</span>
     <a class="code" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(tdata, 1+tdata-&gt;textsize[0], tdata-&gt;textsize[1]);
     <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(tdata, *tdata-&gt;textsize-1, 0, <span class="stringliteral">&quot;Peter Buck&quot;</span>);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(tdata, *tdata-&gt;textsize-1, 1, <span class="stringliteral">&quot;Atlanta&quot;</span>);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(tdata, *tdata-&gt;textsize-1, 2, <span class="stringliteral">&quot;GA&quot;</span>);
+    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(tdata, *tdata-&gt;textsize-1, 1, <span class="stringliteral">&quot;Berkeley&quot;</span>);
+    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(tdata, *tdata-&gt;textsize-1, 2, <span class="stringliteral">&quot;CA&quot;</span>);
 
     printf(<span class="stringliteral">&quot;\n\nAugmented data, printed via for loop (for demonstration purposes):\n&quot;</span>);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; tdata-&gt;textsize[0]; i++){
@@ -793,11 +793,7 @@ d-&gt;names-&gt;vector;
 <span class="keywordtype">double</span> density_under =  <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>(expected_value, the_estimate);
 
 gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(234211);
-<a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(100, the_estimate-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715c07c1183c">data</a>-&gt;matrix-&gt;size1);
-<span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; 100; i++){
-    <a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(draws, i, onerow);
-    <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(&amp;onerow-&gt;data, rng, the_estimate);    
-}
+<a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(the_estimate, .count=1000, .rng=rng);
 </pre></div><p>Apophenia ships with many well-known models for your immediate use, including probability distributions, such as the <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, <a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">apop_poisson</a>, or <a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a> models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit; e.g., assume the data is Normally distributed and find the mean and variance: <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>).</p>
 <p>There are also linear models like <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>, <a class="el" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>, and <a class="el" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a> (where those last two are multinomial or binomial as the input data dictates). As in the example, they are on equal footing with the distributions, so nothing keeps you from making random draws from an estimated linear model.</p>
 <p>Simulation models seem to not fit this form, but you will see below that if you can write an objective function for the <code>p</code> method of the model, you can use the above tools. Notably, you can estimate parameters via maximum likelihood and then give confidence intervals around those parameters.</p>
@@ -831,7 +827,6 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <li><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">apop_poisson</a> </li>
 <li><a class="el" href="group__models.html#ga45ce986bd5ea79c39877792bec39a304">apop_t_distribution</a> </li>
 <li><a class="el" href="group__models.html#ga95be4cc3931072118a7c8ffece73fbe1">apop_uniform</a> </li>
-<li><a class="el" href="group__models.html#gaa7b3f288233f063dffda45743fd61c72">apop_waring</a> </li>
 <li><a class="el" href="group__models.html#ga79148851aa36fdad05fdb197778a583e">apop_wishart</a> </li>
 <li><a class="el" href="group__models.html#ga1ddf478052543e1d801dfc64c99bcbe3">apop_yule</a> </li>
 <li><a class="el" href="group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea">apop_zipf</a></li>
@@ -868,7 +863,8 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <li><a class="el" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy()</a> : duplicate a model </li>
 <li><a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters()</a> : Models ship with no parameters set. Use this to convert a Normal(μ, σ) with unknown μ and σ into a Normal(0, 1), for example. </li>
 <li><a class="el" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free()</a> </li>
-<li><a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear()</a>, <a class="el" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep()</a> : remove the parameters from a parameterized model. Used infrequently.</li>
+<li><a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear()</a>, <a class="el" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep()</a> : remove the parameters from a parameterized model. Used infrequently. </li>
+<li><a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws()</a> : many random draws from an estimated model.</li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="Update"><div class="trigger" onClick="showBranch('Updated');swapFolder('Updatef')"><img src="right.png" border="0" id="Updatef" alt="pip"> Filtering &amp; updating</div></a></h2><div class="branch" id="Updated">
@@ -876,11 +872,11 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <p>Many of these (after the first two) are undergoing active development right now.</p>
 <ul>
 <li><a class="el" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update()</a> : Bayesian updating </li>
-<li><a class="el" href="types_8h.html#ad7cfd53384923e4e65b7cf9545d20674">apop_model_coordinate_transform()</a> : apply an invertible transformation to the data space </li>
+<li><a class="el" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform()</a> : apply an invertible transformation to the data space </li>
 <li><a class="el" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params()</a> : hold some parameters constant </li>
 <li><a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture()</a> : a linear combination of models </li>
-<li><a class="el" href="types_8h.html#a22553e1f7bcbe6e2c6ce178c2d94acf4">apop_model_stack()</a> : If <img class="formulaInl" alt="$(p_1, p_2)$" src="form_96.png"/> has a Normal distribution and <img class="formulaInl" alt="$p_3$" src="form_97.png"/> has an independent Poisson distribution, then <img class="formulaInl" alt="$(p_1, p_2, p_3)$" src="form_98.png"/> has a <code>apop_model_stack(apop_normal, apop_poisson)</code> distribution. </li>
-<li>apop_model_dcompose() : use the output of one model as a data set for another</li>
+<li><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack()</a> : If <img class="formulaInl" alt="$(p_1, p_2)$" src="form_95.png"/> has a Normal distribution and <img class="formulaInl" alt="$p_3$" src="form_96.png"/> has an independent Poisson distribution, then <img class="formulaInl" alt="$(p_1, p_2, p_3)$" src="form_97.png"/> has a <code><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack(apop_normal, apop_poisson)</a></code> distribution. </li>
+<li><a class="el" href="types_8h.html#ab664f68b5e481bec56c8ddc7f16928c0">apop_model_dcompose()</a> : use the output of one model as a data set for another</li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="modelsettings"><div class="trigger" onClick="showBranch('modelsettingsd');swapFolder('modelsettingsf')"><img src="right.png" border="0" id="modelsettingsf" alt="pip"> Model settings</div></a></h2><div class="branch" id="modelsettingsd">
@@ -895,7 +891,9 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 3 <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, *m);
 </pre></div><p>Line one establishes the baseline form of the model. Line two adds a settings group of type <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> to the model. By default other auxiliary items, like the expected values, are set to <code>'n'</code> when using this group, so this specifies that we want covariance and only covariance. Having stated our preferences, line three does the estimation we want.</p>
 <p>Notice that we don't need the <code>_settings</code> ending to the settings group's name---macros make it happen. The remaining arguments to <code>Apop_model_add_group</code> (if any) follow the <a class="el" href="designated.html">Designated initializers</a> syntax of the form <code>.setting=value</code>.</p>
-<p>Settings groups are copied with the model, which facilitates chaining estimations. Continuing the above example, you could re-estimate to get the predicted values and covariance via:</p>
+<p>There is an <a class="el" href="group__settings.html#ga8e5f7950ae47b299e20f2c447199cf6f">apop_model_copy_set</a> macro that adds a settings group when it is first copied, joining up lines one and two above:</p>
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__settings.html#ga8e5f7950ae47b299e20f2c447199cf6f">apop_model_copy_set</a>(<a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>, apop_parts_wanted, .covariance=<span class="charliteral">&#39;y&#39;</span>);
+</pre></div><p>Settings groups are copied with the model, which facilitates chaining estimations. Continuing the above example, you could re-estimate to get the predicted values and covariance via:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(est, apop_parts_wanted, predicted, <span class="charliteral">&#39;y&#39;</span>);
 <a class="code" href="structapop__model.html">apop_model</a> *est2 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, *est);
 </pre></div><ul>
@@ -993,7 +991,7 @@ end
 <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> apop_new_log_likelihood(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *m)
 </pre></div><p>where <code>data</code> is the input data, and <code>m</code> is the parametrized model (i.e. your model with a <code>parameters</code> element set by the caller). This function will return the value of the log likelihood function at the given parameters.</p>
 <ul>
-<li>Is this a constrained optimization? See below under maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_95.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed.</li>
+<li>Is this a constrained optimization? See below under maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_98.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed.</li>
 </ul>
 <ul>
 <li>Write the object. In your header file, include</li>
@@ -1299,4 +1297,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

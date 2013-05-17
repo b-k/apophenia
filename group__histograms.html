@@ -165,21 +165,58 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value from the Kolmogorov test that the two distributions are equal.</dd></dl>
-<div class="fragment"><pre class="fragment"> <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data1);
- <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(data2);
- <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data1, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
- <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data2, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
- <a class="code" href="structapop__data.html">apop_data</a> *ktest = <a class="code" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>(m1, m2);
- <span class="comment">//The sort of output you could pull out:</span>
- <span class="keywordtype">double</span> k_statistic = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;max distance&quot;</span>);
- <span class="keywordtype">double</span> pval = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;p value, 2 tail&quot;</span>);
- <span class="keywordtype">double</span> confidence_of_inequality = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;confidence, 2 tail&quot;</span>);
-</pre></div><ul>
-<li>I assume that the data sets are sorted. </li>
+<ul>
+<li>I assume that the data sets are sorted.</li>
 </ul>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="comment">//This program finds the p-value of a K-S test between</span>
+<span class="comment">//500 draws from a N(0, 1) and a N(x, 1), where x grows from 0 to 1.</span>
 
+<span class="comment">//Produce two models with synced PMFs.</span>
+<span class="comment">//To do: rewrite the K-S test so that this is unnecessary</span>
+<span class="keywordtype">void</span> models_to_pmfs(<a class="code" href="structapop__model.html">apop_model</a> *m1, <a class="code" href="structapop__model.html">apop_model</a> *m2, <span class="keywordtype">int</span> size, gsl_rng *r,
+        <a class="code" href="structapop__model.html">apop_model</a> **out1, <a class="code" href="structapop__model.html">apop_model</a> **out2){
+    <a class="code" href="structapop__data.html">apop_data</a> *outd1 = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(m1, size, r);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(outd1);
+    <a class="code" href="structapop__data.html">apop_data</a> *outd2 = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(outd1);
+    outd2-&gt;weights = gsl_vector_alloc(size);
+    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; size; i++){
+        <a class="code" href="stats_8h.html#a2a1bc770d6631e85359acb8b665439b3">Apop_data_row</a>(outd1, i, onerow);
+        gsl_vector_set(outd2-&gt;weights, i, <a class="code" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a>(onerow, m2));
+    }
+    *out1= <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(outd1, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
+    *out2= <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(outd2, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
+}
+
+<span class="preprocessor">#ifndef Testing</span>
+<span class="preprocessor"></span><span class="preprocessor">#define cprintf(...) printf(__VA_ARGS__)</span>
+<span class="preprocessor"></span><span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="preprocessor">#define cprintf(...)</span>
+<span class="preprocessor"></span><span class="preprocessor">#endif </span>
+<span class="preprocessor"></span>
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="structapop__model.html">apop_model</a> *n1 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
+    <a class="code" href="structapop__model.html">apop_model</a> *pmf1, *pmf2;
+    gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(123);
+    <a class="code" href="structapop__data.html">apop_data</a> *ktest;
+
+    <span class="comment">//as the mean m drifts, the pval for a comparison</span>
+    <span class="comment">//between a N(0, 1) and N(m, 1) gets smaller.</span>
+    cprintf(<span class="stringliteral">&quot;mean\tpval\n&quot;</span>);
+    <span class="keywordtype">double</span> prior_pval = 18;
+    <span class="keywordflow">for</span>(<span class="keywordtype">double</span> i=0; i&lt;= 1; i+=0.2){
+        <a class="code" href="structapop__model.html">apop_model</a> *n11 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, i, 1);
+        models_to_pmfs(n1, n11, 5e2, r, &amp;pmf1, &amp;pmf2);
+        ktest = <a class="code" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>(pmf1, pmf2);
+        <span class="keywordtype">double</span> pval = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(ktest, .rowname=<span class="stringliteral">&quot;p value, 2 tail&quot;</span>);
+        assert(pval &lt; prior_pval);
+        cprintf(<span class="stringliteral">&quot;%g\t%g\n&quot;</span>, i, pval);
+        prior_pval = pval;
+    }
+}
+</pre></div> 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

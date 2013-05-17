@@ -34,9 +34,14 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a> (<a class="el" href="structapop__model.html">apop_model</a> *m, char *delme)
-<li>void * <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, char *type, void *free_fn, void *copy_fn, void *the_group)
-<li>void * <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a> (<a class="el" href="structapop__model.html">apop_model</a> *m, char *type, char fail)
+<li><a class="anchor" id="a564d11900c26fec78f7992617a7eee4b"></a><!-- doxytag: member="apophenia&#45;0.99/apop_settings.c::apop_settings_remove_group" ref="a564d11900c26fec78f7992617a7eee4b" args="(apop_model *m, char *delme)" -->
+void <b>apop_settings_remove_group</b> (<a class="el" href="structapop__model.html">apop_model</a> *m, char *delme)
+<li><a class="anchor" id="a3571609cce3324b52ef96b7b844c32df"></a><!-- doxytag: member="apophenia&#45;0.99/apop_settings.c::apop_settings_group_alloc" ref="a3571609cce3324b52ef96b7b844c32df" args="(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group)" -->
+void * <b>apop_settings_group_alloc</b> (<a class="el" href="structapop__model.html">apop_model</a> *model, char *type, void *free_fn, void *copy_fn, void *the_group)
+<li><a class="anchor" id="a52cb7b05e3a71c5094f429340dfebd36"></a><!-- doxytag: member="apophenia&#45;0.99/apop_settings.c::apop_settings_group_alloc_wm" ref="a52cb7b05e3a71c5094f429340dfebd36" args="(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group)" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_settings_group_alloc_wm</b> (<a class="el" href="structapop__model.html">apop_model</a> *model, char *type, void *free_fn, void *copy_fn, void *the_group)
+<li><a class="anchor" id="a447eff1b2d149fb29476e68a1bff2788"></a><!-- doxytag: member="apophenia&#45;0.99/apop_settings.c::apop_settings_get_grp" ref="a447eff1b2d149fb29476e68a1bff2788" args="(apop_model *m, char *type, char fail)" -->
+void * <b>apop_settings_get_grp</b> (<a class="el" href="structapop__model.html">apop_model</a> *m, char *type, char fail)
 <li>void <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a0dc44b7dfc3c125d19c1db3bef3a80a1">apop_settings_copy_group</a> (<a class="el" href="structapop__model.html">apop_model</a> *outm, <a class="el" href="structapop__model.html">apop_model</a> *inm, char *copyme)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -83,116 +88,6 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="a447eff1b2d149fb29476e68a1bff2788"></a><!-- doxytag: member="apop_settings.c::apop_settings_get_grp" ref="a447eff1b2d149fb29476e68a1bff2788" args="(apop_model *m, char *type, char fail)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a447eff1b2d149fb29476e68a1bff2788">apop_settings_get_grp</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>fail</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>This function is used internally by the macro <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a>. Use that. </p>
-
-</div>
-</div>
-<a class="anchor" id="a3571609cce3324b52ef96b7b844c32df"></a><!-- doxytag: member="apop_settings.c::apop_settings_group_alloc" ref="a3571609cce3324b52ef96b7b844c32df" args="(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void* <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a3571609cce3324b52ef96b7b844c32df">apop_settings_group_alloc</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>model</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>type</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>free_fn</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>copy_fn</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>the_group</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Don't use this function. It's what the <code>Apop_model_add_group</code> macro uses internally. Use that. </p>
-
-</div>
-</div>
-<a class="anchor" id="a564d11900c26fec78f7992617a7eee4b"></a><!-- doxytag: member="apop_settings.c::apop_settings_remove_group" ref="a564d11900c26fec78f7992617a7eee4b" args="(apop_model *m, char *delme)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="apophenia-0_899_2apop__settings_8c.html#a564d11900c26fec78f7992617a7eee4b">apop_settings_remove_group</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>delme</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Remove a settings group from a model.</p>
-<p>But use <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a> instead; that macro uses this function internally.</p>
-<p>If the model has no settings or your preferred settings group is not found, this function does nothing. </p>
-
-</div>
-</div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

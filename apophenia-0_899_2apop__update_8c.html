@@ -36,6 +36,8 @@ Functions</h2>
 <ul>
 <li><a class="anchor" id="a10fab0239a9eb6c764bdfe674a4a4bbd"></a><!-- doxytag: member="apophenia&#45;0.99/apop_update.c::Apop_settings_init" ref="a10fab0239a9eb6c764bdfe674a4a4bbd" args="(Apop_settings_copy(apop_update, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(method, 'd');)" -->
 <b>Apop_settings_init</b> (Apop_settings_copy(<a class="el" href="apophenia-0_899_2apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(method, 'd');)
+<li><a class="anchor" id="a93dacdddbe102396b480964598c9fb53"></a><!-- doxytag: member="apophenia&#45;0.99/apop_update.c::countup" ref="a93dacdddbe102396b480964598c9fb53" args="(double in)" -->
+double <b>countup</b> (double in)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apophenia-0_899_2apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *prior, <a class="el" href="structapop__model.html">apop_model</a> *likelihood, gsl_rng *rng)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -98,9 +100,9 @@ Functions</h2>
 <tr>
 <td><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">Beta</a> </td><td><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">Bernoulli</a> </td><td></td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_94.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_95.png"/>   </td></tr>
+<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_92.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_93.png"/>   </td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_72.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_55.png"/>  </td></tr>
+<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_70.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_53.png"/>  </td></tr>
 <tr>
 <td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">Poisson</a> </td><td>Uses sum and size of the data  </td></tr>
 </table>
@@ -114,8 +116,8 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
-<p>Here is a test function that compares the output via conjugate gradient table and via Gibbs sampling: </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000015">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
+<p>Here is a test function that compares the output via conjugate table and via Gibbs sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 <span class="keywordtype">int</span> main(){
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gad0efe90cf46022d60e62e05bc5085b0b">apop_rng_alloc</a>(2468);
@@ -134,7 +136,7 @@ Functions</h2>
     <span class="comment">//and a data set of n data points with the right p.</span>
     <a class="code" href="structapop__model.html">apop_model</a> *bcopy = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
     <a class="code" href="structapop__data.html">apop_data</a> *bin_draws = apop_data_fill(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2), n*(1-binom_start), n*binom_start);
-    bin = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
+    bin = <a class="code" href="apophenia-0_899_2transform_2apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
     apop_model_add_group(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
     <a class="code" href="structapop__model.html">apop_model</a> *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
 
@@ -157,4 +159,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

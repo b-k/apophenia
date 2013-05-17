@@ -44,25 +44,26 @@ urchinTracker();
 <a name="l00013"></a>00013 
 <a name="l00014"></a>00014 <a class="code" href="structapop__data.html">apop_data</a> *apop_text_to_factors(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">size_t</span> textcol, <span class="keywordtype">int</span> datacol);<span class="comment">//use apop_data_to_factors</span>
 <a name="l00015"></a>00015 
-<a name="l00027"></a><a class="code" href="apophenia-0_899_2deprecated_8h.html#a43f61a8af9080552c7126ebb394a9cef">00027</a> <span class="preprocessor">#define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);</span>
-<a name="l00028"></a>00028 <span class="preprocessor"></span>
-<a name="l00029"></a>00029 <span class="preprocessor">#define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)</span>
-<a name="l00030"></a>00030 <span class="preprocessor"></span>
-<a name="l00035"></a><a class="code" href="apophenia-0_899_2deprecated_8h.html#a8fb1877a3cc29edd685a68dd6b4a35dc">00035</a> <span class="preprocessor">#define Apop_settings_add_group(model, type, ...)  \</span>
-<a name="l00036"></a>00036 <span class="preprocessor">    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); </span>
-<a name="l00037"></a>00037 <span class="preprocessor"></span>
-<a name="l00038"></a>00038 <span class="preprocessor">#define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group</span>
-<a name="l00039"></a>00039 <span class="preprocessor"></span>
-<a name="l00040"></a>00040 <a class="code" href="structapop__mle__settings.html">apop_mle_settings</a> *apop_mle_settings_alloc(<a class="code" href="structapop__model.html">apop_model</a> *model);
-<a name="l00041"></a>00041 
-<a name="l00042"></a>00042 <span class="preprocessor">#define apop_ls_settings apop_lm_settings</span>
-<a name="l00043"></a>00043 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_init apop_lm_settings_init</span>
-<a name="l00044"></a>00044 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_copy apop_lm_settings_copy</span>
-<a name="l00045"></a>00045 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_free apop_lm_settings_free</span>
-<a name="l00046"></a>00046 <span class="preprocessor"></span>
-<a name="l00047"></a>00047 <span class="preprocessor">#define apop_wls apop_ols</span>
-<a name="l00048"></a>00048 <span class="preprocessor"></span><span class="preprocessor">#define apop_multinomial_probit apop_probit</span>
-<a name="l00049"></a>00049 <span class="preprocessor"></span><span class="preprocessor">#define apop_model_prep apop_prep</span>
+<a name="l00017"></a><a class="code" href="apophenia-0_899_2deprecated_8h.html#a43f61a8af9080552c7126ebb394a9cef">00017</a> <span class="preprocessor">#define Apop_settings_alloc(type, out, ...) apop_ ##type ##_settings *out = apop_ ##type ##_settings_alloc(__VA_ARGS__);</span>
+<a name="l00018"></a>00018 <span class="preprocessor"></span>
+<a name="l00019"></a>00019 
+<a name="l00021"></a><a class="code" href="apophenia-0_899_2deprecated_8h.html#a8fb1877a3cc29edd685a68dd6b4a35dc">00021</a> <span class="preprocessor">#define Apop_settings_add_group(model, type, ...)  \</span>
+<a name="l00022"></a>00022 <span class="preprocessor">    apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_alloc (__VA_ARGS__)); </span>
+<a name="l00023"></a>00023 <span class="preprocessor"></span>
+<a name="l00025"></a>00025 <span class="preprocessor">#define APOP_SETTINGS_ALLOC(type, out, ...) Apop_settings_alloc(type, out, __VA_ARGS__)</span>
+<a name="l00026"></a>00026 <span class="preprocessor"></span><span class="preprocessor">#define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group</span>
+<a name="l00027"></a>00027 <span class="preprocessor"></span>
+<a name="l00028"></a>00028 <a class="code" href="structapop__mle__settings.html">apop_mle_settings</a> *apop_mle_settings_alloc(<a class="code" href="structapop__model.html">apop_model</a> *model);
+<a name="l00029"></a>00029 
+<a name="l00030"></a>00030 <span class="preprocessor">#define apop_ls_settings apop_lm_settings</span>
+<a name="l00031"></a>00031 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_init apop_lm_settings_init</span>
+<a name="l00032"></a>00032 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_copy apop_lm_settings_copy</span>
+<a name="l00033"></a>00033 <span class="preprocessor"></span><span class="preprocessor">#define apop_ls_settings_free apop_lm_settings_free</span>
+<a name="l00034"></a>00034 <span class="preprocessor"></span>
+<a name="l00035"></a>00035 <span class="preprocessor">#define apop_wls apop_ols</span>
+<a name="l00036"></a>00036 <span class="preprocessor"></span><span class="preprocessor">#define apop_multinomial_probit apop_probit</span>
+<a name="l00037"></a>00037 <span class="preprocessor"></span><span class="preprocessor">#define apop_model_prep apop_prep</span>
+<a name="l00038"></a>00038 <span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Thu Apr 18 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

@@ -50,6 +50,7 @@ Functions</h2>
 <li>int <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> (const char *string, const char *regex, <a class="el" href="structapop__data.html">apop_data</a> **substrings, const char use_case)
 <li>double <a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, gsl_rng *rng, <a class="el" href="structapop__data.html">apop_data</a> *draws)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The odds and ends bin. Copyright (c) 2005--2007, 2010 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
@@ -132,8 +133,54 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the data set, so you can do things like <code>apop_data_show</code>(apop_data_sort(d, -1)).</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
+</ul>
+<p>The following example sorts the <code>test_data2</code> file (which you can copy from the tests/ directory of the Apophenia distribution) three different ways.</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
+<span class="preprocessor">#ifndef Testing</span>
+<span class="preprocessor"></span><span class="preprocessor">#define showdata apop_data_show(d);</span>
+<span class="preprocessor"></span><span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="preprocessor">#define showdata </span>
+<span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;test_data2&quot;</span>, 0 ,1);
+    <a class="code" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(!d, exit(1), 0, <span class="stringliteral">&quot;Please link or copy test_data2 from the tests directory &quot;</span>
+                                <span class="stringliteral">&quot;to the directory in which you are running this test.&quot;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; d-&gt;matrix-&gt;size1; i++){
+        <span class="keywordtype">char</span> *rowname=NULL;
+        asprintf(&amp;rowname, <span class="stringliteral">&quot;row %i&quot;</span>, i);
+        <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, rowname, <span class="charliteral">&#39;r&#39;</span>);
+        free(rowname);
+    }
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;sorted ascending by first column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 0, <span class="charliteral">&#39;a&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,0) &gt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,0));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 32 || <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 9);
+    showdata
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;\nsorted descending by first column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 0, <span class="charliteral">&#39;d&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,0) &lt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,0));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 55); <span class="comment">//(35, 55)</span>
+    showdata
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;\nsorted descending by second column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 1, <span class="charliteral">&#39;d&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,1) &lt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,1));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,0) == 19); <span class="comment">//(19, 60)</span>
+    showdata
+}
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="aeae8cdce5cd08d8ea29006c51b697ca5"></a><!-- doxytag: member="apop_asst.c::apop_generalized_harmonic" ref="aeae8cdce5cd08d8ea29006c51b697ca5" args="(int N, double s)" -->
@@ -179,6 +226,69 @@ Functions</h2>
      assert (out == 12*13/2);
 }
 </pre></div> 
+</div>
+</div>
+<a class="anchor" id="ae1f659437ab89ac1e4df447023edf040"></a><!-- doxytag: member="apop_asst.c::apop_model_draws" ref="ae1f659437ab89ac1e4df447023edf040" args="(apop_model *model, int count, gsl_rng *rng, apop_data *draws)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramname"><em>model</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">gsl_rng *&#160;</td>
+          <td class="paramname"><em>rng</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
+          <td class="paramname"><em>draws</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Make a set of random draws from a model and write them to an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">model</td><td>The model from which draws will be made. Must already be prepared and/or estimated.</td></tr>
+    <tr><td class="paramname">count</td><td>The number of draws to make. If <code>draw_matrix</code> is not <code>NULL</code>, then this is ignored and <code>count=draw_matrix-&gt;matrix-&gt;size1</code>. default=1000.</td></tr>
+    <tr><td class="paramname">rng</td><td>a <code>gsl_rng</code>, already allocated. default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>.</td></tr>
+    <tr><td class="paramname">draws</td><td>If not <code>NULL</code>, a pre-allocated data set whose <code>matrix</code> element will be filled with draws.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set with the matrix filled with <code>size</code> draws. If <code>draw_matrix!=NULL</code>, then return a pointer to it.</dd></dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error=='m'</td><td>Input model isn't good for making draws: it is <code>NULL</code>, or <code>m-&gt;dsize=0</code>.</td></tr>
+    <tr><td class="paramname">out-&gt;error=='s'</td><td>You gave me a <code>draws</code> matrix, but its size is less than the size of a single draw from the data, <code>model-&gt;dsize</code>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<ul>
+<li>Prints a warning if you send in a non-<code>NULL <a class="el" href="structapop__data.html">apop_data</a></code> set, but its <code>matrix</code> element is <code>NULL</code>, when <code>apop_opts.verbose&gt;=1</code>.</li>
+</ul>
+<ul>
+<li>See also <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, which makes a single draw. </li>
+</ul>
+
 </div>
 </div>
 <a class="anchor" id="aa9ec5e7ed223c09bec044ced54f24fad"></a><!-- doxytag: member="apop_asst.c::apop_regex" ref="aa9ec5e7ed223c09bec044ced54f24fad" args="(const char *string, const char *regex, apop_data **substrings, const char use_case)" -->
@@ -498,4 +608,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>

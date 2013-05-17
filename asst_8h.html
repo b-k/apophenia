@@ -363,8 +363,54 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the data set, so you can do things like <code>apop_data_show</code>(apop_data_sort(d, -1)).</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
+</ul>
+<p>The following example sorts the <code>test_data2</code> file (which you can copy from the tests/ directory of the Apophenia distribution) three different ways.</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
+<span class="preprocessor">#ifndef Testing</span>
+<span class="preprocessor"></span><span class="preprocessor">#define showdata apop_data_show(d);</span>
+<span class="preprocessor"></span><span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="preprocessor">#define showdata </span>
+<span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;test_data2&quot;</span>, 0 ,1);
+    <a class="code" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(!d, exit(1), 0, <span class="stringliteral">&quot;Please link or copy test_data2 from the tests directory &quot;</span>
+                                <span class="stringliteral">&quot;to the directory in which you are running this test.&quot;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; d-&gt;matrix-&gt;size1; i++){
+        <span class="keywordtype">char</span> *rowname=NULL;
+        asprintf(&amp;rowname, <span class="stringliteral">&quot;row %i&quot;</span>, i);
+        <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, rowname, <span class="charliteral">&#39;r&#39;</span>);
+        free(rowname);
+    }
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;sorted ascending by first column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 0, <span class="charliteral">&#39;a&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,0) &gt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,0));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 32 || <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 9);
+    showdata
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;\nsorted descending by first column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 0, <span class="charliteral">&#39;d&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,0) &lt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,0));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,1)== 55); <span class="comment">//(35, 55)</span>
+    showdata
+
+    <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;\nsorted descending by second column&quot;</span>, <span class="charliteral">&#39;h&#39;</span>);
+    <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(d, 1, <span class="charliteral">&#39;d&#39;</span>);
+    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=1; i&lt; d-&gt;matrix-&gt;size2; i++){
+        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i,1) &lt;= <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, i-1,1));
+    }
+    assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0,0) == 19); <span class="comment">//(19, 60)</span>
+    showdata
+}
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="a02cef4243593cf905fa54cb48d8b04c2"></a><!-- doxytag: member="asst.h::apop_data_to_bins" ref="a02cef4243593cf905fa54cb48d8b04c2" args="(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin)" -->
@@ -1093,7 +1139,7 @@ gets_soc_security=1" is a structural zero.</p>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
 <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
-<p>Here is a test function that compares the output via conjugate gradient table and via Gibbs sampling: </p>
+<p>Here is a test function that compares the output via conjugate table and via Gibbs sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 <span class="keywordtype">int</span> main(){
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(2468);
@@ -1209,4 +1255,4 @@ gets_soc_security=1" is a structural zero.</p>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri May 17 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>
