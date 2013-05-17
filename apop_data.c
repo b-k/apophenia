@@ -193,7 +193,6 @@ char apop_data_free_base(apop_data *freeme){
 
   This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.
 
-
   \li If you want space allocated, use \ref apop_data_copy.
   \li I don't follow the \c more pointer, though \ref apop_data_copy does.
   \li You can use the subsetting macros, \ref Apop_data_row or \ref Apop_data_rows, to copy within a data set:
@@ -215,6 +214,7 @@ apop_data_memcpy(torow, fromrow);
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     Apop_assert_c(out, , 1, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
+    Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
     if (in->matrix){
         Apop_stopif(!out->matrix, out->error='p'; return, 1, "in->matrix exists but out->matrix does not.");
         Apop_stopif(in->matrix->size1 != out->matrix->size1 || in->matrix->size2 != out->matrix->size2, 

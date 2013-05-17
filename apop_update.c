@@ -3,6 +3,7 @@
 /* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 Apop_settings_init(apop_update,
    Apop_varad_set(periods, 6e3);
@@ -14,81 +15,76 @@ Apop_settings_init(apop_update,
 Apop_settings_copy(apop_update, )
 Apop_settings_free(apop_update, )
 
-static apop_model *check_conjugacy(apop_data *data, apop_model prior, apop_model likelihood){
-  apop_model   *outp;
-    if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Exponential distribution")){
-        outp = apop_model_copy(prior);
-        apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
-        apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
-        return outp;
+static apop_model *betabinom(apop_data *data, apop_model prior, apop_model likelihood){
+    apop_model *outp = apop_model_copy(prior);
+    if (!data && likelihood.parameters){
+        double n = likelihood.parameters->vector->data[0];
+        double p = likelihood.parameters->vector->data[1];
+        apop_vector_increment(outp->parameters->vector, 0, n*p);
+        apop_vector_increment(outp->parameters->vector, 1, n*(1-p));
+    } else {
+        double y = apop_matrix_sum(data->matrix);
+        apop_vector_increment(outp->parameters->vector, 0, y);
+        apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
     }
-    if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Binomial distribution")){
-        outp = apop_model_copy(prior);
-        if (!data && likelihood.parameters){
-            double  n   = likelihood.parameters->vector->data[0];
-            double  p   = likelihood.parameters->vector->data[1];
-            apop_vector_increment(outp->parameters->vector, 0, n*p);
-            apop_vector_increment(outp->parameters->vector, 1, n*(1-p));
-        } else {
-            double  y   = apop_matrix_sum(data->matrix);
-            apop_vector_increment(outp->parameters->vector, 0, y);
-            apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
-        }
-        return outp;
-    }
-    if (!strcmp(prior.name, "Beta distribution") && !strcmp(likelihood.name, "Bernoulli distribution")){
-        outp = apop_model_copy(prior);
-        double  sum     = 0;
-        int     i, j, n = (data->matrix->size1*data->matrix->size2);
-        for (i=0; i< data->matrix->size1; i++)
-            for (j=0; j< data->matrix->size2; j++)
-                if (gsl_matrix_get(data->matrix, i, j))
-                    sum++;
-        apop_vector_increment(outp->parameters->vector, 0, sum);
-        apop_vector_increment(outp->parameters->vector, 1, n - sum);
-        return outp;
-    }
+    return outp;
+}
 
+double countup(double in){return in!=0;}
+
+static apop_model *betabernie(apop_data *data, apop_model prior, apop_model likelihood){
+    apop_model *outp = apop_model_copy(prior);
+    Get_vmsizes(data);//tsize
+    double sum = apop_map_sum(data, .fn_d=countup, .part='a');
+    apop_vector_increment(outp->parameters->vector, 0, sum);
+    apop_vector_increment(outp->parameters->vector, 1, tsize - sum);
+    return outp;
+}
+
+static apop_model *gammaexpo(apop_data *data, apop_model prior, apop_model likelihood){
+    apop_model *outp = apop_model_copy(prior);
+    apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
+    apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
+    return outp;
+}
+
+static apop_model *gammapoisson(apop_data *data, apop_model prior, apop_model likelihood){
     /* Posterior alpha = alpha_0 + sum x; posterior beta = beta_0/(beta_0*n + 1) */
-    if (!strcmp(prior.name, "Gamma distribution") && !strcmp(likelihood.name, "Poisson distribution")){
-        outp = apop_model_copy(prior);
-        Get_vmsizes(data); //vsize, msize1
-        double sum = 0;
-        if (vsize)  sum = apop_sum(data->vector);
-        if (msize1) sum += apop_matrix_sum(data->matrix);
-        apop_vector_increment(outp->parameters->vector, 0, sum);
+    apop_model *outp = apop_model_copy(prior);
+    Get_vmsizes(data); //vsize, msize1
+    double sum = 0;
+    if (vsize)  sum = apop_sum(data->vector);
+    if (msize1) sum += apop_matrix_sum(data->matrix);
+    apop_vector_increment(outp->parameters->vector, 0, sum);
 
-        double *beta = gsl_vector_ptr(outp->parameters->vector, 1);
-        *beta = *beta/(*beta * tsize + 1);
-        return outp;
-    }
+    double *beta = gsl_vector_ptr(outp->parameters->vector, 1);
+    *beta = *beta/(*beta * tsize + 1);
+    return outp;
+}
 
-    /*
+static apop_model *normnorm(apop_data *data, apop_model prior, apop_model likelihood){
+/*
 output \f$(\mu, \sigma) = (\frac{\mu_0}{\sigma_0^2} + \frac{\sum_{i=1}^n x_i}{\sigma^2})/(\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2}), (\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2})^{-1}\f$
 
 That is, the output is weighted by the number of data points for the
 likelihood. If you give me a parametrized normal, with no data, then I'll take the weight to be \f$n=1\f$. 
-
 */
-    if (!strcmp(prior.name, "Normal distribution") && !strcmp(likelihood.name, "Normal distribution")){
-        double mu_like, var_like;
-        long int n;
-        outp = apop_model_copy(prior);
-        long double  mu_pri    = prior.parameters->vector->data[0];
-        long double  var_pri = gsl_pow_2(prior.parameters->vector->data[1]);
-        if (!data && likelihood.parameters){
-            mu_like  = likelihood.parameters->vector->data[0];
-            var_like = gsl_pow_2(likelihood.parameters->vector->data[1]);
-            n        = 1;
-        } else {
-            n = data->matrix->size1 * data->matrix->size2;
-            apop_matrix_mean_and_var(data->matrix, &mu_like, &var_like);
-        }
-        gsl_vector_set(outp->parameters->vector, 0, (mu_pri/var_pri + n*mu_like/var_like)/(1/var_pri + n/var_like));
-        gsl_vector_set(outp->parameters->vector, 1, pow((1/var_pri + n/var_like), -.5));
-        return outp;
+    double mu_like, var_like;
+    long int n;
+    apop_model *outp = apop_model_copy(prior);
+    long double  mu_pri    = prior.parameters->vector->data[0];
+    long double  var_pri = gsl_pow_2(prior.parameters->vector->data[1]);
+    if (!data && likelihood.parameters){
+        mu_like  = likelihood.parameters->vector->data[0];
+        var_like = gsl_pow_2(likelihood.parameters->vector->data[1]);
+        n        = 1;
+    } else {
+        n = data->matrix->size1 * data->matrix->size2;
+        apop_matrix_mean_and_var(data->matrix, &mu_like, &var_like);
     }
-    return NULL;
+    gsl_vector_set(outp->parameters->vector, 0, (mu_pri/var_pri + n*mu_like/var_like)/(1/var_pri + n/var_like));
+    gsl_vector_set(outp->parameters->vector, 1, pow((1/var_pri + n/var_like), -.5));
+    return outp;
 }
 
 /** Take in a prior and likelihood distribution, and output a posterior distribution.
@@ -158,8 +154,16 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
         rng = spare_rng;
     }
 APOP_VAR_END_HEAD
-    apop_model *maybe_out = check_conjugacy(data, *prior, *likelihood);
-    if (maybe_out) return maybe_out;
+    static int setup=0; if (!(setup++)){
+        apop_update_insert(betabinom, apop_beta, apop_binomial);
+        apop_update_insert(betabernie, apop_beta, apop_bernoulli);
+        apop_update_insert(gammaexpo, apop_gamma, apop_exponential);
+        apop_update_insert(gammapoisson, apop_gamma, apop_poisson);
+        apop_update_insert(normnorm, apop_normal, apop_normal);
+    }
+    apop_update_type conj = apop_update_get(*prior, *likelihood);
+    if (conj) return conj(data, *prior, *likelihood);
+
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) s = Apop_model_add_group(prior, apop_update);
     int ll_is_a_copy=0;

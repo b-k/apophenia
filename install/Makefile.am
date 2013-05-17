@@ -9,7 +9,7 @@ libapophenia_la_SOURCES = \
 			apop_missing_data.c apop_mle.c apop_model.c   \
 			apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c          \
-            apop_stats.c apop_tests.c apop_update.c	            \
+            apop_stats.c apop_tests.c apop_update.c	 apop_vtables.c            \
 			asprintf.c 					\
 			transform/apop_dcompose.c   transform/apop_fix_params.c \
 			transform/apop_coordinate_transform.c 	\
@@ -25,7 +25,7 @@ libapophenia_la_SOURCES = \
 			model/apop_uniform.c        model/apop_waring.c         \
             model/apop_yule.c 	 		model/apop_zipf.c 
 
-pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h 
+pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h vtables.h
 include_HEADERS = apop.h
 
 pkgconfig_DATA= apophenia.pc
@@ -77,6 +77,9 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		apop_internal.h internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
+
+vtables.h:
+	m4 -P < vtables.m4.h > vtables.h
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
