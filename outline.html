@@ -983,7 +983,6 @@ end
 </pre></div><p>With those three macros in place, Apophenia will treat your settings group like any other.</p>
 <p></div>
 <p></div>
-<p></div>
 <p><h2><a class="anchor" name="write_likelihoods"><div class="trigger" onClick="showBranch('write_likelihoodsd');swapFolder('write_likelihoodsf')"><img src="right.png" border="0" id="write_likelihoodsf" alt="pip"> Writing your own</div></a></h2><div class="branch" id="write_likelihoodsd">
 <p>As above, users are encouraged to always use models via the helper functions, like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>. The helper functions do some boilerplate error checking, and are where the defaults are called: if your model has a <code>log_likelihood</code> method but no <code>p</code> method, then <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> will use exp(<code>log_likelihood</code>). If you don't give an <code>estimate</code> method, then <code>apop_estimate</code> will call <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>.</p>
 <p>So the game in writing a new model is to write just enough internal methods to give the helper functions what they need. In the not-uncommon best case, all you need to do is write a log likelihood function, and the model framework described to this point gets filled in via defaults.</p>
@@ -1023,6 +1022,7 @@ end
 </pre></div><p>Because this is just for max. likelihood, it is clearly optional.</p>
 <p>In fact, everything is optional. The random number generator for a unidimensional case is filled in via adaptive-rejection sampling, there is a default print and prep, et cetera. You can improve upon the defaults as your time allows.</p>
 <p>The <a class="el" href="structapop__model.html">apop_model</a> is mostly functions, with few standard-across-models data elements. If your functions carry around specific data or settings, then you will have to read how to initialize/copy/free settings groups below.</p>
+<p></div>
 <p></div>
 <p></div>
 <p><h2><a class="anchor" name="Test"><div class="trigger" onClick="showBranch('Testd');swapFolder('Testf')"><img src="right.png" border="0" id="Testf" alt="pip"> Tests &amp; diagnostics</div></a></h2><div class="branch" id="Testd">
