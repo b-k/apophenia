@@ -1,12 +1,12 @@
 /* The Zipf distribution.
 
- Copyright (c) 2005--2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+Copyright (c) 2005--2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
 
 \amodel apop_zipf
 Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
-\f$Z(a)        = {1\over \zeta(a) * i^a}        \f$
+\f$Z(a)   = {1\over \zeta(a) * i^a}        \f$
 
-\f$lnZ(a)    = -(\log(\zeta(a)) + a \log(i))    \f$
+\f$lnZ(a) = -(\log(\zeta(a)) + a \log(i))    \f$
 
 apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
 
@@ -31,10 +31,11 @@ static double zipf_constraint(apop_data *returned_beta, apop_model *m){
 static double zipf_log_likelihood(apop_data *d, apop_model *m){
     Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
-    long double   bb      = gsl_vector_get(m->parameters->vector, 0);
-    double like = -apop_map_sum(d, log);
-    like    *= bb;
-    like    -= log(gsl_sf_zeta(bb)) * tsize;
+    long double bb = apop_data_get(m->parameters, 0, -1);
+    Apop_stopif(isnan(bb) || bb < 1, return GSL_NAN, 0, "Zipf needs a parameter >=1; "
+                                              "got %Lg. Returning NaN.", bb); 
+    double like = -apop_map_sum(d, log) * bb;
+    like -= log(gsl_sf_zeta(bb)) * tsize;
     return like;
 }    
 
@@ -42,22 +43,21 @@ static double zipf_log_likelihood(apop_data *d, apop_model *m){
 likely to get the 1st most common item, so this produces a lot of ones,
 a great deal of twos, and so on.
 
-\li In the interest of avoiding overflows, the RNG is capped at 1e8.
-
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
 static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
     Nullcheck_mp(param, );
-    double a  = gsl_vector_get(param->parameters->vector, 0);
-    Apop_assert_n(a >= 1, "Zipf needs a parameter >=1. Stopping."); 
-    int     x;
-    double  u, v, t, 
-            b       = pow(2, a-1), 
-            ainv    = -(1.0/(a-1));
+    double a = apop_data_get(param->parameters, 0, -1);
+    Apop_stopif(isnan(a) || a < 1, return, 0, "Zipf needs a parameter >=1; "
+                                              "got %g. Stopping.", a); 
+    int x;
+    long double u, v, t, 
+            b    = powl(2, a-1), 
+            ainv = -(1.0/(a-1));
     do {
-        u    = gsl_rng_uniform(r);
-        v    = gsl_rng_uniform(r);
-        x    = pow(u,ainv);
-        t    = pow((1.0 + 1.0/x), (a-1));
+        u = gsl_rng_uniform(r);
+        v = gsl_rng_uniform(r);
+        x = powl(u, ainv);
+        t = powl((1.0 + 1.0/x), (a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
     *out = x;
 }
