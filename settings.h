@@ -16,6 +16,7 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail);
 void apop_settings_remove_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
+apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 
 /** Retrieves a settings group from a model.  See \ref Apop_settings_get
  to just pull a single item from within the settings group.
@@ -38,11 +39,19 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 /** Add a settings group. The first two arguments (the model you are
  attaching to and the settings group name) are mandatory, and then you
  can use the \ref designated syntax to specify default values (if any).
- Returns a pointer to the newly-prepped group.
+ \return A pointer to the newly-prepped group.
 \hideinitializer \ingroup settings
  */
 #define Apop_model_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
+
+/** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_model_add_group.
+
+ \return A pointer to the newly-prepped model.
+\hideinitializer \ingroup settings
+ */
+#define apop_model_copy_set(model, type, ...)  \
+    apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
 \hideinitializer \ingroup settings
@@ -72,6 +81,8 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 #define apop_settings_get_group Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
 #define apop_settings_rm_group Apop_settings_rm_group
+#define Apop_model_copy_set apop_model_copy_set
+
 /** \endcond */ //End of Doxygen ignore.
 
 #define Apop_settings_declarations(ysg) \
@@ -498,10 +509,18 @@ typedef struct {
     apop_model *model2; /**< The second model.*/
 } apop_stack_settings;
 
+typedef struct {
+    apop_data *(*base_to_transformed)(apop_data*);
+    apop_data *(*transformed_to_base)(apop_data*);
+    double (*jacobian_to_base)(apop_data*);
+    apop_model *base_model;
+} apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
+
 
 /** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
+Apop_settings_declarations(apop_ct)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_pmf)

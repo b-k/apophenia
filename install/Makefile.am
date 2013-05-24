@@ -13,11 +13,11 @@ libapophenia_la_SOURCES = \
 			asprintf.c 					\
 			transform/apop_dcompose.c   transform/apop_fix_params.c \
 			transform/apop_coordinate_transform.c 	\
+			transform/apop_mixture.c 	transform/apop_stack.c    \
 			model/apop_bernoulli.c      model/apop_beta.c			\
 			model/apop_dirichlet.c      \
 			model/apop_exponential.c    model/apop_gamma.c          \
             model/apop_histogram.c      model/apop_loess.c          \
-			model/apop_mixture.c 	    model/apop_model_stack.c    \
 			model/apop_multinomial.c    model/apop_multivariate_normal.c  \
 			model/apop_normal.c         model/apop_ols.c 		 	\
             model/apop_pmf.c            model/apop_poisson.c        \

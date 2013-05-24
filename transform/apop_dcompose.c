@@ -117,21 +117,13 @@ static double composed_constraint(apop_data *data, apop_model *m){
 apop_model apop_composition = {"Data-composed model", .prep=compose_prep, .log_likelihood=compose_ll, .constraint=composed_constraint};
 
 
-/** <em>Data composition</em> is using either random draws or parameter estimates from
+/** \def apop_model_dcompose
+<em>Data composition</em> is using either random draws or parameter estimates from
 the output of one model as the input data for another model. 
 
-\li The \ref apop_dcomposition model relies on the \ref apop_composition_settings struct, qv.
+\li The \ref apop_dcomposition model relies on the \ref apop_composition_settings struct, qv. This macro takes the elements of that struct as input. You can use the designated initializer syntax to specify them.
 
 \return An \ref apop_model that is a copy of \ref apop_composition.
 
 \ingroup model_transformations
 */
-apop_model *apop_model_dcompose(apop_model *datamodel, apop_model *post, int draw_ct, gsl_rng *rng){
-    apop_model *out = apop_model_copy(apop_composition);
-    Apop_model_add_group(out, apop_composition, 
-                .generator_m = datamodel,
-                .ll_m = post,
-                .draw_ct = draw_ct,
-                .rng = rng);
-    return out;
-}

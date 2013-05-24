@@ -211,8 +211,8 @@ and then tries to recover the means given a var/covar matrix fixed at the correc
 */
 apop_model * apop_model_fix_params(apop_model *model_in){
     Nullcheck_mp(model_in, NULL)
-    apop_model *model_out  = apop_model_copy(fixed_param_model);
-    Apop_model_add_group(model_out, apop_fix_params, .base_model = model_in);
+    apop_model *model_out  = Apop_model_copy_set(fixed_param_model,
+                                apop_fix_params, .base_model = model_in);
 
     apop_data *predict_tab; //Keep the predict tab on the data set and in the settings struct
     predict_tab = apop_predict_table_prep(model_in->parameters, 'y');

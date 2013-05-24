@@ -11,7 +11,6 @@ Append the second data set as an additional page to the first data set, and name
 
 If \c splitpage is \c NULL, then I will send the same data set to both models.
 
-
 \adoc    Settings   \ref apop_stack_settings
 
 \adoc    Parameter_format  
@@ -109,11 +108,23 @@ apop_model apop_stack = {"Stack of models", .p=stack_p, .log_likelihood=stack_ll
 };
 
 
-/** Generate a model consisting of two models bound together. The output \ref apop_model
+/** \def apop_model_stack
+Generate a model consisting of two models bound together. The output \ref apop_model
  is a copy of \ref apop_stack; see that model's documentation for details.
 
- Do I even need this function?
+sample use:
 
+\code 
+    apop_model *m1 = apop_model_set_parameters(apop_normal, 0, 1);
+    apop_model *m2 = apop_model_set_parameters(apop_normal, 0, 1);
+    apop_model *two_independent_normals = apop_model_stack(.model1=n1, .model2=n2);    
+    //But you don't have to parameterize ahead of time. E.g.
+    apop_model *two_n = apop_model_stack(
+                    .model1=apop_model_copy(apop_normal),
+                    .model2=apop_model_copy(apop_normal)
+                    );
+    apop_model *estimated_norms = apop_estimate(indata, two_n);
+/endcode
 */
 apop_model *apop_model_stack(apop_model *m1, apop_model *m2){
     apop_model *out = apop_model_copy(apop_stack);

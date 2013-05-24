@@ -56,6 +56,12 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
     return model->settings[ct].setting_group;
 }
 
+//need this for the apop_settings_model_group_alloc macro.
+apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group){
+    apop_settings_group_alloc(model, type, free_fn, copy_fn, the_group);
+    return model;
+}
+
 /* This function is used internally by the macro \ref Apop_settings_get_group. Use that.  */
 void * apop_settings_get_grp(apop_model *m, char *type, char fail){
     //Used only for finding the non-blank groups.

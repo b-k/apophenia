@@ -1414,6 +1414,12 @@ Notice that we don't need the \c _settings ending to the settings group's name--
 make it happen.  The remaining arguments to \c Apop_model_add_group (if any) follow
 the \ref designated syntax of the form <tt>.setting=value</tt>.
 
+There is an \ref apop_model_copy_set macro that adds a settings group when it is first copied, joining up lines one and two above:
+
+\code
+apop_model *m = apop_model_copy_set(apop_ols, apop_parts_wanted, .covariance='y');
+\endcode
+
 Settings groups are copied with the model, which facilitates chaining
 estimations. Continuing the above example, you could re-estimate to get the predicted
 values and covariance via:
