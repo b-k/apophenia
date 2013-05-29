@@ -389,7 +389,8 @@ be univariate, and your likelihood function must be nonnegative and sum
 to one. If those aren't appropriate, then don't use this default. [A
 more forgiving default is on the to-do list.]
 
- \ingroup models
+\li See also \ref apop_model_draws to fill a matrix with draws.
+\ingroup models
 */
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
     if (m->draw)

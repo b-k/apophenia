@@ -9,6 +9,7 @@
 --Apop_model_copy_set to copy a model and add a settings group at once
 --mixture models
 --data-data composition
+--added apop_model_draws
 
 	April 2013
 --plugged some memory leaks

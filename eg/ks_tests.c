@@ -2,17 +2,6 @@
 //This program finds the p-value of a K-S test between
 //500 draws from a N(0, 1) and a N(x, 1), where x grows from 0 to 1.
 
-//Fill a data set with draws from a model.
-//This will be added to Apophenia soon.
-apop_data *apop_model_draws(apop_model *m, int size, gsl_rng *r){
-    apop_data *out = apop_data_alloc(size, m->dsize);
-    for (int i=0; i< size; i++){
-        Apop_data_row(out, i, onerow);
-        apop_draw(onerow->matrix->data, r, m);
-    }
-    return out;
-}
-
 //Produce two models with synced PMFs.
 //To do: rewrite the K-S test so that this is unnecessary
 void models_to_pmfs(apop_model *m1, apop_model *m2, int size, gsl_rng *r,

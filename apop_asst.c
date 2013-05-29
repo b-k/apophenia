@@ -421,9 +421,7 @@ is in [0,1].
 \param v
 The variance which the Beta distribution should have. It is in (0, 1/12), where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near 1/12 and mean far from 1/2.
 
-\return
-Returns an \c apop_beta model with its parameters appropriately set.
-
+\return Returns an \c apop_beta model with its parameters appropriately set.
 */
 apop_model *apop_beta_from_mean_var(double m, double v){
     Apop_assert(m<1&&m > 0, "You asked for a beta distribution "
@@ -433,4 +431,52 @@ apop_model *apop_beta_from_mean_var(double m, double v){
     double alpha = m*k;
     double beta  = k * (1-m);
     return apop_model_set_parameters(apop_beta, alpha, beta);
+}
+
+/** Make a set of random draws from a model and write them to an \ref apop_data set.
+
+\param model The model from which draws will be made. Must already be prepared and/or estimated.
+
+\param count The number of draws to make. If \c draw_matrix is not \c NULL, then this is ignored and <tt>count=draw_matrix->matrix->size1. default=1000.
+
+\param rng a \c gsl_rng, already allocated. default: see \ref autorng.
+
+\param draws If not \c NULL, a pre-allocated data set whose \c matrix element will be filled with draws. 
+
+\return An \ref apop_data set with the matrix filled with \c size draws. If <tt>draw_matrix!=NULL</tt>, then return a pointer to it.
+
+\exception out->error=='m' Input model isn't good for making draws: it is \c NULL, or <tt>m->dsize=0</tt>.
+
+\exception out->error=='s' You gave me a \c draws matrix, but its size is less than the size of a single draw from the data, <tt>model->dsize</tt>.
+
+\li Prints a warning if you send in a non-<tt>NULL apop_data</tt> set, but its \c matrix element is \c NULL, when <tt>apop_opts.verbose>=1</tt>.
+
+\li See also \ref apop_draw, which makes a single draw.
+ */
+
+APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws){
+    apop_model * apop_varad_var(model, NULL);
+    Apop_stopif(!model, apop_return_data_error(n), 0, "Input model is NULL.");
+    Apop_stopif(!model->dsize, apop_return_data_error(n), 0, "Input model has dsize==0.");
+    apop_data * apop_varad_var(draws, NULL);
+    int apop_varad_var(count, 1000);
+    if (draws) {
+        Apop_stopif(!draws->matrix, return draws, 1, "Input data set's matrix is NULL.");
+        Apop_stopif((int)draws->matrix->size2 < model->dsize, draws->error='s'; return draws,
+                1, "Input data set's matrix column count is less than model->dsize.");
+        count = draws->matrix->size1;
+    } else
+        Apop_stopif(model->dsize<=0, apop_return_data_error(n), 0, "model->dsize<=0, so I don't know the size of matrix to allocate.");
+    static gsl_rng *spare_rng;
+    gsl_rng * apop_varad_var(rng, NULL);
+    if (!rng && !spare_rng)
+        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
+    if (!rng)  rng = spare_rng;
+APOP_VAR_ENDHEAD
+    apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
+    for (int i=0; i< count; i++){
+        Apop_data_row(out, i, onerow);
+        apop_draw(onerow->matrix->data, rng, model);
+    }
+    return out;
 }

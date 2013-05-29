@@ -170,10 +170,7 @@ void test_ml_imputation(gsl_rng *r){
         for(j=i+1; j < 3; j ++)
             apop_data_set(mvn->parameters, j, i, apop_data_get(mvn->parameters, i, j));
     apop_matrix_to_positive_semidefinite(mvn->parameters->matrix);
-    for(i=0; i < len; i ++){
-        Apop_row(fillme, i, row);  //relying on the rows having stride=1.
-        apop_draw(row->data, r, mvn);
-    }
+    apop_model_draws(mvn, .draws=fillme, .rng=r);
     //apop_data_show(mvn->parameters);
     apop_model *est = apop_estimate(fillme, apop_multivariate_normal);
     //apop_data_show(est->parameters);
@@ -913,16 +910,13 @@ void test_lognormal(gsl_rng *r){
 void test_multivariate_normal(gsl_rng *r){
   int       len = 4e5;
   size_t    i;
-  apop_data *rdraws = apop_data_alloc(0, len, 2);
   double params[] = {1, 3, 0,
                     2, 0, 1};
     apop_data *p = apop_line_to_data(params, 2,2,2);
     apop_model *mv = apop_model_copy(apop_multivariate_normal);
     mv->parameters=p;
-    for(i=0; i < len; i ++){
-        APOP_ROW(rdraws, i, ping);
-        apop_draw(ping->data, r, mv);
-    }
+    mv->dsize=2;
+    apop_data *rdraws = apop_model_draws(mv, .count=len, .rng=r);
     mv->parameters=NULL;
     apop_model_free(mv);
     apop_model *est =apop_estimate(rdraws, apop_multivariate_normal);

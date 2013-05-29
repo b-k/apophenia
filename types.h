@@ -207,6 +207,9 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const cha
 APOP_VAR_DECLARE apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p);
 APOP_VAR_DECLARE void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter);
 
+//in apop_asst.c:
+APOP_VAR_DECLARE apop_data * apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws);
+
 
 /* Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
   arrays (double **), and database tables */

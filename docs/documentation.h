@@ -1260,11 +1260,7 @@ apop_data *expected_value = apop_predict(NULL, the_estimate);
 double density_under =  apop_cdf(expected_value, the_estimate);
 
 gsl_rng *rng = apop_rng_alloc(234211);
-apop_data *draws = apop_data_alloc(100, the_estimate->data->matrix->size1);
-for(int i=0; i< 100; i++){
-    Apop_row(draws, i, onerow);
-    apop_draw(&onerow->data, rng, the_estimate);    
-}
+apop_data *draws = apop_model_draws(the_estimate, .count=1000, .rng=rng);
 \endcode
 
 Apophenia ships with many well-known models for your immediate use, including
@@ -1361,6 +1357,7 @@ Outlineheader mathmethods Model methods
 \li\ref apop_model_set_parameters() : Models ship with no parameters set. Use this to convert a Normal(μ, σ) with unknown μ and σ into a Normal(0, 1), for example.
 \li\ref apop_model_free()
 \li\ref apop_model_clear(), apop_prep() : remove the parameters from a parameterized model. Used infrequently.
+\li\ref apop_model_draws() : many random draws from an estimated model.
 
 endofdiv
 
@@ -2664,10 +2661,7 @@ apop_data_show(new_data_set)
  //Fill a matrix with random draws. The draw function needs an RNG from
  //the GNU Scientific Library, and a pointer-to-double.
 gsl_rng *r = apop_rng_alloc(218);
-for (int i=0; i< matrix->size1; i++){
-    Apop_matrix_col(matrix, i, one_col);
-    apop_draw(one_col->data, r, est);
-}
+apop_data *d = apop_model_draws(est, .count=1000, .rng=r);
 \endcode
 
 \par Testing
