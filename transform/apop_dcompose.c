@@ -1,4 +1,4 @@
-#include <apop.h>
+#include "apop_internal.h"
 
 /* \amodel apop_dcomposition Use random draws or parameter estimates output from a first model as input data for a second model.
 

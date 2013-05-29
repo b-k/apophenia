@@ -100,59 +100,44 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
 
 /*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
 static double psmirnov2x(double x, int m, int n) {
-    double md, nd, q, *u, w, out;
-    int tmp, j;
-
     if(m > n) {
-        tmp = n; n = m; m = tmp;
+        int tmp = n; n = m; m = tmp;
     }
-    md = (double) (m);
-    nd = (double) (n);
-    q = floor(x * md * nd - 1e-7) / (md * nd);
-    u = (double *) malloc((n + 1)* sizeof(double));
+    double md = m;
+    double nd = n;
+        // q has 0.5/mn added to ensure that rounding error doesn't
+        // turn an equality into an inequality, eg abs(1/2-4/5)>3/10
+    double q = (.5+floor(x * md * nd - 1e-7)) / (md * nd);
+    double u[n+1];
 
-    for(j = 0; j <= n; j++) 
+    for(int j = 0; j <= n; j++) 
         u[j] = ((j / nd) > q) ? 0 : 1;
     for(int i = 1; i <= m; i++) {
-        w = (double)(i) / (i + nd);
-        if((i / md) > q)
-            u[0] = 0;
-        else
-            u[0] = w * u[0];
-        for(j = 1; j <= n; j++) {
-            if(fabs(i / md - j / nd) > q)
-                u[j] = 0;
-            else
-                u[j] = w * u[j] + u[j - 1];
+        double w = i/(i + nd);
+        u[0] = (i / md) > q 
+                ? 0
+                : w * u[0];
+        for(int j = 1; j <= n; j++) {
+            u[j] = fabs(i / md - j / nd) > q
+                    ? 0
+                    : w * u[j] + u[j - 1];
         }
     }
-    out = u[n];
-    free(u);
-    return out;
+    return u[n];
 }
 
 /** Run the Kolmogorov-Smirnov test to determine whether two distributions are identical.
 
- \param m1, m2  Two models, most likely of \ref apop_pmf type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default. I run it for each row of each data set, so if your model has a \c NULL at the data, I won't know what to do. 
+\param m1, m2  Two models, most likely of \ref apop_pmf type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default. I run it for each row of each data set, so if your model has a \c NULL at the data, I won't know what to do. 
  
- \return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
+\return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
- \code
- apop_data_sort(data1);
- apop_data_sort(data2);
- apop_model *m1 = apop_estimate(data1, apop_pmf);
- apop_model *m2 = apop_estimate(data2, apop_pmf);
- apop_data *ktest = apop_test_kolmogorov(m1, m2);
- //The sort of output you could pull out:
- double k_statistic = apop_data_get(ktest, .rowname="max distance");
- double pval = apop_data_get(ktest, .rowname="p value, 2 tail");
- double confidence_of_inequality = apop_data_get(ktest, .rowname="confidence, 2 tail");
- \endcode
+\li I assume that the data sets are sorted.
 
-  \li I assume that the data sets are sorted.
+\include ks_tests.c
 
- \ingroup histograms
- */
+\ingroup histograms
+*/
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     //version for not a pair of histograms
     Apop_assert(m1->data, "I will test the CDF at each point in the data set, but the first model has a NULL data set. "
@@ -165,17 +150,18 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     double largest_diff=GSL_NEGINF;
     for (size_t i=0; i< maxsize1; i++){
         Apop_data_row(m1->data, i, arow);
-        largest_diff     = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
+        largest_diff = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
     }
     for (size_t i=0; i< maxsize2; i++){     //There should be matched data rows, so there is redundancy.
         Apop_data_row(m2->data, i, arow); // Feel free to submit a smarter version.
-        largest_diff     = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
+        largest_diff = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
     }
-    apop_data   *out    = apop_data_alloc();
+    apop_data *out = apop_data_alloc();
     sprintf(out->names->title, "Kolmogorov-Smirnov test");
     apop_data_add_named_elmt(out, "max distance", largest_diff);
-    apop_data_add_named_elmt(out, "p value, 2 tail", 1-psmirnov2x(largest_diff, maxsize1, maxsize2));
-    apop_data_add_named_elmt(out, "confidence, 2 tail", psmirnov2x(largest_diff, maxsize1, maxsize2));
+    double ps = psmirnov2x(largest_diff, maxsize1, maxsize2);
+    apop_data_add_named_elmt(out, "p value, 2 tail", 1-ps);
+    apop_data_add_named_elmt(out, "confidence, 2 tail", ps);
     return out;
 }
 

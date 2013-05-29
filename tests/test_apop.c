@@ -797,22 +797,6 @@ void test_linear_constraint(){
     assert(gsl_vector_get(beta2,2)==0);
 }
 
-void test_data_sort(){
-  int       i;
-  apop_data *d = apop_text_to_data("test_data2", 0 ,1);
-    apop_data_sort(d, 0, 'a');
-    for (i=1; i< d->matrix->size2; i++){
-        assert(apop_data_get(d, i,0) >= apop_data_get(d, i-1,0));
-    }
-    assert(apop_data_get(d, 0,1)== 32 || apop_data_get(d, 0,1)== 9);
-
-    apop_data_sort(d, 0, 'd');
-    for (i=1; i< d->matrix->size2; i++){
-        assert(apop_data_get(d, i,0) <= apop_data_get(d, i-1,0));
-    }
-    assert(apop_data_get(d, 0,1)== 55);
-}
-
 static apop_model * broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 1./100.) {
@@ -1566,7 +1550,6 @@ int main(int argc, char **argv){
     do_test("test lognormal estimations", test_lognormal(r));
     do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
-    do_test("test apop_data sort", test_data_sort());
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());

@@ -25,17 +25,18 @@ element of the model's parameter vector to the input number; this is appropriate
 Normal distribution, where we want to center the distribution on each data point in turn.
 
 \code
-void apop_set_first_param(double in, apop_model *m){
-    m->parameters->vector->data[0] = in;
+static void apop_set_first_param(apop_data *in, apop_model *m){
+    m->parameters->vector->data[0]  = in->vector ? in->vector->data[0] 
+                                                 : gsl_matrix_get(in->matrix, 0, 0);
 }
 \endcode
 
-For a Uniform[0,1] recentered around each point, you'd want to put this function in your code:
+For a Uniform[0,1] recentered around the first element of the PMF matrix, you could put this function in your code:
 
 \code
-void set_midpoint(double in, apop_model *m){
-    m->parameters->vector->data[0] = in-0.5;
-    m->parameters->vector->data[1] = in+0.5;
+void set_midpoint(apop_data * in, apop_model *m){
+    apop_data_set(m->parameters, 0, -1, apop_data_get(in)+0.5);
+    apop_data_set(m->parameters, 1, -1, apop_data_get(in)-0.5);
 }
 \endcode
 

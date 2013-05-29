@@ -20,7 +20,7 @@ int *break_down(char *in){
 
 int main(int argc, char **argv){
     char c, msg[1000];
-    int colnames = 1,
+    int colnames = 'y',
         rownames = 0,
         tab_exists_check = 0;
 
@@ -52,7 +52,7 @@ int main(int argc, char **argv){
 		switch (c){
 		  case 'n':
               if (optarg[0]=='c')
-			    colnames    --;
+			    colnames='n';
               else
                 strcpy(apop_opts.db_nan, optarg);
 			break;
