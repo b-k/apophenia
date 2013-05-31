@@ -43,7 +43,7 @@ APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
     Apop_assert_c(in, NULL, 1, "You sent me NULL data; returning NULL.");
     int apop_varad_var(size, sizeof(in)/sizeof(in[0]));
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
     gsl_vector *out = gsl_vector_alloc(size);
     gsl_vector_view	v = gsl_vector_view_array((double*)in, size);
 	gsl_vector_memcpy(out,&(v.vector));
@@ -637,7 +637,7 @@ APOP_VAR_HEAD apop_data * apop_text_to_data(char const*text_file, int has_row_na
     if (has_col_names==1||has_col_names=='Y') has_col_names ='y';
     int const * apop_varad_var(field_ends, NULL);
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
     apop_data *set = NULL;
     FILE *infile = NULL;
     char *str;
@@ -1148,7 +1148,7 @@ APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_
     apop_data * apop_varad_var(field_params, NULL)
     char * apop_varad_var(table_params, NULL)
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
     int  batch_size  = 10000, not_ok=0,
       	 col_ct, ct = 0, rows = 1;
     FILE *infile;

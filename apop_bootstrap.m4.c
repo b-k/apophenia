@@ -127,7 +127,7 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model,
     if (!rng)  rng = spare;
     char apop_varad_var(keep_boots, 'n');
     char apop_varad_var(ignore_nans, 'n');
-APOP_VAR_END_HEAD
+APOP_VAR_ENDHEAD
     Get_vmsizes(data); //vsize, msize1, msize2
     apop_model *e       = apop_model_copy(model);
     apop_data  *subset  = apop_data_copy(data);

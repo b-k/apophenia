@@ -11,10 +11,10 @@
 extern "C" {
 #endif
 
-APOP_VAR_DECLARE int apop_table_exists(char const *name, char remove);
+Apop_var_declare( int apop_table_exists(char const *name, char remove) )
 
 int apop_db_open(char const *filename);
-APOP_VAR_DECLARE int apop_db_close(char vacuum);
+Apop_var_declare( int apop_db_close(char vacuum) )
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...) __attribute__ ((format (printf,1,2)));

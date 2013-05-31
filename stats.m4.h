@@ -24,16 +24,16 @@ extern "C" {
     //First, some linear algebra utilities
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
-APOP_VAR_DECLARE apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2);
-APOP_VAR_DECLARE int         apop_vector_bounded(const gsl_vector *in, long double max);
-APOP_VAR_DECLARE void apop_vector_increment(gsl_vector * v, int i, double amt);
-APOP_VAR_DECLARE void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt);
+Apop_var_declare( apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2) )
+Apop_var_declare( int         apop_vector_bounded(const gsl_vector *in, long double max) )
+Apop_var_declare( void apop_vector_increment(gsl_vector * v, int i, double amt) )
+Apop_var_declare( void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt) )
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
-APOP_VAR_DECLARE apop_data *  apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want);
-APOP_VAR_DECLARE gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace);
-APOP_VAR_DECLARE gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace);
+Apop_var_declare( apop_data *  apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) )
+Apop_var_declare( gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace) )
+Apop_var_declare( gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace) )
 gsl_matrix * apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 
 void apop_vector_log(gsl_vector *v);
@@ -132,9 +132,9 @@ double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w);
 
 #define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)->data,(in)->stride, (in)->size))
 
-APOP_VAR_DECLARE double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm);
+Apop_var_declare( double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm) )
 
-APOP_VAR_DECLARE void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type);
+Apop_var_declare( void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type) )
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 apop_data * apop_data_covariance(const apop_data *in);
@@ -147,7 +147,7 @@ apop_data * apop_data_summarize(apop_data *data);
 apop_data *apop_test_fisher_exact(apop_data *intab); //in apop_fisher.c
 
 //from apop_t_f_chi.c:
-APOP_VAR_DECLARE int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi);
+Apop_var_declare( int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi) )
 double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
 double apop_multivariate_gamma(double a, double p);
 double apop_multivariate_lngamma(double a, double p);
@@ -155,9 +155,9 @@ double apop_multivariate_lngamma(double a, double p);
 //apop_tests.c
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);
 apop_data *	apop_paired_t_test(gsl_vector *a, gsl_vector *b);
-APOP_VAR_DECLARE apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2);
+Apop_var_declare( apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2) )
 #define apop_ANOVA apop_anova
-APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
+Apop_var_declare( apop_data * apop_f_test (apop_model *est, apop_data *contrast) )
 #define apop_F_test apop_f_test
 
 //from the regression code:
@@ -165,12 +165,12 @@ APOP_VAR_DECLARE apop_data * apop_f_test (apop_model *est, apop_data *contrast);
 
 apop_data * apop_text_unique_elements(const apop_data *d, size_t col);
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
-APOP_VAR_DECLARE apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol);
-APOP_VAR_DECLARE apop_data * apop_data_get_factor_names(apop_data *data, int col, char type);
+Apop_var_declare( apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol) )
+Apop_var_declare( apop_data * apop_data_get_factor_names(apop_data *data, int col, char type) )
 
-APOP_VAR_DECLARE apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove);
+Apop_var_declare( apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove) )
 
-APOP_VAR_DECLARE double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom);
+Apop_var_declare( double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom) )
 
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
 void apop_estimate_parameter_tests (apop_model *est);
@@ -178,7 +178,7 @@ void apop_estimate_parameter_tests (apop_model *est);
 
 //Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
-APOP_VAR_DECLARE apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans);
+Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) )
 gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
@@ -188,16 +188,16 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
 
     // maximum likelihod estimation related functions
 
-APOP_VAR_DECLARE gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model, double delta);
-APOP_VAR_DECLARE apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta);
-APOP_VAR_DECLARE apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta);
+Apop_var_declare( gsl_vector * apop_numerical_gradient(apop_data * data, apop_model* model, double delta) )
+Apop_var_declare( apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta) )
+Apop_var_declare( apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta) )
 
 apop_model * apop_maximum_likelihood(apop_data * data, apop_model *dist);
 
-APOP_VAR_DECLARE apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary);
+Apop_var_declare( apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary) )
 
 //in apop_linear_constraint.c
-APOP_VAR_DECLARE double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin);
+Apop_var_declare( double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin) )
 
 //in apop_model_fix_params.c
 apop_model * apop_model_fix_params(apop_model *model_in);

@@ -78,12 +78,15 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
 
-vtables.h:
-	m4 -P < vtables.m4.h > vtables.h
+%.c: %.m4.c
+	m4 -P prep_variadics.m4 $< > $@
+
+%.h: %.m4.h
+	m4 -P prep_variadics.m4 $< > $@
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
-doc: 
+doc:
 	-rm tests/apophenia/*h
 	cat model/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
 	doxygen docs/doxyconfig

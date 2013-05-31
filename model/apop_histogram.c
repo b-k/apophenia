@@ -40,14 +40,14 @@ void set_midpoint(apop_data * in, apop_model *m){
 }
 \endcode
 
-\adoc    Input_format  I'll estimate a \ref apop_pmf internally, so I
-                      follow that format, which is one observation (of any format) per line.        
-\adoc    Parameter_format  None    
-\adoc    Estimated_parameters None
-\adoc    Estimated_settings  The estimate method basically just runs
-                             <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>    
-\adoc    settings  \ref apop_kernel_density_settings.    
-\adoc    Examples
+\adoc Input_format  I'll estimate a \ref apop_pmf internally, so I
+                   follow that format, which is one observation (of any format) per line.
+\adoc Parameter_format  None
+\adoc Estimated_parameters None
+\adoc Estimated_settings  The estimate method basically just runs
+                          <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>
+\adoc settings  \ref apop_kernel_density_settings.
+\adoc Examples
 This example sets up and uses KDEs based on a Normal and a Uniform distribution.
 
 \include kernel.c
@@ -65,7 +65,7 @@ Apop_settings_init(apop_kernel_density,
     Apop_varad_set(kernel, apop_model_set_parameters(apop_normal, 0, 1));
     Apop_varad_set(set_fn, apop_set_first_param);
     out->own_pmf = !in.base_pmf;
-    out->own_kernel = 1;
+    out->own_kernel = !in.kernel;
     if (!out->kernel->parameters) apop_prep(out->base_data, out->kernel);
 )
 

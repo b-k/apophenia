@@ -4,7 +4,7 @@ AC_PREREQ(2.60)
 AC_INIT([Apophenia], [X.XX], [fluffmail@f-m.fm])
 AM_INIT_AUTOMAKE(apophenia, X.XX)
 AM_SILENT_RULES([yes])
-AC_CONFIG_SRCDIR([db.h])
+AC_CONFIG_SRCDIR([settings.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 

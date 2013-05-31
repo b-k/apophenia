@@ -288,7 +288,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
 APOP_VAR_HEAD apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2){
     char *apop_varad_var(table, NULL)
     Apop_assert(table, "I need the name of a table in the SQL database.")
-    if (!strchr(table, ')')) //if you found ()s, then it is a temp table spec.
+    if (!strchr(table, <|')'|>)) //if you found ()s, then it is a temp table spec.
         Apop_assert(apop_table_exists(table), "I couldn't find the table %s in the database.", table)
     char *apop_varad_var(data, NULL)
     Apop_assert(data, "I need the name of the column in the %s table with the count or other data.", table)

@@ -133,7 +133,7 @@ apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char const *add_me, char type);
 void  apop_name_free(apop_name * free_me);
 void  apop_name_print(apop_name * n);
-APOP_VAR_DECLARE void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd);
+Apop_var_declare( void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd) )
 apop_name * apop_name_copy(apop_name *in);
 int  apop_name_find(const apop_name *n, const char *findme, const char type);
 
@@ -181,34 +181,34 @@ freed location, and you can later safely test conditions like <tt>if (data) ...<
 char        apop_data_free_base(apop_data *freeme);
 apop_data * apop_matrix_to_data(gsl_matrix *m);
 apop_data * apop_vector_to_data(gsl_vector *v);
-APOP_VAR_DECLARE apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3);
-APOP_VAR_DECLARE apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3);
-APOP_VAR_DECLARE apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace);
+Apop_var_declare( apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3) )
+Apop_var_declare( apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3) )
+Apop_var_declare( apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace) )
 apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
-APOP_VAR_DECLARE double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page);
-APOP_VAR_DECLARE double apop_data_get(const apop_data *data, const size_t row, const int  col, const char *rowname, const char *colname, const char *page);
-APOP_VAR_DECLARE int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page);
+Apop_var_declare( double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page) )
+Apop_var_declare( double apop_data_get(const apop_data *data, const size_t row, const int  col, const char *rowname, const char *colname, const char *page) )
+Apop_var_declare( int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page) )
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
-APOP_VAR_DECLARE apop_data * apop_data_transpose(apop_data const *in, char transpose_text);
+Apop_var_declare( apop_data * apop_data_transpose(apop_data const *in, char transpose_text) )
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
 #define apop_data_prune_columns(in, ...) apop_data_prune_columns_base((in), (char *[]) {__VA_ARGS__, NULL})
 void apop_data_prune_columns_base(apop_data *d, char **colnames);
 
-APOP_VAR_DECLARE apop_data * apop_data_get_page(const apop_data * data, const char * title, const char match);
+Apop_var_declare( apop_data * apop_data_get_page(const apop_data * data, const char * title, const char match) )
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage,const char *title);
-APOP_VAR_DECLARE apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p);
-APOP_VAR_DECLARE void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter);
+Apop_var_declare( apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p) )
+Apop_var_declare( void apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter) )
 
 //in apop_asst.c:
-APOP_VAR_DECLARE apop_data * apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws);
+Apop_var_declare( apop_data * apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws) )
 
 
 /* Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
@@ -216,14 +216,14 @@ APOP_VAR_DECLARE apop_data * apop_model_draws(apop_model *model, int count, gsl_
 
 //From vector
 gsl_vector *apop_vector_copy(const gsl_vector *in);
-APOP_VAR_DECLARE gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col);
+Apop_var_declare( gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col) )
 
 //From matrix
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
 apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
 
 //From array
-APOP_VAR_DECLARE gsl_vector * apop_array_to_vector(double *in, int size);
+Apop_var_declare( gsl_vector * apop_array_to_vector(double *in, int size) )
 #define apop_line_to_vector apop_array_to_vector
 
 //From line
@@ -231,8 +231,8 @@ gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
 apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
 
 //From text
-APOP_VAR_DECLARE apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters);
-APOP_VAR_DECLARE int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters);
+Apop_var_declare( apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters) )
+Apop_var_declare( int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters) )
 
 //rank data
 apop_data *apop_data_rank_expand (apop_data *in);
@@ -243,8 +243,8 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name);
 
 //packing data into a vector
-APOP_VAR_DECLARE gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages);
-APOP_VAR_DECLARE void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages);
+Apop_var_declare( gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages) )
+Apop_var_declare( void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages) )
 
 #define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})
 #define apop_data_fill(adfin, ...) apop_data_fill_base((adfin), (double []) {__VA_ARGS__})
@@ -336,8 +336,18 @@ apop_model *apop_model_stack(apop_model *m1, apop_model *m2);
 
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
-APOP_VAR_DECLARE apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int), void *param, int inplace, char part, int all_pages);
-APOP_VAR_DECLARE double apop_map_sum(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*), double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *), double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int), double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int), double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int), void *param, char part, int all_pages);
+Apop_var_declare( apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*),
+                double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *),
+                double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int),
+                double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int),
+                double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int),
+                void *param, int inplace, char part, int all_pages) )
+Apop_var_declare( double apop_map_sum(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*),
+                double (*fn_r)(apop_data *), double (*fn_dp)(double! void *), double (*fn_vp)(gsl_vector*! void *),
+                double (*fn_rp)(apop_data *! void *), double (*fn_dpi)(double! void *! int),
+                double (*fn_vpi)(gsl_vector*! void *! int), double (*fn_rpi)(apop_data*! void *! int),
+                double (*fn_di)(double! int), double (*fn_vi)(gsl_vector*! int), double (*fn_ri)(apop_data*! int),
+                void *param, char part, int all_pages) )
 
     //the specific-to-a-type versions, quicker and easier when appropriate.
 gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*));
@@ -354,15 +364,15 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
 
         // Some output routines
 
-APOP_VAR_DECLARE void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char const * output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, char const *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE  void apop_plot_lattice(const apop_data *d, char const *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_plot_qq(gsl_vector *v, apop_model *m, char const *output_file, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r);
-APOP_VAR_DECLARE void apop_plot_triangle(apop_data *in, char const *output_file, FILE *output_pipe, char output_type, char output_append);
+Apop_var_declare( void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char const * output_file, FILE *output_pipe, char output_type, char output_append) )
+Apop_var_declare( void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
+Apop_var_declare(  void apop_plot_lattice(const apop_data *d, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
+Apop_var_declare( void apop_plot_qq(gsl_vector *v, apop_model *m, char const *output_file, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r) )
+Apop_var_declare( void apop_plot_triangle(apop_data *in, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
 
-APOP_VAR_DECLARE void apop_matrix_print(const gsl_matrix *data, char const *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_vector_print(gsl_vector *data, char const *output_file, FILE *output_pipe, char output_type, char output_append);
-APOP_VAR_DECLARE void apop_data_print(const apop_data *data, char const *output_file, FILE *output_pipe, char output_type, char output_append);
+Apop_var_declare( void apop_matrix_print(const gsl_matrix *data, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
+Apop_var_declare( void apop_vector_print(gsl_vector *data, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
+Apop_var_declare( void apop_data_print(const apop_data *data, char const *output_file, FILE *output_pipe, char output_type, char output_append) )
 
 void apop_matrix_show(const gsl_matrix *data);
 void apop_vector_show(const gsl_vector *data);
