@@ -7,6 +7,9 @@ the package, they won't compile until you send them through one of the various b
 processes. This readme lists the options you currently have. Here are some key targets
 in the makefile:
 
+In addition to standard build tools, Apophenia has the following dependencies for 
+development: graphviz, netpbm
+
 make install
     --Copy everything into a temp directory, so GNU autotools can make a mess.
     --run a few sed scripts to turn some notes in the C code into proper ISO C.
