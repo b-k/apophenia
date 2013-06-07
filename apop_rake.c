@@ -608,7 +608,7 @@ APOP_VAR_ENDHEAD
             0, "This query:\n%s\ngenerated a blank or broken table.", marginq);
     free(marginq);
 
-    if (pre_init_q) apop_query(pre_init_q);
+    if (pre_init_q) apop_query("%s", pre_init_q);
     apop_data *fit;
     if (init_table) {
         fit = (nudge) 

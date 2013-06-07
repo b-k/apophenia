@@ -654,7 +654,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
             if (set->weights)
                 qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
             qxprintf(&q,"%s);",q);
-            apop_query(q);
+            apop_query("%s", q);
             qxprintf(&q," ");
         }
     }

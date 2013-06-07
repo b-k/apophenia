@@ -4,11 +4,14 @@ utilities that make use of those functions.
 The directory you are in right now, however, is the development side---backstage,
 so to speak. Although the files here are the ones you'd modify if you wanted to hack
 the package, they won't compile until you send them through one of the various build
-processes. This readme lists the options you currently have. Here are some key targets
-in the makefile:
+processes. This readme lists the options you currently have. 
 
-In addition to standard build tools, Apophenia has the following dependencies for 
-development: graphviz, netpbm
+The Apophenia end-distribution strives to be standards-compliant, but the package-making
+is a little looser. E.g., it uses sed -i, which is common but not POSIX-standard. You
+absolutely need GNU autotools (automake, autoconf, libtool), and if you want to make
+an RPM then you of course need rpmbuild, et cetera. For documentation, you will need graphviz, netpbm, and Doxygen 1.7.6.1.
+
+Here are some key targets in the makefile:
 
 make install
     --Copy everything into a temp directory, so GNU autotools can make a mess.
@@ -42,11 +45,6 @@ Each of these procedures deposits a package of some sort (tgz,rpm,deb) in the di
 directory, and you've got the configured and ready-to-rebuild source in a directory there
 as well. 
 
-The Apophenia end-distribution attempts to be standards-compliant, but the package-making
-is a little looser. E.g., it uses sed -i, which is common but not POSIX-standard. You
-absolutely need GNU autotools (automake, autoconf, libtool), and if you want to make
-an RPM then you of course need rpmbuild, et cetera. Also, I keep a copy of Doxygen 1.7.6.1
-on hand.
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 

@@ -7,50 +7,32 @@ Command line utility to convert a three-column table to a crosstab.*/
 #include <unistd.h>
 
 int main(int argc, char **argv){
-char		c,  verbose=0,
-		    *delimiter,
-            *outfile    = NULL,
-		    msg[1000];
-apop_data	*m;
-
-	sprintf(msg, "%s [opts] dbname table_name rows columns data\n\n"
-            "-d\tdelimiter\t\tdefault= \"|,<space><tab>\"\n"
-            "-a\tappend\t\t\tdefault= append\n"
-            "-o\toverwrite\t\tdefault= append\n"
-            "-v\tverbose: prints status info on stderr and raises apop_opts.verbose by one for each use (so use -v -v for extra-verbose)\n"
-            "-f\tfile to dump to\t\tdefault=STDOUT\n", argv[0]); 
+    char c, verbose=0,
+     *outfile = NULL;
+    char const *msg= "%s [opts] dbname table_name rows columns data\n\n"
+          "-d\tdelimiter\t\tdefault= \"|,<space><tab>\"\n"
+          "-a\tappend\t\t\tdefault= append\n"
+          "-o\toverwrite\t\tdefault= append\n"
+          "-v\tverbose: prints status info on stderr and raises apop_opts.verbose by one for each use (so use -v -v for extra-verbose)\n"
+           "-f\tfile to dump to\t\tdefault=STDOUT\n"; 
 
 	if(argc<5){
-		printf("%s", msg);
-		return 0;
+		printf(msg, argv[0]);
+		return 1;
 	}
-	delimiter	= malloc(5);
-	strcpy(delimiter, ",");
-	while ((c = getopt (argc, argv, "ad:f:ho")) != -1){
-		switch (c){
-		  case 'a':
-              apop_opts.output_append = 1;
-			  break;
-		  case 'd':
-			  strcpy(apop_opts.output_delimiter,optarg);
-			  break;
-		  case 'o':
-              apop_opts.output_append = 0;
-			  break;
-		  case 'f':
-              outfile   = malloc(1000);
-			  sprintf(outfile, "%s", optarg);
+	while ((c = getopt (argc, argv, "ad:f:ho")) != -1)
+		if      (c=='a') apop_opts.output_append = 1;
+        else if (c=='d') strcpy(apop_opts.output_delimiter,optarg);
+        else if (c=='o') apop_opts.output_append = 0;
+        else if (c=='h') printf(msg, argv[0]);
+        else if (c=='f') {
+              outfile = strdup(optarg);
 			  apop_opts.output_type	= 'f';
-			  break;
-		  case 'h':
-			printf("%s", msg);
-			return 0;
-		  case 'v':
+        } 
+        else if (c=='v') {
             verbose++;
             apop_opts.verbose++;
-            break;
-		}
-	}
+        }
     Apop_assert(optind+4 <= argc, "I need five arguments past the options: database, table, row col, column col, data col");
     if (verbose){
         fprintf(stderr, "database:%s\ntable: %s\nrow col: %s\ncol col:%s\ndata col:%s\n",
@@ -61,6 +43,6 @@ apop_data	*m;
         else fprintf(stderr, "overwriting output\n");
     }
 	apop_db_open(argv[optind]);
-	m	= apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
+    apop_data *m = apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
 	apop_data_print(m, outfile);
 }

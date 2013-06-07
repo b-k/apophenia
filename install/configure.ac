@@ -46,6 +46,7 @@ AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
 AC_CHECK_TYPES([ptrdiff_t])
+AX_C___ATTRIBUTE__
 
 # Checks for library functions.
 AC_FUNC_MALLOC

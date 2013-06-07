@@ -50,3 +50,8 @@ void apop_gsl_error(char const *reason, char const *file, int line, int gsl_errn
 #else
     #define threadlocal
 #endif
+
+#include "config.h"
+#ifndef HAVE___ATTRIBUTE__
+#define __attribute__(...)
+#endif

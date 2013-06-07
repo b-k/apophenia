@@ -1,7 +1,7 @@
 /** \file 
  A command line script to read a text file into a database.
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
 #include <unistd.h>
@@ -51,56 +51,30 @@ int main(int argc, char **argv){
 		printf("%s", msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vN:O")) != -1){
-		switch (c){
-		  case 'n':
+	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vN:O")) != -1)
+        if (c=='n') {
               if (optarg[0]=='c')
 			    colnames='n';
               else
                 strcpy(apop_opts.db_nan, optarg);
-			break;
-		  case 'd':
-			strcpy(apop_opts.input_delimiters, optarg);
-			break;
-		  case 'f':
-            field_list = break_down(optarg);
-            break;
-		  case 'h':
-			printf("%s", msg);
-			return 0;
-		  case 'm':
-			apop_opts.db_engine = 'm';
-            break;
-		  case 'u':
-			strcpy(apop_opts.db_user, optarg);
-			break;
-		  case 'p':
-			strcpy(apop_opts.db_pass, optarg);
-			break;
-		  case 'r':
-			rownames    ++;
-			break;
-		  case 'v':
-			apop_opts.verbose=2;
-			break;
-          case 'N':
+        }
+		else if (c=='N') {
             apop_regex(optarg, " *([^,]*[^ ]) *(,|$) *", &field_name_data);
             field_name_data_t = apop_data_transpose(field_name_data);
             field_names = field_name_data_t->text[0];
-            break;
-		  case 'O':
-            tab_exists_check    ++;
-			break;
-		}
-	}
+        }
+        else if (c=='d') strcpy(apop_opts.input_delimiters, optarg);
+		else if (c=='f') field_list = break_down(optarg);
+		else if (c=='h') printf("%s", msg);
+		else if (c=='m') apop_opts.db_engine = 'm';
+		else if (c=='u') strcpy(apop_opts.db_user, optarg);
+		else if (c=='p') strcpy(apop_opts.db_pass, optarg);
+		else if (c=='r') rownames++;
+		else if (c=='v') apop_opts.verbose=2;
+		else if (c=='O') tab_exists_check++;
 	apop_db_open(argv[optind + 2]);
     if (tab_exists_check) apop_table_exists(argv[optind+1],1);
     apop_query("begin;");
 	apop_text_to_db(argv[optind], argv[optind+1], rownames, colnames, field_names, .field_ends=field_list);
     apop_query("commit;");
-
-    if (field_names) {
-        apop_data_free(field_name_data);
-        apop_data_free(field_name_data_t);
-    }
 }
