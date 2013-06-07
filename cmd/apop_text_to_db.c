@@ -23,6 +23,8 @@ int main(int argc, char **argv){
     int colnames = 'y',
         rownames = 0,
         tab_exists_check = 0;
+    char **field_names = NULL;
+    apop_data *field_name_data, *field_name_data_t;
 
 	sprintf(msg, "%s [-d delimiters] text_file table_name dbname\n"
                 "e.g.: %s -d\",|\" infile.txt a_table info.db\n"
@@ -39,6 +41,7 @@ int main(int argc, char **argv){
 "-p\t\tmysql password\n"
 "-r\t\tData includes row names\n"
 "-v\t\tVerbose\n"
+"-N\t\tA comma-separated list of column names: -N\"apple,banana,carrot,durian\"\n"
 "-O\t\tIf table exists, erase it and write from scratch (i.e., Overwrite)\n"
 "-h\t\tPrint this help\n\n"
 , argv[0], argv[0]); 
@@ -48,7 +51,7 @@ int main(int argc, char **argv){
 		printf("%s", msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vO")) != -1){
+	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vN:O")) != -1){
 		switch (c){
 		  case 'n':
               if (optarg[0]=='c')
@@ -80,6 +83,11 @@ int main(int argc, char **argv){
 		  case 'v':
 			apop_opts.verbose=2;
 			break;
+          case 'N':
+            apop_regex(optarg, " *([^,]*[^ ]) *(,|$) *", &field_name_data);
+            field_name_data_t = apop_data_transpose(field_name_data);
+            field_names = field_name_data_t->text[0];
+            break;
 		  case 'O':
             tab_exists_check    ++;
 			break;
@@ -88,6 +96,11 @@ int main(int argc, char **argv){
 	apop_db_open(argv[optind + 2]);
     if (tab_exists_check) apop_table_exists(argv[optind+1],1);
     apop_query("begin;");
-	apop_text_to_db(argv[optind], argv[optind+1], rownames,colnames, NULL, .field_ends=field_list);
+	apop_text_to_db(argv[optind], argv[optind+1], rownames, colnames, field_names, .field_ends=field_list);
     apop_query("commit;");
+
+    if (field_names) {
+        apop_data_free(field_name_data);
+        apop_data_free(field_name_data_t);
+    }
 }
