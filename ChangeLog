@@ -10,6 +10,7 @@
 --mixture models
 --data-data composition
 --added apop_model_draws
+!!vtables, allowing for more functions with special cases for certain model(s) outside of the model object itself.
 
 	April 2013
 --plugged some memory leaks

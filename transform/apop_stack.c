@@ -5,7 +5,6 @@
 
 For the case when you need to bundle two uncorrelated models into one larger model. For example, the prior for a multivariate normal (whose parameters are a vector of means and a covariance matrix) is a Multivariate Normal-Wishart pair.
 
-
 \adoc    Input_format     There are two means of handling the input format. If the settings group attached to the data set has a non-\c NULL \c splitpage element, then 
 Append the second data set as an additional page to the first data set, and name the second set with the name you listed in \c splitpage; see the example.  
 
@@ -107,28 +106,39 @@ apop_model apop_stack = {"Stack of models", .p=stack_p, .log_likelihood=stack_ll
     .estimate=stack_est, .draw=stack_draw
 };
 
+apop_model *apop_model_stack_base(apop_model *mlist[]){
+    Apop_stopif(!mlist[0], apop_model *oute = apop_model_copy(apop_stack); oute->error='i', 
+                            0, "No inputs. Returning blank model with outmodel->error=='n'.");
+    Apop_stopif(!mlist[1], return apop_model_copy(*mlist[1]), 
+                            1, "Only one model input; returning a copy of that model.");
+    apop_model *m2 = mlist[2] ? apop_model_stack_base(mlist+1): mlist[1];
+    apop_model *out = apop_model_copy(apop_stack);
+    Apop_model_add_group(out, apop_stack, .model1=mlist[0], .model2=m2);
+    if (mlist[0]->dsize >=0 && m2->dsize >=0) out->dsize = mlist[0]->dsize + m2->dsize;
+    return out;
+}
 
 /** \def apop_model_stack
-Generate a model consisting of two models bound together. The output \ref apop_model
+Generate a model consisting of several models bound together. The output \ref apop_model
  is a copy of \ref apop_stack; see that model's documentation for details.
 
 sample use:
 
 \code 
     apop_model *m1 = apop_model_set_parameters(apop_normal, 0, 1);
-    apop_model *m2 = apop_model_set_parameters(apop_normal, 0, 1);
-    apop_model *two_independent_normals = apop_model_stack(.model1=n1, .model2=n2);    
+    apop_model *m2 = apop_model_copy(m1);
+    apop_model *m3 = apop_model_copy(m1);
+    apop_model *two_independent_normals = apop_model_stack(n1, n2);
+    apop_model *three_independent_normals = apop_model_stack(n1, n2, n3);
+
     //But you don't have to parameterize ahead of time. E.g.
     apop_model *two_n = apop_model_stack(
-                    .model1=apop_model_copy(apop_normal),
-                    .model2=apop_model_copy(apop_normal)
+                    apop_model_copy(apop_normal),
+                    apop_model_copy(apop_normal)
                     );
     apop_model *estimated_norms = apop_estimate(indata, two_n);
 /endcode
+
+\li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 1</tt>.
+\exception error=='n' First model input is \c NULL.
 */
-apop_model *apop_model_stack(apop_model *m1, apop_model *m2){
-    apop_model *out = apop_model_copy(apop_stack);
-    Apop_model_add_group(out, apop_stack, .model1=m1, .model2=m2);
-    if (m1->dsize >=0 && m2->dsize >=0) out->dsize = m1->dsize + m2->dsize;
-    return out;
-}

@@ -37,4 +37,14 @@ int main(){
     assert(fabs(apop_data_get(m1back->parameters, .col=-1) - 3) < 1e-2);
     assert(fabs(apop_data_get(m2back->parameters, .col=-1) - -5) < 1e-2);
     assert(fabs(apop_data_get(m2back->parameters, .col=-1, .row=1) - 1) < 1e-2);
+
+    //You can stack as many models as you'd like.
+    apop_model *m3 = apop_model_set_parameters(apop_poisson, 8);
+    apop_model *mmm = apop_model_stack(m1, m2, m3);
+    apop_data *sum = apop_data_summarize(apop_model_draws(mmm, 1e5));
+    assert(fabs(apop_data_get(sum, .row=0, .colname="mean") - 3) < 1e-2);
+    assert(fabs(apop_data_get(sum, .row=1, .colname="mean") - -5) < 1e-2);
+    assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 1e-2);
+    assert(apop_data_get(sum, .row=0, .colname="median") == 3);
+    assert(apop_data_get(sum, .row=2, .colname="median") == 8);
 }
