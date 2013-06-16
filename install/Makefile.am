@@ -22,7 +22,7 @@ libapophenia_la_SOURCES = \
 			model/apop_normal.c         model/apop_ols.c 		 	\
             model/apop_pmf.c            model/apop_poisson.c        \
 			model/apop_probit.c	        model/apop_t_f_chi.c		\
-			model/apop_uniform.c        model/apop_waring.c         \
+			model/apop_uniform.c        \
             model/apop_yule.c 	 		model/apop_zipf.c 
 
 pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h deprecated.h variadic.h vtables.h

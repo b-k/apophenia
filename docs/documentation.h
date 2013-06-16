@@ -1316,7 +1316,6 @@ Outlineheader Dist Distributions
 \li\ref apop_poisson
 \li\ref apop_t_distribution
 \li\ref apop_uniform
-\li\ref apop_waring
 \li\ref apop_wishart
 \li\ref apop_yule
 \li\ref apop_zipf

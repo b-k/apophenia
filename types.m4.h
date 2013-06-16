@@ -281,7 +281,6 @@ apop_model apop_poisson;
 apop_model apop_probit;
 apop_model apop_t_distribution;
 apop_model apop_uniform;
-apop_model apop_waring;
 apop_model apop_wishart;
 apop_model apop_wls;
 apop_model apop_yule;

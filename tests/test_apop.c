@@ -908,10 +908,9 @@ void test_lognormal(gsl_rng *r){
 }
 
 void test_multivariate_normal(gsl_rng *r){
-  int       len = 4e5;
-  size_t    i;
-  double params[] = {1, 3, 0,
-                    2, 0, 1};
+    int len = 4e5;
+    double params[] = {1, 3, 0,
+                       2, 0, 1};
     apop_data *p = apop_line_to_data(params, 2,2,2);
     apop_model *mv = apop_model_copy(apop_multivariate_normal);
     mv->parameters=p;
@@ -1243,6 +1242,15 @@ void test_crosstabbing() {
     apop_data *d = apop_db_to_crosstab("snp_ct", "a_allele", "b_allele", "ct");
     assert(apop_data_get_tt(d, "A", "G")==5);
     assert(apop_data_get_tt(d, "C", "G")==1);
+
+    apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
+    apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
+    apop_data_set(ct, 1, 0, 2); apop_text_add(ct, 1, 0, "second");
+    apop_data_set(ct, 2, 0, 3); apop_text_add(ct, 2, 0, "third");
+    apop_crosstab_to_db(ct, "ct", "r", "c", "val");
+    assert(!strcmp(**(apop_query_to_text("select val from ct where r='r0' and c='t0'")->text), "first"));
+    assert(!strcmp(**(apop_query_to_text("select val from ct where r='r2' and c='t0'")->text), "third"));
+    assert(apop_query_to_float("select val from ct where r='r1' and c='c0'")==2);
 }
 
 void test_mvn_gamma(){

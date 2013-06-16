@@ -41,7 +41,6 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 
         if (!strcmp(e->name, "Dirichlet distribution")
-            || !strcmp(e->name, "Waring distribution")
             || !strcmp(e->name, "Gamma distribution") //just doesn't work.
             ||(!strcmp(e->name, "Bernoulli distribution") && method==APOP_RF_HYBRID)
             ||(!strcmp(e->name, "Exponential distribution")) //imprecise
@@ -141,8 +140,7 @@ void test_distributions(gsl_rng *r){
                 apop_lognormal, apop_multinomial, apop_multivariate_normal,
                 apop_normal, apop_poisson, *fish_no_est,
                 /*apop_t_distribution,*/ apop_uniform,
-                 /*apop_waring,*/ apop_yule, apop_zipf, 
-                /*apop_wishart,*/
+                 apop_yule, apop_zipf, /*apop_wishart,*/
                 null_model};
 
     for (int i=0; strcmp(dist[i].name, "the null model"); i++){

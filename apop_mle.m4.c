@@ -454,7 +454,7 @@ If no derivative exists, will calculate a numerical gradient.
 Inside the infostruct, you'll find these elements:
 
 \param data	the data matrix
-\param	dist	the \ref apop_model object: waring, probit, zipf, &c.
+\param	dist	the \ref apop_model object: probit, zipf, &c.
 \param	starting_pt	an array of doubles suggesting a starting point. If NULL, use a vector whose elements are all 0.1 (zero has too many pathological cases).
 \param step_size	the initial step size.
 \param tolerance	the precision the minimizer uses. Only vaguely related to the precision of the actual var.
