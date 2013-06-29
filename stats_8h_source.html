@@ -336,10 +336,10 @@ urchinTracker();
 <a name="l00309"></a>00309     <span class="comment">// maximum likelihod estimation related functions</span>
 <a name="l00310"></a>00310 
 <a name="l00311"></a>00311 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00312"></a>00312 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
+<a name="l00312"></a>00312 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
 <a name="l00313"></a>00313 <span class="preprocessor">#else</span>
 <a name="l00314"></a>00314 <span class="preprocessor"></span> gsl_vector * apop_numerical_gradient_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
-<a name="l00315"></a>00315  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
+<a name="l00315"></a>00315  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
 <a name="l00316"></a>00316 <span class="preprocessor">#define apop_numerical_gradient(...) apop_varad_link(apop_numerical_gradient, __VA_ARGS__)</span>
 <a name="l00317"></a>00317 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00318"></a>00318 <span class="preprocessor"></span>
@@ -360,13 +360,13 @@ urchinTracker();
 <a name="l00333"></a>00333 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00334"></a>00334 <span class="preprocessor"></span>
 <a name="l00335"></a>00335 
-<a name="l00336"></a>00336 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *dist);
+<a name="l00336"></a>00336 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *dist);
 <a name="l00337"></a>00337 
 <a name="l00338"></a>00338 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00339"></a>00339 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
+<a name="l00339"></a>00339 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> (<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
 <a name="l00340"></a>00340 <span class="preprocessor">#else</span>
 <a name="l00341"></a>00341 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * apop_estimate_restart_base(<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
-<a name="l00342"></a>00342  apop_varad_declare(<a class="code" href="structapop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>, <a class="code" href="structapop__model.html">apop_model</a> *e; <a class="code" href="structapop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
+<a name="l00342"></a>00342  apop_varad_declare(<a class="code" href="structapop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a>, <a class="code" href="structapop__model.html">apop_model</a> *e; <a class="code" href="structapop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
 <a name="l00343"></a>00343 <span class="preprocessor">#define apop_estimate_restart(...) apop_varad_link(apop_estimate_restart, __VA_ARGS__)</span>
 <a name="l00344"></a>00344 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00345"></a>00345 <span class="preprocessor"></span>
@@ -392,4 +392,4 @@ urchinTracker();
 <a name="l00365"></a>00365 <span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jul 5 2013.</div></body></html>

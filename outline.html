@@ -982,7 +982,7 @@ end
 <p></div>
 <p></div>
 <p><h2><a class="anchor" name="write_likelihoods"><div class="trigger" onClick="showBranch('write_likelihoodsd');swapFolder('write_likelihoodsf')"><img src="right.png" border="0" id="write_likelihoodsf" alt="pip"> Writing your own</div></a></h2><div class="branch" id="write_likelihoodsd">
-<p>As above, users are encouraged to always use models via the helper functions, like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>. The helper functions do some boilerplate error checking, and are where the defaults are called: if your model has a <code>log_likelihood</code> method but no <code>p</code> method, then <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> will use exp(<code>log_likelihood</code>). If you don't give an <code>estimate</code> method, then <code>apop_estimate</code> will call <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>.</p>
+<p>As above, users are encouraged to always use models via the helper functions, like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>. The helper functions do some boilerplate error checking, and are where the defaults are called: if your model has a <code>log_likelihood</code> method but no <code>p</code> method, then <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> will use exp(<code>log_likelihood</code>). If you don't give an <code>estimate</code> method, then <code>apop_estimate</code> will call <a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a>.</p>
 <p>So the game in writing a new model is to write just enough internal methods to give the helper functions what they need. In the not-uncommon best case, all you need to do is write a log likelihood function, and the model framework described to this point gets filled in via defaults.</p>
 <p>Here is how one would set up a model that could be estimated using maximum likelihood:</p>
 <ul>
@@ -1181,7 +1181,7 @@ end
 </pre></div><p><h2><a class="anchor" name="constr"><div class="trigger" onClick="showBranch('constrd');swapFolder('constrf')"><img src="right.png" border="0" id="constrf" alt="pip"> Setting Constraints</div></a></h2><div class="branch" id="constrd">
 <p>The problem is that the parameters of a function must not take on certain values, either because the function is undefined for those values or because parameters with certain values would not fit the real-world problem.</p>
 <p>The solution is to rewrite the function being maximized such that the function is continuous at the constraint boundary but takes a steep downward slope. The unconstrained maximization routines will be able to search a continuous function but will never return a solution that falls beyond the parameter limits.</p>
-<p>If you give it a likelihood function with no regard to constraints plus an array of constraints, <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> will combine them to a function that fits the above description and search accordingly.</p>
+<p>If you give it a likelihood function with no regard to constraints plus an array of constraints, <a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a> will combine them to a function that fits the above description and search accordingly.</p>
 <p>A constraint function must do three things: </p>
 <ul>
 <li>It must check the constraint, and if the constraint does not bind (i.e. the parameter values are OK), then it must return zero. </li>
@@ -1203,10 +1203,10 @@ end
 </ul>
 <p></div>
 <ul>
-<li><a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> : Restarting an MLE with different settings can improve results. </li>
-<li><a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood()</a> </li>
+<li><a class="el" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> : Restarting an MLE with different settings can improve results. </li>
+<li><a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood()</a> </li>
 <li><a class="el" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance()</a> </li>
-<li><a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient()</a></li>
+<li><a class="el" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient()</a></li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="Miss"><div class="trigger" onClick="showBranch('Missd');swapFolder('Missf')"><img src="right.png" border="0" id="Missf" alt="pip"> Missing data</div></a></h2><div class="branch" id="Missd">
@@ -1297,4 +1297,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jul 5 2013.</div></body></html>
