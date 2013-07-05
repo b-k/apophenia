@@ -304,31 +304,39 @@ urchinTracker();
 <a name="l00516"></a>00516     double (*jacobian_to_base)(<a class="code" href="structapop__data.html">apop_data</a>*);
 <a name="l00517"></a>00517     <a class="code" href="structapop__model.html">apop_model</a> *base_model;
 <a name="l00518"></a>00518 } <a class="code" href="structapop__ct__settings.html">apop_ct_settings</a>;
-<a name="l00520"></a><a class="code" href="structapop__composition__settings.html">00520</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
-<a name="l00521"></a>00521     <a class="code" href="structapop__model.html">apop_model</a> *generator_m;
-<a name="l00522"></a>00522     <a class="code" href="structapop__model.html">apop_model</a> *ll_m;
-<a name="l00523"></a>00523     gsl_rng *rng;
-<a name="l00524"></a>00524     <span class="keywordtype">int</span> draw_ct;
-<a name="l00525"></a>00525 } <a class="code" href="structapop__composition__settings.html">apop_composition_settings</a>;
-<a name="l00529"></a>00529 <span class="comment">//Doxygen drops whatever is after these declarations, so I put them last.</span>
-<a name="l00530"></a>00530 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_ct)
-<a name="l00531"></a>00531 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_lm)
-<a name="l00532"></a>00532 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_pm)
-<a name="l00533"></a>00533 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>)
-<a name="l00534"></a>00534 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_mle)
-<a name="l00535"></a>00535 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>)
-<a name="l00536"></a>00536 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_arms)
-<a name="l00537"></a>00537 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>)
-<a name="l00538"></a>00538 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>)
-<a name="l00539"></a>00539 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>)
-<a name="l00540"></a>00540 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_composition)
-<a name="l00541"></a>00541 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_parts_wanted)
-<a name="l00542"></a>00542 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>)
-<a name="l00543"></a>00543 
-<a name="l00544"></a>00544 <span class="preprocessor">#ifdef    __cplusplus</span>
-<a name="l00545"></a>00545 <span class="preprocessor"></span>}
-<a name="l00546"></a>00546 <span class="preprocessor">#endif</span>
-<a name="l00547"></a>00547 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00520"></a><a class="code" href="structapop__dconstrain__settings.html">00520</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l00521"></a><a class="code" href="structapop__dconstrain__settings.html#a3b1ea1c653efb95bfe8f4a85978ebe7f">00521</a>     <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="structapop__dconstrain__settings.html#a3b1ea1c653efb95bfe8f4a85978ebe7f">base_model</a>; 
+<a name="l00522"></a><a class="code" href="structapop__dconstrain__settings.html#aa56106a3c5c43de5e5b4224170bcf58b">00522</a>     double (*constraint)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="structapop__model.html">apop_model</a> *); 
+<a name="l00523"></a><a class="code" href="structapop__dconstrain__settings.html#a72c7359a106d4def9633ca589798789f">00523</a>     double (*scaling)(<a class="code" href="structapop__model.html">apop_model</a> *); 
+<a name="l00524"></a><a class="code" href="structapop__dconstrain__settings.html#abd8c705e395760f2c52e401dd65febe9">00524</a>     gsl_rng *rng; 
+<a name="l00526"></a><a class="code" href="structapop__dconstrain__settings.html#aa0b65f2e67e9446526415ce0692bb3ba">00526</a>     <span class="keywordtype">int</span> <a class="code" href="structapop__dconstrain__settings.html#aa0b65f2e67e9446526415ce0692bb3ba">draw_ct</a>; 
+<a name="l00527"></a>00527 } <a class="code" href="structapop__dconstrain__settings.html">apop_dconstrain_settings</a>; 
+<a name="l00529"></a><a class="code" href="structapop__composition__settings.html">00529</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l00530"></a>00530     <a class="code" href="structapop__model.html">apop_model</a> *generator_m;
+<a name="l00531"></a>00531     <a class="code" href="structapop__model.html">apop_model</a> *ll_m;
+<a name="l00532"></a>00532     gsl_rng *rng;
+<a name="l00533"></a>00533     <span class="keywordtype">int</span> draw_ct;
+<a name="l00534"></a>00534 } <a class="code" href="structapop__composition__settings.html">apop_composition_settings</a>;
+<a name="l00538"></a>00538 <span class="comment">//Doxygen drops whatever is after these declarations, so I put them last.</span>
+<a name="l00539"></a>00539 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_ct)
+<a name="l00540"></a>00540 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_lm)
+<a name="l00541"></a>00541 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_pm)
+<a name="l00542"></a>00542 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>)
+<a name="l00543"></a>00543 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_mle)
+<a name="l00544"></a>00544 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>)
+<a name="l00545"></a>00545 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_arms)
+<a name="l00546"></a>00546 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>)
+<a name="l00547"></a>00547 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>)
+<a name="l00548"></a>00548 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>)
+<a name="l00549"></a>00549 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaa58cece77dea73979ea15d64ea11b049">apop_dconstrain</a>)
+<a name="l00550"></a>00550 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_composition)
+<a name="l00551"></a>00551 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_parts_wanted)
+<a name="l00552"></a>00552 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>)
+<a name="l00553"></a>00553 
+<a name="l00554"></a>00554 <span class="preprocessor">#ifdef    __cplusplus</span>
+<a name="l00555"></a>00555 <span class="preprocessor"></span>}
+<a name="l00556"></a>00556 <span class="preprocessor">#endif</span>
+<a name="l00557"></a>00557 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jul 5 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>

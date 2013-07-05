@@ -34,8 +34,8 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
 </ul>
 
 
@@ -52,12 +52,12 @@ An ML search, tracing out the surface of the function</div></div>
 <p>The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file <a class="el" href="apop__mle_8c.html">apop_mle.c</a> handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.</p>
 <p>Verbosity: if ep-&gt;verbose==1, show likelihood, temp, &amp;c. in a table; if ep-&gt;verbose&gt;1, show that plus the vector of params. </p>
 </div><hr/><h2>Function Documentation</h2>
-<a class="anchor" id="ga18e260dbe192af5b62a3fdbfe74e7df1"></a><!-- doxytag: member="apop_mle.c::apop_estimate_restart" ref="ga18e260dbe192af5b62a3fdbfe74e7df1" args="(apop_model *e, apop_model *copy, char *starting_pt, double boundary)" -->
+<a class="anchor" id="ga6d5e39c00012de5b51cd49ce1ffd31fe"></a><!-- doxytag: member="apop_mle.c::apop_estimate_restart" ref="ga6d5e39c00012de5b51cd49ce1ffd31fe" args="(apop_model *e, apop_model *copy, char *starting_pt, double boundary)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">APOP_VAR_HEAD <a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>e</em>, </td>
@@ -91,14 +91,14 @@ An ML search, tracing out the surface of the function</div></div>
 <p>The simplest use of this function is to restart a model at the latest parameter estimates.</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, model_using_an_MLE_search);
 <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++)
-    m = <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a>(m);
+    m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
 </pre></div><p>By adding a line to reduce the tolerance each round [e.g., <code>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</code>], you can start broad and hone in on a precise optimum.</p>
 <p>You may have a new estimation method, such as first doing a coarse simulated annealing search, then a fine conjugate gradient search. When reading this example, recall that the form for adding a new settings group differs from the form for modifying existing settings: </p>
 <div class="fragment"><pre class="fragment">Apop_model_add_settings(your_base_model, apop_mle, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);
 <a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, your_base_model);
 <a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(m, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223">APOP_CG_PR</a>);
-m = <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a>(m);
+m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
 </pre></div><p>Only one estimate is returned, either the one you sent in or a new one. The loser (which may be the one you sent in) is freed. That is, there is no memory leak in the above loop.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -117,12 +117,12 @@ m = <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">ap
 
 </div>
 </div>
-<a class="anchor" id="gab373a85a92bebd85b89addf7e0356285"></a><!-- doxytag: member="apop_mle.c::apop_maximum_likelihood" ref="gab373a85a92bebd85b89addf7e0356285" args="(apop_data *data, apop_model *dist)" -->
+<a class="anchor" id="ga29975e75eec9ff9f48e836971a32c925"></a><!-- doxytag: member="apop_mle.c::apop_maximum_likelihood" ref="ga29975e75eec9ff9f48e836971a32c925" args="(apop_data *data, apop_model *dist)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a> </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -141,7 +141,7 @@ m = <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">ap
       </table>
 </div>
 <div class="memdoc">
-<p>The maximum likelihood calculations. All of the settings are specified by adding a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> struct to your model, so see the many notes there. Notably, the default method is the Fletcher-Reeves conjugate gradient method, and if your model does not have a dlog likelihood function, then a numeric gradient will be calculated via <a class="el" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient</a>. Add a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> group to your model for other methods, including the Nelder-Mead simplex and simulated annealing.</p>
+<p>The maximum likelihood calculations. All of the settings are specified by adding a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> struct to your model, so see the many notes there. Notably, the default method is the Fletcher-Reeves conjugate gradient method, and if your model does not have a dlog likelihood function, then a numeric gradient will be calculated via <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>. Add a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> group to your model for other methods, including the Nelder-Mead simplex and simulated annealing.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The data matrix (an <a class="el" href="gentle.html#apop_data">apop_data</a> set). </td></tr>
@@ -170,4 +170,4 @@ m = <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">ap
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jul 5 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>

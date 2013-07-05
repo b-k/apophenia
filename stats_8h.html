@@ -137,11 +137,11 @@ double <b>apop_var</b> (const gsl_vector *in)
 <li>gsl_rng * <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a> (int seed)
 <li>double <a class="el" href="stats_8h.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)
 <li>void <a class="el" href="stats_8h.html#ad422a97e52c70bacb585a9f27a987d23">apop_arms_draw</a> (double *out, gsl_rng *r, <a class="el" href="structapop__model.html">apop_model</a> *m)
-<dl class="el"><dd class="mdescRight">Adaptive rejection metropolis sampling.  <a href="#ad422a97e52c70bacb585a9f27a987d23"></a><br/></dl><li>gsl_vector * <a class="el" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
+<dl class="el"><dd class="mdescRight">Adaptive rejection metropolis sampling.  <a href="#ad422a97e52c70bacb585a9f27a987d23"></a><br/></dl><li>gsl_vector * <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *dist)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="el" href="structapop__model.html">apop_model</a> *e, <a class="el" href="structapop__model.html">apop_model</a> *copy, char *starting_pt, double boundary)
 <li>double <a class="el" href="stats_8h.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a> (gsl_vector *beta, <a class="el" href="structapop__data.html">apop_data</a> *constraint, double margin)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
 <li><a class="anchor" id="af676505faea1c7e30ffbd8690a092ed8"></a><!-- doxytag: member="stats.h::apop_model_fix_params_get_base" ref="af676505faea1c7e30ffbd8690a092ed8" args="(apop_model *model_in)" -->
@@ -1470,7 +1470,7 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 <div class="memdoc">
 <p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
-<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_165.png"/> but <img class="formulaInl" alt="$p_1$" src="form_159.png"/> allowed to float freely:</p>
+<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_168.png"/> but <img class="formulaInl" alt="$p_1$" src="form_162.png"/> allowed to float freely:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *bi30 = <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, 30, GSL_NAN));
 <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(bi30, apop_mle, .starting_pt=(<span class="keywordtype">double</span>[]){.5}); <span class="comment">// The Binomial doesn&#39;t like the default </span>
                                                                    <span class="comment">// starting point of 1.</span>
@@ -2091,4 +2091,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jul 5 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>

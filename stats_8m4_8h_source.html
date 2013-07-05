@@ -55,16 +55,16 @@ urchinTracker();
 <a name="l00024"></a>00024     <span class="comment">//First, some linear algebra utilities</span>
 <a name="l00025"></a>00025 
 <a name="l00026"></a>00026 <span class="keywordtype">double</span> <a class="code" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a>(<span class="keyword">const</span> gsl_matrix *in, gsl_matrix **out, <span class="keywordtype">int</span> calc_det, <span class="keywordtype">int</span> calc_inv);
-<a name="l00027"></a>00027 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d1, <span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d2, <span class="keywordtype">char</span> form1, <span class="keywordtype">char</span> form2) )
-<a name="l00028"></a>00028 Apop_var_declare( <span class="keywordtype">int</span>         <a class="code" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a>(<span class="keyword">const</span> gsl_vector *in, <span class="keywordtype">long</span> <span class="keywordtype">double</span> max) )
-<a name="l00029"></a>00029 Apop_var_declare( <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt) )
-<a name="l00030"></a>00030 Apop_var_declare( <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga30db74bbed6bcc9cf4fa4cdbc68313b8">apop_matrix_increment</a>(gsl_matrix * m, <span class="keywordtype">int</span> i, <span class="keywordtype">int</span> j, <span class="keywordtype">double</span> amt) )
-<a name="l00031"></a>00031 gsl_matrix * <a class="code" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a>(<span class="keyword">const</span> gsl_matrix *in) ;
+<a name="l00027"></a>00027 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__linear__algebra.html#ga4479f373d011b58059273a8859bc0246">apop_dot</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d1, <span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d2, <span class="keywordtype">char</span> form1, <span class="keywordtype">char</span> form2) )
+<a name="l00028"></a>00028 Apop_var_declare( <span class="keywordtype">int</span>         <a class="code" href="group__convenience__fns.html#gaf99a94ded56397097e74f711d1e64ff4">apop_vector_bounded</a>(<span class="keyword">const</span> gsl_vector *in, <span class="keywordtype">long</span> <span class="keywordtype">double</span> max) )
+<a name="l00029"></a>00029 Apop_var_declare( <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga8362b20fc628ae24d85fd7049e11331f">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt) )
+<a name="l00030"></a>00030 Apop_var_declare( <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga75fa8aad5013c8f99faff680688ba4e2">apop_matrix_increment</a>(gsl_matrix * m, <span class="keywordtype">int</span> i, <span class="keywordtype">int</span> j, <span class="keywordtype">double</span> amt) )
+<a name="l00031"></a>00031 gsl_matrix * <a class="code" href="group__linear__algebra.html#ga145dd6a7206937e2d02d98e1c1d7c3ec">apop_matrix_inverse</a>(<span class="keyword">const</span> gsl_matrix *in) ;
 <a name="l00032"></a>00032 <span class="keywordtype">double</span>      <a class="code" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a>(<span class="keyword">const</span> gsl_matrix *in) ;
 <a name="l00033"></a>00033 <span class="comment">//apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);</span>
-<a name="l00034"></a>00034 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> *  <a class="code" href="group__linear__algebra.html#gaa1715c468336800a21ca86971323ae3d">apop_matrix_pca</a>(gsl_matrix *data, <span class="keywordtype">int</span> <span class="keyword">const</span> dimensions_we_want) )
-<a name="l00035"></a>00035 Apop_var_declare( gsl_vector * <a class="code" href="group__convenience__fns.html#gae603a7d511cf40b022f99dc69faa616a">apop_vector_stack</a>(gsl_vector *v1, gsl_vector * v2, <span class="keywordtype">char</span> inplace) )
-<a name="l00036"></a>00036 Apop_var_declare( gsl_matrix * <a class="code" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a>(gsl_matrix *m1, gsl_matrix * m2, <span class="keywordtype">char</span> posn, <span class="keywordtype">char</span> inplace) )
+<a name="l00034"></a>00034 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> *  <a class="code" href="group__linear__algebra.html#ga57bc763b4fe7717ec400d1e9aef69306">apop_matrix_pca</a>(gsl_matrix *data, <span class="keywordtype">int</span> <span class="keyword">const</span> dimensions_we_want) )
+<a name="l00035"></a>00035 Apop_var_declare( gsl_vector * <a class="code" href="group__convenience__fns.html#gae270c9212b47ca05a3c0014fe5d0ba6c">apop_vector_stack</a>(gsl_vector *v1, gsl_vector * v2, <span class="keywordtype">char</span> inplace) )
+<a name="l00036"></a>00036 Apop_var_declare( gsl_matrix * <a class="code" href="group__convenience__fns.html#ga0e8b025928840ad9e20d28e8bb146d0f">apop_matrix_stack</a>(gsl_matrix *m1, gsl_matrix * m2, <span class="keywordtype">char</span> posn, <span class="keywordtype">char</span> inplace) )
 <a name="l00037"></a>00037 gsl_matrix * <a class="code" href="apop__linear__algebra_8c.html#a5402b8254a90f2ac68770d6867502e5a">apop_matrix_rm_columns</a>(gsl_matrix *in, <span class="keywordtype">int</span> *drop);
 <a name="l00038"></a>00038 
 <a name="l00039"></a>00039 <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga5a622b8360eba63795a6049c30ac54a2">apop_vector_log</a>(gsl_vector *v);
@@ -160,7 +160,7 @@ urchinTracker();
 <a name="l00132"></a>00132 <span class="preprocessor"></span>
 <a name="l00133"></a>00133 <span class="preprocessor">#define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)-&gt;data,(in)-&gt;stride, (in)-&gt;size))</span>
 <a name="l00134"></a>00134 <span class="preprocessor"></span>
-<a name="l00135"></a>00135 Apop_var_declare( <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) )
+<a name="l00135"></a>00135 Apop_var_declare( <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#gaf2edee9def7693bce39719744cf45b5d">apop_vector_distance</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) )
 <a name="l00136"></a>00136 
 <a name="l00137"></a>00137 Apop_var_declare( <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(gsl_vector *in, gsl_vector **out, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type) )
 <a name="l00138"></a>00138 <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a>(gsl_matrix *data, <span class="keyword">const</span> <span class="keywordtype">char</span> row_or_col, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization);
@@ -170,7 +170,7 @@ urchinTracker();
 <a name="l00142"></a>00142 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<span class="keyword">const</span> gsl_matrix *m);
 <a name="l00143"></a>00143 <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a>(<span class="keyword">const</span> gsl_matrix *data);
 <a name="l00144"></a>00144 <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a>(<span class="keyword">const</span> gsl_matrix *data, <span class="keywordtype">double</span> *mean, <span class="keywordtype">double</span> *var);
-<a name="l00145"></a>00145 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a>(<a class="code" href="structapop__data.html">apop_data</a> *data);
+<a name="l00145"></a>00145 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__output.html#ga2a4e777f1ba1ce7894520308d022a915">apop_data_summarize</a>(<a class="code" href="structapop__data.html">apop_data</a> *data);
 <a name="l00146"></a>00146 
 <a name="l00147"></a>00147 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(<a class="code" href="structapop__data.html">apop_data</a> *intab); <span class="comment">//in apop_fisher.c</span>
 <a name="l00148"></a>00148 
@@ -181,8 +181,8 @@ urchinTracker();
 <a name="l00153"></a>00153 <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>(<span class="keywordtype">double</span> a, <span class="keywordtype">double</span> p);
 <a name="l00154"></a>00154 
 <a name="l00155"></a>00155 <span class="comment">//apop_tests.c</span>
-<a name="l00156"></a>00156 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a>(gsl_vector *a, gsl_vector *b);
-<a name="l00157"></a>00157 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a>(gsl_vector *a, gsl_vector *b);
+<a name="l00156"></a>00156 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#gae4c01436544867b9a35a76f8aef6ad18">apop_t_test</a>(gsl_vector *a, gsl_vector *b);
+<a name="l00157"></a>00157 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga1d0559b92134107013e3f977837ecffa">apop_paired_t_test</a>(gsl_vector *a, gsl_vector *b);
 <a name="l00158"></a>00158 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a>* <a class="code" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a>(<span class="keywordtype">char</span> *table, <span class="keywordtype">char</span> *data, <span class="keywordtype">char</span> *grouping1, <span class="keywordtype">char</span> *grouping2) )
 <a name="l00159"></a>00159 <span class="preprocessor">#define apop_ANOVA apop_anova</span>
 <a name="l00160"></a>00160 <span class="preprocessor"></span>Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="code" href="structapop__model.html">apop_model</a> *est, <a class="code" href="structapop__data.html">apop_data</a> *contrast) )
@@ -200,14 +200,14 @@ urchinTracker();
 <a name="l00172"></a>00172 
 <a name="l00173"></a>00173 Apop_var_declare( <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>(<a class="code" href="structapop__model.html">apop_model</a> *from, <a class="code" href="structapop__model.html">apop_model</a> *to, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng, <a class="code" href="structapop__model.html">apop_model</a> *top, <a class="code" href="structapop__model.html">apop_model</a> *bottom) )
 <a name="l00174"></a>00174 
-<a name="l00175"></a>00175 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="code" href="structapop__model.html">apop_model</a> *);
+<a name="l00175"></a>00175 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="group__regression.html#ga70112705f3b95ddde5a7ab3fea63b0d0">apop_estimate_coefficient_of_determination</a> (<a class="code" href="structapop__model.html">apop_model</a> *);
 <a name="l00176"></a>00176 <span class="keywordtype">void</span> <a class="code" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> (apop_model *est);
 <a name="l00177"></a>00177 
 <a name="l00178"></a>00178 
 <a name="l00179"></a>00179 <span class="comment">//Bootstrapping &amp; RNG</span>
 <a name="l00180"></a>00180 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, apop_model model);
 <a name="l00181"></a>00181 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, apop_model model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) )
-<a name="l00182"></a>00182 gsl_rng *<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
+<a name="l00182"></a>00182 gsl_rng *<a class="code" href="group__convenience__fns.html#gad0efe90cf46022d60e62e05bc5085b0b">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
 <a name="l00183"></a>00183 <span class="keywordtype">double</span> <a class="code" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a>(gsl_rng * r, <span class="keywordtype">double</span>* a); <span class="comment">//in apop_asst.c</span>
 <a name="l00184"></a>00184 
 <a name="l00185"></a>00185 
@@ -216,13 +216,13 @@ urchinTracker();
 <a name="l00188"></a>00188 
 <a name="l00189"></a>00189     <span class="comment">// maximum likelihod estimation related functions</span>
 <a name="l00190"></a>00190 
-<a name="l00191"></a>00191 Apop_var_declare( gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model* model, <span class="keywordtype">double</span> delta) )
+<a name="l00191"></a>00191 Apop_var_declare( gsl_vector * <a class="code" href="group__linear__algebra.html#gae1489ba27748c2921070b8617e1c9010">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model* model, <span class="keywordtype">double</span> delta) )
 <a name="l00192"></a>00192 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model *model, <span class="keywordtype">double</span> delta) )
 <a name="l00193"></a>00193 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model *model, <span class="keywordtype">double</span> delta) )
 <a name="l00194"></a>00194 
-<a name="l00195"></a>00195 apop_model * <a class="code" href="group__mle.html#ga29975e75eec9ff9f48e836971a32c925">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model *dist);
+<a name="l00195"></a>00195 apop_model * <a class="code" href="group__mle.html#gab373a85a92bebd85b89addf7e0356285">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, apop_model *dist);
 <a name="l00196"></a>00196 
-<a name="l00197"></a>00197 Apop_var_declare( apop_model * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (apop_model *e, apop_model *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) )
+<a name="l00197"></a>00197 Apop_var_declare( apop_model * <a class="code" href="group__mle.html#ga18e260dbe192af5b62a3fdbfe74e7df1">apop_estimate_restart</a> (apop_model *e, apop_model *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) )
 <a name="l00198"></a>00198 
 <a name="l00199"></a>00199 <span class="comment">//in apop_linear_constraint.c</span>
 <a name="l00200"></a>00200 Apop_var_declare( <span class="keywordtype">double</span>  <a class="code" href="apop__linear__constraint_8c.html#a1db15d25579048bcc36b5aabdf9dfd65">apop_linear_constraint</a>(gsl_vector *beta, <a class="code" href="structapop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin) )
@@ -238,4 +238,4 @@ urchinTracker();
 <a name="l00210"></a>00210 <span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jun 29 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
