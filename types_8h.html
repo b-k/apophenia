@@ -71,7 +71,7 @@ Defines</h2>
 <li>#define <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(in,...)
 <li>#define <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>(...)&#160;&#160;&#160;apop_model_mixture_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})
 <li>#define <a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(...)&#160;&#160;&#160;apop_model_stack_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})
-<li>#define <a class="el" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform</a>(...)&#160;&#160;&#160;Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__);
+<li>#define <a class="el" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform</a>(...)&#160;&#160;&#160;Apop_model_copy_set(<a class="el" href="group__models.html#ga80caa743557a86dffa2dd1db64421d82">apop_coordinate_transform</a>, apop_ct, __VA_ARGS__);
 <li>#define <a class="el" href="types_8h.html#ab664f68b5e481bec56c8ddc7f16928c0">apop_model_dcompose</a>(...)&#160;&#160;&#160;Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__);
 </ul>
 <h2><a name="typedef-members"></a>
@@ -481,13 +481,13 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__);</td>
+          <td>&#160;&#160;&#160;Apop_model_copy_set(<a class="el" href="group__models.html#ga80caa743557a86dffa2dd1db64421d82">apop_coordinate_transform</a>, apop_ct, __VA_ARGS__);</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Build an apop_coordinate_transform model, qv.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="structapop__model.html">apop_model</a> that is a copy of apop_coordinate_transform and is appropriately set up.</dd></dl>
+<p>Build an <a class="el" href="group__models.html#ga80caa743557a86dffa2dd1db64421d82">apop_coordinate_transform</a> model, qv.</p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="structapop__model.html">apop_model</a> that is a copy of <a class="el" href="group__models.html#ga80caa743557a86dffa2dd1db64421d82">apop_coordinate_transform</a> and is appropriately set up.</dd></dl>
 <ul>
 <li>Uses the <a class="el" href="structapop__ct__settings.html">apop_ct_settings</a> group. This macro takes elements of that struct as inputs.</li>
 </ul>
@@ -513,7 +513,7 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
 <div class="memdoc">
 <p><em>Data composition</em> is using either random draws or parameter estimates from the output of one model as the input data for another model.</p>
 <ul>
-<li>The apop_dcomposition model relies on the <a class="el" href="structapop__composition__settings.html">apop_composition_settings</a> struct, qv. This macro takes the elements of that struct as input. You can use the designated initializer syntax to specify them.</li>
+<li>The <a class="el" href="group__models.html#gaedd07c678027bea683f48aa8617c4b89">apop_dcomposition</a> model relies on the <a class="el" href="structapop__composition__settings.html">apop_composition_settings</a> struct, qv. This macro takes the elements of that struct as input. You can use the designated initializer syntax to specify them.</li>
 </ul>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="structapop__model.html">apop_model</a> that is a copy of apop_composition. </dd></dl>
 
@@ -533,7 +533,7 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
       </table>
 </div>
 <div class="memdoc">
-<p>Produce a model as a linear combination of other models. See the documentation for the apop_mixture model. </p>
+<p>Produce a model as a linear combination of other models. See the documentation for the <a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a> model. </p>
 
 </div>
 </div>
@@ -551,7 +551,7 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
       </table>
 </div>
 <div class="memdoc">
-<p>Generate a model consisting of several models bound together. The output <a class="el" href="structapop__model.html">apop_model</a> is a copy of apop_stack; see that model's documentation for details.</p>
+<p>Generate a model consisting of several models bound together. The output <a class="el" href="structapop__model.html">apop_model</a> is a copy of <a class="el" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>; see that model's documentation for details.</p>
 <p>Sample use:</p>
 <div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
     <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(m1);
