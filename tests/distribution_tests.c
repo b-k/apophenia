@@ -30,7 +30,9 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
                         : "default method [basic");
     fflush(NULL);
 
-    if(!strcmp(dist->name, "Bernoulli distribution") && method==APOP_RF_HYBRID){
+    if((!strcmp(dist->name, "Bernoulli distribution") ||
+       !strcmp(dist->name, "Beta distribution") )
+       && method==APOP_RF_HYBRID){
         printf(" skip]");
         return 0;
     }
@@ -131,8 +133,11 @@ void test_distributions(gsl_rng *r){
   exp_no_est->estimate=NULL;
   apop_model *fish_no_est = apop_model_copy(apop_poisson);
   fish_no_est->estimate=NULL;
+  apop_model *beta_no_est = apop_model_copy(apop_beta);
+  beta_no_est->estimate=NULL;
   apop_model dist[] = {
                 apop_bernoulli, *bernie_no_est, apop_beta, 
+                *beta_no_est,
                 apop_binomial, /*apop_chi_squared,*/
                 apop_dirichlet, apop_exponential, *exp_no_est,
                 /*apop_f_distribution,*/

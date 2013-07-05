@@ -88,7 +88,7 @@ DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh
 
 doc:
 	-rm tests/apophenia/*h
-	cat model/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
+	cat model/*.c transform/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
 	doxygen docs/doxyconfig
 	cp docs/flake.gif docs/search.gif docs/right.png docs/down.png html/
 	@sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \

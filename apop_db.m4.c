@@ -445,10 +445,11 @@ The first argument is a character string consisting of the letters \c nvmtw, one
 
 If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).
 
-The 'n' character indicates row, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
+The 'n' character indicates rownames, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
 
 \li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_mixed_data("tv", "select name, age from %s where id=%i", tablename, id_number)</tt>.
 
+\param typelist A string consisting of the letters \c nvmtw. For example, if your query columns should go into a text column, the vector, the weights, and two matrix columns, this would be "tvwmm".
 \param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='d' Dimension error. Your count of matrix parts didn't match what the query returned.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.

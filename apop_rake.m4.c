@@ -418,7 +418,7 @@ static int setup_nonzero_contrast(char const *margin_table,
     if (structural_zeros) xprintf(&q, "%s where not (%s)\n", q, structural_zeros);
     if (have_init_table){
         //Keep out margins with values for now; join them in below.
-        xprintf(&q, "%s except\nselect %s %s, %g from %s",  list_of_fields, nudge, margin_table);
+        xprintf(&q, "%s except\nselect %s, %g from %s", q, list_of_fields, nudge, margin_table);
     }
 	Apop_stopif(apop_query("%s", q), return 1, 0, "query failed.");
     free(q);
@@ -608,14 +608,16 @@ APOP_VAR_ENDHEAD
             0, "This query:\n%s\ngenerated a blank or broken table.", marginq);
     free(marginq);
 
-    if (pre_init_q) apop_query("%s", pre_init_q);
+    if (pre_init_q) Apop_stopif(apop_query("%s", pre_init_q), apop_return_data_error(q),
+            0, "This query:\n%s\ngenerated a blank or broken table.", pre_init_q);
+
     apop_data *fit;
     if (init_table) {
         fit = (nudge) 
                ? apop_query_to_mixed_data(format, "%s\nunion\nselect * from apop_zerocontrasts_%i ", init_q, run_number)
                : apop_query_to_mixed_data(format, "%s", init_q);
-        Apop_stopif(!fit, apop_return_data_error(q), 
-                    0, "Query returned a blank table.");
+        Apop_stopif(!fit, apop_return_data_error(q), 0, "Query returned a blank table.");
+        Apop_stopif(fit->error, apop_return_data_error(q), 0, "Query error.");
     } else {
         fit = apop_query_to_mixed_data(format, "select * from apop_zerocontrasts_%i ", run_number);
         gsl_vector_set_all(fit->weights, nudge ? nudge : 1);

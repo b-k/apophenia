@@ -174,7 +174,7 @@ char * apop_strip_dots(char const *in, char strip_type){
 
 /** Call \c system(), but with <tt>printf</tt>-style arguments. E.g.,
   
- \code
+\code
 char filenames[] = "apop_asst.c apop_asst.o"
 apop_system("ls -l %s", filenames);
 \endcode
@@ -437,7 +437,7 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 \param model The model from which draws will be made. Must already be prepared and/or estimated.
 
-\param count The number of draws to make. If \c draw_matrix is not \c NULL, then this is ignored and <tt>count=draw_matrix->matrix->size1. default=1000.
+\param count The number of draws to make. If \c draw_matrix is not \c NULL, then this is ignored and <tt>count=draw_matrix->matrix->size1</tt>. default=1000.
 
 \param rng a \c gsl_rng, already allocated. default: see \ref autorng.
 

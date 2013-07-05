@@ -6,15 +6,7 @@
 
 \adoc Input_format The input data is sent to the first model, so use the input format for that model.
 \adoc Settings   \ref apop_composition_settings
-
 */
-
-typedef struct {
-    apop_model *generator_m;
-    apop_model *ll_m;
-    gsl_rng *rng;
-    int draw_ct;
-} apop_composition_settings;/**< All of the elements of this struct should be considered private.*/
 
 Apop_settings_copy(apop_composition,)
 

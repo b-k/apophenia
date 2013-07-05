@@ -4,7 +4,7 @@ int main(){
     apop_query("create table data (name, city, state);"
             "insert into data values ('Mike Mills', 'Rockville', 'MD');"
             "insert into data values ('Bill Berry', 'Athens', 'GA');"
-            "insert into data values ('Michael Stipe', 'Reckoning', 'GA');");
+            "insert into data values ('Michael Stipe', 'Decatur', 'GA');");
     apop_data *tdata = apop_query_to_text("select name, city, state from data");
     printf("Customer #1: %s\n\n", *tdata->text[0]);
 
@@ -14,8 +14,8 @@ int main(){
     //the text alloc can be used as a text realloc:
     apop_text_alloc(tdata, 1+tdata->textsize[0], tdata->textsize[1]);
     apop_text_add(tdata, *tdata->textsize-1, 0, "Peter Buck");
-    apop_text_add(tdata, *tdata->textsize-1, 1, "Atlanta");
-    apop_text_add(tdata, *tdata->textsize-1, 2, "GA");
+    apop_text_add(tdata, *tdata->textsize-1, 1, "Berkeley");
+    apop_text_add(tdata, *tdata->textsize-1, 2, "CA");
 
     printf("\n\nAugmented data, printed via for loop (for demonstration purposes):\n");
     for (int i=0; i< tdata->textsize[0]; i++){

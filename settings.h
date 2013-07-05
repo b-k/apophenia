@@ -267,6 +267,7 @@ typedef struct {
     int draws_owner; /**< For internal use.  Should I free \c draws_made when this copy of the settings group is freed?*/
 } apop_cdf_settings;
 
+
 /** Settings for getting parameter models (i.e. the distribution of parameter estimates)
   \ingroup settings */
 typedef struct {
@@ -516,6 +517,12 @@ typedef struct {
     apop_model *base_model;
 } apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
 
+typedef struct {
+    apop_model *generator_m;
+    apop_model *ll_m;
+    gsl_rng *rng;
+    int draw_ct;
+} apop_composition_settings;/**< All of the elements of this struct should be considered private.*/
 
 /** \defgroup settings Settings*/
 
@@ -530,6 +537,7 @@ Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_stack)
 Apop_settings_declarations(apop_update)
+Apop_settings_declarations(apop_composition)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_kernel_density)
 

@@ -171,13 +171,44 @@ Finally, a demonstration of fixing parameters to create a marginal distribution,
 \section cast The supporting cast 
 To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. 
 
-We've moved the setup documentation to <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em>. Please see that page. This site has a few more notes for \ref windows "Windows" users or \ref mingw users.
+\li Some readers are unfamiliar with modern package managemers and common methods for setting up a C development environment; see 
+<a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em> for an introduction.
+
+\li Other pages on this site have a few more notes for \ref windows "Windows" users or \ref mingw users.
+
+\li Install the basics using your package manager. E.g., try
+
+\code
+sudo apt-get install make gcc libgsl0-dev libsqlite3-dev
+\endcode
+
+or 
+
+\code
+sudo yum install make gcc gsl-devel libsqlite3x-devel
+\endcode
+
+\li <a href="http://sourceforge.net/projects/apophenia/files/latest/download?source=dlp">Download Apophenia here</a>. 
+
+\li Once you have the library downloaded, compile it using 
+
+\code
+tar xvzf apop*tgz && cd apophenia-0.99
+./configure && make && sudo make install && make check
+\endcode
+
+If you decide not to keep the library on your system, run <tt>sudo make uninstall</tt>
+from the source directory to remove it.
+
+\li A \ref makefile will help immensely when you want to compile your program.
+
 
 \subsection sample_program Sample programs
-First, there is a short, complete program in the \ref apop_ols entry which runs a simple OLS regression on a data file. Follow
-the instructions there to compile and run. 
+Here is a sample program so you can test your setup.  There is another short,
+complete program in the \ref apop_ols entry which runs a simple OLS regression on a
+data file. Follow the instructions there to compile and run.
 
-Here is another sample program, intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
+The sample program here is intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
 
 \include draw_to_db.c
 
@@ -1104,7 +1135,7 @@ There are a few simple forms for handling the \c text element of an \c apop_data
 <tt>tdata->textsize[0]</tt>; 
 the number of columns is <tt>tdata->textsize[1]</tt>.
 \li Refer to individual elements using the usual 2-D array notation, <tt>tdata->text[row][col]</tt>.
-\li Again, <tt>x[0]</tt> can always be written as <tt>*x</tt>, which may save some typing. The number of rows is <tt>*tdata->textsize</tt>. If you have a single column of text data (i.e., all data is in column zero), then item \c i is <tt>*tdata->text[i]</tt>. If you know you have exactly one cell of text, then its value is <tt>**tdata->text</tt>.
+\li <tt>x[0]</tt> can always be written as <tt>*x</tt>, which may save some typing. The number of rows is <tt>*tdata->textsize</tt>. If you have a single column of text data (i.e., all data is in column zero), then item \c i is <tt>*tdata->text[i]</tt>. If you know you have exactly one cell of text, then its value is <tt>**tdata->text</tt>.
 
 Here is a sample program that uses these forms, plus a few text-handling functions.
 
@@ -2322,7 +2353,7 @@ This is a "gentle introduction" to the Apophenia library. It is intended
 to give you some initial bearings on the typical workflow and the concepts and tricks that
 the manual pages assume you have met.
 
-This introduction assumes you already have some familiarity with C, how to compile a program, and how to use a debugger.
+This introduction assumes you already have some familiarity with C, how to compile a program, and how to use a debugger. If you want to install Apophenia now so you can try the samples on this page, see the \ref setup page.
 
 An outline of this overview:
 
@@ -2516,6 +2547,8 @@ Text in C is annoying. C already treats strings as pointer-to-characters, so a g
 
 The text grid in the \ref apop_data structure actually takes this form, but functions are provided so that most or all the pointer work is handled for you.  The \ref apop_text_alloc function is really a realloc function: you can use it to resize the text grid as necessary. The \ref apop_text_add function will do the pointer work in copying a single string to the grid. Functions that act on entire data sets, like \ref apop_data_rm_rows, handle the text part as well.
 
+
+You have <tt>your_data->textsize[0]</tt> rows and <tt>your_data->textsize[1]</tt> columns. If you are using only the functions to this point, then empty elements are a blank string (<tt>""</tt>), not \c NULL.
 For reading individual elements, refer to the \f$(i,j)\f$th text element via <tt>your_data->text[i][j]</tt>.
 
 \par The whole structure

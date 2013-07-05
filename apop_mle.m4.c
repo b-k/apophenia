@@ -430,7 +430,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
             apop_estimate_parameter_tests (est);
     }
     int param_ct = tsize;
-    if (i->want_info){
+    if (i->want_info=='y'){
         //Did the sending function save last value of f()?
         if (!ll) ll = apop_log_likelihood(i->data, i->model);
 

@@ -185,9 +185,9 @@ sqfn(cos) sqfn(tan) sqfn(asin) sqfn(acos) sqfn(atan)
 
 
 static int apop_sqlite_db_open(char const *filename){
-	if (!filename) sqlite3_open(":memory:",&db);
-	else		   sqlite3_open(filename,&db);
-    apop_assert(db, "Not sure why, but the database didn't open.");
+    int status = sqlite3_open(filename ? filename : ":memory:", &db);
+    Apop_stopif(status, db=NULL; return status,
+            0, "The database %s didn't open.", filename ? filename : "in memory");
 	sqlite3_create_function(db, "stddev", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);
 	sqlite3_create_function(db, "std", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalizePop);
 	sqlite3_create_function(db, "stddev_samp", 1, SQLITE_ANY, NULL, NULL, &twoStep, &stdDevFinalize);

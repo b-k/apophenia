@@ -120,9 +120,9 @@ apop_model *apop_model_stack_base(apop_model *mlist[]){
 
 /** \def apop_model_stack
 Generate a model consisting of several models bound together. The output \ref apop_model
- is a copy of \ref apop_stack; see that model's documentation for details.
+is a copy of \ref apop_stack; see that model's documentation for details.
 
-sample use:
+Sample use:
 
 \code 
     apop_model *m1 = apop_model_set_parameters(apop_normal, 0, 1);
@@ -137,7 +137,7 @@ sample use:
                     apop_model_copy(apop_normal)
                     );
     apop_model *estimated_norms = apop_estimate(indata, two_n);
-/endcode
+\endcode
 
 \li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 1</tt>.
 \exception error=='n' First model input is \c NULL.
