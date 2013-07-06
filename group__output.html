@@ -40,7 +40,7 @@ Modules</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me)
+<li>void <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me, FILE *ap)
 <li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
 <li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
 <li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
@@ -106,16 +106,26 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="ga3af0274133637ffd31e9708b87783b53"></a><!-- doxytag: member="apop_model.c::apop_model_print" ref="ga3af0274133637ffd31e9708b87783b53" args="(apop_model *print_me)" -->
+<a class="anchor" id="gab7bf9adff9b97c60c5839ae72ba4fb7f"></a><!-- doxytag: member="apop_model.c::apop_model_print" ref="gab7bf9adff9b97c60c5839ae72ba4fb7f" args="(apop_model *print_me, FILE *ap)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a> </td>
+          <td class="memname">void <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>print_me</em></td><td>)</td>
+          <td class="paramname"><em>print_me</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>ap</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
@@ -131,10 +141,10 @@ Functions</h2>
   printf(<span class="stringliteral">&quot;Additional info:\n&quot;</span>);
   ...
 }
-</pre></div><p>I always print to the file/pipe connected to {apop_opts::output_pipe}. The default is <code>stdout</code>, but if you'd like something else, use fopen. E.g.: </p>
-<div class="fragment"><pre class="fragment"><a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a7fef183a3af4d313c4ca5303df8fde8e">output_pipe</a>=fopen(<span class="stringliteral">&quot;outfile.txt&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>); <span class="comment">//or &quot;a&quot; to append.</span>
-<a class="code" href="group__output.html#ga3af0274133637ffd31e9708b87783b53">apop_model_print</a>(the_model);
-fclose(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a7fef183a3af4d313c4ca5303df8fde8e">output_pipe</a>);<span class="comment">//optional in most cases.</span>
+</pre></div><p>I always print to the file/pipe connected to <code>apop_opts.output_pipe</code>. The default is <code>stdout</code>, but if you'd like something else, use fopen. E.g.: </p>
+<div class="fragment"><pre class="fragment">FILE *out =fopen(<span class="stringliteral">&quot;outfile.txt&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>); <span class="comment">//or &quot;a&quot; to append.</span>
+<a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(the_model, out);
+fclose(out);<span class="comment">//optional in most cases.</span>
 </pre></div> 
 </div>
 </div>
@@ -182,7 +192,7 @@ fclose(<a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc"
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
     <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
   </table>
   </dd>
@@ -304,11 +314,10 @@ A lattice showing three variables graphed against each other.</div></div>
 </pre></div><ul>
 <li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how settings are set. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-<li>This function respects the global <code>apop_opts.output_type</code> and <code>apop_opts.output_pipe</code> variables; see the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for details. </li>
 </ul>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

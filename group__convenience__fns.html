@@ -40,12 +40,9 @@ Defines</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>char * <a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a> (char const *in, char strip_type)
 <li>gsl_rng * <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a> (int seed)
 <li>gsl_vector * <a class="el" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a> (const gsl_vector *in)
 <li>gsl_matrix * <a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a> (const gsl_matrix *in)
-<li>void <a class="el" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a> (gsl_vector *v, int i, double amt)
-<li>void <a class="el" href="group__convenience__fns.html#ga30db74bbed6bcc9cf4fa4cdbc68313b8">apop_matrix_increment</a> (gsl_matrix *m, int i, int j, double amt)
 <li>void <a class="el" href="group__convenience__fns.html#ga1a4a67e0b0bec8205cfe75bd3786c30e">apop_vector_log10</a> (gsl_vector *v)
 <li>void <a class="el" href="group__convenience__fns.html#ga5a622b8360eba63795a6049c30ac54a2">apop_vector_log</a> (gsl_vector *v)
 <li>void <a class="el" href="group__convenience__fns.html#ga032dcecb67155c527c884dd2c1cc6a6e">apop_vector_exp</a> (gsl_vector *v)
@@ -101,57 +98,6 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>a structure that this function will allocate and fill. If <code>gsl_matrix_alloc</code> fails, returns <code>NULL</code>. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="ga30db74bbed6bcc9cf4fa4cdbc68313b8"></a><!-- doxytag: member="apop_linear_algebra.c::apop_matrix_increment" ref="ga30db74bbed6bcc9cf4fa4cdbc68313b8" args="(gsl_matrix *m, int i, int j, double amt)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="group__convenience__fns.html#ga30db74bbed6bcc9cf4fa4cdbc68313b8">apop_matrix_increment</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_matrix *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>i</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>j</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>amt</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Just add <code>amt</code> to a <code>gsl_matrix</code> element. This is a readable convenience function that does some checks along the way. If you need speed, try, e.g.,</p>
-<div class="fragment"><pre class="fragment">  *gsl_matrix_ptr(v, i, j) += amt;
-</pre></div><p>which is roughly 25% faster by my tests.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">m</td><td>The <code>gsl_matrix</code> in question (No default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">i</td><td>The row of the element to be incremented. (No default) </td></tr>
-    <tr><td class="paramname">j</td><td>The column of the element to be incremented. (No default) </td></tr>
-    <tr><td class="paramname">amt</td><td>The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use <code>apop_vector_increment_base</code>.) </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -280,11 +226,13 @@ Functions</h2>
   gsl_matrix *output, *t;
     output = <a class="code" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a>(ul, ur, <span class="charliteral">&#39;c&#39;</span>);
     t = <a class="code" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a>(dl, dr, <span class="charliteral">&#39;c&#39;</span>);
-    <a class="code" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a>(output, t, <span class="charliteral">&#39;r&#39;</span>, .inplace=1);
+    <a class="code" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a>(output, t, <span class="charliteral">&#39;r&#39;</span>, .inplace=<span class="charliteral">&#39;y&#39;</span>);
     gsl_matrix_free(t);
     <span class="keywordflow">return</span> output;
 }
-</pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+</pre></div><ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -338,65 +286,6 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="ga9e82db6a61febe39f2037879eec6f285"></a><!-- doxytag: member="apop_asst.c::apop_strip_dots" ref="ga9e82db6a61febe39f2037879eec6f285" args="(char const *in, char strip_type)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">char* <a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a> </td>
-          <td>(</td>
-          <td class="paramtype">char const *&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>strip_type</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Strip dots from a name.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>A string </td></tr>
-    <tr><td class="paramname">strip_type</td><td>'d': replace all '.' with '_'.<br/>
- 'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot. 'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>For example:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
-<span class="keywordtype">int</span> main(){
-    <span class="comment">/* 0: replace all dots with _</span>
-<span class="comment">      1: everything before the last dot.</span>
-<span class="comment">      2: everything after the first dot.</span>
-<span class="comment">      */</span>
-    <span class="keywordtype">char</span> teapot[] = <span class="stringliteral">&quot;tea.pot&quot;</span>;
-    <span class="keywordtype">char</span> many_dots[] = <span class="stringliteral">&quot;tea.pot.csv&quot;</span>;
-    <span class="keywordtype">char</span> *out;
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(teapot, 0);
-    assert(!strcmp(out, <span class="stringliteral">&quot;tea_pot&quot;</span>));
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(teapot, 1);
-    assert(!strcmp(out, <span class="stringliteral">&quot;tea&quot;</span>));
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(teapot, 2);
-    assert(!strcmp(out, <span class="stringliteral">&quot;pot&quot;</span>));
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(many_dots, 0);
-    assert(!strcmp(out, <span class="stringliteral">&quot;tea_pot_csv&quot;</span>));
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(many_dots, 1);
-    assert(!strcmp(out, <span class="stringliteral">&quot;tea.pot&quot;</span>));
-    out = <a class="code" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a>(many_dots, 2);
-    assert(!strcmp(out, <span class="stringliteral">&quot;pot.csv&quot;</span>));
-}
-</pre></div> 
-</div>
-</div>
 <a class="anchor" id="ga136ded2b6d190739deca064701cf5ca1"></a><!-- doxytag: member="apop_linear_algebra.c::apop_vector_bounded" ref="ga136ded2b6d190739deca064701cf5ca1" args="(const gsl_vector *in, long double max)" -->
 <div class="memitem">
 <div class="memproto">
@@ -430,7 +319,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_22.png"/>; zero otherwise.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_20.png"/>; zero otherwise.</dd></dl>
 <ul>
 <li>A <code>NULL</code> vector has no unbounded elements, so <code>NULL</code> input returns 1. You get a warning if <code>apop_opts.verbosity &gt;=1</code>. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -502,18 +391,18 @@ Functions</h2>
 <div class="memdoc">
 <p>Returns the distance between two vectors, where distance is defined based on the third (optional) parameter:</p>
 <ul>
-<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_62.png"/> where <img class="formulaInl" alt="$i$" src="form_63.png"/> iterates over dimensions.</li>
-<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_64.png"/> where <img class="formulaInl" alt="$i$" src="form_63.png"/> iterates over dimensions.</li>
-<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_65.png"/>, return zero, else return one.</li>
-<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_66.png"/> is largest, return the distance along that one dimension.</li>
-<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_67.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_68.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_19.png"/> is set by the fourth (optional) argument.</li>
+<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_58.png"/> where <img class="formulaInl" alt="$i$" src="form_59.png"/> iterates over dimensions.</li>
+<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_60.png"/> where <img class="formulaInl" alt="$i$" src="form_59.png"/> iterates over dimensions.</li>
+<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_61.png"/>, return zero, else return one.</li>
+<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_62.png"/> is largest, return the distance along that one dimension.</li>
+<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_63.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_64.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_17.png"/> is set by the fourth (optional) argument.</li>
 </ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">ina</td><td>First vector (No default, must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">inb</td><td>Second vector (Default = zero) </td></tr>
     <tr><td class="paramname">metric</td><td>The type of metric, as above. </td></tr>
-    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_67.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_19.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
+    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_63.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_17.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
   </table>
   </dd>
 </dl>
@@ -539,7 +428,9 @@ Functions</h2>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2, <span class="charliteral">&#39;m&#39;</span>) == 7.);     <span class="comment">//distance v1 to v2 in Manhattan</span>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1,v2, <span class="charliteral">&#39;L&#39;</span>, 2) == 5.);  <span class="comment">//L_2 norm == Euclidean</span>
 }
-</pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+</pre></div><ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -557,55 +448,10 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_21.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_21.png"/>).</p>
+<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_19.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_19.png"/>).</p>
 <ul>
 <li>If the input vector is <code>NULL</code>, do nothing. </li>
 </ul>
-
-</div>
-</div>
-<a class="anchor" id="ga6c6853616a59a1bd26765c7ef08fb86c"></a><!-- doxytag: member="apop_linear_algebra.c::apop_vector_increment" ref="ga6c6853616a59a1bd26765c7ef08fb86c" args="(gsl_vector *v, int i, double amt)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>v</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>i</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>amt</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Just add <code>amt</code> to a <code>gsl_vector</code> element. This is a readable convenience function that does some checks along the way. If you need speed, try, e.g.,</p>
-<div class="fragment"><pre class="fragment">  *gsl_vector_ptr(v, i) += amt;
-</pre></div><p>which is roughly 25% faster by my tests.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">v</td><td>The <code>gsl_vector</code> in question (No default, must not be NULL) </td></tr>
-    <tr><td class="paramname">i</td><td>The location in the vector to be incremented. (No default) </td></tr>
-    <tr><td class="paramname">amt</td><td>The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use <code>apop_vector_increment_base</code>.)</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
 </div>
@@ -691,7 +537,9 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>the stacked data, either in a new vector or a pointer to <code>v1</code>.</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -715,4 +563,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

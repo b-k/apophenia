@@ -63,83 +63,77 @@ urchinTracker();
 <a name="l00032"></a>00032 Apop_var_declare( <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__histograms.html#gaa1a0418204fcbe890eb056896cd4b9f4">apop_model_to_pmf</a>(<a class="code" href="structapop__model.html">apop_model</a> *model, <a class="code" href="structapop__data.html">apop_data</a> *binspec, <span class="keywordtype">long</span> <span class="keywordtype">int</span> draws, <span class="keywordtype">int</span> bin_count, gsl_rng *rng) )
 <a name="l00033"></a>00033 
 <a name="l00034"></a>00034 <span class="comment">//text conveniences</span>
-<a name="l00035"></a>00035 <span class="keywordtype">char</span> * <a class="code" href="group__convenience__fns.html#gaa09c5839947d8277fec93ce26bab653e">apop_strip_dots</a>(<span class="keywordtype">char</span> const *in, <span class="keywordtype">char</span> strip_type);
-<a name="l00036"></a>00036 Apop_var_declare( <span class="keywordtype">char</span>* <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(<a class="code" href="structapop__data.html">apop_data</a> const*strings, <span class="keywordtype">char</span> *between, <span class="keywordtype">char</span> *before, <span class="keywordtype">char</span> *after, <span class="keywordtype">char</span> *between_cols, <span class="keywordtype">int</span> (*prune)(<a class="code" href="structapop__data.html">apop_data</a>* ! <span class="keywordtype">int</span> ! <span class="keywordtype">int</span> ! <span class="keywordtype">void</span>*), <span class="keywordtype">void</span>* prune_parameter) )
-<a name="l00042"></a>00042 <span class="preprocessor">#define Apop_notify(verbosity, ...) {\</span>
-<a name="l00043"></a>00043 <span class="preprocessor">    if (apop_opts.verbose != -1 &amp;&amp; apop_opts.verbose &gt;= verbosity) {  \</span>
-<a name="l00044"></a>00044 <span class="preprocessor">        if (!apop_opts.log_file) apop_opts.log_file = stderr; \</span>
-<a name="l00045"></a>00045 <span class="preprocessor">        fprintf(apop_opts.log_file, &quot;%s: &quot;, __func__); fprintf(apop_opts.log_file, __VA_ARGS__); fprintf(apop_opts.log_file, &quot;\n&quot;);   \</span>
-<a name="l00046"></a>00046 <span class="preprocessor">        fflush(apop_opts.log_file); \</span>
-<a name="l00047"></a>00047 <span class="preprocessor">} }</span>
-<a name="l00048"></a>00048 <span class="preprocessor"></span>
-<a name="l00049"></a>00049 <span class="preprocessor">#define Apop_maybe_abort(level) \</span>
-<a name="l00050"></a>00050 <span class="preprocessor">            {if ((level == -5 &amp;&amp; apop_opts.stop_on_warning!=&#39;n&#39;)                \</span>
-<a name="l00051"></a>00051 <span class="preprocessor">            || (apop_opts.verbose &gt;= level &amp;&amp; apop_opts.stop_on_warning == &#39;v&#39;) \</span>
-<a name="l00052"></a>00052 <span class="preprocessor">            || (apop_opts.stop_on_warning==&#39;w&#39;) ) \</span>
-<a name="l00053"></a>00053 <span class="preprocessor">                raise(SIGTRAP);}</span>
-<a name="l00054"></a>00054 <span class="preprocessor"></span>
-<a name="l00066"></a>00066 <span class="preprocessor">#define Apop_stopif(test, onfail, level, ...) {\</span>
-<a name="l00067"></a>00067 <span class="preprocessor">     if (test) {  \</span>
-<a name="l00068"></a>00068 <span class="preprocessor">        Apop_notify(level,  __VA_ARGS__);   \</span>
-<a name="l00069"></a>00069 <span class="preprocessor">        Apop_maybe_abort(level)  \</span>
-<a name="l00070"></a>00070 <span class="preprocessor">        onfail;  \</span>
-<a name="l00071"></a>00071 <span class="preprocessor">    } }</span>
-<a name="l00072"></a>00072 <span class="preprocessor"></span>
-<a name="l00073"></a>00073 <span class="preprocessor">#define apop_errorlevel -5</span>
-<a name="l00074"></a>00074 <span class="preprocessor"></span>
-<a name="l00075"></a>00075 <span class="comment">//For use in stopif, to return a blank apop_data set with an error attached.</span>
-<a name="l00076"></a>00076 <span class="preprocessor">#define apop_return_data_error(E) {apop_data *out=apop_data_alloc(); out-&gt;error=&#39;E&#39;; return out;}</span>
-<a name="l00077"></a>00077 <span class="preprocessor"></span>
-<a name="l00078"></a>00078 <span class="comment">/* The Apop_stopif macro is currently favored, but there&#39;s a long history of prior</span>
-<a name="l00079"></a>00079 <span class="comment">   error-handling setups. Consider all of the Assert... macros below to be deprecated.</span>
-<a name="l00080"></a>00080 <span class="comment">*/</span>
-<a name="l00081"></a>00081 <span class="preprocessor">#define Apop_assert_c(test, returnval, level, ...) \</span>
-<a name="l00082"></a>00082 <span class="preprocessor">    Apop_stopif(!(test), return returnval, level, __VA_ARGS__)</span>
-<a name="l00083"></a>00083 <span class="preprocessor"></span>
-<a name="l00084"></a>00084 <span class="preprocessor">#define Apop_assert(test, ...) Apop_assert_c((test), 0, apop_errorlevel, __VA_ARGS__)</span>
-<a name="l00085"></a>00085 <span class="preprocessor"></span>
-<a name="l00086"></a>00086 <span class="comment">//For things that return void. Transitional and deprecated at birth.</span>
-<a name="l00087"></a>00087 <span class="preprocessor">#define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)</span>
-<a name="l00088"></a>00088 <span class="preprocessor"></span><span class="preprocessor">#define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)</span>
-<a name="l00089"></a>00089 <span class="preprocessor"></span><span class="preprocessor">#define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)</span>
-<a name="l00090"></a>00090 <span class="preprocessor"></span>
-<a name="l00091"></a>00091 <span class="preprocessor">#define apop_assert_s Apop_assert</span>
-<a name="l00092"></a>00092 <span class="preprocessor"></span><span class="preprocessor">#define apop_assert Apop_assert</span>
-<a name="l00093"></a>00093 <span class="preprocessor"></span><span class="preprocessor">#define Apop_assert_s Apop_assert</span>
-<a name="l00094"></a>00094 <span class="preprocessor"></span><span class="preprocessor">#define apop_assert_c Apop_assert_c</span>
-<a name="l00095"></a>00095 <span class="preprocessor"></span>
-<a name="l00096"></a>00096 <span class="comment">//Missing data</span>
-<a name="l00097"></a>00097 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__missing__data_8c.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">char</span> inplace) )
-<a name="l00098"></a>00098 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__missing__data_8c.html#a985955429db179a45eb5936ebd324760">apop_ml_impute</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a>* meanvar);
-<a name="l00099"></a>00099 <span class="preprocessor">#define apop_ml_imputation(d, m) apop_ml_impute(d, m)</span>
-<a name="l00100"></a>00100 <span class="preprocessor"></span>
-<a name="l00101"></a>00101 Apop_var_declare( <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *prior, <a class="code" href="structapop__model.html">apop_model</a> *likelihood, gsl_rng *rng) )
+<a name="l00035"></a>00035 Apop_var_declare( <span class="keywordtype">char</span>* <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(<a class="code" href="structapop__data.html">apop_data</a> const*strings, <span class="keywordtype">char</span> *between, <span class="keywordtype">char</span> *before, <span class="keywordtype">char</span> *after, <span class="keywordtype">char</span> *between_cols, <span class="keywordtype">int</span> (*prune)(<a class="code" href="structapop__data.html">apop_data</a>* ! <span class="keywordtype">int</span> ! <span class="keywordtype">int</span> ! <span class="keywordtype">void</span>*), <span class="keywordtype">void</span>* prune_parameter) )
+<a name="l00041"></a>00041 <span class="preprocessor">#define Apop_notify(verbosity, ...) {\</span>
+<a name="l00042"></a>00042 <span class="preprocessor">    if (apop_opts.verbose != -1 &amp;&amp; apop_opts.verbose &gt;= verbosity) {  \</span>
+<a name="l00043"></a>00043 <span class="preprocessor">        if (!apop_opts.log_file) apop_opts.log_file = stderr; \</span>
+<a name="l00044"></a>00044 <span class="preprocessor">        fprintf(apop_opts.log_file, &quot;%s: &quot;, __func__); fprintf(apop_opts.log_file, __VA_ARGS__); fprintf(apop_opts.log_file, &quot;\n&quot;);   \</span>
+<a name="l00045"></a>00045 <span class="preprocessor">        fflush(apop_opts.log_file); \</span>
+<a name="l00046"></a>00046 <span class="preprocessor">} }</span>
+<a name="l00047"></a>00047 <span class="preprocessor"></span>
+<a name="l00048"></a>00048 <span class="preprocessor">#define Apop_maybe_abort(level) \</span>
+<a name="l00049"></a>00049 <span class="preprocessor">            {if ((level == -5 &amp;&amp; apop_opts.stop_on_warning!=&#39;n&#39;)                \</span>
+<a name="l00050"></a>00050 <span class="preprocessor">            || (apop_opts.verbose &gt;= level &amp;&amp; apop_opts.stop_on_warning == &#39;v&#39;) \</span>
+<a name="l00051"></a>00051 <span class="preprocessor">            || (apop_opts.stop_on_warning==&#39;w&#39;) ) \</span>
+<a name="l00052"></a>00052 <span class="preprocessor">                raise(SIGTRAP);}</span>
+<a name="l00053"></a>00053 <span class="preprocessor"></span>
+<a name="l00065"></a>00065 <span class="preprocessor">#define Apop_stopif(test, onfail, level, ...) {\</span>
+<a name="l00066"></a>00066 <span class="preprocessor">     if (test) {  \</span>
+<a name="l00067"></a>00067 <span class="preprocessor">        Apop_notify(level,  __VA_ARGS__);   \</span>
+<a name="l00068"></a>00068 <span class="preprocessor">        Apop_maybe_abort(level)  \</span>
+<a name="l00069"></a>00069 <span class="preprocessor">        onfail;  \</span>
+<a name="l00070"></a>00070 <span class="preprocessor">    } }</span>
+<a name="l00071"></a>00071 <span class="preprocessor"></span>
+<a name="l00072"></a>00072 <span class="preprocessor">#define apop_errorlevel -5</span>
+<a name="l00073"></a>00073 <span class="preprocessor"></span>
+<a name="l00074"></a>00074 <span class="comment">//For use in stopif, to return a blank apop_data set with an error attached.</span>
+<a name="l00075"></a>00075 <span class="preprocessor">#define apop_return_data_error(E) {apop_data *out=apop_data_alloc(); out-&gt;error=&#39;E&#39;; return out;}</span>
+<a name="l00076"></a>00076 <span class="preprocessor"></span>
+<a name="l00077"></a>00077 <span class="comment">/* The Apop_stopif macro is currently favored, but there&#39;s a long history of prior</span>
+<a name="l00078"></a>00078 <span class="comment">   error-handling setups. Consider all of the Assert... macros below to be deprecated.</span>
+<a name="l00079"></a>00079 <span class="comment">*/</span>
+<a name="l00080"></a>00080 <span class="preprocessor">#define Apop_assert_c(test, returnval, level, ...) \</span>
+<a name="l00081"></a>00081 <span class="preprocessor">    Apop_stopif(!(test), return returnval, level, __VA_ARGS__)</span>
+<a name="l00082"></a>00082 <span class="preprocessor"></span>
+<a name="l00083"></a>00083 <span class="preprocessor">#define Apop_assert(test, ...) Apop_assert_c((test), 0, apop_errorlevel, __VA_ARGS__)</span>
+<a name="l00084"></a>00084 <span class="preprocessor"></span>
+<a name="l00085"></a>00085 <span class="comment">//For things that return void. Transitional and deprecated at birth.</span>
+<a name="l00086"></a>00086 <span class="preprocessor">#define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)</span>
+<a name="l00087"></a>00087 <span class="preprocessor"></span><span class="preprocessor">#define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)</span>
+<a name="l00088"></a>00088 <span class="preprocessor"></span><span class="preprocessor">#define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)</span>
+<a name="l00089"></a>00089 <span class="preprocessor"></span>
+<a name="l00090"></a>00090 <span class="comment">//Missing data</span>
+<a name="l00091"></a>00091 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__missing__data_8c.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">char</span> inplace) )
+<a name="l00092"></a>00092 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__missing__data_8c.html#a985955429db179a45eb5936ebd324760">apop_ml_impute</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a>* meanvar);
+<a name="l00093"></a>00093 <span class="preprocessor">#define apop_ml_imputation(d, m) apop_ml_impute(d, m)</span>
+<a name="l00094"></a>00094 <span class="preprocessor"></span>
+<a name="l00095"></a>00095 Apop_var_declare( <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *prior, <a class="code" href="structapop__model.html">apop_model</a> *likelihood, gsl_rng *rng) )
+<a name="l00096"></a>00096 
+<a name="l00097"></a>00097 Apop_var_declare( <span class="keywordtype">double</span> <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(<span class="keywordtype">double</span> statistic, <span class="keywordtype">char</span> *distribution, <span class="keywordtype">double</span> p1, <span class="keywordtype">double</span> p2, <span class="keywordtype">char</span> tail) )
+<a name="l00098"></a>00098 
+<a name="l00099"></a>00099 <span class="comment">//Sorting (apop_asst.c)</span>
+<a name="l00100"></a>00100 Apop_var_declare( <span class="keywordtype">double</span> * <a class="code" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a>(gsl_vector *data, <span class="keywordtype">char</span> rounding)  )
+<a name="l00101"></a>00101 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> sortby, <span class="keywordtype">char</span> asc) )
 <a name="l00102"></a>00102 
-<a name="l00103"></a>00103 Apop_var_declare( <span class="keywordtype">double</span> <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(<span class="keywordtype">double</span> statistic, <span class="keywordtype">char</span> *distribution, <span class="keywordtype">double</span> p1, <span class="keywordtype">double</span> p2, <span class="keywordtype">char</span> tail) )
-<a name="l00104"></a>00104 
-<a name="l00105"></a>00105 <span class="comment">//Sorting (apop_asst.c)</span>
-<a name="l00106"></a>00106 Apop_var_declare( <span class="keywordtype">double</span> * <a class="code" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a>(gsl_vector *data, <span class="keywordtype">char</span> rounding)  )
-<a name="l00107"></a>00107 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> sortby, <span class="keywordtype">char</span> asc) )
-<a name="l00108"></a>00108 
-<a name="l00109"></a>00109 <span class="comment">//raking</span>
-<a name="l00110"></a>00110 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * apop_rake(<span class="keywordtype">char</span> <span class="keyword">const</span> *margin_table, <span class="keywordtype">char</span> * <span class="keyword">const</span>*var_list, 
-<a name="l00111"></a>00111                     <span class="keywordtype">int</span> var_ct, <span class="keywordtype">char</span> <span class="keyword">const</span> *all_vars, <span class="keywordtype">char</span> * <span class="keyword">const</span> *contrasts, <span class="keywordtype">int</span> contrast_ct, 
-<a name="l00112"></a>00112                     <span class="keywordtype">char</span> <span class="keyword">const</span> *structural_zeros, <span class="keywordtype">int</span> max_iterations, <span class="keywordtype">double</span> tolerance, 
-<a name="l00113"></a>00113                     <span class="keywordtype">char</span> <span class="keyword">const</span> *count_col, <span class="keywordtype">int</span> run_number, <span class="keywordtype">char</span> <span class="keyword">const</span> *init_table, 
-<a name="l00114"></a>00114                     <span class="keywordtype">char</span> <span class="keyword">const</span> *init_count_col, <span class="keywordtype">double</span> nudge, <span class="keywordtype">char</span> <span class="keyword">const</span>* table_name) )
-<a name="l00115"></a>00115 
-<a name="l00116"></a>00116 <span class="comment">//asprintf, vararg, &amp;c</span>
-<a name="l00117"></a>00117 <span class="preprocessor">#include &lt;stdarg.h&gt;</span>
-<a name="l00118"></a>00118 <span class="preprocessor"></span><span class="keyword">extern</span> <span class="keywordtype">int</span> asprintf (<span class="keywordtype">char</span> **res, <span class="keyword">const</span> <span class="keywordtype">char</span> *format, ...)
-<a name="l00119"></a>00119        __attribute__ ((__format__ (__printf__, 2, 3)));
-<a name="l00120"></a>00120 extern <span class="keywordtype">int</span> vasprintf (<span class="keywordtype">char</span> **res, const <span class="keywordtype">char</span> *format, va_list args)
-<a name="l00121"></a>00121        __attribute__ ((__format__ (__printf__, 2, 0)));
-<a name="l00122"></a>00122 
-<a name="l00123"></a>00123 <span class="preprocessor">#ifdef    __cplusplus</span>
-<a name="l00124"></a>00124 <span class="preprocessor"></span>}
-<a name="l00125"></a>00125 <span class="preprocessor">#endif</span>
-<a name="l00126"></a>00126 <span class="preprocessor"></span>
-<a name="l00127"></a>00127 <span class="preprocessor">#endif</span>
+<a name="l00103"></a>00103 <span class="comment">//raking</span>
+<a name="l00104"></a>00104 Apop_var_declare( <a class="code" href="structapop__data.html">apop_data</a> * apop_rake(<span class="keywordtype">char</span> <span class="keyword">const</span> *margin_table, <span class="keywordtype">char</span> * <span class="keyword">const</span>*var_list, 
+<a name="l00105"></a>00105                     <span class="keywordtype">int</span> var_ct, <span class="keywordtype">char</span> <span class="keyword">const</span> *all_vars, <span class="keywordtype">char</span> * <span class="keyword">const</span> *contrasts, <span class="keywordtype">int</span> contrast_ct, 
+<a name="l00106"></a>00106                     <span class="keywordtype">char</span> <span class="keyword">const</span> *structural_zeros, <span class="keywordtype">int</span> max_iterations, <span class="keywordtype">double</span> tolerance, 
+<a name="l00107"></a>00107                     <span class="keywordtype">char</span> <span class="keyword">const</span> *count_col, <span class="keywordtype">int</span> run_number, <span class="keywordtype">char</span> <span class="keyword">const</span> *init_table, 
+<a name="l00108"></a>00108                     <span class="keywordtype">char</span> <span class="keyword">const</span> *init_count_col, <span class="keywordtype">double</span> nudge, <span class="keywordtype">char</span> <span class="keyword">const</span>* table_name) )
+<a name="l00109"></a>00109 
+<a name="l00110"></a>00110 <span class="comment">//asprintf, vararg, &amp;c</span>
+<a name="l00111"></a>00111 <span class="preprocessor">#include &lt;stdarg.h&gt;</span>
+<a name="l00112"></a>00112 <span class="preprocessor"></span><span class="keyword">extern</span> <span class="keywordtype">int</span> asprintf (<span class="keywordtype">char</span> **res, <span class="keyword">const</span> <span class="keywordtype">char</span> *format, ...)
+<a name="l00113"></a>00113        __attribute__ ((__format__ (__printf__, 2, 3)));
+<a name="l00114"></a>00114 extern <span class="keywordtype">int</span> vasprintf (<span class="keywordtype">char</span> **res, const <span class="keywordtype">char</span> *format, va_list args)
+<a name="l00115"></a>00115        __attribute__ ((__format__ (__printf__, 2, 0)));
+<a name="l00116"></a>00116 
+<a name="l00117"></a>00117 <span class="preprocessor">#ifdef    __cplusplus</span>
+<a name="l00118"></a>00118 <span class="preprocessor"></span>}
+<a name="l00119"></a>00119 <span class="preprocessor">#endif</span>
+<a name="l00120"></a>00120 <span class="preprocessor"></span>
+<a name="l00121"></a>00121 <span class="preprocessor">#endif</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

@@ -49,47 +49,12 @@ Defines</h2>
 <ul>
 <li>#define <a class="el" href="group__settings.html#gaafba071ab93465fed4cac1020082b4c8">Apop_settings_get_group</a>(m, type)
 <li>#define <a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group</a>(m, type)
-<li>#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(model, type,...)
+<li>#define <a class="el" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(model, type,...)
 <li>#define <a class="el" href="group__settings.html#ga8e5f7950ae47b299e20f2c447199cf6f">apop_model_copy_set</a>(model, type,...)
 <li>#define <a class="el" href="group__settings.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a>(model, type, setting)
 <li>#define <a class="el" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(model, type, setting, data)
 </ul>
 <hr/><h2>Define Documentation</h2>
-<a class="anchor" id="ga553b02de4ace5e6f16a8b26da777f9b9"></a><!-- doxytag: member="settings.h::Apop_model_add_group" ref="ga553b02de4ace5e6f16a8b26da777f9b9" args="(model, type,...)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">model, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">type, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Add a settings group. The first two arguments (the model you are attaching to and the settings group name) are mandatory, and then you can use the <a class="el" href="designated.html">Designated initializers</a> syntax to specify default values (if any). </p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the newly-prepped group. </dd></dl>
-
-</div>
-</div>
 <a class="anchor" id="ga8e5f7950ae47b299e20f2c447199cf6f"></a><!-- doxytag: member="settings.h::apop_model_copy_set" ref="ga8e5f7950ae47b299e20f2c447199cf6f" args="(model, type,...)" -->
 <div class="memitem">
 <div class="memproto">
@@ -120,8 +85,43 @@ Defines</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Copy a model and add a settings group. Useful for models that require a settings group to function. See <a class="el" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>.</p>
+<p>Copy a model and add a settings group. Useful for models that require a settings group to function. See <a class="el" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the newly-prepped model. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8fb1877a3cc29edd685a68dd6b4a35dc"></a><!-- doxytag: member="settings.h::Apop_settings_add_group" ref="ga8fb1877a3cc29edd685a68dd6b4a35dc" args="(model, type,...)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">model, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">type, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Add a settings group. The first two arguments (the model you are attaching to and the settings group name) are mandatory, and then you can use the <a class="el" href="designated.html">Designated initializers</a> syntax to specify default values (if any). </p>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the newly-prepped group. </dd></dl>
 
 </div>
 </div>
@@ -254,10 +254,14 @@ Defines</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Modifies a single element of a settings group to the given value. </p>
+<p>Modifies a single element of a settings group to the given value.</p>
+<ul>
+<li>If <code>model==NULL</code>, fails silently. </li>
+<li>If <code>model!=NULL</code> but the given settings group is not found attached to the model, set <code>model-&gt;error='s'</code>. </li>
+</ul>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

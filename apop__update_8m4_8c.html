@@ -100,13 +100,18 @@ double <b>countup</b> (double in)
 <tr>
 <td><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">Beta</a> </td><td><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">Bernoulli</a> </td><td></td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_92.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_93.png"/>   </td></tr>
+<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_90.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_91.png"/>   </td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_70.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_53.png"/>  </td></tr>
+<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_66.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_69.png"/>  </td></tr>
 <tr>
 <td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">Poisson</a> </td><td>Uses sum and size of the data  </td></tr>
 </table>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<ul>
+<li>The conjugate table is stored using a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> apop_model *(*apop_update_type)(apop_data *, <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a> , <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>);
+<span class="preprocessor">#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)</span>
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The input data, that will be used by the likelihood function (default = <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">prior</td><td>The prior <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>draw</code> method. (No default, must not be <code>NULL</code>.) </td></tr>
@@ -115,8 +120,7 @@ double <b>countup</b> (double in)
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters.</dd></dl>
 <p>Here is a test function that compares the output via conjugate table and via Gibbs sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 <span class="keywordtype">int</span> main(){
@@ -127,25 +131,25 @@ double <b>countup</b> (double in)
     <span class="keywordtype">int</span> i, draws = 1500;
     <span class="keywordtype">double</span> n = 4000;
     <span class="comment">//First, the easy estimation using the conjugate distribution table.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *bin = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
-    <a class="code" href="structapop__model.html">apop_model</a> *beta = apop_model_set_parameters(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
-    <a class="code" href="structapop__model.html">apop_model</a> *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
+    apop_model *bin = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
+    apop_model *beta = apop_model_set_parameters(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
+    apop_model *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
 
     <span class="comment">//Now estimate via Gibbs sampling. </span>
     <span class="comment">//Requires a one-parameter binomial, with n fixed,</span>
     <span class="comment">//and a data set of n data points with the right p.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *bcopy = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
-    <a class="code" href="structapop__data.html">apop_data</a> *bin_draws = apop_data_fill(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2), n*(1-binom_start), n*binom_start);
+    apop_model *bcopy = apop_model_set_parameters(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
+    apop_data *bin_draws = apop_data_falloc((1,2), n*(1-binom_start), n*binom_start);
     bin = <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
-    apop_model_add_group(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
-    <a class="code" href="structapop__model.html">apop_model</a> *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
+    <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
+    apop_model *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
 
     <span class="comment">//We now have a histogram of values for p. What&#39;s the closest beta</span>
     <span class="comment">//distribution?</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, draws, 1);
+    apop_data *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(draws, 1);
     <span class="keywordflow">for</span>(i=0; i &lt; draws; i ++)
         <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#gac2fd3491d582376d98913f409cfc4a34">apop_data_ptr</a>(d, i, 0), r, out_h);
-    <a class="code" href="structapop__model.html">apop_model</a> *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
+    apop_model *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
     <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
     <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="structapop__model.html#a5961aa1fe6993d0e9a9eae4715f2c213">parameters</a>-&gt;vector);
     <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(out_beta-&gt;<a class="code" href="structapop__model.html#a5961aa1fe6993d0e9a9eae4715f2c213">parameters</a>-&gt;vector);
@@ -153,10 +157,12 @@ double <b>countup</b> (double in)
     <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(updated-&gt;<a class="code" href="structapop__model.html#a5961aa1fe6993d0e9a9eae4715f2c213">parameters</a>-&gt;vector);
     Apop_assert(error/updated_size &lt; 0.01, <span class="stringliteral">&quot;The error is %g, which is too big.&quot;</span>, error/updated_size);
 }
-</pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+</pre></div><ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

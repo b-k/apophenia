@@ -36,8 +36,6 @@ Functions</h2>
 <ul>
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
-<li>gsl_matrix * <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> (double *line, int rows, int cols)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> (double *in, int vsize, int rows, int cols)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
 <li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
@@ -86,7 +84,9 @@ Functions</h2>
 <ul>
 <li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>.</li>
 </ul>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -142,7 +142,10 @@ Functions</h2>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>gsl_vector</code> with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <code>&amp;&amp; .all_pages=='y'</code>). If <code>out</code> is not <code>NULL</code>, then this is <code>out</code>. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
-    <tr><td class="paramname">NULL</td><td>If you give me a vector as input, and its size is not correct, returns <code>NULL</code>. This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </td></tr>
+    <tr><td class="paramname">NULL</td><td>If you give me a vector as input, and its size is not correct, returns <code>NULL</code>. <ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -257,111 +260,9 @@ Functions</h2>
 <ul>
 <li>If I get to the end of the first page and have more vector to unpack, and the data to fill has a <code>more</code> element, then I will continue into subsequent pages.</li>
 </ul>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
-
-</div>
-</div>
-<a class="anchor" id="gac92b5b4d0e985bcca2e6df1835195743"></a><!-- doxytag: member="apop_conversions.c::apop_line_to_data" ref="gac92b5b4d0e985bcca2e6df1835195743" args="(double *in, int vsize, int rows, int cols)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a> </td>
-          <td>(</td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>vsize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>cols</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>A convenience function to convert a <code>double *</code> array to an <a class="el" href="gentle.html#apop_data">apop_data</a> set. It will have no names. The input data is copied, not pointed to.</p>
-<p>See also <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> or <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a>; this function will use these and then wrap an <a class="el" href="gentle.html#apop_data">apop_data</a> struct around the output(s).</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">in</td><td>The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example, <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> params[] = {0, 1, 2
-                   3, 4, 5};
-<a class="code" href="structapop__data.html">apop_data</a> *out = <a class="code" href="group__conversions.html#gac92b5b4d0e985bcca2e6df1835195743">apop_line_to_data</a>(params, 2, 2, 2);
-</pre></div> will produce an <a class="el" href="gentle.html#apop_data">apop_data</a> set with a vector <img class="formulaInl" alt="$\left[\matrix{0 \cr 3}\right]$" src="form_5.png"/> and a matrix <img class="formulaInl" alt="$\left[\matrix{1 &amp; 2 \cr 4 &amp; 5}\right]$" src="form_6.png"/>. </td></tr>
-    <tr><td class="paramname">vsize</td><td>The vector size. If there are also rows/cols, I expect this to equal the number or rows. </td></tr>
-    <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>the <a class="el" href="gentle.html#apop_data">apop_data</a> set, allocated for you and ready to use. </dd></dl>
-<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">out-&gt;error=='d'</td><td>Dimension error: vector and matrix heights have to be the same. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gae8ac57006d4673be7352bcd16debad7f"></a><!-- doxytag: member="apop_conversions.c::apop_line_to_matrix" ref="gae8ac57006d4673be7352bcd16debad7f" args="(double *line, int rows, int cols)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a> </td>
-          <td>(</td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>line</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>cols</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Convert a <code>double *</code> array to a <code>gsl_matrix</code>. Input data is copied.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">line</td><td>the array to read in </td></tr>
-    <tr><td class="paramname">rows,cols</td><td>the size of the array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>the <code>gsl_matrix</code>, allocated for you and ready to use.</dd></dl>
-<p>usage: </p>
-<div class="fragment"><pre class="fragment"> gsl_matrix *m = <a class="code" href="group__conversions.html#gae8ac57006d4673be7352bcd16debad7f">apop_line_to_matrix</a>(indata, 34, 4); 
-</pre></div> <dl class="see"><dt><b>See also:</b></dt><dd>apop_arrary_to_matrix </dd></dl>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -510,19 +411,21 @@ Functions</h2>
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">text_file</td><td>The name of the text file to be read in. If <code>"-"</code>, then read from <code>STDIN</code>. (default = "-") </td></tr>
-    <tr><td class="paramname">tabname</td><td>The name to give the table in the database (default = <code> apop_strip_dots (text_file, 'd')</code>; default in Python/R interfaces="t") </td></tr>
+    <tr><td class="paramname">tabname</td><td>The name to give the table in the database (default = <code>text_file</code> up to the first dot, e.g., <code>text_file=="pant_lengths.csv"</code> gives <code>tabname=="pant_lengths"</code>; default in Python/R interfaces="t") </td></tr>
     <tr><td class="paramname">has_row_names</td><td>Does the lines of data have row names? (default = 0) </td></tr>
-    <tr><td class="paramname">has_col_names</td><td>Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1) </td></tr>
+    <tr><td class="paramname">has_col_names</td><td>Is the top line a list of column names? (default = 1) </td></tr>
     <tr><td class="paramname">field_names</td><td>The list of field names, which will be the columns for the table. If <code>has_col_names==1</code>, read the names from the file (and just set this to <code>NULL</code>). If has_col_names == 1 &amp;&amp; field_names !=NULL, I'll use the field names. (default = NULL) </td></tr>
     <tr><td class="paramname">field_ends</td><td>If fields have a fixed size, give the end of each field, e.g. {3, 8 11}. </td></tr>
-    <tr><td class="paramname">field_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is the <code>text</code> grid, which should be <img class="formulaInl" alt="$N \times 2$" src="form_8.png"/>. The first item in each row (<code>your_params-&gt;text[n][0]</code>, for each <img class="formulaInl" alt="$n$" src="form_9.png"/>) is a regular expression to match against the variable names; the second item (<code>your_params-&gt;text[n][1]</code>) is the type, constraint, and/or key (i.e., what comes after the name in the <code>create</code> query). Not all variables need be mentioned; the default type if nothing matches is <code>numeric</code>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <code>.*</code>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> on details of matching. </td></tr>
+    <tr><td class="paramname">field_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is the <code>text</code> grid, which should be <img class="formulaInl" alt="$N \times 2$" src="form_6.png"/>. The first item in each row (<code>your_params-&gt;text[n][0]</code>, for each <img class="formulaInl" alt="$n$" src="form_7.png"/>) is a regular expression to match against the variable names; the second item (<code>your_params-&gt;text[n][1]</code>) is the type, constraint, and/or key (i.e., what comes after the name in the <code>create</code> query). Not all variables need be mentioned; the default type if nothing matches is <code>numeric</code>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <code>.*</code>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> on details of matching. </td></tr>
     <tr><td class="paramname">table_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a table constraint or key, such as <code>not null primary key (age, sex)</code>, put that here. </td></tr>
     <tr><td class="paramname">delimiters</td><td>A string listing the characters that delimit fields. default = <code>"|,\t"</code></td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns the number of rows on success, -1 on error.</dd></dl>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -562,12 +465,12 @@ Functions</h2>
 <dl class="return"><dt><b>Returns:</b></dt><dd>a newly-allocated <code>gsl_matrix</code> with one column (or row).</dd></dl>
 <ul>
 <li>If you send in a <code>NULL</code> vector, you get a <code>NULL</code> pointer in return. I warn you of this if <code>apop_opts.verbosity &gt;=1 </code>. </li>
-<li>If <code>gsl_matrix_alloc</code> fails and <code>apop_opts.stop_on_warn=='n'</code>, you get a <code>NULL</code> pointer in return.</li>
+<li>If <code>gsl_matrix_alloc</code> fails and <code>apop_opts.stop_on_warn=='n'</code>, you get a <code>NULL</code> pointer in return. </li>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

@@ -42,10 +42,10 @@ urchinTracker();
 <p>None of these steps are really rocket science, but there is a huge amount of redundancy. Apophenia includes some macros that reduce the boilerplate redundancy significantly. There are two layers: the C-standard code, and the script that produces the C-standard code.</p>
 <p>We'll begin with the C-standard header file: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<span class="preprocessor"></span> <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
+<span class="preprocessor"></span> <span class="keywordtype">void</span> apop_vector_increment(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
 <span class="preprocessor">#else</span>
 <span class="preprocessor"></span> <span class="keywordtype">void</span> apop_vector_increment_base(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
- apop_varad_declare(<span class="keywordtype">void</span>, <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>, gsl_vector * v; <span class="keywordtype">int</span> i; <span class="keywordtype">double</span> amt);
+ apop_varad_declare(<span class="keywordtype">void</span>, apop_vector_increment, gsl_vector * v; <span class="keywordtype">int</span> i; <span class="keywordtype">double</span> amt);
 <span class="preprocessor">#define apop_vector_increment(...) apop_varad_link(apop_vector_increment, __VA_ARGS__)</span>
 <span class="preprocessor">#endif</span>
 </pre></div><p>First, there is an if/else that allows the system to degrade gracefully if you are sending C code to a parser like swig, whose goals differ too much from straight C compilation for this to work. Just set <code>APOP_NO_VARIADIC</code> to produce a plain function with no variadic support.</p>
@@ -61,9 +61,9 @@ urchinTracker();
 </pre></div><p> That gives us part three: a macro that lets the user think that they are making a typical function call with a set of arguments, but wraps what they type into a struct.</p>
 <p>Now for the code file where the function is declared. Again, there is is an <code>APOP_NO_VARIADIC</code> wrapper. Inside the interesting part, we find the wrapper function to unpack the struct that comes in.</p>
 <div class="fragment"><pre class="fragment">\#ifdef APOP_NO_VARIADIC 
- <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
+ <span class="keywordtype">void</span> apop_vector_increment(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
 \#<span class="keywordflow">else</span>
-apop_varad_head( <span class="keywordtype">void</span> , <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>){
+apop_varad_head( <span class="keywordtype">void</span> , apop_vector_increment){
     gsl_vector * apop_varad_var(v, NULL);
     Apop_assert(v, <span class="stringliteral">&quot;You sent me a NULL vector.&quot;</span>);
     <span class="keywordtype">int</span> apop_varad_var(i, 0);
@@ -87,10 +87,10 @@ apop_varad_head( <span class="keywordtype">void</span> , <a class="code" href="g
 <p>The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the plain C preprocessor.</p>
 <p>Thus, in Apophenia's code base (the one you'll get from checking out the git repository, not the gzipped distribution that has already been post-processed) you will find a pre-preprocessing script that converts a few markers to the above form. Here is the code that will expand to the above C-standard code:</p>
 <div class="fragment"><pre class="fragment"><span class="comment">//header file</span>
-APOP_VAR_DECLARE <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
+APOP_VAR_DECLARE <span class="keywordtype">void</span> apop_vector_increment(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt);
 
 <span class="comment">//code file</span>
-APOP_VAR_HEAD <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
+APOP_VAR_HEAD <span class="keywordtype">void</span> apop_vector_increment(gsl_vector * v, <span class="keywordtype">int</span> i, <span class="keywordtype">double</span> amt){
     gsl_vector * apop_varad_var(v, NULL);
     Apop_assert(v, <span class="stringliteral">&quot;You sent me a NULL vector.&quot;</span>);
     <span class="keywordtype">int</span> apop_varad_var(i, 0);
@@ -106,4 +106,4 @@ APOP_VAR_END_HEAD
 <div class="fragment"><pre class="fragment">./prep_variadics.sed &lt; myfile.pre.c &gt; myfile.c
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

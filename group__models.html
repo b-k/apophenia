@@ -75,8 +75,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Take in an unparameterized <code><a class="el" href="structapop__model.html">apop_model</a></code> and return a new <code><a class="el" href="structapop__model.html">apop_model</a></code> with the given parameters. This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.</p>
-<p>For example, if you need a N(0,1) quickly: </p>
+<p>Take in an unparameterized <code><a class="el" href="structapop__model.html">apop_model</a></code> and return a new <code><a class="el" href="structapop__model.html">apop_model</a></code> with the given parameters. For example, if you need a N(0,1) quickly: </p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *std_normal = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
 </pre></div><p>This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter <a class="el" href="gentle.html#apop_data">apop_data</a> set. This is most standard models, so that's not a real problem either. If you have a situation where these options are out, you'll have to do something like <code><a class="el" href="structapop__model.html">apop_model</a> *new = apop_model_copy(in); apop_model_clear(your_data, in);</code> and then set <code>in-&gt;parameters</code> using your data.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -89,10 +88,13 @@ Functions</h2>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A copy of the input model, with parameters set. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
-    <tr><td class="paramname">out-&gt;error=='d'</td><td>dimension error: you gave me a model with an indeterminate number of parameters. Set .vbase or .m2base and .m2base first, then call this fn, or use <a class="el" href="structapop__model.html">apop_model</a> *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size). </td></tr>
+    <tr><td class="paramname">out-&gt;error=='d'</td><td>dimension error: you gave me a model with an indeterminate number of parameters. Set .vsize or .msize1 and .msize2 first, then call this fn, or use <a class="el" href="structapop__model.html">apop_model</a> *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).</td></tr>
   </table>
   </dd>
 </dl>
+<ul>
+<li>This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name. </li>
+</ul>
 
 </div>
 </div>
@@ -107,7 +109,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>The Bernoulli model: A single random draw with probability <img class="formulaInl" alt="$p$" src="form_19.png"/>. </p>
+<p>The Bernoulli model: A single random draw with probability <img class="formulaInl" alt="$p$" src="form_17.png"/>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330a5914ca288dbdeed9231b09427af37e92"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggac5437f95ff92d27f389a7b3e27812330a5914ca288dbdeed9231b09427af37e92" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -139,7 +141,7 @@ Functions</h2>
 <p><code>Bernoulli distribution</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330a0ac2774fe0f8658e2df335e4b9d17a0e"></a><!-- doxytag: member="Input format" ref="ggac5437f95ff92d27f389a7b3e27812330a0ac2774fe0f8658e2df335e4b9d17a0e" args="" -->Input format</em>&nbsp;</td><td>
-<p>The matrix or vector can have any size, and I just count up zeros and non-zeros. The Bernoulli parameter <img class="formulaInl" alt="$p$" src="form_19.png"/> is the percentage of non-zero values in the matrix. Its variance is <img class="formulaInl" alt="$p(1-p)$" src="form_164.png"/>. </p>
+<p>The matrix or vector can have any size, and I just count up zeros and non-zeros. The Bernoulli parameter <img class="formulaInl" alt="$p$" src="form_17.png"/> is the percentage of non-zero values in the matrix. Its variance is <img class="formulaInl" alt="$p(1-p)$" src="form_162.png"/>. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac5437f95ff92d27f389a7b3e27812330adb1fc69dcb0503653bae6f7d916bef7c"></a><!-- doxytag: member="Parameter format" ref="ggac5437f95ff92d27f389a7b3e27812330adb1fc69dcb0503653bae6f7d916bef7c" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>A vector of length one </p>
@@ -149,7 +151,7 @@ Functions</h2>
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top"><img class="formulaInl" alt="$p$" src="form_19.png"/> is the only element in the vector. A <code>&lt;Covariance&gt;</code> page has the variance of <img class="formulaInl" alt="$p$" src="form_19.png"/> in the (0,0)th element of the matrix.  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top"><img class="formulaInl" alt="$p$" src="form_17.png"/> is the only element in the vector. A <code>&lt;Covariance&gt;</code> page has the variance of <img class="formulaInl" alt="$p$" src="form_17.png"/> in the (0,0)th element of the matrix.  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports <code>log likelihood</code>.  </td></tr>
 </table>
@@ -198,9 +200,9 @@ Functions</h2>
 <tr>
 <td class="altcolor">CDF </td><td class="altcolor">M  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -225,7 +227,7 @@ Functions</h2>
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggac11decb2971532ada7d2cd4982848b90a0714eda0c798e9a326298ffad830ae26"></a><!-- doxytag: member="RNG" ref="ggac11decb2971532ada7d2cd4982848b90a0714eda0c798e9a326298ffad830ae26" args="" -->RNG</em>&nbsp;</td><td>
-<p>Produces a scalar <img class="formulaInl" alt="$\in[0,1]$" src="form_163.png"/>. </p>
+<p>Produces a scalar <img class="formulaInl" alt="$\in[0,1]$" src="form_161.png"/>. </p>
 </td></tr>
 </table>
 </dd>
@@ -244,7 +246,7 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The multi-draw generalization of the Bernoulli; the two-bin special case of the <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">Multinomial distribution</a>. This differs from the <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> only in the input data format.</p>
-<p>It is implemented as an alias of the <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> model, except that it has a CDF, <code>.vbase==2</code> and <code>.dsize==1</code> (i.e., we know it has two parameters and a draw returns a scalar). </p>
+<p>It is implemented as an alias of the <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> model, except that it has a CDF, <code>.vsize==2</code> and <code>.dsize==1</code> (i.e., we know it has two parameters and a draw returns a scalar). </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3a2242e71bbc8798381d9bbf4f8e3332b9"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga20017e88fda3695f093279c8191f48e3a2242e71bbc8798381d9bbf4f8e3332b9" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -276,7 +278,7 @@ Functions</h2>
 <p>Each row of the matrix is one observation, consisting of two elements. The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, the number of draws of type one (`hits', `successes') in column one. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3abf6b36f5a7b0871bca53ef89607c583f"></a><!-- doxytag: member="Parameter format" ref="gga20017e88fda3695f093279c8191f48e3abf6b36f5a7b0871bca53ef89607c583f" args="" -->Parameter format</em>&nbsp;</td><td>
-<p>a vector, v[0]= <img class="formulaInl" alt="$n$" src="form_9.png"/>; v[1]= <img class="formulaInl" alt="$p_1$" src="form_162.png"/>. Thus, <img class="formulaInl" alt="$p_0$" src="form_147.png"/> isn't written down; see <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> for further discussion. If you input $v[1]&gt;1$ and <code>apop_opts.verbose &gt;=1</code>, the log likelihood function will throw a warning. </p>
+<p>a vector, v[0]= <img class="formulaInl" alt="$n$" src="form_7.png"/>; v[1]= <img class="formulaInl" alt="$p_1$" src="form_160.png"/>. Thus, <img class="formulaInl" alt="$p_0$" src="form_145.png"/> isn't written down; see <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> for further discussion. If you input $v[1]&gt;1$ and <code>apop_opts.verbose &gt;=1</code>, the log likelihood function will throw a warning. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3a233145471da0e2617dc4487d090d9220"></a><!-- doxytag: member="Post-estimate" ref="gga20017e88fda3695f093279c8191f48e3a233145471da0e2617dc4487d090d9220" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -287,7 +289,7 @@ Functions</h2>
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga20017e88fda3695f093279c8191f48e3a0cf356d574f4179201e2c441f2c11854"></a><!-- doxytag: member="RNG" ref="gga20017e88fda3695f093279c8191f48e3a0cf356d574f4179201e2c441f2c11854" args="" -->RNG</em>&nbsp;</td><td>
-<p>The RNG returns a single number representing the success count, not a vector of length two giving both the failure bin and success bin. This is notable because it differs from the input data format, but it tends to be what people expect from a Binomial RNG. For draws with both dimensions, use a <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> model with <code>.vbase =2</code>. </p>
+<p>The RNG returns a single number representing the success count, not a vector of length two giving both the failure bin and success bin. This is notable because it differs from the input data format, but it tends to be what people expect from a Binomial RNG. For draws with both dimensions, use a <a class="el" href="group__models.html#gacd7823e794194d3646d586484833882a">apop_multinomial</a> model with <code>.vsize =2</code>. </p>
 </td></tr>
 </table>
 </dd>
@@ -305,7 +307,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>The <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> distribution, for descriptive purposes.</p>
+<p>The <img class="formulaInl" alt="$\chi^2$" src="form_16.png"/> distribution, for descriptive purposes.</p>
 <p>If you want to test a hypothesis, you probably don't need this, and should instead use <a class="el" href="asst_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>. See notes in <a class="el" href="group__tfchi.html">t-, chi-squared, F-, Wishart distributions</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5a10ab961e00a8a4104cb02b1a9ac039a7"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaae78271fc81d299c910a54d8ab3c91b5a10ab961e00a8a4104cb02b1a9ac039a7" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -341,7 +343,7 @@ Functions</h2>
 <p>Unordered list of scalars in the matrix and/or vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5a2f3f79a4405bb7bd324ff24d16da91fd"></a><!-- doxytag: member="Parameter format" ref="ggaae78271fc81d299c910a54d8ab3c91b5a2f3f79a4405bb7bd324ff24d16da91fd" args="" -->Parameter format</em>&nbsp;</td><td>
-<p>Zeroth element of the vector is the <img class="formulaInl" alt="$df$" src="form_78.png"/>. </p>
+<p>Zeroth element of the vector is the <img class="formulaInl" alt="$df$" src="form_76.png"/>. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaae78271fc81d299c910a54d8ab3c91b5acc7686fb2b6e9a092552e86be416b414"></a><!-- doxytag: member="Post-estimate" ref="ggaae78271fc81d299c910a54d8ab3c91b5acc7686fb2b6e9a092552e86be416b414" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -398,7 +400,7 @@ Functions</h2>
     <a class="code" href="structapop__model.html">apop_model</a> *ct = <a class="code" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform</a>(
             .transformed_to_base= rev, .jacobian_to_base=rev_j,
             .base_model=&amp;<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>);
-    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(ct, apop_parts_wanted);<span class="comment">//Speed up the MLE.</span>
+    Apop_model_add_group(ct, apop_parts_wanted);<span class="comment">//Speed up the MLE.</span>
 
     <span class="comment">//make fake data</span>
     <span class="keywordtype">double</span> mu=2, sigma=1;
@@ -541,7 +543,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>A model that constrains the base model to within some data constraint. E.g., truncate <img class="formulaInl" alt="$P(d)$" src="form_129.png"/> to zero for all <img class="formulaInl" alt="$d$" src="form_130.png"/> outside of a given constraint. Generate using <a class="el" href="types_8h.html#a34644b9d55c7528b47f0b887c9241928">apop_model_dconstrain</a> .</p>
+<p>A model that constrains the base model to within some data constraint. E.g., truncate <img class="formulaInl" alt="$P(d)$" src="form_127.png"/> to zero for all <img class="formulaInl" alt="$d$" src="form_128.png"/> outside of a given constraint. Generate using <a class="el" href="types_8h.html#a34644b9d55c7528b47f0b887c9241928">apop_model_dconstrain</a> .</p>
 <ul>
 <li>This is still in beta. Expect the interface to change.</li>
 </ul>
@@ -603,7 +605,7 @@ Functions</h2>
 <span class="preprocessor">#ifdef Testing</span>
 <span class="preprocessor"></span><span class="preprocessor">#define Show_results(m)</span>
 <span class="preprocessor"></span><span class="preprocessor">#else</span>
-<span class="preprocessor"></span><span class="preprocessor">#define Show_results(m) apop_model_print(m);</span>
+<span class="preprocessor"></span><span class="preprocessor">#define Show_results(m) apop_model_print(m, NULL);</span>
 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <span class="preprocessor"></span>
 <span class="comment">//The constraint function.</span>
@@ -690,9 +692,9 @@ Functions</h2>
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -701,7 +703,7 @@ Functions</h2>
 <p><code>Dirichlet distribution</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3199e483f340d6cedaa6488565c42c78accdc91386159b10c00c114d3365641c0"></a><!-- doxytag: member="Input format" ref="gga3199e483f340d6cedaa6488565c42c78accdc91386159b10c00c114d3365641c0" args="" -->Input format</em>&nbsp;</td><td>
-<p>Each row of your data is a single observation. </p>
+<p>Each row of your data matrix is a single observation. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3199e483f340d6cedaa6488565c42c78a3cf103dcd4a9c8f8caf17dbfcb6dfc58"></a><!-- doxytag: member="Parameter format" ref="gga3199e483f340d6cedaa6488565c42c78a3cf103dcd4a9c8f8caf17dbfcb6dfc58" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>The estimated parameters are in the output model's <code>parameters-&gt;vector</code>. The size of the model is determined by the width of your input data set, so later RNG draws, &amp;c will match in size. </p>
@@ -734,11 +736,11 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The Exponential distribution.</p>
-<p><img class="formulaInl" alt="$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $" src="form_141.png"/> <br/>
- <img class="formulaInl" alt="$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $" src="form_142.png"/> <br/>
- <img class="formulaInl" alt="$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $" src="form_143.png"/> <br/>
+<p><img class="formulaInl" alt="$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $" src="form_139.png"/> <br/>
+ <img class="formulaInl" alt="$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $" src="form_140.png"/> <br/>
+ <img class="formulaInl" alt="$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $" src="form_141.png"/> <br/>
 </p>
-<p>Some write the function as: <img class="formulaInl" alt="$Z(C,k) dx = \ln C C^{-k}. $" src="form_144.png"/> If you prefer this form, just convert your parameter via <img class="formulaInl" alt="$\mu = {1\over \ln C}$" src="form_145.png"/> (and convert back from the parameters this function gives you via <img class="formulaInl" alt="$C=\exp(1/\mu)$" src="form_146.png"/>). </p>
+<p>Some write the function as: <img class="formulaInl" alt="$Z(C,k) dx = \ln C C^{-k}. $" src="form_142.png"/> If you prefer this form, just convert your parameter via <img class="formulaInl" alt="$\mu = {1\over \ln C}$" src="form_143.png"/> (and convert back from the parameters this function gives you via <img class="formulaInl" alt="$C=\exp(1/\mu)$" src="form_144.png"/>). </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa6ab9279b6169d3f1b70a739463ed46d2"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga76b45a5681d30906572263eeef35aeffa6ab9279b6169d3f1b70a739463ed46d2" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -759,9 +761,9 @@ Functions</h2>
 <tr>
 <td class="altcolor">CDF </td><td class="altcolor">M  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -776,7 +778,7 @@ Functions</h2>
 </ul>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa9d80a828401c677c63211f2632fa43fc"></a><!-- doxytag: member="Parameter format" ref="gga76b45a5681d30906572263eeef35aeffa9d80a828401c677c63211f2632fa43fc" args="" -->Parameter format</em>&nbsp;</td><td>
-<p><img class="formulaInl" alt="$\mu$" src="form_53.png"/> is in the zeroth element of the vector. </p>
+<p><img class="formulaInl" alt="$\mu$" src="form_69.png"/> is in the zeroth element of the vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga76b45a5681d30906572263eeef35aeffa3979a52f06b28976a4b3a1a56a98a43b"></a><!-- doxytag: member="Post-estimate" ref="gga76b45a5681d30906572263eeef35aeffa3979a52f06b28976a4b3a1a56a98a43b" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -847,7 +849,7 @@ Functions</h2>
 <p>Unordered list of scalars in the matrix and/or vector. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga88a178ec7fceed826f72caa52eccca93a77178797f67033e1338416141a0e6e78"></a><!-- doxytag: member="Parameter format" ref="gga88a178ec7fceed826f72caa52eccca93a77178797f67033e1338416141a0e6e78" args="" -->Parameter format</em>&nbsp;</td><td>
-<p>Zeroth and first elements of the vector are the <img class="formulaInl" alt="$df$" src="form_78.png"/>s. </p>
+<p>Zeroth and first elements of the vector are the <img class="formulaInl" alt="$df$" src="form_76.png"/>s. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga88a178ec7fceed826f72caa52eccca93abf7f31ab9c498b8367a79ac2e85cbc7e"></a><!-- doxytag: member="Post-estimate" ref="gga88a178ec7fceed826f72caa52eccca93abf7f31ab9c498b8367a79ac2e85cbc7e" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -874,10 +876,10 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The Gamma distribution</p>
-<p><img class="formulaInl" alt="$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$" src="form_132.png"/></p>
-<p><img class="formulaInl" alt="$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$" src="form_133.png"/></p>
-<p><img class="formulaInl" alt="$d ln G/ da = -\psi(a) - ln b + ln(x) $" src="form_134.png"/> (also, <img class="formulaInl" alt="$d ln \gamma = \psi$" src="form_135.png"/>)</p>
-<p><img class="formulaInl" alt="$d ln G/ db = -a/b + x/(b^2) $" src="form_136.png"/> </p>
+<p><img class="formulaInl" alt="$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$" src="form_130.png"/></p>
+<p><img class="formulaInl" alt="$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$" src="form_131.png"/></p>
+<p><img class="formulaInl" alt="$d ln G/ da = -\psi(a) - ln b + ln(x) $" src="form_132.png"/> (also, <img class="formulaInl" alt="$d ln \gamma = \psi$" src="form_133.png"/>)</p>
+<p><img class="formulaInl" alt="$d ln G/ db = -a/b + x/(b^2) $" src="form_134.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggad11b67493ee1e2038696268a38609367a7dd83848b9ff664ae707471375e09ea8"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggad11b67493ee1e2038696268a38609367a7dd83848b9ff664ae707471375e09ea8" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -898,9 +900,9 @@ Functions</h2>
 <tr>
 <td class="altcolor">CDF </td><td class="altcolor">M  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -945,7 +947,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>The improper uniform returns <img class="formulaInl" alt="$P(x) = 1$" src="form_114.png"/> for every value of x, all the time (and thus, log likelihood(x)=0). It has zero parameters. It is useful, for example, as an input to Bayesian updating, to represent a fully neutral prior.</p>
+<p>The improper uniform returns <img class="formulaInl" alt="$P(x) = 1$" src="form_112.png"/> for every value of x, all the time (and thus, log likelihood(x)=0). It has zero parameters. It is useful, for example, as an input to Bayesian updating, to represent a fully neutral prior.</p>
 <ul>
 <li>See also the <a class="el" href="group__models.html#ga95be4cc3931072118a7c8ffece73fbe1">apop_uniform</a> model. </li>
 </ul>
@@ -1101,7 +1103,7 @@ Functions</h2>
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; in-&gt;size; i++){
         <span class="keywordtype">double</span> noise;
         <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(&amp;noise, r, nnoise);
-        <a class="code" href="group__convenience__fns.html#ga6c6853616a59a1bd26765c7ef08fb86c">apop_vector_increment</a>(in, i, noise);
+        *gsl_vector_ptr(in, i) += noise;
     }
     <a class="code" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free</a>(nnoise);
 }
@@ -1132,7 +1134,7 @@ Functions</h2>
     APOP_COL(instrumet_data, 0, firstcol);
     gsl_vector_memcpy(firstcol, col1);
     <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(instrumet_data-&gt;names, <span class="stringliteral">&quot;independent&quot;</span>, <span class="charliteral">&#39;c&#39;</span>);
-    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(&amp;<a class="code" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a>, apop_lm, .instruments = instrumet_data);
+    Apop_model_add_group(&amp;<a class="code" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a>, apop_lm, .instruments = instrumet_data);
 
     <span class="comment">//Now add noise to the base data four times, and estimate four IVs.</span>
     <span class="keywordtype">int</span> tries = 4;
@@ -1194,8 +1196,7 @@ Functions</h2>
 <li><code>set_params</code> A function that takes in a single number and the model, and sets the parameters accordingly. The function will call this for every point in the data set. Here is the default, which is used if this is <code>NULL</code>. It simply sets the first element of the model's parameter vector to the input number; this is appropriate for a Normal distribution, where we want to center the distribution on each data point in turn.</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="keyword">static</span> <span class="keywordtype">void</span> apop_set_first_param(<a class="code" href="structapop__data.html">apop_data</a> *in, <a class="code" href="structapop__model.html">apop_model</a> *m){
-    m-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector-&gt;data[0]  = in-&gt;vector ? in-&gt;vector-&gt;data[0] 
-                                                 : gsl_matrix_get(in-&gt;matrix, 0, 0);
+    m-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector-&gt;data[0]  = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(in);
 }
 </pre></div><p>For a Uniform[0,1] recentered around the first element of the PMF matrix, you could put this function in your code:</p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> set_midpoint(<a class="code" href="structapop__data.html">apop_data</a> * in, <a class="code" href="structapop__model.html">apop_model</a> *m){
@@ -1346,13 +1347,13 @@ Functions</h2>
 </table>
 </td><td><table  class="memproto">
 <tr>
-<td class="altcolor">Predict </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -1405,8 +1406,8 @@ Functions</h2>
 <div class="memdoc">
 <p>The Logit model.</p>
 <p>Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.</p>
-<p>The likelihood of choosing item <img class="formulaInl" alt="$j$" src="form_124.png"/> is: <img class="formulaInl" alt="$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$" src="form_125.png"/></p>
-<p>so the log likelihood is <img class="formulaInl" alt="$x\beta_j - ln(\sum_i{e^{x\beta_i}})$" src="form_126.png"/> </p>
+<p>The likelihood of choosing item <img class="formulaInl" alt="$j$" src="form_122.png"/> is: <img class="formulaInl" alt="$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$" src="form_123.png"/></p>
+<p>so the log likelihood is <img class="formulaInl" alt="$x\beta_j - ln(\sum_i{e^{x\beta_i}})$" src="form_124.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a33e72583f7cb8578552a52b484696873"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaa88a402cf7d02c25c4613a74ace1b0c1a33e72583f7cb8578552a52b484696873" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1423,7 +1424,7 @@ Functions</h2>
 </table>
 </td><td><table  class="memproto">
 <tr>
-<td class="altcolor">Predict </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
@@ -1438,7 +1439,7 @@ Functions</h2>
 <p><code>Logit</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a734eddf4822216b6f93333920b8b4979"></a><!-- doxytag: member="Input format" ref="ggaa88a402cf7d02c25c4613a74ace1b0c1a734eddf4822216b6f93333920b8b4979" args="" -->Input format</em>&nbsp;</td><td>
-<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_157.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
+<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_155.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1a025e476695fba466d30018dd5f8f4aee"></a><!-- doxytag: member="Prep_routine" ref="ggaa88a402cf7d02c25c4613a74ace1b0c1a025e476695fba466d30018dd5f8f4aee" args="" -->Prep_routine</em>&nbsp;</td><td>
 <p>You will probably want to convert some column of your data into factors, via <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>. If you do, then that adds a page of factors to your data set (and of course adjusts the data itself). If I find a factor page, I will use that info; if not, then I will run <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> on the first column (the vector if there is one, else the first column of the matrix.)</p>
@@ -1458,8 +1459,8 @@ Functions</h2>
 <tr><td valign="top"><em><a class="anchor" id="ggaa88a402cf7d02c25c4613a74ace1b0c1ac0510eb1eb94436465fd375db2703fcf"></a><!-- doxytag: member="RNG" ref="ggaa88a402cf7d02c25c4613a74ace1b0c1ac0510eb1eb94436465fd375db2703fcf" args="" -->RNG</em>&nbsp;</td><td>
 <p>Much like the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> RNG, qv. Returns the category drawn.</p>
 <ul>
-<li>PS: Here is a nice trick used in the implementation. let <img class="formulaInl" alt="$y_i = x\beta_i$" src="form_158.png"/>. Then <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]" src="form_159.png"/>
+<li>PS: Here is a nice trick used in the implementation. let <img class="formulaInl" alt="$y_i = x\beta_i$" src="form_156.png"/>. Then <p class="formulaDsp">
+<img class="formulaDsp" alt="\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]" src="form_157.png"/>
 </p>
 </li>
 </ul>
@@ -1492,8 +1493,7 @@ Functions</h2>
 <span class="keywordtype">int</span> main(){
     write_data();
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(testfile);
-    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(&amp;<a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>, apop_mle, .tolerance=1e-5);
-    <a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>.score=NULL;
+    Apop_model_add_group(&amp;<a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>, apop_mle, .tolerance=1e-5);
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a>);
     unlink(testfile);
 
@@ -1527,7 +1527,7 @@ Functions</h2>
 <div class="memdoc">
 <p>The Lognormal distribution</p>
 <p>The log likelihood function for the lognormal distribution:</p>
-<p><img class="formulaInl" alt="$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$" src="form_127.png"/> <img class="formulaInl" alt="$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$" src="form_128.png"/> </p>
+<p><img class="formulaInl" alt="$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$" src="form_125.png"/> <img class="formulaInl" alt="$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$" src="form_126.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a7aeb734d35ee8b048c79ff2659bb976e"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a7aeb734d35ee8b048c79ff2659bb976e" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1548,9 +1548,9 @@ Functions</h2>
 <tr>
 <td class="altcolor">CDF </td><td class="altcolor">M  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -1597,7 +1597,7 @@ Functions</h2>
 <p>Generated via <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>.</p>
 <p>Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, <a class="el" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a> will be easier to use.</p>
 <ul>
-<li>This is still in beta. Expect the interface to change a little.</li>
+<li>This is still in beta. Please keep an eye out for bugs, and expect the interface to change a little.</li>
 </ul>
 <ul>
 <li>You could potentially provide a list of unparameterized models, and then have <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> estimate the parameters of all of them at once:</li>
@@ -1678,9 +1678,10 @@ Functions</h2>
 <span class="comment">//Produce a 2-D multivariate normal model with unit covariance and given mean </span>
 <a class="code" href="structapop__model.html">apop_model</a> *produce_fixed_mvn(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y){
     <a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
-    out-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2, 2, 2),
+    out-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((2, 2, 2),
                         x, 1, 0,
                         y, 0, 1);
+    out-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 2;
     <span class="keywordflow">return</span> out;
 }
 
@@ -1695,17 +1696,17 @@ Functions</h2>
 
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(21);
     <span class="keywordtype">int</span> len = 100000;
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(len, 2);
-    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; len; i++){
-        <a class="code" href="stats_8h.html#a74dd4339556eb22240d21d19f1ad6dc8">Apop_row</a>(d, i, onerow)
-        <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(onerow-&gt;data, r, many_humps);
-    }
-    <a class="code" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a>(d, 0, first);
-    printf(&quot;mu=%g\n&quot;, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(first));
-    assert(fabs(<a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(first)- 0) &lt; 5e-2);
-    <a class="code" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a>(d, 1, second);
-    printf(&quot;mu=%g\n&quot;, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(second));
-    assert(fabs(<a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(second)- 1) &lt; 5e-2);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(many_humps, len, r);
+    <a class="code" href="stats_8h.html#acb72baab9748cb810584df0096397209">Apop_matrix_col</a>(d-&gt;matrix, 0, first);
+<span class="preprocessor">    #ifndef Testing</span>
+<span class="preprocessor"></span>    printf(<span class="stringliteral">&quot;mu=%g\n&quot;</span>, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(first));
+<span class="preprocessor">    #endif</span>
+<span class="preprocessor"></span>    assert(fabs(<a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(first)- 0) &lt; 5e-2);
+    <a class="code" href="stats_8h.html#acb72baab9748cb810584df0096397209">Apop_matrix_col</a>(d-&gt;matrix, 1, second);
+<span class="preprocessor">    #ifndef Testing</span>
+<span class="preprocessor"></span>    printf(<span class="stringliteral">&quot;mu=%g\n&quot;</span>, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(second));
+<span class="preprocessor">    #endif</span>
+<span class="preprocessor"></span>    assert(fabs(<a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(second)- 1) &lt; 5e-2);
 
  <span class="comment">/*  Abuse the ML imputation routine to search for the input value with the highest</span>
 <span class="comment"> log likelihood.</span>
@@ -1714,10 +1715,10 @@ Functions</h2>
     <a class="code" href="structapop__data.html">apop_data</a> *x = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2);
     gsl_matrix_set_all(x-&gt;matrix, NAN);
 
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.stop_on_warning=&#39;v&#39;;
-    apop_model_add_group(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);
+    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a7b3c6c9e58241b7e69db4fdfc6ee96a2">stop_on_warning</a>=<span class="charliteral">&#39;v&#39;</span>;
+    <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);
     <a class="code" href="apop__missing__data_8c.html#a985955429db179a45eb5936ebd324760">apop_ml_impute</a>(x, many_humps);
-    <span class="preprocessor">#ifndef Testing</span>
+<span class="preprocessor">    #ifndef Testing</span>
 <span class="preprocessor"></span>    printf(<span class="stringliteral">&quot;Optimum found at:\n&quot;</span>);
     <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(x);
 <span class="preprocessor">    #endif</span>
@@ -1740,7 +1741,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>The <img class="formulaInl" alt="$n$" src="form_9.png"/>--option generalization of the <a class="el" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">Binomial distribution</a>. </p>
+<p>The <img class="formulaInl" alt="$n$" src="form_7.png"/>--option generalization of the <a class="el" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">Binomial distribution</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aac9b27c156aac26e8d87573bd20db6388"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggacd7823e794194d3646d586484833882aac9b27c156aac26e8d87573bd20db6388" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1779,12 +1780,15 @@ Functions</h2>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aa87d5e0dae55445e170a13f8af7afccc0"></a><!-- doxytag: member="Parameter format" ref="ggacd7823e794194d3646d586484833882aa87d5e0dae55445e170a13f8af7afccc0" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>The parameters are kept in the vector element of the <code><a class="el" href="structapop__model.html">apop_model</a></code> parameters element. <code>parameters-&gt;vector-&gt;data</code>[0]==n; <code>parameters-&gt;vector-&gt;data</code>[1...]==p_1....</p>
-<p>The numeraire is bin zero, meaning that <img class="formulaInl" alt="$p_0$" src="form_147.png"/> is not explicitly listed, but is <img class="formulaInl" alt="$p_0=1-\sum_{i=1}^{k-1} p_i$" src="form_148.png"/>, where <img class="formulaInl" alt="$k$" src="form_46.png"/> is the number of bins. Conveniently enough, the zeroth element of the parameters vector holds <img class="formulaInl" alt="$n$" src="form_9.png"/>, and so a full probability vector can easily be produced by overwriting that first element. Continuing the above example: </p>
+<p>The numeraire is bin zero, meaning that <img class="formulaInl" alt="$p_0$" src="form_145.png"/> is not explicitly listed, but is <img class="formulaInl" alt="$p_0=1-\sum_{i=1}^{k-1} p_i$" src="form_146.png"/>, where <img class="formulaInl" alt="$k$" src="form_44.png"/> is the number of bins. Conveniently enough, the zeroth element of the parameters vector holds <img class="formulaInl" alt="$n$" src="form_7.png"/>, and so a full probability vector can easily be produced by overwriting that first element. Continuing the above example: </p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">int</span> n = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(estimated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, 0, -1); 
 <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(estimated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, 0, 1 - (<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(estimated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>)-n)); 
 </pre></div><p> And now the parameter vector is a proper list of probabilities.</p>
 <ul>
-<li>Because an observation is typically a single row, the value of <img class="formulaInl" alt="$N$" src="form_3.png"/> is set to equal the length of the first row (counting both vector and matrix elements, as appropriate). Thus, if your data is entirely in the vector or a one-column matrix, then the <img class="formulaInl" alt="$p$" src="form_19.png"/>s are estimated using all data, but <img class="formulaInl" alt="$N=1$" src="form_149.png"/>. The covariances are calculated accordingly, and a random draw would return a single bin. </li>
+<li>Because an observation is a single row, the number of bins, <img class="formulaInl" alt="$k$" src="form_44.png"/> is set to equal the length of the first row (counting both vector and matrix elements, as appropriate). The covariance matrix will be <img class="formulaInl" alt="$k \times k$" src="form_147.png"/>.</li>
+</ul>
+<ul>
+<li>Each row should sum to <img class="formulaInl" alt="$N$" src="form_3.png"/>, the number of draws. The estimation routine doesn't check this, but instead uses the average sum across all rows. </li>
 </ul>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aaad09bdc8fed8cb096bda3f99805d3def"></a><!-- doxytag: member="Post-estimate" ref="ggacd7823e794194d3646d586484833882aaad09bdc8fed8cb096bda3f99805d3def" args="" -->Post-estimate</em>&nbsp;</td><td>
@@ -1792,13 +1796,13 @@ Functions</h2>
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">As per the parameter format. Has a <code>&lt;Covariance&gt;</code> page with the covariance matrix for the <img class="formulaInl" alt="$p$" src="form_19.png"/>s ( <img class="formulaInl" alt="$n$" src="form_9.png"/> effectively has no variance).  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">As per the parameter format. Has a <code>&lt;Covariance&gt;</code> page with the covariance matrix for the <img class="formulaInl" alt="$p$" src="form_17.png"/>s ( <img class="formulaInl" alt="$n$" src="form_7.png"/> effectively has no variance).  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports <code>log likelihood</code>.  </td></tr>
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggacd7823e794194d3646d586484833882aac6231fb185d75498d6071812974e5e90"></a><!-- doxytag: member="RNG" ref="ggacd7823e794194d3646d586484833882aac6231fb185d75498d6071812974e5e90" args="" -->RNG</em>&nbsp;</td><td>
-<p>Returns a single vector of length <img class="formulaInl" alt="$k$" src="form_46.png"/>, the result of an imaginary tossing of <img class="formulaInl" alt="$N$" src="form_3.png"/> balls into <img class="formulaInl" alt="$k$" src="form_46.png"/> urns, with the given probabilities. </p>
+<p>Returns a single vector of length <img class="formulaInl" alt="$k$" src="form_44.png"/>, the result of an imaginary tossing of <img class="formulaInl" alt="$N$" src="form_3.png"/> balls into <img class="formulaInl" alt="$k$" src="form_44.png"/> urns, with the given probabilities. </p>
 </td></tr>
 </table>
 </dd>
@@ -1817,7 +1821,7 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The Multinomial Probit model.</p>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>Use <a class="el" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>, which handles multiple options. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>Use <a class="el" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>, which handles multiple options. </dd></dl>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="ggaca327fbed9216d183a5673adbf831f34ab2197a23581768f00cc8c76044ee3b64"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaca327fbed9216d183a5673adbf831f34ab2197a23581768f00cc8c76044ee3b64" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -1905,7 +1909,7 @@ Functions</h2>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3a4389e6e2a1a2ea606f89d55ec558d3a66b0b4b64c2b1e8d705fa9e6aaaeb272"></a><!-- doxytag: member="Parameter format" ref="gga3a4389e6e2a1a2ea606f89d55ec558d3a66b0b4b64c2b1e8d705fa9e6aaaeb272" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set whose vector element is the vector of means, and whose matrix is the covariances.</p>
-<p>If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a <img class="formulaInl" alt="$1\times 1$" src="form_150.png"/> matrix. This differs from the setup for <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, which outputs a single vector with <img class="formulaInl" alt="$\mu$" src="form_53.png"/> in element zero and <img class="formulaInl" alt="$\sigma$" src="form_70.png"/> in element one. </p>
+<p>If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a <img class="formulaInl" alt="$1\times 1$" src="form_148.png"/> matrix. This differs from the setup for <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, which outputs a single vector with <img class="formulaInl" alt="$\mu$" src="form_69.png"/> in element zero and <img class="formulaInl" alt="$\sigma$" src="form_66.png"/> in element one. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga3a4389e6e2a1a2ea606f89d55ec558d3acfb34ccd0a1fb354d89a73f71cffa7c4"></a><!-- doxytag: member="Post-estimate" ref="gga3a4389e6e2a1a2ea606f89d55ec558d3acfb34ccd0a1fb354d89a73f71cffa7c4" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -1944,10 +1948,10 @@ Functions</h2>
 <div class="memdoc">
 <p>The Normal (Gaussian) distribution</p>
 <p>You know it, it's your attractor in the limit, it's the Gaussian distribution.</p>
-<p><img class="formulaInl" alt="$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$" src="form_137.png"/></p>
-<p><img class="formulaInl" alt="$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $" src="form_138.png"/></p>
-<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $" src="form_139.png"/></p>
-<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $" src="form_140.png"/></p>
+<p><img class="formulaInl" alt="$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$" src="form_135.png"/></p>
+<p><img class="formulaInl" alt="$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $" src="form_136.png"/></p>
+<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $" src="form_137.png"/></p>
+<p><img class="formulaInl" alt="$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $" src="form_138.png"/></p>
 <p>See also the <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga297c2dc8dbdf4ae93fc7e10860400466a05a2e98c25fbb9e115e4cc78bc3bf4a7"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga297c2dc8dbdf4ae93fc7e10860400466a05a2e98c25fbb9e115e4cc78bc3bf4a7" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -1965,13 +1969,13 @@ Functions</h2>
 </table>
 </td><td><table  class="memproto">
 <tr>
-<td class="altcolor">Predict </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="altcolor">CDF </td><td class="altcolor">M  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -1990,7 +1994,7 @@ Functions</h2>
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">Zeroth vector element is <img class="formulaInl" alt="$\mu$" src="form_53.png"/>, element 1 is <img class="formulaInl" alt="$\sigma$" src="form_70.png"/>. A page is added named <code>&lt;Covariance&gt;</code> with the 2 <img class="formulaInl" alt="$\times$" src="form_157.png"/> 2 covariance matrix for these two parameters  </td></tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">Zeroth vector element is <img class="formulaInl" alt="$\mu$" src="form_69.png"/>, element 1 is <img class="formulaInl" alt="$\sigma$" src="form_66.png"/>. A page is added named <code>&lt;Covariance&gt;</code> with the 2 <img class="formulaInl" alt="$\times$" src="form_155.png"/> 2 covariance matrix for these two parameters  </td></tr>
 <tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports the log likelihood. </td></tr>
 </table>
@@ -2021,7 +2025,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Ordinary least squares. Weighted least squares is also handled by this model. You can also use it for a lot of not-entirely linear models based on the form <img class="formulaInl" alt="$Y = f(x_1) + f(x_2) + ... + \epsilon$" src="form_123.png"/>. </p>
+<p>Ordinary least squares. Weighted least squares is also handled by this model. You can also use it for a lot of not-entirely linear models based on the form <img class="formulaInl" alt="$Y = f(x_1) + f(x_2) + ... + \epsilon$" src="form_121.png"/>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3ade8ea8fe03e8a5f5584aed3ce8185c59"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga85524b1deabd5829227888fd91740cc3ade8ea8fe03e8a5f5584aed3ce8185c59" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -2038,11 +2042,11 @@ Functions</h2>
 </table>
 </td><td><table  class="memproto">
 <tr>
-<td class="altcolor">Predict </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
@@ -2074,10 +2078,10 @@ Functions</h2>
 <p class="endtd"></p>
 </td></tr>
 <tr>
-<td style="vertical-align:top"><code>parameter models</code></td><td style="vertical-align:top">For the mean, a noncentral <img class="formulaInl" alt="$t$" src="form_10.png"/> distribution (<a class="el" href="group__models.html#ga45ce986bd5ea79c39877792bec39a304">apop_t_distribution</a>). </td></tr>
+<td style="vertical-align:top"><code>parameter models</code></td><td style="vertical-align:top">For the mean, a noncentral <img class="formulaInl" alt="$t$" src="form_8.png"/> distribution (<a class="el" href="group__models.html#ga45ce986bd5ea79c39877792bec39a304">apop_t_distribution</a>). </td></tr>
 <tr>
-<td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top"><p class="starttd">Reports log likelihood, and runs <a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> to add <img class="formulaInl" alt="$R^2$" src="form_43.png"/>-type information (SSE, SSR, &amp;c) to the info page.</p>
-<p>Residuals: I add a page named <code>&lt;Predicted&gt;</code>, with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be <img class="formulaInl" alt="$ Y = \beta X + \epsilon$" src="form_151.png"/>. Then the second column is the predicted values: <img class="formulaInl" alt="$\beta X$" src="form_152.png"/>, and the third column is the residuals: <img class="formulaInl" alt="$\epsilon$" src="form_45.png"/>. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.</p>
+<td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top"><p class="starttd">Reports log likelihood, and runs <a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> to add <img class="formulaInl" alt="$R^2$" src="form_41.png"/>-type information (SSE, SSR, &amp;c) to the info page.</p>
+<p>Residuals: I add a page named <code>&lt;Predicted&gt;</code>, with three columns. If this is a model with a single dependent and lots of independent vars, then the first column is the actual data. Let our model be <img class="formulaInl" alt="$ Y = \beta X + \epsilon$" src="form_149.png"/>. Then the second column is the predicted values: <img class="formulaInl" alt="$\beta X$" src="form_150.png"/>, and the third column is the residuals: <img class="formulaInl" alt="$\epsilon$" src="form_43.png"/>. The third column is therefore always the first minus the second, and this is probably how that column was calculated internally.</p>
 <p class="endtd">Given your estimate <code>est</code>, the zeroth element is one of <br/>
  <code> apop_data_get(est-&gt;info, .page= "Predicted", .row=0, .colname="observed"),</code><br/>
  <code> apop_data_get(est-&gt;info, .page= "Predicted", .row=0, .colname="predicted") or</code><br/>
@@ -2087,13 +2091,13 @@ Functions</h2>
 </table>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3a3f6f83e4951970b410c573bba2d66214"></a><!-- doxytag: member="RNG" ref="gga85524b1deabd5829227888fd91740cc3a3f6f83e4951970b410c573bba2d66214" args="" -->RNG</em>&nbsp;</td><td>
-<p>Linear models are typically only partially defined probability models. For OLS, we know that <img class="formulaInl" alt="$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$" src="form_153.png"/>, because this is an assumption about the error process, but we don't know much of anything about the distribution of <img class="formulaInl" alt="$X$" src="form_107.png"/>.</p>
+<p>Linear models are typically only partially defined probability models. For OLS, we know that <img class="formulaInl" alt="$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$" src="form_151.png"/>, because this is an assumption about the error process, but we don't know much of anything about the distribution of <img class="formulaInl" alt="$X$" src="form_104.png"/>.</p>
 <p>The <a class="el" href="structapop__lm__settings.html">apop_lm_settings</a> group includes an <a class="el" href="structapop__model.html">apop_model</a>* element named <code>input_distribution</code>. This is the distribution of the independent/predictor/X columns of the data set.</p>
-<p>The default is that <code>input_distribution = apop_improper_uniform </code>, meaning that <img class="formulaInl" alt="$P(X)=1$" src="form_154.png"/> for all <img class="formulaInl" alt="$X$" src="form_107.png"/>. So <img class="formulaInl" alt="$P(Y, X) = P(Y|X)P(X) = P(Y|X)$" src="form_155.png"/>. This seems to be how many people use linear models: the <img class="formulaInl" alt="$X$" src="form_107.png"/> values are taken as certain (as with actually observed data) and the only question is the odds of the dependent variable. If that's what you're looking for, just leave the default. This is sufficient for getting log likelihoods under the typical assumption that the observed data has probability one.</p>
+<p>The default is that <code>input_distribution = apop_improper_uniform </code>, meaning that <img class="formulaInl" alt="$P(X)=1$" src="form_152.png"/> for all <img class="formulaInl" alt="$X$" src="form_104.png"/>. So <img class="formulaInl" alt="$P(Y, X) = P(Y|X)P(X) = P(Y|X)$" src="form_153.png"/>. This seems to be how many people use linear models: the <img class="formulaInl" alt="$X$" src="form_104.png"/> values are taken as certain (as with actually observed data) and the only question is the odds of the dependent variable. If that's what you're looking for, just leave the default. This is sufficient for getting log likelihoods under the typical assumption that the observed data has probability one.</p>
 <p><em>But</em> you can't draw from an improper uniform. So if you draw from a linear model with a default <code>input_distribution</code>, then you'll get an error.</p>
 <p>Alternatively, you may know something about the distribution of the input data. At the least, you could generate a PMF from the actual data: </p>
 <div class="fragment"><pre class="fragment">    apop_settings_set(your_model, apop_lm, input_distribution, <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(inset, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>));
-</pre></div><p> Now, random draws are taken from the input data, and the dependent variable value calculated via <img class="formulaInl" alt="$X\beta+\epsilon$" src="form_156.png"/>, where <img class="formulaInl" alt="$X$" src="form_107.png"/> is the drawn value, <img class="formulaInl" alt="$\beta$" src="form_2.png"/> the previously-estimated parameters and <img class="formulaInl" alt="$\epsilon$" src="form_45.png"/> is a Normally-distributed random draw. Or change the PMF to any other appropriate distribution, such as a <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>, or an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> filled in with more data, or perhaps something from <a href="http://en.wikipedia.org/wiki/Errors-in-variables_models">http://en.wikipedia.org/wiki/Errors-in-variables_models</a> , as desired. </p>
+</pre></div><p> Now, random draws are taken from the input data, and the dependent variable value calculated via <img class="formulaInl" alt="$X\beta+\epsilon$" src="form_154.png"/>, where <img class="formulaInl" alt="$X$" src="form_104.png"/> is the drawn value, <img class="formulaInl" alt="$\beta$" src="form_2.png"/> the previously-estimated parameters and <img class="formulaInl" alt="$\epsilon$" src="form_43.png"/> is a Normally-distributed random draw. Or change the PMF to any other appropriate distribution, such as a <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>, or an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> filled in with more data, or perhaps something from <a href="http://en.wikipedia.org/wiki/Errors-in-variables_models">http://en.wikipedia.org/wiki/Errors-in-variables_models</a> , as desired. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga85524b1deabd5829227888fd91740cc3a4889f0cfad2dfb8b21ea142d72f68934"></a><!-- doxytag: member="Examples" ref="gga85524b1deabd5829227888fd91740cc3a4889f0cfad2dfb8b21ea142d72f68934" args="" -->Examples</em>&nbsp;</td><td>
 <p>First, you will need a file named <code>data</code> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example: </p>
@@ -2165,7 +2169,7 @@ Functions</h2>
 <td>1.2 </td><td>2 </td><td>2  </td></tr>
 </table>
 <p>The <code>apop_pmf</code> internally represents data in this manner. The dimensions are held in the <code>matrix</code> element of the data set, and the cell values are held in the <code>weights</code> element (<em>not the vector</em>).</p>
-<p>If your data is in a crosstab (with entries in the matrix element for 2-D data or the vector for 1-D data), then use apop_crosstab_to_pmf to make the conversion.</p>
+<p>If your data is in a crosstab (with entries in the matrix element for 2-D data or the vector for 1-D data), then use <a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.</p>
 <p>If your data is already in the sparse listing format (which is probably the case for 3- or more dimensional data), then just point the model to your parameter set:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *my_pmf = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
 my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715c07c1183c">data</a> = in_data;
@@ -2260,7 +2264,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 </div>
 <div class="memdoc">
 <p>The Poisson distribution.</p>
-<p><img class="formulaInl" alt="$p(k) = {\mu^k \over k!} \exp(-\mu), $" src="form_131.png"/> </p>
+<p><img class="formulaInl" alt="$p(k) = {\mu^k \over k!} \exp(-\mu), $" src="form_129.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga9c67838a4761452cc2c9113557f2a070a2d8dca34652e8249f190f4a0b2623767"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga9c67838a4761452cc2c9113557f2a070a2d8dca34652e8249f190f4a0b2623767" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
@@ -2281,9 +2285,9 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -2351,7 +2355,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
 <td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
@@ -2362,7 +2366,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <p><code>Probit</code> </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga319b8e3d5025a6fc94829a978273eb8ba2ac2e3fb4fd35efa423bcd7a26f407ef"></a><!-- doxytag: member="Input format" ref="gga319b8e3d5025a6fc94829a978273eb8ba2ac2e3fb4fd35efa423bcd7a26f407ef" args="" -->Input format</em>&nbsp;</td><td>
-<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_157.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
+<p>The first column of the data matrix this model expects is zeros, ones, ..., enumerating the factors; to get there, try <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>; if you forget to run it, I'll run it on the first data column for you. The remaining columns are values of the independent variables. Thus, the model will return [(data columns)-1] <img class="formulaInl" alt="$\times$" src="form_155.png"/>[(option count)-1] parameters. Column names are options; row names are input variables. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga319b8e3d5025a6fc94829a978273eb8baeca65d24c5a4eb7960a9d8fb9f01a417"></a><!-- doxytag: member="Prep_routine" ref="gga319b8e3d5025a6fc94829a978273eb8baeca65d24c5a4eb7960a9d8fb9f01a417" args="" -->Prep_routine</em>&nbsp;</td><td>
 <p>You will probably want to convert some column of your data into factors, via <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>. If you do, then that adds a page of factors to your data set (and of course adjusts the data itself). If I find a factor page, I will use that info; if not, then I will run <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> on the first column (the vector if there is one, else the first column of the matrix.)</p>
@@ -2564,7 +2568,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <p>An unordered set of numbers in the data set's vector, matrix, or both. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga95be4cc3931072118a7c8ffece73fbe1ac96e7d7825c0df6dbb6d2c68b146cff6"></a><!-- doxytag: member="Parameter format" ref="gga95be4cc3931072118a7c8ffece73fbe1ac96e7d7825c0df6dbb6d2c68b146cff6" args="" -->Parameter format</em>&nbsp;</td><td>
-<p>Zeroth vector element is <img class="formulaInl" alt="$a$" src="form_160.png"/>, the min; element one is <img class="formulaInl" alt="$b$" src="form_161.png"/>, the max. </p>
+<p>Zeroth vector element is <img class="formulaInl" alt="$a$" src="form_158.png"/>, the min; element one is <img class="formulaInl" alt="$b$" src="form_159.png"/>, the max. </p>
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="gga95be4cc3931072118a7c8ffece73fbe1a5c455ce0e63d280252bdd43cf0ba8f7a"></a><!-- doxytag: member="Post-estimate" ref="gga95be4cc3931072118a7c8ffece73fbe1a5c455ce0e63d280252bdd43cf0ba8f7a" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
@@ -2593,9 +2597,9 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 </div>
 <div class="memdoc">
 <p>The Wishart distribution, which is currently somewhat untested.</p>
-<p>Here's the likelihood function. <img class="formulaInl" alt="$p$" src="form_19.png"/> is the dimension of the data and covariance matrix, <img class="formulaInl" alt="$n$" src="form_9.png"/> is the degrees of freedom, <img class="formulaInl" alt="$\mathbf{V}$" src="form_118.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_119.png"/> matrix of Wishart parameters, and <img class="formulaInl" alt="${\mathbf{W}}$" src="form_120.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_119.png"/> matrix whose likelihood is being evaluated. <img class="formulaInl" alt="$\Gamma_p(\cdot)$" src="form_121.png"/> is the <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">multivariate gamma function</a>.</p>
+<p>Here's the likelihood function. <img class="formulaInl" alt="$p$" src="form_17.png"/> is the dimension of the data and covariance matrix, <img class="formulaInl" alt="$n$" src="form_7.png"/> is the degrees of freedom, <img class="formulaInl" alt="$\mathbf{V}$" src="form_116.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_117.png"/> matrix of Wishart parameters, and <img class="formulaInl" alt="${\mathbf{W}}$" src="form_118.png"/> is the <img class="formulaInl" alt="$p\times p$" src="form_117.png"/> matrix whose likelihood is being evaluated. <img class="formulaInl" alt="$\Gamma_p(\cdot)$" src="form_119.png"/> is the <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">multivariate gamma function</a>.</p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]" src="form_122.png"/>
+<img class="formulaDsp" alt="\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]" src="form_120.png"/>
 </p>
 <p>See also notes in <a class="el" href="group__tfchi.html">t-, chi-squared, F-, Wishart distributions</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
@@ -2726,9 +2730,9 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
       </table>
 </div>
 <div class="memdoc">
-<p><img class="formulaInl" alt="$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $" src="form_115.png"/></p>
-<p><img class="formulaInl" alt="$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $" src="form_116.png"/></p>
-<p><img class="formulaInl" alt="$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $" src="form_117.png"/></p>
+<p><img class="formulaInl" alt="$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $" src="form_113.png"/></p>
+<p><img class="formulaInl" alt="$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $" src="form_114.png"/></p>
+<p><img class="formulaInl" alt="$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $" src="form_115.png"/></p>
 <p>apop_yule.estimate() is an MLE, so feed it appropriate <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga1ddf478052543e1d801dfc64c99bcbe3a37faae138e8b4545551e8dd4b7370d7b"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga1ddf478052543e1d801dfc64c99bcbe3a37faae138e8b4545551e8dd4b7370d7b" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -2750,9 +2754,9 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 <tr>
 <td class="memitem">CDF </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="altcolor">Score </td><td class="altcolor">M  </td></tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
 <tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+<td class="altcolor">Prep routine </td><td class="altcolor">M  </td></tr>
 </table>
 </td></tr>
 </table>
@@ -2794,8 +2798,8 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
       </table>
 </div>
 <div class="memdoc">
-<p>Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. <img class="formulaInl" alt="$Z(a) = {1\over \zeta(a) * i^a} $" src="form_112.png"/></p>
-<p><img class="formulaInl" alt="$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $" src="form_113.png"/></p>
+<p>Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. <img class="formulaInl" alt="$Z(a) = {1\over \zeta(a) * i^a} $" src="form_110.png"/></p>
+<p><img class="formulaInl" alt="$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $" src="form_111.png"/></p>
 <p>apop_zipf.estimate() is an MLE, so feed it appropriate <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em><a class="anchor" id="gga32e7ca1164025cbb53a9e0ecee9d4ceaa10c9a98e2c5b3b0d260a9894f6374efa"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga32e7ca1164025cbb53a9e0ecee9d4ceaa10c9a98e2c5b3b0d260a9894f6374efa" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
@@ -2880,7 +2884,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 <p>Input a data point in canonical form and a model; returns the area of the model's PDF beneath the given point.</p>
 <p>By default, I just make random draws from the PDF and return the percentage of those draws beneath or equal to the given point. Many models have closed-form solutions that make no use of random draws.</p>
 <p>See also <a class="el" href="structapop__cdf__settings.html">apop_cdf_settings</a>, which is the structure I use to store draws already made (which means the second, third, ... calls to this function will take much less time than the first), the <code>gsl_rng</code>, and the number of draws to be made. These are handled without your involvement, but if you would like to change the number of draws from the default, add this group before calling <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a> :</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(your_model, <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, .draws=1e5, .rng=my_rng);
+<div class="fragment"><pre class="fragment">Apop_model_add_group(your_model, <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, .draws=1e5, .rng=my_rng);
 <span class="keywordtype">double</span> cdf_value = <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>(your_data_point, your_model);
 </pre></div><p>Here are many examples using common, mostly symmetric distributions.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
@@ -2946,8 +2950,8 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
     model_val_cdf(beta_uni, 1, 1);
 
 
-    beta_uni-&gt;<a class="code" href="structapop__model.html#a74eefdeb90f135027ed64e74802bab12">cdf</a> = NULL; <span class="comment">//With no closed-form CDF; make random draws to estimate the CDF.</span>
-    <a class="code" href="group__settings.html#ga553b02de4ace5e6f16a8b26da777f9b9">Apop_model_add_group</a>(beta_uni, <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, .draws=1e6); <span class="comment">//extra draws to improve accuracy, but we have to lower our tolerance anyway.</span>
+    beta_uni-&gt;<a class="code" href="structapop__model.html#ae2bfc30a58ee7bc3bbf593f861e2a7e2">cdf</a> = NULL; <span class="comment">//With no closed-form CDF; make random draws to estimate the CDF.</span>
+    Apop_model_add_group(beta_uni, <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, .draws=1e6); <span class="comment">//extra draws to improve accuracy, but we have to lower our tolerance anyway.</span>
     tolerance=1e-3;
     model_val_cdf(beta_uni, 0, 0);
     model_val_cdf(beta_uni, 1./6, 1./6);
@@ -2960,8 +2964,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
     model_val_cdf(sum_of_three, 0.5, 0.5);
 
 
-    <a class="code" href="structapop__data.html">apop_data</a> *threepts = <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(3,1),
-                             -1, 0, 1);
+    <a class="code" href="structapop__data.html">apop_data</a> *threepts = <a class="code" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3,1), -1, 0, 1);
     <a class="code" href="structapop__model.html">apop_model</a> *kernels = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(threepts, <a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>);
     model_val_cdf(kernels, -5, 0);
     model_val_cdf(kernels, 0, 0.5);
@@ -3257,23 +3260,22 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 </div>
 <div class="memdoc">
 <p>Get a model describing the distribution of the given parameter estimates.</p>
-<p>For many models, the parameter estimates are well-known, such as the <img class="formulaInl" alt="$t$" src="form_10.png"/>-distribution of the parameters for OLS.</p>
-<p>For models where the distribution of <img class="formulaInl" alt="$\hat{}p$" src="form_40.png"/> is not known, if you give me data, I will return a <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a> or <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> model, using the parameter estimates as mean and <a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> for the variances.</p>
+<p>For many models, the parameter estimates are well-known, such as the <img class="formulaInl" alt="$t$" src="form_8.png"/>-distribution of the parameters for OLS.</p>
+<p>For models where the distribution of <img class="formulaInl" alt="$\hat{}p$" src="form_38.png"/> is not known, if you give me data, I will return a <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a> or <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> model, using the parameter estimates as mean and <a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> for the variances.</p>
 <p>If you don't give me data, then I will assume that this is a stochastic model where re-running the model will produce different parameter estimates each time. In this case, I will run the model 1e4 times and return a <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model with the resulting parameter distributions.</p>
-<p>Before calling this, I expect that you have already run <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> to produce <img class="formulaInl" alt="$\hat{}p$" src="form_40.png"/>.</p>
+<p>Before calling this, I expect that you have already run <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> to produce <img class="formulaInl" alt="$\hat{}p$" src="form_38.png"/>.</p>
 <p>The <a class="el" href="structapop__pm__settings.html">apop_pm_settings</a> structure dictates details of how the model is generated. For example, if you want only the distribution of the third parameter, and you know the distribution will be a PMF generated via random draws, then set settings and call the model via: </p>
-<div class="fragment"><pre class="fragment">    apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
-    <a class="code" href="structapop__model.html">apop_model</a> *dist = <a class="code" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a>(your_data, your_model);
+<div class="fragment"><pre class="fragment">  apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
+  <a class="code" href="structapop__model.html">apop_model</a> *dist = <a class="code" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a>(your_data, your_model);
 </pre></div><ul>
-<li><code>index</code> gives the position of the parameter (in <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> order) in which you are interested. Thus, if this is zero or more, then you will get a univariate output distribution describing a single parameter. If <code>index == -1</code>, then I will give you the multivariate distribution across all parameters. The default is zero (i.e. the univariate distribution of the zeroth parameter).</li>
-</ul>
-<ul>
-<li><code>rng</code> If the method requires random draws (as the default bootstrap will), then use this. If you provide <code>NULL</code> and one is needed, see the <a class="el" href="autorng.html">Auto-allocated RNGs</a> section on how one is provided for you.</li>
-</ul>
-<ul>
+<li><code>index</code> gives the position of the parameter (in <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> order) in which you are interested. Thus, if this is zero or more, then you will get a univariate output distribution describing a single parameter. If <code>index == -1</code>, then I will give you the multivariate distribution across all parameters. The default is zero (i.e. the univariate distribution of the zeroth parameter). </li>
+<li><code>rng</code> If the method requires random draws (as the default bootstrap will), then use this. If you provide <code>NULL</code> and one is needed, see the <a class="el" href="autorng.html">Auto-allocated RNGs</a> section on how one is provided for you. </li>
 <li><code>draws</code> If there is no closed-form solution and bootstrap is inappropriate, then the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws. </li>
+<li>The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
 </ul>
-
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> <a class="code" href="structapop__model.html">apop_model</a>* (*apop_parameter_model_type)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="structapop__model.html">apop_model</a> *);
+<span class="preprocessor">#define apop_parameter_model_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)</span>
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="ga867f0b8df261866bb18e9040871c51f0"></a><!-- doxytag: member="apop_model.c::apop_predict" ref="ga867f0b8df261866bb18e9040871c51f0" args="(apop_data *d, apop_model *m)" -->
@@ -3301,7 +3303,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 </div>
 <div class="memdoc">
 <p>A prediction supplies E(a missing value | original data, already-estimated parameters, and other supplied data elements ).</p>
-<p>For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable <img class="formulaInl" alt="$y$" src="form_41.png"/> is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]</p>
+<p>For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable <img class="formulaInl" alt="$y$" src="form_39.png"/> is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]</p>
 <p>For a univariate model (i.e. a model in one-dimensional data space), there is only one variable to omit and fill in, so the prediction problem reduces to the expected value: E(a missing value | original data, already-estimated parameters).</p>
 <p>In other cases, prediction is the missing data problem: for three-dimensional data, you may supply the input (34, <code>NaN</code>, 12), and the parameterized model provides the most likely value of the middle parameter.</p>
 <ul>
@@ -3313,8 +3315,13 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 <p>If the model has no <code>predict</code> method, the default is to use the <a class="el" href="asst_8h.html#a2a184259c139f1fdd970ef6b43f6274e">apop_ml_impute</a> function to do the work.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>If you gave me a non-<code>NULL</code> data set, I will return that, with the zeroth column or the <code>NaNs</code> filled in. If <code>NULL</code> input, I will allocate an <a class="el" href="gentle.html#apop_data">apop_data</a> set and fill it with the expected values.</dd></dl>
 <p>There may be a second page (i.e., a <a class="el" href="gentle.html#apop_data">apop_data</a> set attached to the <code>-&gt;more</code> pointer of the main) listing confidence and standard error information. See your specific model documentation for details.</p>
-<p>This segment of the framework is in beta---subject to revision of the details. </p>
-
+<p>This segment of the framework is in beta---subject to revision of the details.</p>
+<ul>
+<li>The default is to use <a class="el" href="asst_8h.html#a2a184259c139f1fdd970ef6b43f6274e">apop_ml_impute</a>, but special-case calculations for certain models are held in a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> apop_data * (*apop_predict_type)(apop_data *d, <a class="code" href="structapop__model.html">apop_model</a> *params);
+<span class="preprocessor">#define apop_predict_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)</span>
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="ga373ccc4cb87b162d62d07a2685ccd8ba"></a><!-- doxytag: member="apop_model.c::apop_prep" ref="ga373ccc4cb87b162d62d07a2685ccd8ba" args="(apop_data *d, apop_model *m)" -->
@@ -3375,18 +3382,24 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
       </table>
 </div>
 <div class="memdoc">
-<p>Find the vector of derivatives of the log likelihood of a data/parametrized model pair.</p>
+<p>Find the vector of first derivatives (aka the gradient) of the log likelihood of a data/parametrized model pair.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">d</td><td>The data </td></tr>
     <tr><td class="paramname">out</td><td>The score to be returned. I expect you to have allocated this already. </td></tr>
-    <tr><td class="paramname">m</td><td>The parametrized model, which must have either a <code>log_likelihood</code> or a <code>p</code> method. </td></tr>
+    <tr><td class="paramname">m</td><td>The parametrized model, which must have either a <code>log_likelihood</code> or a <code>p</code> method.</td></tr>
   </table>
   </dd>
 </dl>
+<ul>
+<li>The default is to use <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, but special-case calculations for certain models are held in a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> void (*apop_score_type)(apop_data *d, gsl_vector *gradient, <a class="code" href="structapop__model.html">apop_model</a> *m);
+<span class="preprocessor">#define apop_score_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p))</span>
+</pre></div><p>As input to your function, you can expect that the model <code>m</code> is sufficiently prepped that the log likelihood can be evaluated; see <a class="el" href="modeldetails.html#psubsection">p, log_likelihood</a> for details. On output, the a <code>gsl_vector</code> input to the function must be filled with the gradients (or <code>NaN</code>s on errors). If the model parameters have a more complex shape than a simple vector, then the vector must be in <code>apop_data_pack</code> order; use <code>apop_data_unpack</code> to reformat to the preferred shape. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

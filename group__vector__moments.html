@@ -35,20 +35,17 @@ urchinTracker();
 <h2><a name="define-members"></a>
 Defines</h2>
 <ul>
-<li>#define <a class="el" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>(in)
 <li>#define <a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)
-<li>#define <a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>(in)
-<li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>(in)
+<li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
 <li>double <a class="el" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gaebb237b320230c50b7569a805fc5bab7">apop_vector_skew_pop</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#ga3cc380538e85584710434da659d9f750">apop_vector_kurtosis_pop</a> (const gsl_vector *in)
 <li>double <a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> (const gsl_vector *in)
+<li>double <a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> (gsl_vector const *v, gsl_vector const *weights)
+<li>double <a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> (gsl_vector const *v, gsl_vector const *weights)
 <li>double <a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a> (const gsl_vector *in, const double mean)
-<li>double <a class="el" href="group__vector__moments.html#ga381f79a935cd436e32fa382db31932b5">apop_vector_cov</a> (const gsl_vector *ina, const gsl_vector *inb)
 <li>double <a class="el" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a> (const gsl_vector *ina, const gsl_vector *inb)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -59,7 +56,7 @@ Functions</h2>
 <span class="keywordtype">double</span> mean, var;
 
 <span class="comment">//Allocate v and fill it with data here.</span>
-mean = <a class="code" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>(v);
+mean = <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(v);
 var  = <a class="code" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a>(v, mean);
 printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g\n&quot;</span>, mean, var);
 </pre></div> <hr/><h2>Define Documentation</h2>
@@ -77,7 +74,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>An alias for <a class="el" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>. Returns the mean of the data in the given vector.</p>
+<p>An alias for <a class="el" href="stats_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. Returns the mean of the data in the given vector.</p>
 <p>Returns the mean of the elements of the vector <code>v</code>. </p>
 
 </div>
@@ -91,53 +88,12 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">in</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>(in)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>An alias for <a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a>. Returns the variance of the data in the given vector. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga92c6abe8ada7ed8121c6881bcc6daf93"></a><!-- doxytag: member="stats.h::apop_vector_mean" ref="ga92c6abe8ada7ed8121c6881bcc6daf93" args="(in)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">in</td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the mean of the data in the given vector.</p>
-<p>Find the mean of the input vector.</p>
-<p>Returns the mean of the elements of the vector <code>v</code>. </p>
-
-</div>
-</div>
-<a class="anchor" id="gad212e576119859f267d126c1ba905f9b"></a><!-- doxytag: member="stats.h::apop_vector_var" ref="gad212e576119859f267d126c1ba905f9b" args="(in)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="group__vector__moments.html#gad212e576119859f267d126c1ba905f9b">apop_vector_var</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">in</td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the variance of the data in the given vector.</p>
-<p>This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using <img class="formulaInl" alt="$\bar x$" src="form_52.png"/> instead of <img class="formulaInl" alt="$\mu$" src="form_53.png"/>.</p>
-<p>At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.</p>
-<p>Returns the sample variance of the elements of the vector <code>v</code>. </p>
+<p>An alias for <a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>. Returns the variance of the data in the given vector. </p>
 
 </div>
 </div>
@@ -166,35 +122,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_61.png"/> </p>
-
-</div>
-</div>
-<a class="anchor" id="ga381f79a935cd436e32fa382db31932b5"></a><!-- doxytag: member="apop_stats.c::apop_vector_cov" ref="ga381f79a935cd436e32fa382db31932b5" args="(const gsl_vector *ina, const gsl_vector *inb)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">double <a class="el" href="group__vector__moments.html#ga381f79a935cd436e32fa382db31932b5">apop_vector_cov</a> </td>
-          <td>(</td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>ina</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>inb</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Returns the covariance of two vectors </p>
+<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_57.png"/> </p>
 
 </div>
 </div>
@@ -212,29 +140,50 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_58.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
+<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_51.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
 <ul>
-<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_59.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_60.png"/>, not three, one, or zero. </li>
+<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_52.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_53.png"/>, not three, one, or zero. </li>
 </ul>
 
 </div>
 </div>
-<a class="anchor" id="ga3cc380538e85584710434da659d9f750"></a><!-- doxytag: member="apop_stats.c::apop_vector_kurtosis_pop" ref="ga3cc380538e85584710434da659d9f750" args="(const gsl_vector *in)" -->
+<a class="anchor" id="gaabe3183e8a6a496f3fd6ab316687381e"></a><!-- doxytag: member="apop_stats.c::apop_vector_kurtosis_pop" ref="gaabe3183e8a6a496f3fd6ab316687381e" args="(gsl_vector const *v, gsl_vector const *weights)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="group__vector__moments.html#ga3cc380538e85584710434da659d9f750">apop_vector_kurtosis_pop</a> </td>
+          <td class="memname">double <a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> </td>
           <td>(</td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>in</em></td><td>)</td>
+          <td class="paramtype">gsl_vector const *&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">gsl_vector const *&#160;</td>
+          <td class="paramname"><em>weights</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_57.png"/>) of the data in the given vector.</p>
-<p>Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are not done here, so you'll have to do them separately if need be. </p>
+<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_56.png"/>) of the data in the given vector, with an optional weighting.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">v</td><td>The data vector </td></tr>
+    <tr><td class="paramname">weights</td><td>The weight vector. If NULL, assume equal weights. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The weighted kurtosis. No sample adjustment given weights.</dd></dl>
+<ul>
+<li>Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are not done here, so you'll have to do them separately if need be. </li>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -252,26 +201,49 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_54.png"/>) of the data in the given vector. </p>
+<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_50.png"/>) of the data in the given vector. </p>
 
 </div>
 </div>
-<a class="anchor" id="gaebb237b320230c50b7569a805fc5bab7"></a><!-- doxytag: member="apop_stats.c::apop_vector_skew_pop" ref="gaebb237b320230c50b7569a805fc5bab7" args="(const gsl_vector *in)" -->
+<a class="anchor" id="gafb284d668d567de4810620962043f827"></a><!-- doxytag: member="apop_stats.c::apop_vector_skew_pop" ref="gafb284d668d567de4810620962043f827" args="(gsl_vector const *v, gsl_vector const *weights)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="group__vector__moments.html#gaebb237b320230c50b7569a805fc5bab7">apop_vector_skew_pop</a> </td>
+          <td class="memname">double <a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> </td>
           <td>(</td>
-          <td class="paramtype">const gsl_vector *&#160;</td>
-          <td class="paramname"><em>in</em></td><td>)</td>
+          <td class="paramtype">gsl_vector const *&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">gsl_vector const *&#160;</td>
+          <td class="paramname"><em>weights</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_55.png"/> of the data in the given vector.</p>
-<p>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_56.png"/>; that's not done here, so you'll have to do so separately if need be. </p>
+<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_54.png"/> of the data in the given vector. Observations may be weighted.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">v</td><td>The data vector </td></tr>
+    <tr><td class="paramname">weights</td><td>The weight vector. Default: equal weights for all observations. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The weighted skew. No sample adjustment given weights.</dd></dl>
+<ul>
+<li>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_55.png"/>; that's not done here, so you'll have to do so separately if need be.</li>
+</ul>
+<ul>
+<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_51.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_7.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly. </li>
+</ul>
 
 </div>
 </div>
@@ -303,7 +275,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the vector in question </td></tr>
-    <tr><td class="paramname">mean</td><td>the mean, which you've already calculated using <a class="el" href="group__vector__moments.html#ga92c6abe8ada7ed8121c6881bcc6daf93">apop_vector_mean</a>. </td></tr>
+    <tr><td class="paramname">mean</td><td>the mean, which you've already calculated using <a class="el" href="stats_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -312,4 +284,4 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

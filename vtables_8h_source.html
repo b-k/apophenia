@@ -30,16 +30,79 @@ urchinTracker();
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 
-<a name="l00002"></a>00002 
-<a name="l00003"></a>00003 
-<a name="l00004"></a>00004 <span class="keyword">typedef</span> <a class="code" href="structapop__model.html">apop_model</a> *(*apop_update_type)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a> , <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>);
-<a name="l00005"></a>00005 <span class="preprocessor">#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)</span>
-<a name="l00006"></a>00006 <span class="preprocessor"></span><span class="keyword">static</span> <span class="keywordtype">void</span> apop_update_type_check(apop_update_type in){ };
-<a name="l00007"></a>00007 <span class="preprocessor">#define apop_update_insert(fn, ...) (apop_update_type_check(fn), apop_vtable_insert(&quot;apop_update&quot;, fn, apop_update_hash(__VA_ARGS__))) </span>
-<a name="l00008"></a>00008 <span class="preprocessor"></span><span class="preprocessor">#define apop_update_get(...) apop_vtable_get(&quot;apop_update&quot;, apop_update_hash(__VA_ARGS__))</span>
-<a name="l00009"></a>00009 <span class="preprocessor"></span>
-<a name="l00010"></a>00010 <span class="keywordtype">int</span> apop_vtable_insert(<span class="keywordtype">char</span> *tabname, <span class="keywordtype">void</span> *fn_in, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> hash);
-<a name="l00011"></a>00011 <span class="keywordtype">void</span> *apop_vtable_get(<span class="keywordtype">char</span> *tabname, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> hash);
+<a name="l00002"></a>00002 <span class="comment">/*</span>
+<a name="l00003"></a>00003 <span class="comment">This declares the vtable macros for each procedure that uses the mechanism.</span>
+<a name="l00004"></a>00004 <span class="comment"></span>
+<a name="l00005"></a>00005 <span class="comment">--We want to have type-checking on the functions put into the vtables. Type checking</span>
+<a name="l00006"></a>00006 <span class="comment">happens only with functions, not macros, so we need a type_check function for every</span>
+<a name="l00007"></a>00007 <span class="comment">vtable.</span>
+<a name="l00008"></a>00008 <span class="comment"></span>
+<a name="l00009"></a>00009 <span class="comment">--Only once in your codebase, you&#39;ll need to #define Declare_type_checking_fns to</span>
+<a name="l00010"></a>00010 <span class="comment">actually define the type checking function. Everywhere else, the function is merely</span>
+<a name="l00011"></a>00011 <span class="comment">declared.</span>
+<a name="l00012"></a>00012 <span class="comment"></span>
+<a name="l00013"></a>00013 <span class="comment">--All other uses point to having a macro, such as using __VA_ARGS__ to allow any sort</span>
+<a name="l00014"></a>00014 <span class="comment">of inputs to the hash.</span>
+<a name="l00015"></a>00015 <span class="comment"></span>
+<a name="l00016"></a>00016 <span class="comment">--We want to have such a macro for every vtable. That means that we need a macro</span>
+<a name="l00017"></a>00017 <span class="comment">to write macros. We can&#39;t do that with C macros.  Thus, this file uses m4 macros to</span>
+<a name="l00018"></a>00018 <span class="comment">generate C macros.</span>
+<a name="l00019"></a>00019 <span class="comment"></span>
+<a name="l00020"></a>00020 <span class="comment">--After the m4 definition of make_vtab_fns, each new vtable requires a typedef, a hash</span>
+<a name="l00021"></a>00021 <span class="comment">definition, and a call to make_vtab_fns to do the rest.</span>
+<a name="l00022"></a>00022 <span class="comment"></span>
+<a name="l00023"></a>00023 <span class="comment">--the typedef and has are defined inside of an m4 macro so that we can also paste the</span>
+<a name="l00024"></a>00024 <span class="comment">same text into documentation as needed.</span>
+<a name="l00025"></a>00025 <span class="comment">*/</span>
+<a name="l00026"></a>00026 
+<a name="l00027"></a>00027 
+<a name="l00028"></a>00028 <span class="keywordtype">int</span> apop_vtable_add(<span class="keywordtype">char</span> *tabname, <span class="keywordtype">void</span> *fn_in, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> hash);
+<a name="l00029"></a>00029 <span class="keywordtype">void</span> *apop_vtable_get(<span class="keywordtype">char</span> *tabname, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> hash);
+<a name="l00030"></a>00030 <span class="keywordtype">int</span> apop_vtable_drop(<span class="keywordtype">char</span> <span class="keyword">const</span> *tabname, <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> hash);
+<a name="l00031"></a>00031 
+<a name="l00032"></a>00032 <span class="keyword">typedef</span> <a class="code" href="structapop__model.html">apop_model</a> *(*apop_update_type)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a> , <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>);
+<a name="l00033"></a>00033 <span class="preprocessor">#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)</span>
+<a name="l00034"></a>00034 <span class="preprocessor"></span><span class="preprocessor">#ifdef Declare_type_checking_fns</span>
+<a name="l00035"></a>00035 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_update_type_check(apop_update_type in){ };
+<a name="l00036"></a>00036 <span class="preprocessor">#else</span>
+<a name="l00037"></a>00037 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_update_type_check(apop_update_type in);
+<a name="l00038"></a>00038 <span class="preprocessor">#endif</span>
+<a name="l00039"></a>00039 <span class="preprocessor"></span><span class="preprocessor">#define apop_update_vtable_add(fn, ...) (apop_update_type_check(fn), apop_vtable_add(&quot;apop_update&quot;, fn, apop_update_hash(__VA_ARGS__))) </span>
+<a name="l00040"></a>00040 <span class="preprocessor"></span><span class="preprocessor">#define apop_update_vtable_get(...) apop_vtable_get(&quot;apop_update&quot;, apop_update_hash(__VA_ARGS__))</span>
+<a name="l00041"></a>00041 <span class="preprocessor"></span><span class="preprocessor">#define apop_update_vtable_drop(...) apop_vtable_drop(&quot;apop_update&quot;, apop_update_hash(__VA_ARGS__))</span>
+<a name="l00042"></a>00042 <span class="preprocessor"></span>
+<a name="l00043"></a>00043 <span class="keyword">typedef</span> void (*apop_score_type)(<a class="code" href="structapop__data.html">apop_data</a> *d, gsl_vector *gradient, <a class="code" href="structapop__model.html">apop_model</a> *params);
+<a name="l00044"></a>00044 <span class="preprocessor">#define apop_score_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p))</span>
+<a name="l00045"></a>00045 <span class="preprocessor"></span><span class="preprocessor">#ifdef Declare_type_checking_fns</span>
+<a name="l00046"></a>00046 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_score_type_check(apop_score_type in){ };
+<a name="l00047"></a>00047 <span class="preprocessor">#else</span>
+<a name="l00048"></a>00048 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_score_type_check(apop_score_type in);
+<a name="l00049"></a>00049 <span class="preprocessor">#endif</span>
+<a name="l00050"></a>00050 <span class="preprocessor"></span><span class="preprocessor">#define apop_score_vtable_add(fn, ...) (apop_score_type_check(fn), apop_vtable_add(&quot;apop_score&quot;, fn, apop_score_hash(__VA_ARGS__))) </span>
+<a name="l00051"></a>00051 <span class="preprocessor"></span><span class="preprocessor">#define apop_score_vtable_get(...) apop_vtable_get(&quot;apop_score&quot;, apop_score_hash(__VA_ARGS__))</span>
+<a name="l00052"></a>00052 <span class="preprocessor"></span><span class="preprocessor">#define apop_score_vtable_drop(...) apop_vtable_drop(&quot;apop_score&quot;, apop_score_hash(__VA_ARGS__))</span>
+<a name="l00053"></a>00053 <span class="preprocessor"></span>
+<a name="l00054"></a>00054 <span class="keyword">typedef</span> <a class="code" href="structapop__model.html">apop_model</a>* (*apop_parameter_model_type)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="structapop__model.html">apop_model</a> *);
+<a name="l00055"></a>00055 <span class="preprocessor">#define apop_parameter_model_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)</span>
+<a name="l00056"></a>00056 <span class="preprocessor"></span><span class="preprocessor">#ifdef Declare_type_checking_fns</span>
+<a name="l00057"></a>00057 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_parameter_model_type_check(apop_parameter_model_type in){ };
+<a name="l00058"></a>00058 <span class="preprocessor">#else</span>
+<a name="l00059"></a>00059 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_parameter_model_type_check(apop_parameter_model_type in);
+<a name="l00060"></a>00060 <span class="preprocessor">#endif</span>
+<a name="l00061"></a>00061 <span class="preprocessor"></span><span class="preprocessor">#define apop_parameter_model_vtable_add(fn, ...) (apop_parameter_model_type_check(fn), apop_vtable_add(&quot;apop_parameter_model&quot;, fn, apop_parameter_model_hash(__VA_ARGS__))) </span>
+<a name="l00062"></a>00062 <span class="preprocessor"></span><span class="preprocessor">#define apop_parameter_model_vtable_get(...) apop_vtable_get(&quot;apop_parameter_model&quot;, apop_parameter_model_hash(__VA_ARGS__))</span>
+<a name="l00063"></a>00063 <span class="preprocessor"></span><span class="preprocessor">#define apop_parameter_model_vtable_drop(...) apop_vtable_drop(&quot;apop_parameter_model&quot;, apop_parameter_model_hash(__VA_ARGS__))</span>
+<a name="l00064"></a>00064 <span class="preprocessor"></span>
+<a name="l00065"></a>00065 <span class="keyword">typedef</span> <a class="code" href="structapop__data.html">apop_data</a> * (*apop_predict_type)(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *params);
+<a name="l00066"></a>00066 <span class="preprocessor">#define apop_predict_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)</span>
+<a name="l00067"></a>00067 <span class="preprocessor"></span><span class="preprocessor">#ifdef Declare_type_checking_fns</span>
+<a name="l00068"></a>00068 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_predict_type_check(apop_predict_type in){ };
+<a name="l00069"></a>00069 <span class="preprocessor">#else</span>
+<a name="l00070"></a>00070 <span class="preprocessor"></span><span class="keywordtype">void</span> apop_predict_type_check(apop_predict_type in);
+<a name="l00071"></a>00071 <span class="preprocessor">#endif</span>
+<a name="l00072"></a>00072 <span class="preprocessor"></span><span class="preprocessor">#define apop_predict_vtable_add(fn, ...) (apop_predict_type_check(fn), apop_vtable_add(&quot;apop_predict&quot;, fn, apop_predict_hash(__VA_ARGS__))) </span>
+<a name="l00073"></a>00073 <span class="preprocessor"></span><span class="preprocessor">#define apop_predict_vtable_get(...) apop_vtable_get(&quot;apop_predict&quot;, apop_predict_hash(__VA_ARGS__))</span>
+<a name="l00074"></a>00074 <span class="preprocessor"></span><span class="preprocessor">#define apop_predict_vtable_drop(...) apop_vtable_drop(&quot;apop_predict&quot;, apop_predict_hash(__VA_ARGS__))</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>

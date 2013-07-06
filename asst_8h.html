@@ -56,14 +56,6 @@ Defines</h2>
 #define <b>Apop_assert_nan</b>(test,...)&#160;&#160;&#160;Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 <li><a class="anchor" id="afd6540d56da36cd8ed25aef36282f20e"></a><!-- doxytag: member="asst.h::Apop_assert_negone" ref="afd6540d56da36cd8ed25aef36282f20e" args="(test,...)" -->
 #define <b>Apop_assert_negone</b>(test,...)&#160;&#160;&#160;Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
-<li><a class="anchor" id="a962625d9637628388f84dbe640ea20a5"></a><!-- doxytag: member="asst.h::apop_assert_s" ref="a962625d9637628388f84dbe640ea20a5" args="" -->
-#define <b>apop_assert_s</b>&#160;&#160;&#160;Apop_assert
-<li><a class="anchor" id="a6d56df1a9fff404cee5d4a63d1dbb632"></a><!-- doxytag: member="asst.h::apop_assert" ref="a6d56df1a9fff404cee5d4a63d1dbb632" args="" -->
-#define <b>apop_assert</b>&#160;&#160;&#160;Apop_assert
-<li><a class="anchor" id="a2ac12d469ac2de86e0c48679f5f1018b"></a><!-- doxytag: member="asst.h::Apop_assert_s" ref="a2ac12d469ac2de86e0c48679f5f1018b" args="" -->
-#define <b>Apop_assert_s</b>&#160;&#160;&#160;Apop_assert
-<li><a class="anchor" id="a5ff05ad3fd1e10895fff1bcbecc3d5e9"></a><!-- doxytag: member="asst.h::apop_assert_c" ref="a5ff05ad3fd1e10895fff1bcbecc3d5e9" args="" -->
-#define <b>apop_assert_c</b>&#160;&#160;&#160;Apop_assert_c
 <li><a class="anchor" id="a2a6667ffc981f0b56c7d6c6e7f01572d"></a><!-- doxytag: member="asst.h::apop_ml_imputation" ref="a2a6667ffc981f0b56c7d6c6e7f01572d" args="(d, m)" -->
 #define <b>apop_ml_imputation</b>(d, m)&#160;&#160;&#160;<a class="el" href="asst_8h.html#a2a184259c139f1fdd970ef6b43f6274e">apop_ml_impute</a>(d, m)
 </ul>
@@ -81,7 +73,6 @@ int <b>apop_system</b> (const char *fmt,...) __attribute__((format(printf
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> (<a class="el" href="structapop__data.html">apop_data</a> *in)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata, <a class="el" href="structapop__data.html">apop_data</a> *binspec, int bin_count, char close_top_bin)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)
-<li>char * <a class="el" href="group__convenience__fns.html#ga9e82db6a61febe39f2037879eec6f285">apop_strip_dots</a> (char const *in, char strip_type)
 <li>char * <a class="el" href="asst_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> const *strings, char *between, char *before, char *after, char *between_cols, int(*prune)(<a class="el" href="structapop__data.html">apop_data</a> *, int, int, void *), void *prune_parameter)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="asst_8h.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char inplace)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="asst_8h.html#a2a184259c139f1fdd970ef6b43f6274e">apop_ml_impute</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *meanvar)
@@ -212,8 +203,8 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
   </dd>
 </dl>
 <ul>
-<li>If apop_opts::stop_on_warning is nonzero and not <code>'v'</code>, then a failed test halts via <code>abort()</code>, even if the <code>apop_opts.verbose</code> level is set so that the warning message doesn't print to screen. Use this when running via debugger. </li>
-<li>If apop_opts::stop_on_warning is <code>'v'</code>, then a failed test halts via <code>abort()</code> iff the verbosity level is high enough to print the error. </li>
+<li>If <code>apop_opts.stop_on_warning</code> is nonzero and not <code>'v'</code>, then a failed test halts via <code>abort()</code>, even if the <code>apop_opts.verbose</code> level is set so that the warning message doesn't print to screen. Use this when running via debugger. </li>
+<li>If <code>apop_opts.stop_on_warning</code> is <code>'v'</code>, then a failed test halts via <code>abort()</code> iff the verbosity level is high enough to print the error. </li>
 </ul>
 
 </div>
@@ -246,7 +237,7 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
 <p>If there is an NaN anywhere in the row of data (including the matrix, the vector, the weights, and the text) then delete the row from the data set.</p>
 <ul>
 <li>If every row has an NaN, then this returns <code>NULL</code>. </li>
-<li>If <code>apop_opts.db_nan</code> is not <code>NULL</code>, then I will use that as a regular expression to check the text elements for bad data as well. </li>
+<li>If <code>apop_opts.db_nan</code> is not <code>NULL</code>, then I will make case-insensitive comparisons to the text elements to check for bad data as well. </li>
 <li>If <code>inplace</code> = 'y', then I'll free each element of the input data set and refill it with the pruned elements. I'll still take up (up to) twice the size of the data set in memory during the function. If every row has an NaN, then your <code><a class="el" href="structapop__data.html">apop_data</a></code> set will end up with <code>NULL</code> vector, matrix, .... if <code>inplace</code> = 'n', then the original data set is left unmolested. </li>
 <li>I only look at the first page of data (i.e. the <code>more</code> element is ignored). </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
@@ -258,7 +249,7 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A (potentially shorter) copy of the data set, without NaNs. If <code>inplace=='y'</code>, redundant with the input. If the entire data set is cleared out, then this will be <code>NULL</code>. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A (potentially shorter) copy of the data set, without NaNs. If <code>inplace=='y'</code>, a pointer to the input, which was shortened in place. If the entire data set is cleared out, then this will be <code>NULL</code>. </dd></dl>
 
 </div>
 </div>
@@ -356,7 +347,7 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
 <p>Uses the <code>gsl_sort_vector_index</code> function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>The input set to be modified. (No default, must not be <code>NULL</code>.) </td></tr>
+    <tr><td class="paramname">data</td><td>The input set to be modified. (No default. If <code>NULL</code>, return <code>NULL</code> and emit a warning if <code>apop_opts.verbose &gt;= 1</code>.) </td></tr>
     <tr><td class="paramname">sortby</td><td>The column of data by which the sorting will take place. As usual, -1 indicates the vector element. (default: column zero of the matrix if there is a matrix; if there's a vector but no matrix, then -1). </td></tr>
     <tr><td class="paramname">asc</td><td>If 'd' or 'D', sort in descending order; else sort in ascending order. (Default: ascending) </td></tr>
   </table>
@@ -455,11 +446,11 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
     <tr><td class="paramname">indata</td><td>The input data that will be binned. This is copied and the copy will be modified. </td></tr>
     <tr><td class="paramname">close_top_bin</td><td>Normally, a bin covers the range from the point equal to its minimum to points strictly less than the minimum plus the width. if <code>'y'</code>, then the top bin includes points less than or equal to the upper bound. This solves the problem of displaying histograms where the top bin is just one point. </td></tr>
     <tr><td class="paramname">binspec</td><td>This is an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the same number of columns as <code>indata</code>. If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column. This allows you to specify a width for each dimension, or specify the same size for all with something like:</td></tr>
-    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>. <div class="fragment"><pre class="fragment"><a class="code" href="stats_8h.html#a2a1bc770d6631e85359acb8b665439b3">Apop_data_row</a>(indata, 0, firstrow);
+    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>. <div class="fragment"><pre class="fragment">Apop_data_row(indata, 0, firstrow);
 <a class="code" href="structapop__data.html">apop_data</a> *binspec = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(firstrow);
 gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size 10 for all dim.s</span>
 <a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(indata, binspec);
-</pre></div> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_20.png"/> bins to cover the range to the max element.</td></tr>
+</pre></div> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_18.png"/> bins to cover the range to the max element.</td></tr>
   </table>
   </dd>
 </dl>
@@ -483,12 +474,12 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
     <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(d,   1,   2,   3,   3,   1,   2);
     <a class="code" href="types_8h.html#a74dca50ea16ed7bf25cb152315642769">apop_text_fill</a>(d,  <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;B&quot;</span>);
 
-    sprintf(d-&gt;names-&gt;title, <span class="stringliteral">&quot;Original data set&quot;</span>);
+    asprintf(&amp;d-&gt;names-&gt;title, <span class="stringliteral">&quot;Original data set&quot;</span>);
     printdata(d);
 
         <span class="comment">//binned, where bin ends are equidistant but not necessarily in the data</span>
     <a class="code" href="structapop__data.html">apop_data</a> *binned = <a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(d, NULL);
-    sprintf(binned-&gt;names-&gt;title, <span class="stringliteral">&quot;Post binning&quot;</span>);
+    asprintf(&amp;binned-&gt;names-&gt;title, <span class="stringliteral">&quot;Post binning&quot;</span>);
     printdata(binned);
     assert(<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(binned-&gt;weights)==6);
     assert(fabs(<span class="comment">//equal distance between bins</span>
@@ -498,12 +489,12 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
         <span class="comment">//compressed, where the data is as in the original, but weights </span>
         <span class="comment">//are redome to accommodate repeated observations.</span>
     <a class="code" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a>(d);
-    sprintf(d-&gt;names-&gt;title, <span class="stringliteral">&quot;Post compression&quot;</span>);
+    asprintf(&amp;d-&gt;names-&gt;title, <span class="stringliteral">&quot;Post compression&quot;</span>);
     printdata(d);
     assert(<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(d-&gt;weights)==6);
 
     <a class="code" href="structapop__model.html">apop_model</a> *d_as_pmf = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
-    <a class="code" href="stats_8h.html#a2a1bc770d6631e85359acb8b665439b3">Apop_data_row</a>(d, 0, firstrow); <span class="comment">//1A</span>
+    Apop_data_row(d, 0, firstrow); <span class="comment">//1A</span>
     assert(fabs(<a class="code" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a>(firstrow, d_as_pmf) - 2./6 &lt; 1e-5));
 }
 </pre></div> 
@@ -695,7 +686,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <div class="memdoc">
 <p>Fit a log-linear model via iterative proportional fitting, aka raking.</p>
 <p>Raking has many uses. The <a href="http://modelingwithdata.org/arch/00000138.htm">Modeling with Data blog</a> presents a series of discussions of uses of raking, including some worked examples.</p>
-<p>Or see Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_42.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
+<p>Or see Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_40.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
 <p>The combinations of categories that are considered to be relevant are called <em>contrasts</em>, after ANOVA terminology of the 1940s.</p>
 <p>The other constraint on the search are structural zeros, which are values that you know can never be non-zero, due to field-specific facts about the variables. For example, U.S. Social Security payments are available only to those age 65 or older, so "age &lt;65 and
 gets_soc_security=1" is a structural zero.</p>
@@ -708,11 +699,15 @@ gets_soc_security=1" is a structural zero.</p>
 <ul>
 <li>Set <code>apop_opts.verbose=3</code> to see the intermediate tables at the end of each round of raking.</li>
 </ul>
+<ul>
+<li>If you want all cells to have nonzero value, then you can do that via pre-processing: <div class="fragment"><pre class="fragment"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;update data_table set count_col = 1e-3 where count_col = 0&quot;</span>);
+</pre></div></li>
+</ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">margin_table</td><td>The name of the table in the database to use for calculating the margins. The table should have one observation per row. No default. (This used to be called <code>table_name</code>; that name is now deprecated.)</td></tr>
     <tr><td class="paramname">var_list</td><td>The full list of variables to search. A list of strings, e.g., <code>(char *[]){"var1", "var2", ..., "var15"}</code></td></tr>
-    <tr><td class="paramname">var_ct</td><td>The full list of variables to search.</td></tr>
+    <tr><td class="paramname">var_ct</td><td>The count of the full list of variables to search.</td></tr>
     <tr><td class="paramname">all_vars</td><td>deprecated.</td></tr>
     <tr><td class="paramname">contrasts</td><td>The contrasts describing your model. Like the <code>all_vars</code> input, each contrast is a pipe-delimited list of variable names. No default.</td></tr>
     <tr><td class="paramname">contrast_ct</td><td>The number of contrasts in the list of contrasts. No default.</td></tr>
@@ -728,9 +723,7 @@ gets_soc_security=1" is a structural zero.</p>
   </table>
   </dd>
 </dl>
-<p>If you want all cells to have nonzero value, then you can do that via pre-processing: </p>
-<div class="fragment"><pre class="fragment"><a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;update data_table set count_col = 1e-3 where count_col = 0&quot;</span>);
-</pre></div><dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set where every row is a single combination of variable values and the <code>weights</code> vector gives the most likely value for each cell. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set where every row is a single combination of variable values and the <code>weights</code> vector gives the most likely value for each cell. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error='i'</td><td>Input was somehow wrong. </td></tr>
@@ -889,12 +882,12 @@ gets_soc_security=1" is a structural zero.</p>
       </table>
 </div>
 <div class="memdoc">
-<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model---in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
+<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model---in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_17.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
 <p>For example, </p>
 <div class="fragment"><pre class="fragment">   <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3);
 </pre></div><p>will return the density of the standard Normal distribution that is more than 1.3 from zero. If this function returns a small value, we can be confident that the statistic is significant. Or, </p>
 <div class="fragment"><pre class="fragment">   <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3, <span class="stringliteral">&quot;t&quot;</span>, 10, tail=<span class="charliteral">&#39;u&#39;</span>);
-</pre></div><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_10.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_10.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
+</pre></div><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_8.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_8.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
 <p>Several more distributions are supported; see below.</p>
 <ul>
 <li>For a two-tailed test (the default), this returns the density outside the range. I'll only do this for symmetric distributions. </li>
@@ -911,7 +904,7 @@ gets_soc_security=1" is a structural zero.</p>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value).</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_17.png"/>-value).</dd></dl>
 <p>Here is a list of distributions you can use, and their parameters.</p>
 <p><code>"normal"</code> or <code>"gaussian"</code> </p>
 <ul>
@@ -940,7 +933,7 @@ gets_soc_security=1" is a structural zero.</p>
 <ul>
 <li>p1=df </li>
 <li>no default </li>
-<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_19.png"/>-value for typical cases)</li>
+<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_17.png"/>-value for typical cases)</li>
 </ul>
 <p><code>"f"</code> </p>
 <ul>
@@ -948,7 +941,9 @@ gets_soc_security=1" is a structural zero.</p>
 <li>no default </li>
 <li>One-tailed tests only</li>
 </ul>
-<p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -1122,13 +1117,18 @@ gets_soc_security=1" is a structural zero.</p>
 <tr>
 <td><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">Beta</a> </td><td><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">Bernoulli</a> </td><td></td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_92.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_93.png"/>   </td></tr>
+<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_90.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_91.png"/>   </td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_70.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_53.png"/>  </td></tr>
+<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_66.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_69.png"/>  </td></tr>
 <tr>
 <td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">Poisson</a> </td><td>Uses sum and size of the data  </td></tr>
 </table>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
+<ul>
+<li>The conjugate table is stored using a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> <a class="code" href="structapop__model.html">apop_model</a> *(*apop_update_type)(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a> , <a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>);
+<span class="preprocessor">#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)</span>
+</pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>The input data, that will be used by the likelihood function (default = <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">prior</td><td>The prior <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>draw</code> method. (No default, must not be <code>NULL</code>.) </td></tr>
@@ -1137,8 +1137,7 @@ gets_soc_security=1" is a structural zero.</p>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>The table of conjugate prior/posteriors (in its static <code>check_conjugacy</code> subfuction), is a little short, and can always be longer.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters.</dd></dl>
 <p>Here is a test function that compares the output via conjugate table and via Gibbs sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 <span class="keywordtype">int</span> main(){
@@ -1149,25 +1148,25 @@ gets_soc_security=1" is a structural zero.</p>
     <span class="keywordtype">int</span> i, draws = 1500;
     <span class="keywordtype">double</span> n = 4000;
     <span class="comment">//First, the easy estimation using the conjugate distribution table.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *bin = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
-    <a class="code" href="structapop__model.html">apop_model</a> *beta = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
-    <a class="code" href="structapop__model.html">apop_model</a> *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
+    apop_model *bin = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
+    apop_model *beta = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, beta_start_a, beta_start_b);
+    apop_model *updated = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(.prior= beta, .likelihood=bin,.rng=r);
 
     <span class="comment">//Now estimate via Gibbs sampling. </span>
     <span class="comment">//Requires a one-parameter binomial, with n fixed,</span>
     <span class="comment">//and a data set of n data points with the right p.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *bcopy = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
-    <a class="code" href="structapop__data.html">apop_data</a> *bin_draws = <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1,2), n*(1-binom_start), n*binom_start);
+    apop_model *bcopy = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
+    apop_data *bin_draws = <a class="code" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((1,2), n*(1-binom_start), n*binom_start);
     bin = <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
-    apop_model_add_group(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
-    <a class="code" href="structapop__model.html">apop_model</a> *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
+    <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin=.1, .periods=1e4);
+    apop_model *out_h = <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
 
     <span class="comment">//We now have a histogram of values for p. What&#39;s the closest beta</span>
     <span class="comment">//distribution?</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(0, draws, 1);
+    apop_data *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(draws, 1);
     <span class="keywordflow">for</span>(i=0; i &lt; draws; i ++)
         <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(d, i, 0), r, out_h);
-    <a class="code" href="structapop__model.html">apop_model</a> *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
+    apop_model *out_beta = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
     <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
     <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
     <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
@@ -1175,7 +1174,9 @@ gets_soc_security=1" is a structural zero.</p>
     <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
     Apop_assert(error/updated_size &lt; 0.01, <span class="stringliteral">&quot;The error is %g, which is too big.&quot;</span>, error/updated_size);
 }
-</pre></div><p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </p>
+</pre></div><ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
+</ul>
 
 </div>
 </div>
@@ -1241,8 +1242,8 @@ gets_soc_security=1" is a structural zero.</p>
 <p>Returns an array of size 101, where <code>returned_vector</code>[95] gives the value of the 95th percentile, for example. <code>Returned_vector</code>[100] is always the maximum value, and <code>returned_vector</code>[0] is always the min (regardless of rounding rule).</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>a gsl_vector of data. (No default, must not be <code>NULL</code>.) </td></tr>
-    <tr><td class="paramname">rounding</td><td>This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]". (Default = 'd'.)</td></tr>
+    <tr><td class="paramname">data</td><td>a <code>gsl_vector</code> of data. (No default, must not be <code>NULL</code>.) </td></tr>
+    <tr><td class="paramname">rounding</td><td>This will either be <code>'u'</code>, <code>'d'</code>, or <code>'a'</code>. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If <code>'u'</code>, then round up (use the next highest value); if <code>'d'</code> (or anything else), round down to the next lowest value; if <code>'a'</code>, take the mean of the two nearest points. If <code>'u'</code> or <code>'a'</code>, then you can say "5% or more  of the sample is below \c returned_vector[5]"; if <code>'d'</code> or <code>'a'</code>, then you can say "5% or more of the sample is above returned_vector[5]". (Default = <code>'d'</code>.)</td></tr>
   </table>
   </dd>
 </dl>
@@ -1255,4 +1256,4 @@ gets_soc_security=1" is a structural zero.</p>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Jul 6 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
