@@ -518,6 +518,15 @@ typedef struct {
 } apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
 
 typedef struct {
+    apop_model *base_model; /**< The model, before constraint. */
+    double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
+    double (*scaling)(apop_model *); /**< Optional. Return the percent of the model density inside the constraint. */
+    gsl_rng *rng; /**< If you don't provide a \c scaling function, I calculate the in-constraint model density via random draws.
+                       If no \c rng is provided, I use a default RNG; see \ref autorng. */
+    int draw_ct; /**< How many draws to make for calculating the in-constraint model density via random draws. Current default: 1e4. */
+} apop_dconstrain_settings; /**< For use with the \ref apop_dconstrain model. See its documentation for an example. */
+
+typedef struct {
     apop_model *generator_m;
     apop_model *ll_m;
     gsl_rng *rng;
@@ -537,6 +546,7 @@ Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_stack)
 Apop_settings_declarations(apop_update)
+Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_kernel_density)

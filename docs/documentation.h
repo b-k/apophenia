@@ -1401,6 +1401,7 @@ Many of these (after the first two) are undergoing active development right now.
 
 \li\ref apop_update() : Bayesian updating
 \li\ref apop_model_coordinate_transform() : apply an invertible transformation to the data space
+\li\ref apop_model_dconstrain() : constrain the data space of a model to a subspace. E.g., truncate a Normal distribution so \f$x>0\f$.
 \li\ref apop_model_fix_params() : hold some parameters constant
 \li\ref apop_model_mixture() : a linear combination of models
 \li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has a <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
@@ -1876,7 +1877,7 @@ the <tt>--std=gnu99</tt> flag on the \c gcc command line.
 
 \li The function is named <em>maximum likelihood</em>, and for computational reasons, it
 maximizes the log of the likelihood function. You can define your objective function to be
-either the \c .p or the \c .log_likelihood element of your model, and there is really only one difference: if you give me a \c .p function, I may take its log somewhere along the way. Thus, the value of a \c .p function must always be non-negative. 
+either the <tt>.p</tt> or the <tt>.log_likelihood</tt> element of your model, and there is really only one difference: if you give me a <tt>.p</tt> function, I may take its log somewhere along the way. Thus, the value of a <tt>.p</tt> function must always be non-negative. 
 
 \li Statisticians want the covariance and basic tests about the parameters. If you just
 want the optimal value, then adding this line will shut off all auxiliary calculations:

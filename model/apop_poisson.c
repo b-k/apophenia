@@ -31,8 +31,8 @@ static double data_mean(apop_data *d){
     Get_vmsizes(d)
     if (vsize && !msize1) return apop_vector_mean(d->vector);
     if (!vsize && msize1) return apop_matrix_mean(d->matrix);
-    return apop_matrix_mean(d->matrix)*(msize1*msize2)/tsize +
-               + apop_vector_mean(d->vector)*vsize/tsize;
+    return apop_matrix_mean(d->matrix)*(msize1*msize2+0.0)/tsize +
+               + apop_vector_mean(d->vector)*(vsize+0.0)/tsize;
 }
 
 /* \adoc estimated_parameters 

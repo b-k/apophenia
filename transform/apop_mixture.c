@@ -7,7 +7,7 @@ Generated via \ref apop_model_mixture.
 
 Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
-\li This is still in beta. Expect the interface to change a little. 
+\li This is still in beta. Please keep an eye out for bugs, and expect the interface to change a little. 
 
 \li You could potentially provide a list of unparameterized models, and then have \ref apop_estimate estimate the parameters of all of them at once:
 
@@ -57,15 +57,15 @@ There are pack/unpack functions that run as needed. Given the estimated mixture 
 \endcode
 
 \adoc   Examples
-\include hills.c
+\include hills2.c
 */
 
 #include "apop_internal.h"
 #include "types.h"
 
 typedef struct {
-    apop_model **model_list; 
-    double *param_sizes;     
+    apop_model **model_list;
+    int *param_sizes;
     apop_model *cmf;
     int refct, model_count;
     gsl_rng *rng;
@@ -213,11 +213,20 @@ static double mixture_log_likelihood(apop_data *d, apop_model *model_in){
 static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
     if (!ms->cmf){
-        gsl_vector v = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
+        gsl_vector v, *vv=NULL;
+        if (m->parameters)
+            v = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
+        else { //assume equiprobable models.
+            vv = gsl_vector_alloc(ms->model_count);
+            gsl_vector_set_all(vv, 1);
+            v = *vv;
+        }
+
         ms->cmf = apop_model_copy(apop_pmf);
         ms->cmf->data = apop_data_alloc();
         ms->cmf->data->weights = apop_vector_copy(&v);
         Apop_model_add_group(ms->cmf, apop_pmf, .draw_index='y');
+        gsl_vector_free(vv);
     }
     double index; apop_draw(&index, r, ms->cmf);
     apop_draw(out, r, ms->model_list[(int)index]);

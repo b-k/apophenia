@@ -64,11 +64,11 @@ static void compose_prep(apop_data *d, apop_model *m){
     Apop_stopif(!cs, m->error='s', 0, "missing apop_composition_settings group. "
             "Maybe initialize this with apop_model_dcompose?");
 
+    if (!cs->generator_m->parameters) apop_prep(d, cs->generator_m);
+    if (!cs->ll_m->parameters)         apop_prep(d, cs->ll_m);
+
    int gen_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
    int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
-
-    if (gen_psize && !cs->generator_m->parameters) apop_prep(d, cs->generator_m);
-    if (ll_psize && !cs->ll_m->parameters)         apop_prep(d, cs->ll_m);
 
     m->vbase = gen_psize + ll_psize;
     if (m->vbase) {
@@ -83,11 +83,7 @@ static void compose_prep(apop_data *d, apop_model *m){
 static double compose_ll(apop_data *indata, apop_model*composition){
     Get_cs(composition, GSL_NAN)
     Apop_stopif(unpack(composition), return GSL_NAN, 0, "Trouble unpacking parameters.");
-    apop_data *draws = apop_data_alloc(cs->draw_ct, cs->generator_m->dsize);
-    for (int i=0; i< cs->draw_ct; i++){
-        Apop_row(draws, i, onerow);
-        apop_draw(onerow->data, cs->rng, cs->generator_m);
-    }
+    apop_data *draws = apop_model_draws(cs->generator_m, .count=cs->draw_ct, .rng=cs->rng);
     double ll = apop_log_likelihood(draws, cs->ll_m);
     apop_data_free(draws);
     return ll;

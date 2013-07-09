@@ -6,6 +6,9 @@
 */
 #include <apop.h>
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+
+#define Print_dot if(verbose){printf(".");fflush(NULL);}
+
 int verbose = 1;
 double nan_map(double in){return gsl_isnan(in);}
 
@@ -24,21 +27,15 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
         .use_score    = 1
         );
     Apop_model_add_group(dist, apop_parts_wanted);
-    if (verbose) printf( method==APOP_SIMPLEX_NM ? "Simplex [basic"
-                        :method==APOP_CG_PR      ? "; Gradients [basic"
-                        :method==APOP_RF_HYBRID  ? "; Newton's [basic"
-                        : "default method [basic");
-    fflush(NULL);
 
     if((!strcmp(dist->name, "Bernoulli distribution") ||
        !strcmp(dist->name, "Beta distribution") )
-       && method==APOP_RF_HYBRID){
-        printf(" skip]");
+       && method==APOP_RF_HYBRID)
         return 0;
-    }
     apop_model *e    = apop_estimate(data,*dist);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
-    printf("][restart");fflush(NULL);
+    if (!strcmp(dist->name, "Poisson distribution")) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
+    Print_dot
     e = apop_estimate_restart(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 
@@ -48,16 +45,15 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
             ||(!strcmp(e->name, "Exponential distribution")) //imprecise
             || !strcmp(e->name, "Yule distribution")){
             //cycle takes all day.
-            printf("][skip EM]");fflush(NULL);
             return 0;
         }
 
     apop_model *dc  = apop_model_copy(*dist);
     Apop_settings_add(dc, apop_mle, tolerance, 1e-4);
-    Apop_settings_add(dc, apop_mle, dim_cycle_tolerance, fabs(apop_log_likelihood(data, e))/200.); //w/in .5%.
-    printf("][EM cycle");fflush(NULL);
+    Apop_settings_add(dc, apop_mle, dim_cycle_tolerance, fabs(apop_log_likelihood(data, e))/200.); //within .5%.
+    Print_dot
     apop_model *dce = apop_estimate(data,*dc);
-    printf("]");fflush(NULL);
+    Print_dot
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(dce->parameters)), 1e-2); 
     return 0;
 }
@@ -192,10 +188,10 @@ void test_distributions(gsl_rng *r){
 static void got_bored(){ exit(0); }
 
 int main(int argc, char **argv){
-    apop_opts.verbose=0;
+    apop_opts.thread_count = 2;
     char c, opts[] = "sqt:";
     if (argc==1)
-        printf("Distribution tests.\nFor quieter output, use -q. For multiple threads, use -t2, -t3, ...\n");
+        printf("Distribution tests. Each dot is an optimization run, including some methods known to be inefficient.\nFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 'q')      verbose  --;
         else if (c == 't') apop_opts.thread_count  = atoi(optarg);

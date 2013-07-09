@@ -11,7 +11,8 @@ libapophenia_la_SOURCES = \
             apop_regression.c apop_settings.c apop_smoothing.c          \
             apop_stats.c apop_tests.c apop_update.c	 apop_vtables.c            \
 			asprintf.c 					\
-			transform/apop_dcompose.c   transform/apop_fix_params.c \
+			transform/apop_dcompose.c   \
+			transform/apop_dconstrain.c transform/apop_fix_params.c \
 			transform/apop_coordinate_transform.c 	\
 			transform/apop_mixture.c 	transform/apop_stack.c    \
 			model/apop_bernoulli.c      model/apop_beta.c			\
