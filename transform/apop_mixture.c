@@ -90,6 +90,9 @@ apop_model *apop_model_mixture_base(apop_model **inlist){
     for (apop_model **m = inlist; *m; m++) count++;
     Apop_model_add_group(out, apop_mixture, .model_list=inlist, 
             .model_count=count, .param_sizes=malloc(sizeof(int)*count));
+    int dsize = inlist[0]->dsize;
+    for (int i=1; i< count && dsize > -99; i++) if (inlist[i]->dsize != dsize) dsize = -100;
+    if (dsize > -99) out->dsize = dsize;
     return out;
 }
 

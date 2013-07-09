@@ -21,7 +21,7 @@ static double apply_me(double x, void *in){
 static double poisson_log_likelihood(apop_data *d, apop_model * p){
     Nullcheck_mpd(d, p, GSL_NAN)
     Get_vmsizes(d) //tsize
-    double lambda = gsl_vector_get(p->parameters->vector, 0);
+    double lambda = apop_data_get(p->parameters);
     double ln_l = log(lambda);
     double ll = apop_map_sum(d, .fn_dp = apply_me, .param=&ln_l);
     return ll - tsize*lambda;
@@ -42,7 +42,7 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     double mean = data_mean(data);
-	gsl_vector_set(est->parameters->vector, 0, mean);
+	apop_data_set(est->parameters, .val=mean);
     apop_data_add_names(est->parameters, 'r', "λ");
     apop_data_add_named_elmt(est->info, "log likelihood", poisson_log_likelihood(data, est));
     //to prevent an infinite loop, the bootstrap needs to be flagged to not run itself. 
@@ -61,13 +61,18 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
 
 static double positive_beta_constraint(apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_1
-    return apop_linear_constraint(v->parameters->vector, .margin = 1e-4);
+    if (v->parameters->vector)
+        return apop_linear_constraint(v->parameters->vector, .margin = 1e-4);
+    else {
+        Apop_matrix_row(v->parameters->matrix, 0, vv);
+        return apop_linear_constraint(vv, .margin = 1e-4);
+    }
 }
 
 static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
     Get_vmsizes(d) //tsize
     Nullcheck_mpd(d, p, )
-    double     lambda = gsl_vector_get(p->parameters->vector, 0);
+    double     lambda = apop_data_get(p->parameters);
     gsl_matrix *data = d->matrix;
     double     d_a = apop_matrix_sum(data)/lambda - tsize;
     gsl_vector_set(gradient,0, d_a);
@@ -75,7 +80,8 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
 
 /* \adoc RNG Just a wrapper for \c gsl_ran_poisson.  */
 static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
-    *out = gsl_ran_poisson(r, *p->parameters->vector->data);
+    *out = gsl_ran_poisson(r, 
+            *(p->parameters->vector ? p->parameters->vector->data: p->parameters->matrix->data));
 }
 
 apop_model apop_poisson = {"Poisson distribution", 1, 0, 0, .dsize=1,

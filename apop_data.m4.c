@@ -737,6 +737,8 @@ for (int i=0; i< 1e7; i++)
     apop_data_set(d, i, 0, i);
 \endcode
 
+\li The column (like all defaults) is zero unless stated otherwise, so <tt>apop_data_get(dataset, 1)</tt> gets item (1, 0) from the matrix element of \c dataset. As a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit: <tt>apop_data_get(dataset, 1, -1)</tt>.
+
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
 
 These functions use the \ref designated syntax for inputs.
@@ -796,12 +798,12 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
         return apop_data_ptr_it(d, row,colname);
 
     //else: row number, column number
-    if (col == -1){
-        Apop_assert(data->vector, "You asked for the vector element (col=-1) but it is NULL.");
-        return gsl_vector_ptr(data->vector, row);
+    if (col == -1 || (col == 0 && !d->matrix && d->vector)){
+        Apop_assert(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
+        return gsl_vector_ptr(d->vector, row);
     } else {
-        Apop_assert(data->matrix, "You asked for the matrix element (%i, %i) but the matrix is NULL.", row, col);
-        return gsl_matrix_ptr(data->matrix, row,col);
+        Apop_assert(d->matrix, "You asked for the matrix element (%i, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_ptr(d->matrix, row,col);
     }
 APOP_VAR_ENDHEAD
     return NULL;//the main function is blank.
@@ -873,12 +875,12 @@ APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, cons
     if (!rowname && colname)
         return apop_data_get_it(d, row,colname);
     //else: row number, column number
-    if (col>=0){
-        Apop_assert_nan(d->matrix, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        return gsl_matrix_get(d->matrix, row, col);
-    } else {
+    if (col==-1 || (col == 0 && !d->matrix && d->vector)){
         Apop_assert_nan(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
         return gsl_vector_get(d->vector, row);
+    } else {
+        Apop_assert_nan(d->matrix, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_get(d->matrix, row, col);
     }
 APOP_VAR_ENDHEAD
     return 0;//the main function is blank.
@@ -980,12 +982,12 @@ APOP_VAR_HEAD int apop_data_set(apop_data *data, const size_t row, const int col
     if (!rowname && colname) return apop_data_set_it(d, row, colname, val);
     //else: row number, column number
     Set_gsl_handler
-    if (col>=0){
-        Apop_assert_negone(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        gsl_matrix_set(d->matrix, row, col, val);
-    } else {
+    if (col==-1 || (col == 0 && !d->matrix && d->vector)){
         Apop_assert_negone(d->vector, "You're trying to set a vector element (row=-1) but the vector is NULL.");
         gsl_vector_set(d->vector, row, val);
+    } else {
+        Apop_assert_negone(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        gsl_matrix_set(d->matrix, row, col, val);
     }
     Unset_gsl_handler
     return error_for_set;
