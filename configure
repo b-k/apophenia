@@ -1,0 +1,29 @@
+version=0.99
+workdir=apophenia-$version
+
+echo This configure script uses Autotools to generate a build directory, $workdir.
+echo "Therefore, you need Autotools to run; see README"
+echo "Apophenia always depends on the GNU Scientific Library and SQLite3 (_and_ their -dev or -devel headers) to build and run."
+
+mkdir -p $workdir/m4
+cp -r *.h *.c apop.i cmd docs eg install/* model tests transform README ChangeLog $workdir
+#mkdir -p $workdir/tests/apophenia
+#cp *.h $workdir/tests/apophenia
+cd $workdir
+
+#Autoconf requirements:
+cp ChangeLog NEWS
+echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
+
+#generate the internal header based on the public apop.h
+sed -e 's/[<>]/"/g' -e 's/apophenia\///' -e '1i#include "variadic.h"' -e '1i#include "internal.h"\n' <apop.h > apop_internal.h
+
+autoreconf -f -i
+autoreconf -i
+./configure -C
+make dist
+
+echo
+echo ---------------------
+echo
+echo "OK, built. From the $workdir directory, you can run: make; sudo make install"

@@ -14,7 +14,7 @@ apop_opts_type apop_opts	=
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,
             .log_file = NULL,
-            .rng_seed = 479901,            .version = X.XX };
+            .rng_seed = 479901,            .version = m4_apop_version };
 
 #ifdef HAVE_LIBMYSQLCLIENT
 #include "apop_db_mysql.c"

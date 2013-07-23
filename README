@@ -1,52 +1,57 @@
-Apophenia is an open statistical library for working with data sets and 
-statistical or simulation models. It provides functions on the same level 
-as those of the typical stats package (such as OLS, probit, or singular 
-value decomposition) but gives the user more flexibility to be creative 
-in model-building. The core functions are written in C, but bindings 
-exist for Python (and they should be easy to bind to in Perl/Ruby/&c.)
+Apophenia is an open statistical library for working with data
+sets and statistical or simulation models. It provides functions on
+the same level as those of the typical stats package (such as OLS,
+probit, or singular value decomposition) but gives the user more
+flexibility to be creative in model-building. Being in C, it 
+is often an order of magnitude faster when searching for optima 
+or running MCMC chains. The core functions are written in C, but 
+bindings exist for Python (and they should be easy to bind to in 
+Perl/Ruby/&c.)
 
-http://apophenia.info/gentle.html provides an overview of the basics of using the library.  
-If you want to know more about the package, see the web site,
-http://apophenia.info, or have a look at the textbook from Princeton
-University Press that coevolved with Apophenia, downloadable from
-http://modelingwithdata.org . 
+http://apophenia.info/gentle.html provides an overview of the
+basics of using the library.  If you want to know more about the
+package, see the web site, http://apophenia.info, or have a look
+at the textbook from Princeton University Press that coevolved with
+Apophenia, downloadable from http://modelingwithdata.org .
 
-
-Detailed setup instructions can be found at
-http://apophenia.sourceforge.net/doc/setup.html .
 
 The quick summary for installation:
---You need the usual C compiler and the supporting environment that a
-sane programmer requires.
 
---Download from Sourceforge (because GitHub stopped supporting downloads):
+--The library depends on the GNU Scientific Library and SQLite3. If
+you are using a system with a package manager of some sort, there
+is certainly a package for them. Be sure to include both the main
+package and the lib-, -dev, or -devel package. Sample package
+manager calls:
+
+sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
+or 
+sudo yum install make gcc gsl-devel libsqlite3x-devel
+
+--To build from this git repository, you will need to have Autotools installed [try
+(apt-get || yum install) autoconf automake libtool ], because the first step in the
+build process is to use Autotools to generate the build package. If you can't install
+Autotools, use the pre-built package from Sourceforge; see below.
+
+--Got Autotools? Great, then run:
+
+./configure
+cd apophenia-0.99
+make 
+sudo make install
+
+
+--The prebuilt package, that has only basic requirements
+and doesn't require Autotools, can be downloaded from
+Sourceforge (because GitHub stopped supporting downloads):
 https://sourceforge.net/projects/apophenia/files/latest/download?source=files
 
---The library makes an effort to not reinvent already-developed systems
-like matrix inversion or database querying, which means that the package
-has several dependencies. You need the GNU Scientific Library (wich needs
-a BLAS like libgslcblas or lapack), and are strongly encouraged to have a
-database system, either SQLite or mysql (if not sure, install sqlite3). If
-you are using a system with a package manager of some sort, there is
-certainly a package for all of these. Be sure to include both the main
-package and the lib-, -dev, or -devel package. On my Ubuntu system,
-I'd run this package-install command:
+--Find detailed setup instructions and some troubleshooting notes at
+http://apophenia.sourceforge.net/doc/setup.html .
 
-apt-get install gsl-bin libgsl0-dev libblas-dev libblas3gf liblapack3gf sqlite3 libsqlite3-0 libsqlite3-dev
 
---There is an optional Python interface, which will require all of the above plus the
-swig and Python-dev packages.
+Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 
---One you have it in place,
+--BK
 
-tar xzf apophenia-*.tar.gz 
-cd apophenia-X.XX
-./configure; make; sudo make install
-
-should compile and install for you.
-
---Once you have it installed, the user manual is in the form of a textbook
-on statistical computing at http://modelingwithdata.org and the
-command-by-command reference is at http://apophenia.info/doc . You can
-make the online documentation yourself if you have Doxygen installed,
-via make doc.
+PS: Lawyers, please note that COPYING and COPYING2 files can be found in
+the install/ directory.

@@ -1,5 +1,6 @@
 AM_CFLAGS = -g -Wall -O3
 CC = $(PTHREAD_CC)
+ACLOCAL_AMFLAGS=-I m4
 
 lib_LTLIBRARIES = libapophenia.la
 libapophenia_la_SOURCES = \
@@ -74,7 +75,7 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		$(srcdir)/docs/*.js 	\
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
-		eg apop_db_mysql.c apop_db_sqlite.c apop.i tests/apophenia \
+		eg apop_db_mysql.c apop_db_sqlite.c apop.i \
 		apop_internal.h internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1

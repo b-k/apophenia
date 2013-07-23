@@ -171,7 +171,7 @@ Finally, a demonstration of fixing parameters to create a marginal distribution,
 \section cast The supporting cast 
 To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. 
 
-\li Some readers are unfamiliar with modern package managemers and common methods for setting up a C development environment; see 
+\li Some readers are unfamiliar with modern package managers and common methods for setting up a C development environment; see 
 <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em> for an introduction.
 
 \li Other pages on this site have a few more notes for \ref windows "Windows" users or \ref mingw users.

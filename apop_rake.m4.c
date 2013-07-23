@@ -468,6 +468,12 @@ points, not to the full cross of all categories. Set <tt>apop_opts.verbose</tt> 
 
 \li Set <tt>apop_opts.verbose=3</tt> to see the intermediate tables at the end of each round of raking.
 
+\li If you want all cells to have nonzero value, then you can do that via pre-processing:
+\code
+apop_query("update data_table set count_col = 1e-3 where count_col = 0");
+\endcode
+
+
 \param margin_table The name of the table in the database to use for calculating
 the margins.  The table should have one observation per row.  No default. (This used
 to be called \c table_name; that name is now deprecated.)
@@ -518,11 +524,6 @@ those cells that could possibly have a nonzero value given the observations, the
 add <tt>nudge</tt> to any zero cells within that subset.
 
 \param table_name Deprecated; replaced with \c margin_table.
-
-If you want all cells to have nonzero value, then you can do that via pre-processing:
-\code
-apop_query("update data_table set count_col = 1e-3 where count_col = 0");
-\endcode
 
 \return An \ref apop_data set where every row is a single combination of variable values
 and the \c weights vector gives the most likely value for each cell.

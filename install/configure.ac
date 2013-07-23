@@ -1,8 +1,10 @@
 # Process this file with autoconf to produce a configure script.
 
+m4_define([m4_apop_version], [m4_esyscmd_s(date +%Y%m%d)]) #will switch to this soon.
+
 AC_PREREQ(2.60)
-AC_INIT([Apophenia], [X.XX], [fluffmail@f-m.fm])
-AM_INIT_AUTOMAKE(apophenia, X.XX)
+AC_INIT([Apophenia], [0.99], [fluffmail@f-m.fm])
+AM_INIT_AUTOMAKE([apophenia], [0.99])
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([settings.h])
 AC_CONFIG_HEADER([config.h])
@@ -98,10 +100,10 @@ Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
 
  Now type 'make @<:@<target>@:>@'
    where the optional <target> is:
-     all                - build all binaries
-     install            - install everything
-     check              - test the installation
-     doc                - generate documentation via doxygen 
+     all      - build all binaries
+     install  - install everything [e.g., sudo make install]
+     check    - test the installation [run after install]
+     doc      - generate documentation via doxygen 
 
 ------------------------------------------------------------"
 

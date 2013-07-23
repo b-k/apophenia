@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	June 2013
+--replaced makefile in base directory with ./configure.
+--version number now equals build date.
+
 	May 2013
 --jacobian transformations
 --Apop_model_copy_set to copy a model and add a settings group at once

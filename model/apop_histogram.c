@@ -26,8 +26,7 @@ Normal distribution, where we want to center the distribution on each data point
 
 \code
 static void apop_set_first_param(apop_data *in, apop_model *m){
-    m->parameters->vector->data[0]  = in->vector ? in->vector->data[0] 
-                                                 : gsl_matrix_get(in->matrix, 0, 0);
+    m->parameters->vector->data[0]  = apop_data_get(in);
 }
 \endcode
 
@@ -54,7 +53,7 @@ This example sets up and uses KDEs based on a Normal and a Uniform distribution.
 */
 
 static void apop_set_first_param(apop_data *in, apop_model *m){
-    m->parameters->vector->data[0]  = in->vector ? in->vector->data[0] 
+    m->parameters->vector->data[0] = in->vector ? in->vector->data[0] 
                                                  : gsl_matrix_get(in->matrix, 0, 0);
 }
 

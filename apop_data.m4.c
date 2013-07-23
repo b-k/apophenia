@@ -1259,7 +1259,7 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** This function will resize a gsl_matrix to a new height or width.
+/** This function will resize a \c gsl_matrix to a new height or width.
 
 Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your responsibility to zero out or otherwise fill new rows/columns before use.
 
@@ -1301,7 +1301,7 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
     return m;
 }
 
-/** This function will resize a gsl_vector to a new length.
+/** This function will resize a \c gsl_vector to a new length.
 
 Data in the vector will be retained. If the new height is
 smaller than the old, then data at the end of the vector will be
