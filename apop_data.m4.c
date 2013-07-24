@@ -1408,9 +1408,14 @@ APOP_VAR_ENDHEAD
   \endcode
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
-    Apop_stopif(!newpage, return NULL, 1, "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
+<<<<<<< HEAD
     if (title && !(newpage->names->title == title))//has title, is not just pointint to existing title
         snprintf(newpage->names->title, 100, "%s", title);
+    Apop_stopif(!newpage, return NULL, 1, "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
+    if (title && !(newpage->names->title == title)){//has title, but is not pointing to existing title
+        free(newpage->names->title);
+        asprintf(&newpage->names->title, "%s", title);
+    }
     Apop_stopif(!dataset, return newpage, 1, "You are adding a page to a NULL data set. Returning the new page as its own data set.");
     while (dataset->more)
         dataset = dataset->more;
