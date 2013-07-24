@@ -127,7 +127,7 @@ typedef struct{
     float version;
 } apop_opts_type;
 
-apop_opts_type apop_opts;
+extern apop_opts_type apop_opts;
 
 apop_name * apop_name_alloc(void);
 int apop_name_add(apop_name * n, char const *add_me, char type);
@@ -258,40 +258,40 @@ int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
     // Models and model support functions
 
-apop_model apop_beta;
-apop_model apop_bernoulli;
-apop_model apop_binomial;
-apop_model apop_chi_squared;
-apop_model apop_dirichlet;
-apop_model apop_exponential;
-apop_model apop_f_distribution;
-apop_model apop_gamma;
-apop_model apop_improper_uniform;
-apop_model apop_iv;
-apop_model apop_kernel_density;
-apop_model apop_loess;
-apop_model apop_logit;
-apop_model apop_lognormal;
-apop_model apop_multinomial;
-apop_model apop_multivariate_normal;
-apop_model apop_normal;
-apop_model apop_ols;
-apop_model apop_pmf;
-apop_model apop_poisson;
-apop_model apop_probit;
-apop_model apop_t_distribution;
-apop_model apop_uniform;
-apop_model apop_wishart;
-apop_model apop_wls;
-apop_model apop_yule;
-apop_model apop_zipf;
+extern apop_model apop_beta;
+extern apop_model apop_bernoulli;
+extern apop_model apop_binomial;
+extern apop_model apop_chi_squared;
+extern apop_model apop_dirichlet;
+extern apop_model apop_exponential;
+extern apop_model apop_f_distribution;
+extern apop_model apop_gamma;
+extern apop_model apop_improper_uniform;
+extern apop_model apop_iv;
+extern apop_model apop_kernel_density;
+extern apop_model apop_loess;
+extern apop_model apop_logit;
+extern apop_model apop_lognormal;
+extern apop_model apop_multinomial;
+extern apop_model apop_multivariate_normal;
+extern apop_model apop_normal;
+extern apop_model apop_ols;
+extern apop_model apop_pmf;
+extern apop_model apop_poisson;
+extern apop_model apop_probit;
+extern apop_model apop_t_distribution;
+extern apop_model apop_uniform;
+extern apop_model apop_wishart;
+extern apop_model apop_wls;
+extern apop_model apop_yule;
+extern apop_model apop_zipf;
 
 //model transformations
-apop_model apop_coordinate_transform;
-apop_model apop_composition;
-apop_model apop_dconstrain;
-apop_model apop_mixture;
-apop_model apop_stack;
+extern apop_model apop_coordinate_transform;
+extern apop_model apop_composition;
+extern apop_model apop_dconstrain;
+extern apop_model apop_mixture;
+extern apop_model apop_stack;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */

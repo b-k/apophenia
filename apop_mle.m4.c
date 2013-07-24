@@ -514,7 +514,7 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     apop_model *est = i->model;
     apop_mle_settings *mp = apop_settings_get_group(est, apop_mle);
     Apop_assert(mp, "No apop_mle settings group in the working model");
-    int status,
+    int status=0,
         apopstatus = 0,
         iter = 0,
         betasize= i->beta->size;
@@ -908,7 +908,7 @@ static apop_model * find_roots (infostruct p) {
     gsl_multiroot_fsolver *s;
     apop_model *dist = p.model;
     apop_mle_settings *mlep = apop_settings_get_group(dist, apop_mle);
-    int status, betasize = p.beta->size,
+    int status=0, betasize = p.beta->size,
               apopstatus = -1;   //assume failure until we score a success.
     size_t iter = 0;
     gsl_multiroot_function f = {dnegshell, betasize, &p};
