@@ -3630,7 +3630,7 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
     //Also, it wouldn't be 14 lines.
     apop_data *expect = apop_data_add_page(out->info, apop_data_alloc(d->matrix->size1, 3), "<Predicted>");
     if (!out->info) out->info = expect;
-    apop_name_add(expect->names, (out->data->names->colct ? out->data->names->column[0] : "Expected"), 'c');
+    apop_name_add(expect->names, (out->data->names->colct ? out->data->names->col[0] : "Expected"), 'c');
     apop_name_add(expect->names, "Predicted", 'c');
     apop_name_add(expect->names, "Residual", 'c');
     gsl_vector *v = gsl_vector_alloc(d->matrix->size1);

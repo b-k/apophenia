@@ -130,7 +130,7 @@ static char *apop_get_factor_basename(apop_data *d, int col, char type){
     char *catname =   d->names == NULL ? NULL
                     : type == 't' && d->names && d->names->textct > col ? d->names->text[col]
                     : col == -1 && d->names && d->names->vector         ? d->names->vector
-                    : col >=0 && d->names && d->names->colct > col      ? d->names->column[col]
+                    : col >=0 && d->names && d->names->colct > col      ? d->names->col[col]
                     : NULL;
     if (catname){
         asprintf(&name, "%s", catname);
@@ -313,7 +313,7 @@ APOP_VAR_ENDHEAD
         apop_data **split = apop_data_split(d, col+1, 'c');
         //stack names, then matrices
         for (int i=0; i < d->names->colct; i++)
-            free(d->names->column[i]);
+            free(d->names->col[i]);
         apop_name_stack(d->names, split[0]->names, 'c');
         for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)
             apop_name_add(d->names, "", 'c'); //pad so the name stacking is aligned (if needed)

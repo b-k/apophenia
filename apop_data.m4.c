@@ -580,7 +580,7 @@ allocation:
         for (int k=0; k< in->names->colct; k++){
             int which = (k >= namecsplit);
             assert(out[which]);
-            apop_name_add(out[which]->names, in->names->column[k], 'c');
+            apop_name_add(out[which]->names, in->names->col[k], 'c');
         }
     else {
         if (namec0 && out[0]) apop_name_stack(out[0]->names, in->names, 'c');
@@ -616,15 +616,15 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
     apop_name *newname = apop_name_alloc();
     size_t initial_colct = n->colct;
     for (size_t i=0; i< initial_colct; i++){
-        if (drop[i]==0) apop_name_add(newname, n->column[i],'c');
+        if (drop[i]==0) apop_name_add(newname, n->col[i],'c');
         else            n->colct--;
-        free(n->column[i]);
+        free(n->col[i]);
     }
-    free(n->column);
-    n->column = newname->column;
+    free(n->col);
+    n->col = newname->col;
 
     //we need to free the newname struct, but leave the column intact.
-    newname->column   = NULL;
+    newname->col = NULL;
     newname->colct  = 0;
     apop_name_free(newname);
 }
@@ -700,7 +700,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     for (int i=0; i< d->names->colct; i++){
         int keep = 0;
         for (int j=0; j<keep_count; j++)
-            if (!used_field[j] && apop_regex(d->names->column[i], colnames[j])){
+            if (!used_field[j] && apop_regex(d->names->col[i], colnames[j])){
                 keep ++;
                 used_field[j]++;
                 break;
@@ -1376,7 +1376,7 @@ APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char 
     const char * apop_varad_var(title, "Info");
     const char apop_varad_var(match, 'r');
 APOP_VAR_ENDHEAD
-    while (data && (!data->names || 
+    while (data && (!data->names || !data->names->title ||
                 (match!='e' && match!='c' && !apop_regex(data->names->title, title))
                 || (match=='c' && strcasecmp(data->names->title, title))
                 || (match=='e' && strcmp(data->names->title, title))

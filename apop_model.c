@@ -34,7 +34,8 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     msize2 = model->m2base == -1 ? width : model->m2base ;
     if (!model->parameters) model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info) model->info = apop_data_alloc();
-    snprintf(model->info->names->title, 100, "Info");
+    free(model->info->names->title);
+    asprintf(&model->info->names->title, "Info");
     model->data = data;
 	return model;
 }

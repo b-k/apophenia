@@ -73,16 +73,16 @@ static void prep_names (apop_model *e){
     apop_parts_wanted_settings *pwant = apop_settings_get_group(e, apop_parts_wanted);
     apop_data *predicted = apop_data_get_page(e->info, "<Predicted>");
     if (predicted){
-        apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->column[0] : "Observed"), 'c');
+        apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->col[0] : "Observed"), 'c');
         apop_name_add(predicted->names, "Predicted", 'c');
         apop_name_add(predicted->names, "Residual", 'c');
     }
 	if (e->data->names->vector) { //this is post ols shuffle.
         if (e->parameters)
-            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->vector);
+            asprintf(&e->parameters->names->title, "Regression of %s", e->data->names->vector);
         apop_name_add(e->parameters->names, "parameters", 'v');
         for(int i=0; i< e->data->names->colct; i++)
-            apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
+            apop_name_add(e->parameters->names, e->data->names->col[i], 'r');
         if ((pwant && pwant->covariance) || (!pwant && p && p->want_cov== 'y')){
             apop_data *cov = apop_data_get_page(e->parameters, "<Covariance>");
             if (cov && e->data->names){
@@ -99,8 +99,8 @@ static void ols_shuffle(apop_data *d){
         d->vector = apop_vector_copy(independent);
         gsl_vector_set_all(independent, 1);     //affine; first column is ones.
         if (d->names->colct > 0) {		
-            apop_name_add(d->names, d->names->column[0], 'v');
-            sprintf(d->names->column[0], "1");
+            apop_name_add(d->names, d->names->col[0], 'v');
+            sprintf(d->names->col[0], "1");
         }
     }
 }
@@ -421,9 +421,9 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
         }
     else if (instruments->names->colct)
         for (int i=0; i< instruments->names->colct; i++){
-            int colnumber = apop_name_find(x->names, instruments->names->column[i], 'c');
+            int colnumber = apop_name_find(x->names, instruments->names->col[i], 'c');
             Apop_assert(colnumber != -2, "You asked me to substitute instrument column %i "
-                    "for the data column named %s, but I could find no such name.",  i, instruments->names->column[i]);
+                    "for the data column named %s, but I could find no such name.",  i, instruments->names->col[i]);
             Apop_col(instruments, i, inv);
             Apop_col(out, colnumber, outv);
             gsl_vector_memcpy(outv, inv);
