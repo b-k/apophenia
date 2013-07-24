@@ -133,7 +133,7 @@ APOP_VAR_ENDHEAD
     FILE *f = output_pipe;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
-		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
+		fprintf(f, "set xlabel \"%s\"\n", data->names->col[1]);
 		fprintf(f, "set xlabel \"%s\"\n", data->names->vector);
 	}
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
@@ -248,7 +248,7 @@ void apop_data_show(const apop_data *in){
             apop_text_add(printout, 0 , hasrownames,  in->names->vector);
         if (msize2 && in->names)
             for (size_t i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->col[i]);
         if (in->textsize[1] && in->names)
             for (size_t i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
@@ -265,7 +265,7 @@ void apop_data_show(const apop_data *in){
     }
 
 //Finally, print
-    if (in->names && strlen(in->names->title))
+    if (in->names && in->names->title && strlen(in->names->title))
         printf("\t%s\n\n", in->names->title);
     for (size_t j=0; j < outsize_r; j ++){
         for (size_t i=0; i < outsize_c; i ++){
@@ -349,7 +349,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         start   = (data->vector)? -1 : 0,
         end     = (data->matrix)? data->matrix->size2 : 0,
         rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
-    if (strlen(data->names->title))
+    if (data->names->title && strlen(data->names->title))
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
@@ -365,9 +365,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         }
         for(i=0; i< data->names->colct; i++){
             if (i < data->names->colct -1)
-                fprintf(f, "%s%s", data->names->column[i], apop_opts.output_delimiter);
+                fprintf(f, "%s%s", data->names->col[i], apop_opts.output_delimiter);
             else
-                fprintf(f, "%s", data->names->column[i]);
+                fprintf(f, "%s", data->names->col[i]);
         }
     }
     if (data->textsize[1] && data->names->textct){
@@ -498,9 +498,9 @@ static void printone(FILE *f, double width, double height, double margin, int xp
     //labels have to be drawn with a long offset from one of the
     //plots we do display.
     if (xposn  == yposn+1)
-        fprintf(f, "set label %i '%s' center at graph %g, %g\n",yposn+1, (d->names->colct >yposn)? d->names->column[yposn]: "",  -0.5, 0.5);
+        fprintf(f, "set label %i '%s' center at graph %g, %g\n",yposn+1, (d->names->colct >yposn)? d->names->col[yposn]: "",  -0.5, 0.5);
     if ((yposn == count-1) && (xposn  == count-2))
-        fprintf(f, "set label %zu '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->column[count -1]: "",  1.5, 0.5);
+        fprintf(f, "set label %zu '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->col[count -1]: "",  1.5, 0.5);
     if (xposn != yposn){
         fprintf(f, "plot '-'\n");
         fflush(f);
@@ -636,9 +636,9 @@ APOP_VAR_ENDHEAD
     FILE *f=output_pipe;
     Apop_assert_n(f, "Error opening file %s for writing.", output_file);
     if (in->names && in->names->colct>=3){
-        fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->column[0]);
-        fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->column[1]);
-        fprintf(f, "set label '%s' at 0.5, 1/sqrt(2)+0.05 center; \n", in->names->column[2]);
+        fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->col[0]);
+        fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->col[1]);
+        fprintf(f, "set label '%s' at 0.5, 1/sqrt(2)+0.05 center; \n", in->names->col[2]);
     }
     fprintf(f, 
         " set size square;      \n"

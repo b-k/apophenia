@@ -608,7 +608,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                     if(set->names->colct <= i) 
                         qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
                      else
-                        qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                        qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->col[i],'d'));
                     comma = ',';
                 }
             for(i=0;i< set->textsize[1]; i++){
@@ -644,7 +644,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                     if(set->names->colct <= i) 	
                         qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
                     else			
-                        qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->column[i],'d'));
+                        qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->col[i],'d'));
                     comma = ',';
                 }
             for(i=0; i< set->textsize[1]; i++){

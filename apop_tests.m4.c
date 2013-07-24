@@ -134,7 +134,7 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     return out;
 APOP_VAR_ENDHEAD
     apop_data *out = apop_data_alloc();
-    sprintf(out->names->title, "F test");
+    asprintf(&out->names->title, "F test");
     size_t contrast_ct = contrast->vector->size;
     Apop_stopif(contrast->matrix->size1 != contrast_ct,  out->error='d'; return out,
             0, "I counted %zu contrasts by the size of either contrast->vector or "

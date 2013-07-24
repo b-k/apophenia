@@ -18,11 +18,11 @@ extern "C" {
 */
 typedef struct{
 	char * vector;
-	char ** column;
+	char ** col;
 	char ** row;
 	char ** text;
 	int colct, rowct, textct;
-    char title[101];
+    char *title;
 } apop_name;
 
 /** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.

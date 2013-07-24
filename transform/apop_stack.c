@@ -42,12 +42,12 @@ static twop_s get_second(apop_data *d, char *splitpage){
     twop_s out = {.d1=d, .d2=d};
     if (splitpage) {
         apop_data *ctr = d;
-        if (!ctr ||(ctr->names && !strcasecmp(ctr->names->title, splitpage))){
+        if (!ctr ||(ctr->names && ctr->names->title && !strcasecmp(ctr->names->title, splitpage))){
             out.d1 = NULL;
             out.d2 = d;
             return out;
         }
-        for ( ; ctr->more && (!ctr->more->names || strcasecmp(ctr->more->names->title, splitpage)); ) 
+        for ( ; ctr->more && (!ctr->more->names || !ctr->more->names->title || strcasecmp(ctr->more->names->title, splitpage)); ) 
             ctr = ctr->more; 
         out.d2 = ctr->more;
         out.dangly_bit = ctr;

@@ -74,8 +74,9 @@ gsl_vector * v = &( apop_vv_##v );
                                 : (gsl_matrix) { };             \
     apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
             (apop_name){                                                         \
+                .title = (d)->names->title,                                      \
                 .vector = (d)->names->vector,                                    \
-                .column = (d)->names->column,                                    \
+                .col = (d)->names->col,                                          \
                 .row = ((d)->names->row && (d)->names->rowct > rownum) ? &((d)->names->row[rownum]) : NULL,  \
                 .text = (d)->names->text,                                        \
                 .colct = (d)->names->colct,                                      \

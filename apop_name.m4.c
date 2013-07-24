@@ -32,7 +32,8 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
     if (!add_me)
         return -1;
 	if (type == 'h'){
-        snprintf(n->title, 100, "%s", add_me);
+        free(n->title);
+        asprintf(&n->title, "%s", add_me);
         return 1;
 	} 
 	if (type == 'v'){
@@ -59,9 +60,9 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
             2,"You gave me >%c<, I'm assuming you meant c; "
                              " copying column names.", type);
 		n->colct++;
-		n->column	= realloc(n->column, sizeof(char*) * n->colct);
-		n->column[n->colct -1]	= malloc(strlen(add_me) + 1);
-		strcpy(n->column[n->colct -1], add_me);
+		n->col = realloc(n->col, sizeof(char*) * n->colct);
+		n->col[n->colct -1]	= malloc(strlen(add_me) + 1);
+		strcpy(n->col[n->colct -1], add_me);
 		return n->colct;
 }
 
@@ -82,7 +83,7 @@ void apop_name_print(apop_name * n){
 	if (n->colct > 0){
 		printf("column:");
 		for (int i=0; i < n->colct; i++)
-			printf("\t%s", n->column[i]);
+			printf("\t%s", n->col[i]);
 		printf("\n");
 	}
 	if (n->textct > 0){
@@ -103,11 +104,11 @@ void apop_name_print(apop_name * n){
 \ingroup names 	*/
 void  apop_name_free(apop_name * free_me){
     if (!free_me) return; //only needed if users are doing tricky things like newdata = (apop_data){.matrix=...};
-	for (size_t i=0; i < free_me->colct; i++)  free(free_me->column[i]);
+	for (size_t i=0; i < free_me->colct; i++)  free(free_me->col[i]);
 	for (size_t i=0; i < free_me->textct; i++) free(free_me->text[i]);
 	for (size_t i=0; i < free_me->rowct; i++)  free(free_me->row[i]);
     if (free_me->vector) free(free_me->vector);
-	free(free_me->column);
+	free(free_me->col);
 	free(free_me->text);
 	free(free_me->row);
 	free(free_me);
@@ -142,7 +143,7 @@ APOP_VAR_ENDHEAD
             apop_name_add(n1, nadd->text[i], type1);
     else if (typeadd == 'c')
         for (i=0; i< counts.colct; i++)
-            apop_name_add(n1, nadd->column[i], type1);
+            apop_name_add(n1, nadd->col[i], type1);
     else apop_assert_c(0, , 1, ">%c< sent to apop_name_stack, but the only "
                                 "valid options are r t c v. Doing nothing.",typeadd);
 }
@@ -162,7 +163,7 @@ apop_name * apop_name_copy(apop_name *in){
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
-    snprintf(out->title, 100, "%s", in->title);
+    asprintf(&out->title, "%s", in->title);
     return out;
 }
 
@@ -184,18 +185,18 @@ int apop_name_find(const apop_name *n, const char *in, const char type){
     Apop_stopif(!in, return -1, 0, "You asked me to search for NULL.");
     regex_t re;
     char **list;
-    int  listct;
+    int listct;
     if (type == 'r' || type == 'R'){
-        list    = n->row;
-        listct  = n->rowct;
+        list = n->row;
+        listct = n->rowct;
     }
     else if (type == 't' || type == 'T'){
-        list    = n->text;
-        listct  = n->textct;
+        list = n->text;
+        listct = n->textct;
     }
     else { // default type == 'c'
-        list    = n->column;
-        listct  = n->colct;
+        list = n->col;
+        listct = n->colct;
     }
     int compiled_ok = !regcomp(&re, in, REG_EXTENDED + REG_ICASE);
     Apop_stopif(!compiled_ok, return -1, 0, "Regular expression \"%s\" didn't compile.", in);
