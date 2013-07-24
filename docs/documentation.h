@@ -1106,7 +1106,7 @@ apop_data_add_names(d, 'c', "numeric column 1", "numeric column 2", "numeric col
 //point to element i from:
 
 char *rowname_i = d->names->row[i];
-char *colname_i = d->names->column[i];
+char *colname_i = d->names->col[i];
 char *textname_i = d->names->text[i];
 
 //The vector also has a name:
@@ -2445,7 +2445,18 @@ apop_data_set(data, 2, 3, 18);
 apop_data_set(data, .colname="X_3", .row=2, .val= 18);
 \endcode
 
-\ref apop_vector_distance offers another nice example of the utility of this mechanism.
+
+Default values mean that the \ref apop_data_get, \ref apop_data_set, and \ref apop_data_ptr functions handle matrices, vectors, and scalars sensibly:
+\code
+//Let v be a vector or a one-column matrix:
+double x1 = apop_data_get(v, 1);
+apop_data_set(v, 2, .val=x1);
+
+//let s be a scalar stored in an \ref apop_data set:
+double *scalar = apop_data_ptr(s);
+\endcode
+
+\ref apop_vector_distance offers another nice example of the utility of the named-argument mechanism.
 
 Those of you coming from stats packages will enjoy 
 working in C without having to give up all the conveniences of stats packages, such as
