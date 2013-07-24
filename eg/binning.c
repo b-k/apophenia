@@ -13,12 +13,12 @@ int main(){
     apop_data_fill(d,   1,   2,   3,   3,   1,   2);
     apop_text_fill(d,  "A", "A", "A", "A", "A", "B");
 
-    sprintf(d->names->title, "Original data set");
+    asprintf(&d->names->title, "Original data set");
     printdata(d);
 
         //binned, where bin ends are equidistant but not necessarily in the data
     apop_data *binned = apop_data_to_bins(d, NULL);
-    sprintf(binned->names->title, "Post binning");
+    asprintf(&binned->names->title, "Post binning");
     printdata(binned);
     assert(apop_sum(binned->weights)==6);
     assert(fabs(//equal distance between bins
@@ -28,7 +28,7 @@ int main(){
         //compressed, where the data is as in the original, but weights 
         //are redome to accommodate repeated observations.
     apop_data_pmf_compress(d);
-    sprintf(d->names->title, "Post compression");
+    asprintf(&d->names->title, "Post compression");
     printdata(d);
     assert(apop_sum(d->weights)==6);
 

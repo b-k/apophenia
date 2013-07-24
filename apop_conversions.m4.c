@@ -193,7 +193,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
 	for (size_t k =0; k< datachars->textsize[0]; k++){
 		i = find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
-		j = find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
+		j = find_cat_index(outdata->names->col, datachars->text[k][1], j, pre_d2->textsize[0]);
         Apop_stopif(i==-2 || j == -2, outdata->error='n'; goto bailout, 0, "Something went wrong in the crosstabbing; "
                                                  "couldn't find %s or %s.", datachars->text[k][0], datachars->text[k][1]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
@@ -251,7 +251,7 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
     for (int i=0; i< msize1; i++){
         rowname = (n->rowct > i) ?  n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
         for (int j=0; j< msize2; j++){
-            colname = (n->colct > j) ? n->column[j] : (sprintf(sparecol, "c%i", j), sparecol);
+            colname = (n->colct > j) ? n->col[j] : (sprintf(sparecol, "c%i", j), sparecol);
             double x = gsl_matrix_get(in->matrix, i, j); 
             if (!isnan(x)) apop_query("INSERT INTO %s VALUES ('%s', '%s', %g);", 
                                                 tabname, rowname, colname, x);
@@ -654,8 +654,8 @@ APOP_VAR_ENDHEAD
         get_field_names(1, NULL, infile, buffer, &ptr, add_this_line, field_names, field_ends, delimiters);
         L.ct = *add_this_line->textsize;
         set = apop_data_alloc(0,1, L.ct - hasrows);
-	    set->names->colct   = 0;
-	    set->names->column	= malloc(sizeof(char*));
+	    set->names->colct = 0;
+	    set->names->col = malloc(sizeof(char*));
         for (int j=0; j< L.ct - hasrows; j++)
             apop_name_add(set->names, *field_names->text[j], 'c');
         apop_data_free(field_names);
