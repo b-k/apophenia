@@ -726,14 +726,24 @@ assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
 double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
 *x = 270;
 assert(apop_data_get(d, 0, 7) == 270);
+
+
+//apop_data set holding a scalar:
+apop_data *s = apop_data_alloc(1);
+apop_data_set(s, .val=12);
+assert(apop_data_get(s) == 12);
+
+//apop_data set holding a vector:
+apop_data *v = apop_data_alloc(12);
+for (int i=0; i< 12; i++) apop_data_set(s, i, .val=i*10);
+assert(apop_data_get(s,3) == 30);
+
 \endcode
 
 A call like <tt> apop_data_set(in, row, col, data)</tt> is much like the GSL's
  <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>,
 but with some differences:
 
-
-\li It's seven characters shorter.
 \li The \ref apop_data set has names, so we can get/set elements using those names.
 \li The versions that take a column/row name use  \ref apop_name_find
 for the search; see notes there on the name matching rules.
