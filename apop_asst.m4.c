@@ -132,46 +132,6 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 	return 	precalced[i][N-1];
 }
 
-/** Strip dots from a name.
-
-\param  in          A string
-\param  strip_type  'd': replace all '.' with '_'.<br>
-                    'b': return only the string before the '.', so 'table.col' becomes 'table'. If there are multiple dots, cuts off at the first dot.
-                    'a': return only the string after the '.', so 'table.col' becomes 'col'. If there are multiple dots, cuts off at the last dot.
-
-For example: 
-
-\include test_strip_dots.c
-
-\ingroup convenience_fns
- */
-char * apop_strip_dots(char const *in, char strip_type){
-    int  i;
-    char *out    = NULL;
-    if ((strip_type ==0) || (strip_type == 'd') || (strip_type == 'D')){
-        out    = malloc(strlen(in)+1);
-        for (i=0; i< strlen(in)+1; i++)   //will copy over the '/0' too.
-            out[i] = (in[i] == '.') ? '_' : in[i];
-    }
-    else if ((strip_type ==1) || (strip_type == 'b') || (strip_type == 'B')){
-        out    = malloc(strlen(in)+1);
-        strcpy(out, in);
-        for (i=strlen(in)+1; i--; )
-            if (in[i] == '.'){
-                out[i] = '\0';
-                break;
-            }
-    }
-    else if ((strip_type ==2) || (strip_type == 'a') || (strip_type == 'A')){
-        for (i=0; i< strlen(in)+1; i++)
-            if (in[i] == '.')
-                break;
-        out    = malloc(strlen(in)-i);
-        strcpy(out, (in+i+1));
-    }
-    return out;
-}
-
 /** Call \c system(), but with <tt>printf</tt>-style arguments. E.g.,
   
 \code

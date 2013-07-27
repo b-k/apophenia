@@ -600,7 +600,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 if(!set->names->vector) 
                     qxprintf(&q, "%s%c\n vector double ", q, comma);
                 else
-                    qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, apop_strip_dots(set->names->vector,'d'));
+                    qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, set->names->vector);
                 comma = ',';
             }
             if (set->matrix)
@@ -608,14 +608,14 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                     if(set->names->colct <= i) 
                         qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
                      else
-                        qxprintf(&q, "%s%c\n %s  double ", q, comma,apop_strip_dots(set->names->col[i],'d'));
+                        qxprintf(&q, "%s%c\n %s  double ", q, comma, set->names->col[i]);
                     comma = ',';
                 }
             for(i=0;i< set->textsize[1]; i++){
                 if (set->names->textct <= i)
                     qxprintf(&q, "%s%c\n tc%i varchar(1000) ", q, comma,i);
                 else
-                    qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma,apop_strip_dots(set->names->text[i],'d'));
+                    qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma, set->names->text[i]);
                 comma = ',';
             }
             apop_query("%s); ", q);
@@ -635,8 +635,8 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 comma = ',';
             }
             if (set->vector){
-                if(!set->names->vector) 	qxprintf(&q, "%s%c\n vector numeric", q, comma);
-                else			qxprintf(&q, "%s%c\n \"%s\"", q, comma,apop_strip_dots(set->names->vector,'d'));
+                if (!set->names->vector) qxprintf(&q, "%s%c\n vector numeric", q, comma);
+                else qxprintf(&q, "%s%c\n \"%s\"", q, comma, set->names->vector);
                 comma = ',';
             }
             if (set->matrix)
@@ -644,16 +644,15 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                     if(set->names->colct <= i) 	
                         qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
                     else			
-                        qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma,apop_strip_dots(set->names->col[i],'d'));
+                        qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma, set->names->col[i]);
                     comma = ',';
                 }
             for(i=0; i< set->textsize[1]; i++){
-                if(set->names->textct <= i) 	qxprintf(&q, "%s%c\n tc%i ", q,comma,i);
-                else			qxprintf(&q, "%s%c\n %s ", q, comma, apop_strip_dots(set->names->text[i],'d'));
+                if(set->names->textct <= i) qxprintf(&q, "%s%c\n tc%i ", q, comma, i);
+                else qxprintf(&q, "%s%c\n %s ", q, comma, set->names->text[i]);
                 comma = ',';
             }
-            if (set->weights)
-                qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
+            if (set->weights) qxprintf(&q, "%s%c\n \"weights\" numeric", q, comma);
             qxprintf(&q,"%s);",q);
             apop_query("%s", q);
             qxprintf(&q," ");
