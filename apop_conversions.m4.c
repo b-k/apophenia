@@ -244,9 +244,7 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
     char sparerow[msize1 > 0 ? (int)log10(msize1)+1 : 0];
     char sparecol[maxcol > 0 ? (int)log10(maxcol)+1 : 0];
 	apop_query("CREATE TABLE %s (%s , %s , %s);", tabname, 
-            apop_strip_dots(row_col_name, 'd'), 
-            apop_strip_dots(col_col_name, 'd'), 
-            apop_strip_dots(data_col_name, 'd'));
+                        row_col_name, col_col_name, data_col_name);
 	apop_query("begin;");
     for (int i=0; i< msize1; i++){
         rowname = (n->rowct > i) ?  n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
@@ -1120,6 +1118,12 @@ int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3
     #endif
 }
 
+char *cut_at_dot(char const *infile){
+    char *out = strdup(infile);
+    for (char *c = out; *c; c++) if (*c=='.') {*c='\0'; return out;}
+    return out;
+}
+
 /** Read a text file into a database table.
 
   See \ref text_format.
@@ -1136,9 +1140,9 @@ apop_query("commit;");
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
 \param tabname      The name to give the table in the database (default
-= <tt> apop_strip_dots (text_file, 'd')</tt>; default in Python/R interfaces="t")
+= \c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>; default in Python/R interfaces="t")
 \param has_row_names Does the lines of data have row names? (default = 0)
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
+\param has_col_names Is the top line a list of column names? (default = 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
 \param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
 \param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
@@ -1152,7 +1156,7 @@ apop_query("commit;");
 */
 APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters){
     char const *apop_varad_var(text_file, "-")
-    char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
+    char *apop_varad_var(tabname, cut_at_dot(text_file))
     int apop_varad_var(has_row_names, 'n')
     int apop_varad_var(has_col_names, 'y')
     if (has_row_names==1||has_row_names=='Y') has_row_names ='y';

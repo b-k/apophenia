@@ -10,6 +10,8 @@
 	June 2013
 --replaced makefile in base directory with ./configure.
 --version number now equals build date.
+**name->title is a ptr; name->column => name->col
+**removed apop_strip_dots; it's up to the user to give reasonable names for the db.
 
 	May 2013
 --jacobian transformations

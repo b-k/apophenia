@@ -32,7 +32,6 @@ Apop_var_declare( apop_data * apop_data_to_bins(apop_data *indata, apop_data *bi
 Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) )
 
 //text conveniences
-char * apop_strip_dots(char const *in, char strip_type);
 Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter) )
 /** Notify the user of errors, warning, or debug info. 
 
