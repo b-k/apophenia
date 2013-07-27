@@ -29,10 +29,10 @@ Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL 
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="https://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download Apophenia here</a>.</h5>
+<h5><a href="http://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download Apophenia here</a>.</h5>
 
 Most users will just want to download the latest packaged version linked from the <a
-href="https://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download
+href="http://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download
 Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
@@ -2026,7 +2026,6 @@ General utilities:
 \li\ref Apop_stopif : Apophenia's error-handling and warning-printing macro. 
 \li\ref apop_opts : the global options
 \li\ref apop_regex() : friendlier front-end for POSIX-standard regular expression searching and pulling matches into a \ref apop_data set.
-\li\ref apop_strip_dots() : Dots in column names are a pain; here's a utility function to strip them.
 \li\ref apop_text_paste()
 \li\ref apop_system()
 
