@@ -103,7 +103,7 @@ Recreating a table which already exists can cause errors, so it is good practice
 
 \li If <tt>apop_opts.stop_on_warn='n'</tt>, returns -1 on errors.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup db
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
@@ -145,7 +145,7 @@ Closes the database on disk. If you opened the database with \c apop_db_open(NUL
 'q': Don't bother; just close the database. (default = 'q')
 
 \return 0 on OK, nonzero on error.
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_db_close(char vacuum){
     char apop_varad_var(vacuum, 'q')

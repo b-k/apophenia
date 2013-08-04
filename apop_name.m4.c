@@ -123,10 +123,10 @@ Notice that if the first list is empty, then this is a copy function. If the sec
 \param typeadd     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name. (default = type1)
 \ingroup names */
 APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
-    apop_name * apop_varad_var(n1, NULL);
-    apop_assert_c(n1, , 0, "Can't stack onto a NULL set of names (which n1 is).");
     apop_name * apop_varad_var(nadd, NULL); 
     if (!nadd) return;
+    apop_name * apop_varad_var(n1, NULL);
+    Apop_stopif(!n1, return, 0, "Can't stack onto a NULL set of names (which n1 is).");
     char apop_varad_var(type1, 'r');
     char apop_varad_var(typeadd, type1);
 APOP_VAR_ENDHEAD
@@ -143,8 +143,8 @@ APOP_VAR_ENDHEAD
     else if (typeadd == 'c')
         for (i=0; i< counts.colct; i++)
             apop_name_add(n1, nadd->column[i], type1);
-    else apop_assert_c(0, , 1, ">%c< sent to apop_name_stack, but the only "
-                                "valid options are r t c v. Doing nothing.",typeadd);
+    else Apop_notify(1, "'%c' sent to apop_name_stack, but the only "
+                        "valid options are r t c v. Doing nothing.", typeadd);
 }
 
 /** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:

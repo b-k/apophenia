@@ -25,8 +25,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 static double yule_constraint(apop_data *returned_beta, apop_model *m){
   Nullcheck_mp(m, GSL_NAN);
     //constraint is 1 < beta_1
-  Staticdef(apop_data *, constraint, apop_data_fill(apop_data_alloc(1,1,1),
-                                                     1, 1));
+  Staticdef(apop_data *, constraint, apop_data_falloc((1,1,1), 1, 1));
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 

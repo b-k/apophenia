@@ -2484,7 +2484,7 @@ so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, 
 
 \par Reading in data
 
-As per the example below, use \ref apop_text_to_data or \ref apop_text_to_db and then \ref apop_query_to_data.
+As per the example above, use \ref apop_text_to_data or \ref apop_text_to_db and then \ref apop_query_to_data.
 
 \par Subsets
 

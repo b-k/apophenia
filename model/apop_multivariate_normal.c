@@ -60,7 +60,6 @@ static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p
     p->parameters->matrix =  cov->matrix;
     cov->matrix = NULL; apop_data_free(cov);
     apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
-    apop_data_add_page(p->parameters, cov, "<Covariance>");
     return p;
 }
 

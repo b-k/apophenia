@@ -43,9 +43,8 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){
     //constraint is 0 < b and  1 > b
-    Staticdef(apop_data *, constraint, 
-                apop_data_fill(apop_data_calloc(2,2,1), 0., 1.,
-                                                       -1., -1.));
+    Staticdef(apop_data *, constraint, apop_data_falloc((2,2,1), 0., 1.,
+                                                                -1., -1.));
     return apop_linear_constraint(inmodel->parameters->vector, constraint, 1e-3);
 }
 

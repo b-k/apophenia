@@ -60,7 +60,7 @@ int main(){
     check_data_error(apop_query_to_mixed_data("dd", "stelect 8 from data"), 'q', "apop_sqlite_multiquery", "query error");
 
     reset_log();
-    apop_data *fefail = apop_data_fill(apop_data_alloc(2,2), 0, 0, -1, -1);
+    apop_data *fefail = apop_data_falloc((2,2), 0, 0, -1, -1);
     apop_data *exact = apop_test_fisher_exact(fefail);
     check_data_error(exact, 'p', "apop_test_fisher_exact", "fexact internal processing code");
 

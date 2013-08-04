@@ -75,8 +75,7 @@ int main(){
     model_val_cdf(sum_of_three, 0.5, 0.5);
 
 
-    apop_data *threepts = apop_data_fill(apop_data_alloc(3,1),
-                             -1, 0, 1);
+    apop_data *threepts = apop_data_falloc((3,1), -1, 0, 1);
     apop_model *kernels = apop_estimate(threepts, apop_kernel_density);
     model_val_cdf(kernels, -5, 0);
     model_val_cdf(kernels, 0, 0.5);

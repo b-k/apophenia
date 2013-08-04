@@ -249,6 +249,8 @@ Apop_var_declare( void apop_data_unpack(const gsl_vector *in, apop_data *d, char
 #define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})
 #define apop_data_fill(adfin, ...) apop_data_fill_base((adfin), (double []) {__VA_ARGS__})
 #define apop_text_fill(dataset, ...)   apop_text_fill_base((dataset), (char* []) {__VA_ARGS__, NULL})
+
+#define apop_data_falloc(sizes, ...) apop_data_fill(apop_data_alloc sizes, __VA_ARGS__)
     
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);

@@ -941,7 +941,7 @@ static void common_binomial_bit(apop_model *out, int n, double p){
 void test_binomial(gsl_rng *r){
     double p = gsl_rng_uniform(r);
     int n     = gsl_ran_flat(r,1,1e5);
-    apop_data *d = apop_data_fill(apop_data_alloc(1,2), n*(1-p), n*p);
+    apop_data *d = apop_data_falloc((1,2), n*(1-p), n*p);
     apop_model *out = apop_estimate(d, apop_binomial);
     apop_model *outm = apop_estimate(d, apop_multinomial);
     common_binomial_bit(out, n, p);
@@ -952,8 +952,8 @@ void test_binomial(gsl_rng *r){
 }
 
 void test_rownames(){
-    apop_data *d = apop_data_fill(apop_data_alloc(2, 2),
-                    0, 1, 2, 3);
+    apop_data *d = apop_data_falloc((2, 2), 0, 1, 
+                                            2, 3);
     apop_data_add_names(d, 'r', "zero", "one");
     apop_data_add_names(d, 'c', "C zero", "C one");
     assert(apop_data_get(d, .rowname="zero", .col=0) == 0);

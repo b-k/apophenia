@@ -97,7 +97,7 @@ void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
 }
 
 double apop_t_dist_constraint(apop_data *beta, apop_model *m){
-    Staticdef(apop_data *, d_constr, apop_data_fill(apop_data_alloc(2,2,3),
+    Staticdef(apop_data *, d_constr, apop_data_falloc((2,2,3),
                              0, 0, 1, 0,  //0 < sigma
                             .9, 0, 0, 1)); //.9 < df
     return apop_linear_constraint(m->parameters->vector, d_constr);

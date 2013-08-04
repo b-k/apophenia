@@ -141,7 +141,7 @@ Here is a test function that compares the output via conjugate table and via
 Gibbs sampling: 
 \include test_updating.c
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng){
     static gsl_rng *spare_rng = NULL;

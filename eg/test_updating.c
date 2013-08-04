@@ -15,14 +15,14 @@ int main(){
     //Requires a one-parameter binomial, with n fixed,
     //and a data set of n data points with the right p.
     apop_model *bcopy = apop_model_set_parameters(apop_binomial, n, GSL_NAN);
-    apop_data *bin_draws = apop_data_fill(apop_data_alloc(1,2), n*(1-binom_start), n*binom_start);
+    apop_data *bin_draws = apop_data_falloc((1,2), n*(1-binom_start), n*binom_start);
     bin = apop_model_fix_params(bcopy);
     apop_model_add_group(beta, apop_update, .burnin=.1, .periods=1e4);
     apop_model *out_h = apop_update(bin_draws, beta, bin, NULL);
 
     //We now have a histogram of values for p. What's the closest beta
     //distribution?
-    apop_data *d = apop_data_alloc(0, draws, 1);
+    apop_data *d = apop_data_alloc(draws, 1);
     for(i=0; i < draws; i ++)
         apop_draw(apop_data_ptr(d, i, 0), r, out_h);
     apop_model *out_beta = apop_estimate(d, apop_beta);

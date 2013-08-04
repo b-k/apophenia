@@ -11,7 +11,7 @@
 //Produce a 2-D multivariate normal model with unit covariance and given mean 
 apop_model *produce_fixed_mvn(double x, double y){
     apop_model *out = apop_model_copy(apop_multivariate_normal);
-    out->parameters = apop_data_fill(apop_data_alloc(2, 2, 2),
+    out->parameters = apop_data_falloc((2, 2, 2),
                         x, 1, 0,
                         y, 0, 1);
     return out;

@@ -36,8 +36,7 @@ for those allocated using <tt>double *</tt>. (default = auto-guess)
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 
 \ingroup conversions
-This function uses the \ref designated syntax for inputs.
-
+\li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
@@ -60,10 +59,9 @@ APOP_VAR_ENDHEAD
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 \li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
-
-This function uses the \ref designated syntax for inputs.
- \ingroup conversions
- */
+\li This function uses the \ref designated syntax for inputs.
+\ingroup conversions
+*/
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
     Apop_assert_c(in, NULL, 1, "Converting NULL vector to NULL matrix.");
@@ -518,7 +516,7 @@ static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char c
     char c = get_next(buffer, ptr, f);
     int is_delimiter = !!strchr(delimiters, c);
     return (apop_char_info){.c=c, 
-            .type = (c==' '||c=='\t' || c==0)? (is_delimiter ? 'W'  : 'w')
+            .type = (c==' '||c=='\r' ||c=='\t' || c==0)? (is_delimiter ? 'W'  : 'w')
                     :is_delimiter    ? 'd'
                     :(c == '\n')     ? 'n'
                     :(c == '"')      ? '"'
@@ -716,7 +714,7 @@ same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 \li If I get to the end of the first page and have more vector to unpack, and the data to
 fill has a \c more element, then I will continue into subsequent pages.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
@@ -787,7 +785,7 @@ same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
  \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
 \exception NULL If you give me a vector as input, and its size is not correct, returns \c NULL.
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup conversions
  */
 APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
@@ -836,17 +834,37 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
+/** \def apop_data_falloc
+Allocate a data set and fill it with values.  Put the data set dimensions (one, two,
+or three dimensions as per \ref apop_data_alloc) in parens, then the data (as per \ref
+apop_data_fill). E.g.:
+\code
+apop_data *identity2 = apop_data_falloc((2,2),
+                         1, 0,
+                         0, 1);
+
+apop_data *count_vector = apop_data_falloc((5), 0, 1, 2, 3, 4);
+\endcode
+
+If you forget the parens, you will get an obscure error during compilation.
+
+\li This is a pretty simple macro wrapping \ref apop_data_fill and \ref apop_data_alloc,
+because they appear together so often.  The second example expands to:
+\code
+apop_data *count_vector = apop_data_fill(apop_data_alloc(5), 0, 1, 2, 3, 4);
+\endcode
+*/
+
 /** \def apop_data_fill
 Fill a pre-allocated data set with values.
 
-  For example:
-
+For example:
 \code
 #include <apop.h>
 
 int main(){
-  apop_data *a =apop_data_alloc(2,2,2);
-  double    eight   = 8.0;
+    apop_data *a =apop_data_alloc(2,2,2);
+    double    eight   = 8.0;
     apop_data_fill(a, 8, 2.2, eight/2,
                       0, 6.0, eight);
     apop_data_show(a);
@@ -876,13 +894,13 @@ int main(){
 
 \li I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use \c matrix->size1.
 
-\li to allocate and fill on one line, because the allocated pointer is returned, and so
-there is no leak or loss to a form like this example, which generates a unit vector for three dimensions:
+\li See also \ref apop_data_falloc to allocate and fill on one line. E.g., to
+generate a unit vector for three dimensions:
 \code
-apop_data *unit_vector = apop_data_fill(apop_data_alloc(3), 1, 1, 1);
+apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
 
-\see apop_line_to_data, apop_text_fill
+\see apop_line_to_data, apop_text_fill, apop_data_falloc
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){
@@ -924,7 +942,6 @@ gsl_vector *apop_vector_fill_base(gsl_vector *in, double ap[]){
     return in;
 }
 
-
 /** \def apop_text_fill(in, ap)
 Fill the text part of an already-allocated \ref apop_data set with a list of strings. 
 
@@ -941,7 +958,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
 \li Remember that the C preprocessor concatenates two adjacent strings into one. Here
     is an attempt to fill a \f$ 2\times 3\f$ grid:
 \code
-  apop_data *one23 = apop_text_fill(apop_data_alloc(NULL, 2, 3),
+  apop_data *one23 = apop_text_fill(apop_text_alloc(NULL, 2, 3),
                                      "one", "two", "three"   //missing comma!
                                      "two", "four", "six");
 \endcode
@@ -949,9 +966,7 @@ The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo"</tt>, l
 
 \li If you have a \c NULL-delimited array of strings (not just a loose list as above),
 then use \ref apop_text_fill_base. 
-
 */
-   
 apop_data *apop_text_fill_base(apop_data *data, char* text[]){
     int textct = 0;
     for (char **textptr = text; *textptr; textptr++) textct++;
@@ -967,7 +982,6 @@ apop_data *apop_text_fill_base(apop_data *data, char* text[]){
             apop_text_add(data, i, j, text[ctr++]);
     return data;
 }
-
 
 
 ///////The rest of this file is for apop_text_to_db
@@ -1133,7 +1147,7 @@ apop_query("commit;");
 
 \return Returns the number of rows on success, -1 on error.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
 APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters){

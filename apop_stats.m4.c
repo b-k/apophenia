@@ -175,7 +175,7 @@ where \f$i\f$ iterates over dimensions.
 
 \include test_distances.c
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
 */
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
@@ -271,7 +271,7 @@ apop_vector_show(in);
 }
 \endcode
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
     gsl_vector * apop_varad_var(in, NULL);
@@ -655,7 +655,7 @@ If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c
 
 \li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
     apop_model * apop_varad_var(top, NULL);
@@ -811,7 +811,7 @@ Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in t
 
 See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
     gsl_matrix * apop_varad_var(m, NULL);

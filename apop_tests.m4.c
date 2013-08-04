@@ -110,8 +110,7 @@ apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
 \exception out->error='i'  matrix inversion error.
 \exception out->error='m'  GSL math error.
 \li This function uses the \ref designated syntax for inputs.
- */
-
+*/
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)
     Nullcheck_m(est, NULL);
@@ -412,8 +411,8 @@ Here is a list of distributions you can use, and their parameters.
 \li no default
 \li One-tailed tests only
 
-This function uses the \ref designated syntax for inputs.
- */
+\li This function uses the \ref designated syntax for inputs.
+*/
 APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, double p2, char tail){
     double  apop_varad_var(statistic, 0);
     char*  apop_varad_var(distribution, NULL);

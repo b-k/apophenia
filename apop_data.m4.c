@@ -73,8 +73,8 @@ APOP_VAR_ENDHEAD
 \return    The \ref apop_data structure, allocated and zeroed out.
 \see apop_data_alloc 
 \ingroup data_struct
- This function uses the \ref designated syntax for inputs.
-  */
+\li This function uses the \ref designated syntax for inputs.
+*/
 APOP_VAR_HEAD apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3){
     const size_t apop_varad_var(size1, 0);
     const size_t apop_varad_var(size2, 0);
@@ -92,7 +92,7 @@ APOP_VAR_ENDHEAD
         msize2 = size2;
     }
     else vsize = size1;
-    apop_data  *setme       = malloc(sizeof(apop_data));
+    apop_data *setme = malloc(sizeof(apop_data));
     apop_assert(setme, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
@@ -114,9 +114,9 @@ APOP_VAR_ENDHEAD
 \return   The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
 \li If you give me a \c NULL matrix, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
              a warning if <tt>apop_opts.verbosity >=1</tt>
-  */
+*/
 apop_data * apop_matrix_to_data(gsl_matrix *m){
-    Apop_assert_c(m, apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
+    Apop_stopif(!m, return apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
     apop_data *setme = apop_data_alloc();
     setme->matrix = m;
     return setme;
@@ -131,8 +131,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
              a warning if <tt>apop_opts.verbosity >=1</tt>
 */
 apop_data * apop_vector_to_data(gsl_vector *v){
-    Apop_assert_c(v, apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
-    apop_data  *setme = apop_data_alloc();
+    Apop_stopif(!v, return apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
+    apop_data *setme = apop_data_alloc();
     setme->vector = v;
     return setme;
 }
@@ -213,7 +213,7 @@ apop_data_memcpy(torow, fromrow);
  \ingroup data_struct
   */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-    Apop_assert_c(out, , 1, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
+    Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
     if (in->matrix){
         Apop_stopif(!out->matrix, out->error='p'; return, 1, "in->matrix exists but out->matrix does not.");
@@ -352,7 +352,7 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     apop_data * apop_varad_var(m1, NULL)
     apop_data * apop_varad_var(m2, NULL)
     char apop_varad_var(posn, 'r')
-    Apop_assert_c((posn == 'r' || posn == 'c'), NULL, 0, "Valid positions are 'r' or 'c'"
+    Apop_stopif(!(posn == 'r' || posn == 'c'), return NULL, 0, "Valid positions are 'r' or 'c'"
                                                          " you gave me '%c'. Returning NULL.", posn);
     char apop_varad_var(inplace, 'n')
     inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
@@ -370,7 +370,24 @@ APOP_VAR_ENDHEAD
         m1->more = m;
     }
     Get_vmsizes(m1); //original sizes of vsize, msize1, msize2.
+    if (m2->names && !out->names) out->names = apop_name_alloc();
+    
+    if (posn == 'c'){
+        if (m2->vector && out->vector){
+            gsl_matrix_view mview = gsl_matrix_view_vector(m2->vector, m2->vector->size, 1);
+            out->matrix = apop_matrix_stack(out->matrix, &mview.matrix, posn, .inplace='y');
+            apop_name_stack(out->names, m2->names, 'c', 'v');
+            if (m2->names && !m2->names->vector && m2->names->colct) apop_name_add(out->names, "v", 'c');
+        }
+        if (m2->vector && !out->vector) {
+            out->vector= apop_vector_copy(m2->vector);
+            if (m2->names->vector) apop_name_add(out->names, m2->names->vector, 'v');
+        }
+    }
+
     out->matrix = apop_matrix_stack(out->matrix, m2->matrix, posn, .inplace='y');
+
+
     if (posn == 'r'){
         out->vector  = apop_vector_stack(out->vector, m2->vector, .inplace='y');
         out->weights = apop_vector_stack(out->weights, m2->weights, .inplace='y');
@@ -431,7 +448,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
     //A long, dull series of contingencies. Bonus: a reasonable use of goto.
     apop_data   **out   = malloc(2*sizeof(apop_data *));
     out[0] = out[1] = NULL;
-    Apop_assert_c(in, out, 1, "input was NULL; output will be an array of two NULLs.");
+    Apop_stopif(!in, return out, 1, "input was NULL; output will be an array of two NULLs.");
     gsl_vector v1, v2, w1, w2;
     gsl_matrix m1, m2;
     int set_v1 = 1, set_v2 = 1,
@@ -535,7 +552,7 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c){
             set_m2  = 0;
             goto allocation;
         }
-    } else Apop_assert_c(0, out, 0, "Please set r_or_c == 'r' or == 'c'. Returning two NULLs.");
+    } else Apop_notify(0, "Please set r_or_c == 'r' or == 'c'. Returning two NULLs.");
     return out;
 
 allocation:
@@ -668,7 +685,8 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
     find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
-    Apop_assert_c(d, , 1, "You're asking me to prune a NULL data set; returning NULL.");
+    Apop_stopif(!d, return, 1, "You're asking me to prune a NULL data set; returning.");
+    Apop_stopif(!d->matrix, return, 1, "You're asking me to prune a data set with NULL matrix; returning.");
     int rm_list[d->matrix->size1];
     int keep_count = 0;
     char **name_step = colnames;
@@ -691,7 +709,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     }
     apop_data_rm_columns(d, rm_list);
     for (int j=0; j<keep_count; j++)
-        apop_assert_c(used_field[j], , 1, "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
+        Apop_stopif(!used_field[j], , 1, "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
 }
 
 /** \defgroup data_set_get Set/get/point to the data element at the given point
@@ -741,13 +759,13 @@ for (int i=0; i< 1e7; i++)
 
 The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
 
-These functions use the \ref designated syntax for inputs.
+\li These functions use the \ref designated syntax for inputs.
 */
 
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
+    Apop_stopif(rownum == -2, return NULL, 0,"Couldn't find '%s' amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
                       : gsl_vector_ptr(in->vector, rownum);
 }
@@ -755,7 +773,7 @@ double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
 /* \deprecated  use \ref apop_data_ptr */
 double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
-    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_stopif(colnum == -2, return NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
                          : gsl_vector_ptr(in->vector, row);
 }
@@ -764,8 +782,8 @@ double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
 double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
-    apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
-    apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_stopif(rownum == -2, return NULL, 0,"Couldn't find '%s' amongst the row names.", row);
+    Apop_stopif(colnum == -2, return NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
                          : gsl_vector_ptr(in->vector, rownum);
 }
@@ -812,7 +830,7 @@ APOP_VAR_ENDHEAD
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_ti(const apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
+    Apop_stopif(rownum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (col >= 0){
         Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
         return gsl_matrix_get(in->matrix, rownum, col);
@@ -825,7 +843,7 @@ double apop_data_get_ti(const apop_data *in, const char* row, const int col){
 /* \deprecated  use \ref apop_data_get */
 double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
     int colnum = apop_name_find(in->names, col, 'c');
-    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_stopif(colnum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     if (colnum >= 0){
         Apop_assert_nan(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
         return gsl_matrix_get(in->matrix, row, colnum);
@@ -839,8 +857,8 @@ double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
 double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
-    Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
+    Apop_stopif(colnum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_stopif(rownum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (colnum >= 0){
         Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
         return gsl_matrix_get(in->matrix, rownum, colnum);
@@ -905,7 +923,7 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
 int apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
     Set_gsl_handler
     int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(rownum != -2, -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
+    Apop_stopif(rownum == -2, return -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
     if (col >= 0) gsl_matrix_set(in->matrix, rownum, col, data);
     else          gsl_vector_set(in->vector, rownum, data);
     Unset_gsl_handler
@@ -917,7 +935,7 @@ int apop_data_set_ti(apop_data *in, const char* row, const int col, const double
 int apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
     Set_gsl_handler
     int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_assert_c(colnum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
+    Apop_stopif(colnum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
     if (colnum >= 0)  gsl_matrix_set(in->matrix, row, colnum, data);
     else              gsl_vector_set(in->vector, row, data);
     Unset_gsl_handler
@@ -930,8 +948,8 @@ int apop_data_set_tt(apop_data *in, const char *row, const char* col, const doub
     Set_gsl_handler
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_assert_c(colnum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
-    Apop_assert_c(rownum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", row);
+    Apop_stopif(colnum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
+    Apop_stopif(rownum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", row);
     if (colnum >= 0) gsl_matrix_set(in->matrix, rownum, colnum, data);
     else             gsl_vector_set(in->vector, rownum, data);
     Unset_gsl_handler
@@ -1354,7 +1372,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 */
 APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title, const char match){
     const apop_data * apop_varad_var(data, NULL);
-    apop_assert_c(data, NULL, '1', "You requested a page from a NULL data set. Returning NULL");
+    Apop_stopif(!data, return NULL, 1, "You requested a page from a NULL data set. Returning NULL");
     const char * apop_varad_var(title, "Info");
     const char apop_varad_var(match, 'r');
 APOP_VAR_ENDHEAD
@@ -1396,10 +1414,10 @@ APOP_VAR_ENDHEAD
   \endcode
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
-    apop_assert_c(newpage, NULL, '1', "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
+    Apop_stopif(!newpage, return NULL, 1, "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
     if (title && !(newpage->names->title == title))//has title, is not just pointint to existing title
         snprintf(newpage->names->title, 100, "%s", title);
-    apop_assert_c(dataset, newpage, '1', "You are adding a page to a NULL data set. Returning the new page as its own data set.");
+    Apop_stopif(!dataset, return newpage, 1, "You are adding a page to a NULL data set. Returning the new page as its own data set.");
     while (dataset->more)
         dataset = dataset->more;
     dataset->more = newpage;
@@ -1427,13 +1445,13 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
 */
 APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
     apop_data *apop_varad_var(data, NULL);
-    apop_assert_c(data, NULL, '1', "You are removing a page from a NULL a data set. Doing nothing.");
+    Apop_stopif(!data, return NULL, 1, "You are removing a page from a NULL a data set. Doing nothing.");
     const char *apop_varad_var(title, "Info");
     const char apop_varad_var(free_p, 'y');
 APOP_VAR_ENDHEAD
     while (data->more && !apop_regex(data->more->names->title, title))
         data = data->more;
-    Apop_assert_c(data->more, NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that regex.", title);
+    Apop_stopif(!data->more, return NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that regex.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
@@ -1468,11 +1486,11 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
 */  
 APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);
-    Apop_assert_c(in, , 1, "Input data set was NULL; no changes made.");
+    Apop_stopif(!in, return, 1, "Input data set was NULL; no changes made.");
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
-    Apop_assert_c(drop || do_drop, , 1, "You gave me neither a list of ints "
+    Apop_stopif(!drop && !do_drop, return, 0, "You gave me neither a list of ints "
             "indicating which rows to drop, nor a drop_fn I can use to test "
             "each row. Returning with no changes made.");
 APOP_VAR_ENDHEAD

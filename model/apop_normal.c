@@ -29,8 +29,7 @@ See also the \ref apop_multivariate_normal.
 
 static double positive_sigma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
-    Staticdef(apop_data *, constraint, 
-                    apop_data_fill(apop_data_calloc(1,1,2), 0, 0, 1));
+    Staticdef(apop_data *, constraint, apop_data_falloc((1,1,2), 0, 0, 1));
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-5);
 }
 

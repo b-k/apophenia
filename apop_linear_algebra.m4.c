@@ -163,8 +163,7 @@ APOP_VAR_ENDHEAD
 \param i The location in the vector to be incremented. (No default)
 \param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use \c apop_vector_increment_base.)
 
-This function uses the \ref designated syntax for inputs.
-
+\li This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
  */
 APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
@@ -248,7 +247,7 @@ void apop_vector_exp(gsl_vector *v){
 \param  inplace If one, use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default=0)
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 \ingroup convenience_fns
 */
 APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
@@ -307,7 +306,7 @@ gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl
 }
 \endcode
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace){
     gsl_matrix *apop_varad_var(m1, NULL);
@@ -442,7 +441,7 @@ static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,
 
 Second, it makes some use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
-This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
 
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
@@ -512,19 +511,19 @@ APOP_VAR_ENDHEAD
     if (d1->matrix && form1 != 'v') uselm = 1;
     else if (d1->vector)            uselm = 0;
     else {
-        Apop_assert_c(form1 != 'v',  NULL, 0,
+        Apop_stopif(form1 == 'v', return NULL, 0,
                     "You asked for a vector from the left data set, but "
                     "its vector==NULL. Returning NULL.");
-        Apop_assert_c(0, NULL, 0, "The left data set has neither non-NULL "
+        Apop_stopif(1, return NULL, 0, "The left data set has neither non-NULL "
                                   "matrix nor vector. Returning NULL.");
     }
     if (d2->matrix && form2 != 'v') userm = 1;
     else if (d2->vector)            userm = 0;
     else {
-        Apop_assert_c (form2 != 'v',  NULL, 0, 
+        Apop_stopif(form2 == 'v', return NULL, 0, 
                     "You asked for a vector from the right data set, but "
                     "its vector==NULL. Returning NULL.");
-        Apop_assert_c(0, NULL, 0, "The right data set has neither non-NULL "
+        Apop_stopif(1, return NULL, 0, "The right data set has neither non-NULL "
                                   "matrix nor vector. Returning NULL.");
     }
     apop_data *out = apop_data_alloc();
