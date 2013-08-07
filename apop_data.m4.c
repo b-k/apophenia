@@ -754,24 +754,21 @@ The \c _ptr functions return a pointer to the given cell. Those functions follow
 These functions use the \ref designated syntax for inputs.
 */
 
-/* \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
+static double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
     return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
                       : gsl_vector_ptr(in->vector, rownum);
 }
 
-/* \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
+static double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
     apop_assert_c(colnum != -2,  NULL, 0,"Couldn't find '%s' amongst the column names.", col);
     return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
                          : gsl_vector_ptr(in->vector, row);
 }
 
-/* \deprecated  use \ref apop_data_ptr */
-double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
+static double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
     apop_assert_c(rownum != -2,  NULL, 0,"Couldn't find '%s' amongst the row names.", row);
@@ -819,8 +816,7 @@ APOP_VAR_ENDHEAD
     return NULL;//the main function is blank.
 }
 
-/* \deprecated  use \ref apop_data_get */
-double apop_data_get_ti(const apop_data *in, const char* row, const int col){
+static double apop_data_get_ti(const apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(rownum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
     if (col >= 0){
@@ -832,8 +828,7 @@ double apop_data_get_ti(const apop_data *in, const char* row, const int col){
     }
 }
 
-/* \deprecated  use \ref apop_data_get */
-double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
+static double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
     int colnum = apop_name_find(in->names, col, 'c');
     Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
     if (colnum >= 0){
@@ -845,8 +840,7 @@ double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
     }
 }
 
-/* \deprecated  use \ref apop_data_get */
-double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
+static double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(colnum != -2,  GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
@@ -909,10 +903,7 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
     error_for_set = -1;
 }
 
-/* Set an element from an \ref apop_data set, using the row name but the column number 
-  \deprecated Use \ref apop_data_set. 
- */
-int apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
+static int apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
     Set_gsl_handler
     int rownum =  apop_name_find(in->names, row, 'r');
     Apop_assert_c(rownum != -2, -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
@@ -922,9 +913,7 @@ int apop_data_set_ti(apop_data *in, const char* row, const int col, const double
     return error_for_set;
 }
 
-/* Set an element from an \ref apop_data set, using the column name but the row number
-  \deprecated Use \ref apop_data_set.  */
-int apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
+static int apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
     Set_gsl_handler
     int colnum =  apop_name_find(in->names, col, 'c');
     Apop_assert_c(colnum != -2, -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
@@ -934,9 +923,7 @@ int apop_data_set_it(apop_data *in, const size_t row, const char* col, const dou
     return error_for_set;
 }
 
-/* Set an element from an \ref apop_data set, using the row and column name.  
-  \deprecated Use \ref apop_data_set.  */
-int apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
+static int apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
     Set_gsl_handler
     int colnum =  apop_name_find(in->names, col, 'c');
     int rownum =  apop_name_find(in->names, row, 'r');
@@ -961,9 +948,6 @@ int apop_data_set_tt(apop_data *in, const char *row, const char* col, const doub
 //but:
   apop_data_set(d, .row = 3, .colname="Column 8", 5);  //invalid---the value doesn't follow the colname.
   \endcode
-
-  This differs somewhat from the deprecated \c _tt, \c _ti, and \c _tt functions, and to
-  some extent, the GSL.
 
   \return 0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).
 

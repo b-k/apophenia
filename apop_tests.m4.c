@@ -233,8 +233,7 @@ apop_data * apop_test_anova_independence(apop_data *d){
 
 static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
     //ANOVA has always just been a process of filling in a form, and
-    //that's what this function does. I use apop_data_get instead of
-    //apop_data_get_tt for efficiency reasons.
+    //that's what this function does.
     apop_data *out = apop_data_calloc(3, 6);
     apop_name_add(out->names, "sum of squares", 'c');
     apop_name_add(out->names, "df", 'c');

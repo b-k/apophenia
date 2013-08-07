@@ -3,7 +3,7 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 \amodel apop_dirichlet A multivariate generalization of the \ref apop_beta "Beta distribution".
 
-\adoc    Input_format      Each row of your data is a single observation.  
+\adoc    Input_format      Each row of your data matrix is a single observation.  
 \adoc    Parameter_format   The estimated parameters are in the output model's <tt>parameters->vector</tt>. The size of the model is determined by the width of your input data set, so later RNG draws, \&c will match in size.
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */
