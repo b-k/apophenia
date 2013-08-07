@@ -202,17 +202,17 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     char* __str__() {apop_data_show($self); return " ";}
     void __show()   {apop_data_show($self);}
     double __get(size_t row, int  col)              { return apop_data_get($self, row, col); }
-    double __get(size_t row, char*  col)            { return apop_data_get_it($self, row, col); }
-    double __get(char* row, int col)                { return apop_data_get_ti($self, row, col); }
-    double __get(char* row, char* col)              { return apop_data_get_tt($self, row,  col); }
+    double __get(size_t row, char*  col)            { return apop_data_get($self, .row=row, .colname=col); }
+    double __get(char* row, int col)                { return apop_data_get($self, .rowname=row, .col=col); }
+    double __get(char* row, char* col)              { return apop_data_get($self, .rowname=row,  .colname=col); }
     double *__ptr(size_t row, int  col)             { return apop_data_ptr($self, row, col); }
-    double *__ptr(size_t row, char*  col)           { return apop_data_ptr_it($self, row, col); }
-    double *__ptr(char* row, int col)               { return apop_data_ptr_ti($self, row, col); }
-    double *__ptr(char* row, char* col)             { return apop_data_ptr_tt($self, row,  col); }
-    void __set(size_t row, int  col, double data)   { apop_data_set($self, row, col, data); }
-    void __set(size_t row, char*  col, double data) { apop_data_set_it($self, row, col, data); }
-    void __set(char* row, int col, double data)     { apop_data_set_ti($self, row, col, data); }
-    void __set(char* row, char* col, double data)   { apop_data_set_tt($self, row,  col, data); }
+    double *__ptr(size_t row, char*  col)           { return apop_data_ptr($self, .row=row, .colname=col); }
+    double *__ptr(char* row, int col)               { return apop_data_ptr($self, .rowname=row, .col=col); }
+    double *__ptr(char* row, char* col)             { return apop_data_ptr($self, .rowname=row,  .colname=col); }
+    void __set(size_t row, int  col, double data)   { apop_data_set($self, row, col, .val=data); }
+    void __set(size_t row, char*  col, double data) { apop_data_set($self, .row=row, .colname=col, .val=data); }
+    void __set(char* row, int col, double data)     { apop_data_set($self, .rowname=row, .col=col, .val=data); }
+    void __set(char* row, char* col, double data)   { apop_data_set($self, .rowname=row,  .colname=col, .val=data); }
     apop_data * __copy()                            { return apop_data_copy($self); }
     apop_data** __split(int splitpoint, char r_or_c){ return apop_data_split($self, splitpoint, r_or_c); }
     apop_data*  __rm_columns(int *drop)             { apop_data_rm_columns($self, drop); return $self; }

@@ -316,9 +316,9 @@ void test_nan_data(){
     apop_data_print(d, "nantest");
     apop_data_free(d);
     apop_data *d2  = apop_query_to_data("select * from nantest");
-    assert(gsl_isnan(apop_data_get_tt(d2,"second", "c")));
-    assert(gsl_isnan(apop_data_get_tt(d2,"third", "b")));
-    assert(!apop_data_get_tt(d2,"fourth", "b"));
+    assert(gsl_isnan(apop_data_get(d2, .rowname="second", .colname="c")));
+    assert(gsl_isnan(apop_data_get(d2, .rowname="third", .colname="b")));
+    assert(!apop_data_get(d2, .rowname="fourth", .colname="b"));
     apop_data_free(d2);
     strcpy(apop_opts.db_nan, "NaN");
     
@@ -561,7 +561,7 @@ void test_f(apop_model *est){
     //apop_data_show(ftab2);
     double n = est->data->matrix->size1;
     double K = est->parameters->vector->size-1;
-    double r = apop_data_get_ti(rsq, "R.squared", 0);
+    double r = apop_data_get(rsq, .rowname="R.squared");
     double f = apop_data_get(ftab, .rowname="F.stat");
     double f2 = apop_data_get(ftab2, .rowname="F.stat");
     Diff (f , r*(n-K)/((1-r)*K) , tol5);
@@ -1010,14 +1010,14 @@ void db_to_text(){
     assert(!strcmp("T",  d->text[3][b_allele_col]));
     int rsid_col = apop_name_find(d->names, "rsid", 't');
     assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
-    assert(apop_data_get_it(d, 5, "ab")==201);
+    assert(apop_data_get(d, .row=5, .colname="ab")==201);
 
     assert(!strcmp(d->text[3][rsid_col], "rs'11804171"));
 
     apop_data *dcc = apop_data_copy(d); //test apop_data_copy
     assert(!strcmp("T",  dcc->text[3][b_allele_col]));
     assert(!strcmp("rs2977656",  dcc->text[4][rsid_col]));
-    assert(apop_data_get_it(dcc, 5, "ab")==201);
+    assert(apop_data_get(dcc, 5, .colname="ab")==201);
 
     apop_data *dd = apop_query_to_text ("select * from d");
     b_allele_col = apop_name_find(dd->names, "b_all.*", 't');
@@ -1030,7 +1030,7 @@ void db_to_text(){
     assert(!strcmp("T",  dc->text[3][b_allele_col]));
     rsid_col = apop_name_find(dc->names, "rsid", 't');
     assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
-    assert(apop_data_get_it(dc, 5, "ab")==201);
+    assert(apop_data_get(dc, 5, .colname="ab")==201);
 
     char oldtype = apop_opts.output_type;
     apop_opts.output_type = 'd';
@@ -1040,7 +1040,7 @@ void db_to_text(){
     assert(!strcmp("T",  de->text[3][b_allele_col]));
     rsid_col = apop_name_find(de->names, "rsid", 't');
     assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
-    assert(apop_data_get_it(de, 5, "ab")==201);
+    assert(apop_data_get(de, 5, .colname="ab")==201);
     apop_opts.output_type = oldtype;
     unlink("mixedtest");
 
@@ -1240,8 +1240,8 @@ void test_crosstabbing() {
                  " select a_allele, b_allele, count(*) as ct "
                  " from snps group by a_allele, b_allele ");
     apop_data *d = apop_db_to_crosstab("snp_ct", "a_allele", "b_allele", "ct");
-    assert(apop_data_get_tt(d, "A", "G")==5);
-    assert(apop_data_get_tt(d, "C", "G")==1);
+    assert(apop_data_get(d, .rowname="A", "G")==5);
+    assert(apop_data_get(d, .rowname="C", "G")==1);
 
     apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
     apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
