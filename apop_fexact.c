@@ -1915,7 +1915,7 @@ apop_data *apop_test_fisher_exact(apop_data *intab){
        &mult);
     free(intified);
     apop_data *out = apop_data_alloc(2,1);
-    sprintf(out->names->title, "Fisher Exact test");
+    asprintf(&out->names->title, "Fisher Exact test");
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);
     Apop_stopif(has_error, out->error='p'; return out, 0, "processing error; don't trust the results.");

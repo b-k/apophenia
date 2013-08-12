@@ -6,6 +6,7 @@
 
 	August 2013
 --apop_map(_sum) properly threads data-row mappings. .inplace='v' to return NULL.
+**Removed apop_settings_alloc, apop_settings_group_alloc
 
 	June 2013
 --replaced makefile in base directory with ./configure.

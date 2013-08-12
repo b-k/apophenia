@@ -97,10 +97,6 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(rng, NULL);
 )
 
-//deprecated; left to make some examples in Modeling with Data coherent.
-apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
-    return apop_mle_settings_init((apop_mle_settings){ }); }
-
 //      MLE support functions
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
