@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	August 2013
+**Removed apop_settings_alloc, apop_settings_group_alloc
+
 	June 2013
 --replaced makefile in base directory with ./configure.
 --version number now equals build date.
