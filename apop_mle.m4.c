@@ -163,11 +163,11 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
         delta = mp ? mp->delta : default_delta;
     }
 APOP_VAR_ENDHEAD
-  Get_vmsizes(model->parameters); //tsize
-  apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
-  Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
-  gsl_vector        *out= gsl_vector_alloc(tsize);
-  infostruct    i = (infostruct) {.model = model, .data = data};
+    Get_vmsizes(model->parameters); //tsize
+    apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
+    Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
+    gsl_vector *out = gsl_vector_calloc(tsize);
+    infostruct i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
     return out;
 }
@@ -219,10 +219,10 @@ APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model
         delta = mp ? mp->delta : default_delta;
     }
 APOP_VAR_ENDHEAD
-    int    k;
+    int k;
     Get_vmsizes(model->parameters) //tsize
     size_t betasize  = tsize;
-    apop_data *out    = apop_data_calloc(0, betasize, betasize);
+    apop_data *out = apop_data_calloc(0, betasize, betasize);
     gsl_vector *dscore = gsl_vector_alloc(betasize);
     apop_model_for_infomatrix_struct ms = { .base_model = model, .current_index = &k, };
     apop_model *m = apop_model_copy(apop_model_for_infomatrix);

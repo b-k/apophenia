@@ -480,7 +480,7 @@ to be called \c table_name; that name is now deprecated.)
 
 \param var_list The full list of variables to search. A list of strings, e.g., <tt>(char *[]){"var1", "var2", ..., "var15"}</tt>
 
-\param var_ct The full list of variables to search.
+\param var_ct The count of the full list of variables to search.
 
 \param all_vars deprecated.
 

@@ -1167,10 +1167,10 @@ APOP_VAR_ENDHEAD
       	 col_ct, ct = 0, rows = 1;
     FILE *infile;
     char buffer[bs];
-    size_t ptr=bs;
+    size_t ptr = bs;
     apop_data *add_this_line = apop_data_alloc();
-    sqlite3_stmt *statement;
-    line_parse_t L={1,0};
+    sqlite3_stmt *statement = NULL;
+    line_parse_t L = {1,0};
 
 	Apop_assert_c(!apop_table_exists(tabname), -1, 0, "table %s exists; not recreating it.", tabname);
 
