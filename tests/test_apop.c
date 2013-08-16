@@ -227,10 +227,10 @@ void test_score(){
     apop_model_free(straight_est); 
 
     double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
-    apop_data *cov = apop_data_get_page(out->parameters, "cov");
+    apop_data *cov = apop_data_get_page(out->parameters, "cov", 'r');
     Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
     Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
-    double *cov1 = apop_data_ptr(out->parameters, .page="cov", .row=1, .col=1);
+    double *cov1 = apop_data_ptr(out->parameters, .page="<covariance>", .row=1, .col=1);
     Diff (*cov1 ,sigsqn/2 , tol3);
     Diff(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1), 0, tol3);
     apop_model_free(out);
@@ -536,7 +536,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    apop_data *predict_tab = apop_data_get_page(est->info, "predict");
+    apop_data *predict_tab = apop_data_get_page(est->info, "predict", 'r');
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tol5);
 

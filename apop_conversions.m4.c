@@ -2,7 +2,6 @@
 /* Copyright (c) 2006--2010, 2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 #include <gsl/gsl_math.h> //GSL_NAN
-#include <regex.h>
 #include <assert.h>
 #include <stdbool.h>
 

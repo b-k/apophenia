@@ -17,7 +17,7 @@ void pontius(){
     assert(fabs(apop_data_get(est->parameters, 0, -1) - 0.673565789473684E-03) < TOL3);
     assert(fabs(apop_data_get(est->parameters, 1, -1) - 0.732059160401003E-06) < TOL);
     assert(fabs(apop_data_get(est->parameters, 2, -1) - -0.316081871345029E-14)    < TOL);
-    apop_data *cov = apop_data_get_page(est->parameters, "cov");
+    apop_data *cov = apop_data_get_page(est->parameters, "<covariance>");
     assert(fabs(apop_data_get(cov, 0, 0) - pow(0.107938612033077E-03,2))    < TOL2);
     assert(fabs(apop_data_get(cov, 1, 1) - pow(0.157817399981659E-09,2))    < TOL2);
     assert(fabs(apop_data_get(cov, 2, 2) - pow(0.486652849992036E-16,2))    < TOL2);
@@ -32,7 +32,7 @@ void wampler1(){
     apop_model *est = apop_estimate(d, apop_ols);
     for (int i=0; i<6; i++)
         assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4*10);
-    apop_data *cov = apop_data_get_page(est->parameters, "cov");
+    apop_data *cov = apop_data_get_page(est->parameters, "<covariance>");
     for (int i=0; i<6; i++)
         assert(fabs(apop_data_get(cov, i, i)) < TOL2);
     assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 1)    < TOL);
