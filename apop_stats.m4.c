@@ -612,9 +612,9 @@ apop_data *apop_data_covariance(const apop_data *in){
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
     for(size_t i=0; i< in->matrix->size2; i++){
-        Apop_col(in, i, cvin);
-        Apop_col(out, i, cvout);
-        Apop_row(out, i, rvout);
+        Apop_matrix_col(in->matrix, i, cvin);
+        Apop_matrix_col(out->matrix, i, cvout);
+        Apop_matrix_row(out->matrix, i, rvout);
         double std_dev = sqrt(apop_vector_weighted_var(cvin, in->weights));
         gsl_vector_scale(cvout, 1.0/std_dev);
         gsl_vector_scale(rvout, 1.0/std_dev);

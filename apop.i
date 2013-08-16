@@ -89,11 +89,6 @@ def apop_col(data, colno):
     vive.thisown = 0
     return vive.vector
 
-def apop_row(data, colno):
-    vive = data.matrix.row(colno)
-    vive.thisown = 0
-    return vive.vector
-
 def apop_pylist_to_data(inlist):
     colsize =len(inlist)
     rowsize =len(inlist[1])

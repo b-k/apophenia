@@ -195,8 +195,8 @@ APOP_VAR_ENDHEAD
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
-    APOP_ROW(d, row, vr);
-    APOP_COL(d, col, vc);
+    Apop_matrix_row(d->matrix, row, vr);
+    Apop_matrix_col(d->matrix, col, vc);
     double rowexp  = apop_vector_sum(vr)/n;
     double colexp  = apop_vector_sum(vc)/n;
     double observed = apop_data_get(d, row, col);
@@ -295,24 +295,19 @@ APOP_VAR_HEAD apop_data* apop_anova(char *table, char *data, char *grouping1, ch
     char *apop_varad_var(grouping2, NULL)
 APOP_VAR_ENDHEAD
     apop_data *first = apop_anova_one_way(table, data, grouping1);
-    if (!grouping2)
-        return first;
+    if (!grouping2) return first;
     apop_data *second = apop_anova_one_way(table, data, grouping2);
     char *joined = NULL;
     asprintf(&joined, "%s, %s", grouping1, grouping2);
     apop_data *interaction = apop_anova_one_way(table, data, joined);
-    apop_data *out         = apop_data_calloc(0, 5, 6);
+    apop_data *out = apop_data_calloc(5, 6);
     apop_name_stack(out->names, first->names, 'c');
-    apop_name_add(out->names, first->names->row[0], 'r');
-    apop_name_add(out->names, second->names->row[0], 'r');
-    apop_name_add(out->names, "interaction", 'r');
-    apop_name_add(out->names, "residual", 'r');
-    apop_name_add(out->names, "total", 'r');
-
-    APOP_ROW(first, 0, firstrow);
-    APOP_ROW(second, 0, secondrow);
-    APOP_ROW(interaction, 0, interrow);
-    APOP_ROW(first, 2, totalrow);
+    apop_data_add_names(out, 'r', first->names->row[0], second->names->row[0],
+                                  "interaction", "residual", "total");
+    Apop_matrix_row(first->matrix, 0, firstrow);
+    Apop_matrix_row(second->matrix, 0, secondrow);
+    Apop_matrix_row(interaction->matrix, 0, interrow);
+    Apop_matrix_row(first->matrix, 2, totalrow);
     gsl_matrix_set_row(out->matrix, 0, firstrow);
     gsl_matrix_set_row(out->matrix, 1, secondrow);
     gsl_matrix_set_row(out->matrix, 2, interrow);

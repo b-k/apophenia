@@ -38,7 +38,7 @@ array_of_failures = [
     , "variadic_apop_matrix_increment: You sent me a NULL matrix."],
 ["""
 apop_data *d = apop_data_alloc(2,2);
-Apop_row(d, 0, r);
+Apop_matrix_row(d->matrix, 0, r);
 apop_vector_realloc(r, 3);
     """, "apop_vector_realloc: I can't resize subvectors or other views."],
 ['apop_db_to_crosstab("faketab", "r1", "r2", "d");'

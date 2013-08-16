@@ -167,6 +167,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
         apop_vector_stack(model->parameters->vector, v, .inplace='y');
         gsl_vector_free(v);
     }
+    if (!model->dsize) model->dsize = (*ms->model_list)->dsize;
 }
 
 void unpack(apop_model *min){

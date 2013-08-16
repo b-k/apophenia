@@ -182,7 +182,7 @@ APOP_VAR_ENDHEAD
                     Apop_matrix_row(in->matrix, i, onevector);
                     Apop_matrix_row(out->matrix, i, twovector);
                     mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
-                }else{
+                } else {
                     Apop_matrix_col(in->matrix, i, onevector);
                     Apop_matrix_col(out->matrix, i, twovector);
                     mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);

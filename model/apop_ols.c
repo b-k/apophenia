@@ -128,7 +128,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
   gsl_matrix *data	 = d->matrix;
   gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
-        Apop_row(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual    = apop_data_get(d,i, -1);
@@ -140,7 +140,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
     }
     sigma   = sqrt(apop_vector_var(errors));
 	for(size_t i=0;i< data->size1; i++){
-        Apop_row(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
         apop_data justarow = {.matrix=&(m.matrix)};
         if (input_distribution)
@@ -164,7 +164,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
   gsl_vector *normscore = gsl_vector_alloc(2);
   apop_data  *subdata  = apop_data_alloc(1,1);
 	for(size_t i=0;i< data->size1; i++){
-        APOP_ROW(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);

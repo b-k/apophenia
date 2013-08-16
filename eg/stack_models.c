@@ -8,10 +8,9 @@ int main(){
     apop_model *mm = apop_model_stack(m1, m2);
     int len = 1e5;
     gsl_rng *r = apop_rng_alloc(1);
-    apop_data *draws = apop_data_alloc(len, 2);
+    apop_data *draws = apop_model_draws(mm, len, r);
     for (int i=0; i< len; i++){
-        Apop_row (draws, i, onev);
-        apop_draw(onev->data, r, mm);
+        Apop_matrix_row(draws->matrix, i, onev);
         assert((int)onev->data[0] == onev->data[0]);
         assert(onev->data[1]<0);
     }

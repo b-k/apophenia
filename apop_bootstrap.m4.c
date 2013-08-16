@@ -102,7 +102,7 @@ They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed.
 apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
 apop_data *boot_stats = apop_data_get_page(boot_output, "<bootstrapped statistics>");
 
-Apop_row(boot_stats, 27, row_27)
+Apop_matrix_row(boot_stats->matrix, 27, row_27)
 //If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
 //it into the right shape. Let's assume for now that it's just a vector:
 printf("The statistics calculated on the 28th iteration:\n");
