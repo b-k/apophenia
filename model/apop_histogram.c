@@ -119,7 +119,7 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
     apop_data *point = apop_data_alloc(1, pmf->dsize);
-    Apop_row(point, 0, draw_here);
+    Apop_matrix_row(point->matrix, 0, draw_here);
     apop_draw(draw_here->data, r, pmf);
     (ks->set_fn)(point, ks->kernel);
     //Now draw from the distribution around that point.

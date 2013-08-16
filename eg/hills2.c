@@ -14,6 +14,7 @@ apop_model *produce_fixed_mvn(double x, double y){
     out->parameters = apop_data_falloc((2, 2, 2),
                         x, 1, 0,
                         y, 0, 1);
+    out->dsize = 2;
     return out;
 }
 
@@ -28,16 +29,16 @@ int main(){
 
     gsl_rng *r = apop_rng_alloc(21);
     int len = 100000;
-    apop_data *d = apop_data_alloc(len, 2);
-    for (int i=0; i< len; i++){
-        Apop_row(d, i, onerow)
-        apop_draw(onerow->data, r, many_humps);
-    }
-    Apop_col(d, 0, first);
+    apop_data *d = apop_model_draws(many_humps, len, r);
+    Apop_matrix_col(d->matrix, 0, first);
+    #ifndef Testing
     printf("mu=%g\n", apop_mean(first));
+    #endif
     assert(fabs(apop_mean(first)- 0) < 5e-2);
-    Apop_col(d, 1, second);
+    Apop_matrix_col(d->matrix, 1, second);
+    #ifndef Testing
     printf("mu=%g\n", apop_mean(second));
+    #endif
     assert(fabs(apop_mean(second)- 1) < 5e-2);
 
  /*  Abuse the ML imputation routine to search for the input value with the highest

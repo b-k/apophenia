@@ -45,7 +45,7 @@ APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
     apop_data *outd = apop_data_alloc(draws, model->dsize); 
     for (long int i=0; i< draws; i++){
-        Apop_row(outd, i, ach);
+        Apop_matrix_row(outd->matrix, i, ach);
         apop_draw(ach->data, rng, model);
     }
     apop_data *outbinned = apop_data_to_bins(outd, binspec, .bin_count=bin_count);

@@ -1141,7 +1141,7 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
             apop_data_set(data, i, 0, 1);
             for (j = 1; j < true_params->size; j++)
                 apop_data_set(data, i, j, (gsl_rng_uniform(r)-0.5) *2);
-            APOP_ROW(data, i, asample);
+            Apop_matrix_row(data->matrix, i, asample);
             gsl_blas_ddot(asample, true_params, &val);
             if (method == &apop_probit)
                 apop_data_set(data, i, 0, (gsl_ran_gaussian(r, 1) > -val));

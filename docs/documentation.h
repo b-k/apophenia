@@ -772,7 +772,7 @@ Apop_col_t(d, "obs1", ov);
 double obs1_sum = apop_vector_sum(ov);
 
 //Get a row using its index as a vector
-Apop_row(d, 0, v);
+Apop_matrix_row(d->matrix, 0, v);
 double first_row_sum = apop_vector_sum(v);
 
 //Get a row or rows as a standalone one-row apop_data set
@@ -809,7 +809,7 @@ These macros make use of a set of GSL matrices that produce output of type <tt>g
 The view is an automatic variable, not a pointer, and therefore disappears at the end of the scope in which it is declared. If you want to retain the data after the function exits, copy it to another vector: 
 
 \code
-Apop_row(d, 2, rowtwo);
+Apop_matrix_row(d->matrix, 2, rowtwo);
 gsl_vector *outvector = apop_vector_copy(rowtwo);
 \endcode
 
@@ -820,9 +820,9 @@ erased. Here is some sample code that won't work:
 
 \code
 if (get_odd){
-    Apop_data_row(data, 1, outdata);
+    Apop_row(data, 1, outdata);
 } else {
-    Apop_data_row(data, 0, outdata);
+    Apop_row(data, 0, outdata);
 }
 apop_data_show(outdata); //breaks: no outdata in scope.
 \endcode
@@ -2510,7 +2510,7 @@ int main(){
   apop_data *d = apop_text_to_data("data");
 
   //tally row zero of the data set's matrix by viewing it as a vector:
-  Apop_row(d, 0, one_row);
+  Apop_matrix_row(d->matrix, 0, one_row);
   double sigma = apop_vector_sum(one_row);
   printf("Sum of the first row: %g\n", sigma);
 

@@ -15,7 +15,7 @@ int main(){
     r = apop_rng_alloc(3242);
     for (int i=0; i< 10; i++){
         row_offset = gsl_rng_uniform(r)*2 -1;
-        Apop_row(d, i, onerow);
+        Apop_matrix_row(d->matrix, i, onerow);
         apop_vector_apply(onerow, offset_rng);
     }
 

@@ -184,12 +184,12 @@ APOP_VAR_ENDHEAD
             int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
             for (int i=0; i< smaller_dim; i++){
                 if (smaller_dim == in->matrix->size1){
-                    Apop_row(in, i, onevector);
-                    Apop_row(out, i, twovector);
+                    Apop_matrix_row(in->matrix, i, onevector);
+                    Apop_matrix_row(out->matrix, i, twovector);
                     mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
                 }else{
-                    Apop_col(in, i, onevector);
-                    Apop_col(out, i, twovector);
+                    Apop_matrix_col(in->matrix, i, onevector);
+                    Apop_matrix_col(out->matrix, i, twovector);
                     mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'c');
                 }
             }

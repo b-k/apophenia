@@ -157,7 +157,7 @@ static void logit_prep(apop_data *d, apop_model *m){
         }
         logtotal /= onecol->size; //we now have average log magnitude.
         Apop_stopif(!isfinite(logtotal), m->error='d'; return, 0, "Not-finite data (maybe NaN) in column %zu", i);
-        Apop_row(m->parameters, i, betas_i);
+        Apop_matrix_row(m->parameters->matrix, i, betas_i);
         gsl_vector_set_all(betas_i, expl(logtotal));
     }
     if (!sets) sets = Apop_model_add_group(m, apop_mle);
@@ -170,8 +170,8 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
-        Apop_row(in, i, observation);
-        Apop_row(out, i, outrow);
+        Apop_matrix_row(in->matrix, i, observation);
+        Apop_matrix_row(out->matrix, i, outrow);
         double oneterm;
         int bestindex = 0;
         double bestscore = 0;
@@ -210,7 +210,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
     //get the $x\beta_j$ numerator for the appropriate choice:
     size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
                                 factor_list, thisobservation->matrix->size2);
-    Apop_row(thisobservation, 0, thisrow);
+    Apop_matrix_row(thisobservation->matrix, 0, thisrow);
     double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
 
     /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
@@ -243,7 +243,7 @@ static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_i e^(x\beta_j)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
-    Apop_row(x, 0, xdata);
+    Apop_matrix_row(x->matrix, 0, xdata);
     assert(gmat->matrix->size1 == x->matrix->size2);     //the j index---input vars (incl. 1 column)
     assert(gmat->matrix->size2 == beta->size2); //the i index---choices
     assert(xdata->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)

@@ -365,7 +365,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
     for (int i=0; i < settings->draws; i++){
         apop_model *mm = apop_estimate (NULL, *m);//If you're here, d==NULL.
-        Apop_row(param_draws, i, onerow);
+        Apop_matrix_row(param_draws->matrix, i, onerow);
         apop_data_pack(mm->parameters, onerow);
         apop_model_free(mm);
     }
@@ -485,7 +485,7 @@ double apop_cdf(apop_data *d, apop_model *m){
     if (!cs)
         cs = Apop_model_add_group(m, apop_cdf);
     long int tally = 0; 
-    Apop_row(d, 0, ref);
+    Apop_matrix_row(d->matrix, 0, ref);
     if (!cs->draws_made){
         cs->draws_made= gsl_matrix_alloc(cs->draws, m->dsize == -1? ref->size : m->dsize);
         for (int i=0; i< cs->draws; i++){

@@ -67,7 +67,7 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
         data = apop_data_calloc(runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
         for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
+            Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
             assert(!apop_vector_map_sum(v, nan_map));
         }
@@ -75,7 +75,7 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
         int n = gsl_rng_uniform(r)* 1e5;
         data = apop_data_calloc(runsize,true_params->parameters->vector->size);
         for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
+            Apop_matrix_row(data->matrix, i, v)
             if (!strcmp(model->name, "Binomial distribution")){
                 true_params->draw(gsl_vector_ptr(v, 1), r, true_params);
                 v->data[0] = n - v->data[1];
@@ -86,7 +86,7 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
     } else {
         data = apop_data_calloc(runsize,model->dsize);
         for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
+            Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
             assert(!apop_vector_map_sum(v, nan_map));
         }
@@ -111,8 +111,8 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
         Apop_row(draws, i, onerow);
-        apop_draw(onerow->data, r, m);
-        Apop_data_row(draws, i, one_data_pt);
+        apop_draw(onerow->matrix->data, r, m);
+        Apop_row(draws, i, one_data_pt);
         apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
     }
 }

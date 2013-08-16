@@ -195,12 +195,12 @@ char apop_data_free_base(apop_data *freeme){
 
   \li If you want space allocated, use \ref apop_data_copy.
   \li I don't follow the \c more pointer, though \ref apop_data_copy does.
-  \li You can use the subsetting macros, \ref Apop_data_row or \ref Apop_data_rows, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_row or \ref Apop_data_rows, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
-Apop_data_row(mydata, i, fromrow);
-Apop_data_row(mydata, j, torow);
+Apop_row(mydata, i, fromrow);
+Apop_row(mydata, j, torow);
 apop_data_memcpy(torow, fromrow);
 \endcode
  
@@ -1009,7 +1009,7 @@ APOP_VAR_ENDHEAD
 /** \} //End data_set_get group */
 
 
-/** Now that you've used \ref Apop_data_row to pull a row from an \ref apop_data set,
+/** Now that you've used \ref Apop_row to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
 
@@ -1033,19 +1033,19 @@ APOP_VAR_ENDHEAD
 int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     Set_gsl_handler
     if (row->vector){
-        Apop_assert_negone(d->vector, "You asked me to copy an apop_data_row with a vector element to "
+        Apop_assert_negone(d->vector, "You asked me to copy an apop_data row with a vector element to "
                 "an apop_data set with no vector.");
         gsl_vector_set(d->vector, row_number, row->vector->data[0]);
     }
     if (row->matrix && row->matrix->size2 > 0){
-        Apop_assert_negone(d->matrix, "You asked me to copy an apop_data_row with a matrix row to "
+        Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
                 "an apop_data set with no matrix.");
-        Apop_row(d, row_number, a_row); 
-        Apop_row(row, 0, row_to_copy); 
+        Apop_matrix_row(d->matrix, row_number, a_row); 
+        Apop_matrix_row(row->matrix, 0, row_to_copy); 
         gsl_vector_memcpy(a_row, row_to_copy);
     }
     if (row->textsize[1]){
-        Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data_row with text to "
+        Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data row with text to "
                 "an apop_data set with no text element.");
         for (int i=0; i < row->textsize[1]; i++){
             free(d->text[row_number][i]);
@@ -1053,7 +1053,7 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
         }
     }
     if (row->weights){
-        Apop_assert_negone(d->weights, "You asked me to copy an apop_data_row with a weight to "
+        Apop_assert_negone(d->weights, "You asked me to copy an apop_data row with a weight to "
                 "an apop_data set with no weights vector.");
         gsl_vector_set(d->weights, row_number, row->weights->data[0]);
     }
@@ -1473,7 +1473,7 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \ref apop_data_rm_rows uses \ref Apop_data_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+  \ref apop_data_rm_rows uses \ref Apop_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
 
   \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
@@ -1498,13 +1498,13 @@ APOP_VAR_ENDHEAD
         int drop_row=0;
         if (drop && drop[i]) drop_row = 1;
         else if (do_drop){
-            Apop_data_row(in, i, onerow); 
+            Apop_row(in, i, onerow); 
             drop_row = do_drop(onerow, drop_parameter);
         }
         if (!drop_row){
             if (outlength == i) outlength++;
             else {
-                Apop_data_row(in, i, thisrow);
+                Apop_row(in, i, thisrow);
                 apop_data_set_row(in, thisrow, outlength++);
             }
         }
