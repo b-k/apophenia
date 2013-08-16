@@ -658,8 +658,8 @@ statistics, but may care about only one or two; see the example.
 For example:
 \include test_pruning.c 
 
-\li I use case-insensitive regular expressions to find your column; see \ref apop_regex for details.
-\li If your regex matches multiple columns, I'll only give you the first.
+\li I use a case-insensitive search to find your column.
+\li If your name multiple columns, I'll only give you the first.
 \li If I can't find a column matching one of your strings, I throw an error to the screen and continue.
 \li This is a macro calling \ref apop_data_prune_columns_base. It packages your list of
 columns into a list of strings, adds a \c NULL string at the end, and calls that function.
@@ -700,7 +700,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     for (int i=0; i< d->names->colct; i++){
         int keep = 0;
         for (int j=0; j<keep_count; j++)
-            if (!used_field[j] && apop_regex(d->names->col[i], colnames[j])){
+            if (!used_field[j] && !strcasecmp(d->names->col[i], colnames[j])){
                 keep ++;
                 used_field[j]++;
                 break;
@@ -754,15 +754,7 @@ for the search; see notes there on the name matching rules.
 .colname.
 \li You can give me the name of a page, e.g.
 \code
-double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="Info");
-\endcode
-Each search for a page in the \ref apop_data set involves a regular expression search
-across the names of the pages, which is expensive. If you're doing one lookup, this is not
-an issue; for hundreds or thousands, you may be better off spending a line of code to get the page once:
-\code
-apop_data *d = apop_data_get_page(data, page="Indices");
-for (int i=0; i< 1e7; i++)
-    apop_data_set(d, i, 0, i);
+double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="<Info>");
 \endcode
 
 \li The column (like all defaults) is zero unless stated otherwise, so <tt>apop_data_get(dataset, 1)</tt> gets item (1, 0) from the matrix element of \c dataset. As a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit: <tt>apop_data_get(dataset, 1, -1)</tt>.
@@ -800,10 +792,19 @@ static double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col)
 \li If a \c NULL vector or matrix (as the case may be), stop (unless <tt>apop_opts.stop_on_warning='n'</tt>, then return \c NULL).
 \li If the row/column you requested is outside the bounds of the matrix (or the name isn't found), always return \c NULL.
 \li See \ref data_set_get "the set/get page" for details. 
+
+\param data The data set. Must not be \c NULL.
+\param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
+\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
+\param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
+\param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
+
+\return A pointer to the element.
 */
 APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page){
     apop_data * apop_varad_var(data, NULL);
-    Apop_assert(data, "You sent me a NULL data set.");
+    Apop_stopif(!data, return NULL, 0, "You sent me a NULL data set. Returning NULL pointer.");
     const int apop_varad_var(row, 0);
     const int apop_varad_var(col, 0);
     const char * apop_varad_var(rowname, NULL);
@@ -875,7 +876,16 @@ static double apop_data_get_tt(const apop_data *in, const char *row, const char*
 /** Returns the data element at the given point.
  
   In case of error (probably that you asked for a data point out of bounds), returns \c GSL_NAN.
- See \ref data_set_get "the set/get page" for details. */
+ See \ref data_set_get "the set/get page" for details.
+
+\param data The data set. Must not be \c NULL.
+\param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
+\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
+\param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
+\param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
+
+\return The value at the given location. */
 APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page){
     const apop_data * apop_varad_var(data, NULL);
     Apop_assert(data, "You sent me a NULL data set.");
@@ -970,10 +980,20 @@ static int apop_data_set_tt(apop_data *in, const char *row, const char* col, con
   \return 0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).
 
 \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
-C11-compliant compiler (thanks to the \c _Thread_local keyword) or GCC (thanks to its \c __thread
-extension).
+C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread
+extension enabled.
 
- See \ref data_set_get "the set/get page" for details. */
+ See \ref data_set_get "the set/get page" for details. 
+
+\param data The data set. Must not be \c NULL.
+\param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
+\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
+\param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
+\param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
+\param val The value to give the point.
+
+\return The value at the given location. */
 APOP_VAR_HEAD int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page){
     apop_data * apop_varad_var(data, NULL);
     Apop_assert_negone(data, "You sent me a NULL data set.");
@@ -1028,7 +1048,7 @@ APOP_VAR_ENDHEAD
   \return 0=OK, -1=error (probably a source/destination size mismatch).
 
   \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
-  C11-compliant compiler (thanks to the \c _Thread_local keyword) or GCC (thanks to its \c __thread extension).
+  C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread extension enabled.
 */
 int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     Set_gsl_handler
@@ -1358,7 +1378,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
       
-  \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match, if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'r'.
+  \param match If \c 'c', case-insensitive match (via \c strcasecmp); if \c 'e', exact match, if \c 'r' regular expression substring search (via \ref apop_regex). Default=\c 'c'.
 
     \return The page whose title matches what you gave me. If I don't find a match, return \c NULL.
 
@@ -1368,11 +1388,13 @@ APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char 
     const apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NULL, 1, "You requested a page from a NULL data set. Returning NULL");
     const char * apop_varad_var(title, "Info");
-    const char apop_varad_var(match, 'r');
+    const char apop_varad_var(match, 'c');
+    Apop_stopif(match!='r' && match!='e' && match!='c', return NULL, 0,
+                "match type needs to be 'r', 'e', or 'c'; you supplied %c.", match);
 APOP_VAR_ENDHEAD
     while (data && (!data->names || !data->names->title ||
-                (match!='e' && match!='c' && !apop_regex(data->names->title, title))
-                || (match=='c' && strcasecmp(data->names->title, title))
+                (match=='c' && strcasecmp(data->names->title, title))
+                || (match=='r' && !apop_regex(data->names->title, title))
                 || (match=='e' && strcmp(data->names->title, title))
                 ))
         data = data->more;
@@ -1403,7 +1425,7 @@ APOP_VAR_ENDHEAD
   gsl_vector_set_all(a_new_page->matrix, 3);
 
   //later:
-  apop_data *retrieved = apop_data_get_page(d, "new"); //uses regexes, not literal match.
+  apop_data *retrieved = apop_data_get_page(d, "new", 'r'); //use regexes, not literal match.
   apop_data_show(retrieved); //print a 2x2 grid of 3s.
   \endcode
 */
@@ -1424,7 +1446,7 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
 /** Remove the first page from an \ref apop_data set that matches a given name.
 
   \param data The input data set, to which a page will be added. No default. If \c NULL, I return silently if <tt> apop_opts.verbose < 1 </tt>; print an error otherwise.
-  \param title The name of the page to remove. Default: \c "Info"
+  \param title The case-insensitive name of the page to remove. Default: \c "Info"
   \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
 
   \return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
@@ -1446,9 +1468,9 @@ APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, 
     const char *apop_varad_var(title, "Info");
     const char apop_varad_var(free_p, 'y');
 APOP_VAR_ENDHEAD
-    while (data->more && !apop_regex(data->more->names->title, title))
+    while (data->more && strcasecmp(data->more->names->title, title))
         data = data->more;
-    Apop_stopif(!data->more, return NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that regex.", title);
+    Apop_stopif(!data->more, return NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
