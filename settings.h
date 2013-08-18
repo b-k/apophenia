@@ -60,13 +60,18 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
 /** Modifies a single element of a settings group to the given value. 
+
+\li If <tt>model==NULL</tt>, fails silently. 
+\li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
 \hideinitializer \ingroup settings
  */
-#define Apop_settings_set(model, type, setting, data)  \
-    do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
-    Apop_assert(apop_tmp_settings, "You're trying to modify a setting in " \
+#define Apop_settings_set(model, type, setting, data)   \
+    do {                                                \
+        if (!(model)) continue; /* silent fail. */      \
+        type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
+        Apop_stopif(!apop_tmp_settings, (model)->error='s', 0, "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
-    apop_tmp_settings->setting = (data);    \
+    apop_tmp_settings->setting = (data);                \
     } while (0);
 
 /** \cond doxy_ignore */
