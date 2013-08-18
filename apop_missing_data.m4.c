@@ -133,7 +133,6 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
-    Apop_settings_set(fixed, apop_mle, want_cov, 'n');
     Apop_model_add_group(fixed, apop_parts_wanted);
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_model_free(fixed);

@@ -1185,7 +1185,8 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
-    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n', .tolerance=1e-5);
+    Apop_model_add_group(&apop_logit, apop_mle, .tolerance=1e-5);
+    Apop_model_add_group(&apop_logit, apop_parts_wanted);
     apop_logit.score=NULL; //Basically OK, but still too imprecise.
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
@@ -1195,7 +1196,8 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Probit
     apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
-    Apop_model_add_group(&apop_probit, apop_mle, .want_cov='n');
+    Apop_model_add_group(&apop_probit, apop_mle);
+    Apop_model_add_group(&apop_logit, apop_parts_wanted);
     m = apop_estimate(data2, apop_probit);
     APOP_COL(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
@@ -1514,7 +1516,7 @@ int main(int argc, char **argv){
     gsl_rng *r = apop_rng_alloc(8); 
     apop_data *d = apop_text_to_data("test_data2",0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
-    Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
+    Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
     do_test("db_to_text", db_to_text());

@@ -23,8 +23,7 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
         .method       = method, .verbose   =0,
         .step_size    = 1e-1,
         .tolerance    = 1e-4,   .k         = 1.8,
-        .t_initial    = 1,      .t_min     = .5,
-        .use_score    = 1
+        .t_initial    = 1,      .t_min     = .5
         );
     Apop_model_add_group(dist, apop_parts_wanted);
 

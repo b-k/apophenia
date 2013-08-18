@@ -32,33 +32,13 @@ typedef struct {
     grad_params *gp; //Used only by apop_internal_numerical_gradient.
     gsl_vector  *beta, *starting_pt;
     int         use_constraint;
-    char        *trace_path;
-    FILE        **trace_file;
+    char        trace_path;
     double      best_ll;
     char        want_cov, want_predicted, want_tests, want_info;
     jmp_buf     bad_eval_jump;
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
-
-/** \page trace_path Plotting the path of an ML estimation.
-
-If \c trace_path (in the \ref apop_mle_settings struct) has a name of positive
-length, then every time the MLE evaluates the function, then the value
-will be output to a table in the database/a file with the given name
-(depending on the value of \ref apop_opts_type "apop_opts.output_type"). You can then plot this
-table to get an idea of the path the estimation routine used to arrive
-at its MLE.
-
-To write to a pipe or stdout, set \ref apop_opts_type "apop_opts.output_type" appropriately and set \c trace_path to the literal string \c "NULL".
-
-
-Below is a sample of the sort of output one would get:<br>
-\image latex "search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
-\image html "search.gif" "An ML search, tracing out the surface of the function" 
-
-\ingroup mle
-*/
 
 double default_delta = 1e-3;
 
@@ -73,18 +53,17 @@ Apop_settings_init(apop_parts_wanted,
 )
 
 Apop_settings_copy(apop_mle, )
-Apop_settings_free(apop_mle, )
+Apop_settings_free(apop_mle, 
+        apop_data_free(in->path);
+        )
 Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-5);
     Apop_varad_set(max_iterations, 5000);
     Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
-    Apop_varad_set(use_score, 'y'); //deprecated.
     Apop_varad_set(step_size, 0.05);
     Apop_varad_set(delta, default_delta);
-    Apop_varad_set(want_cov, 'y');
-    if (in.want_cov == 1) out->want_cov = 'y';
     Apop_varad_set(dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
@@ -285,35 +264,12 @@ APOP_VAR_ENDHEAD
 
 ///On to the interfaces between the models and the methods
 
-static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
-    if (apop_opts.output_type == 'd'){
-        if (beta->size == 1){
-            if(!apop_table_exists(tp, 0))
-                apop_query("create table  %s (beta0, ll);", tp);
-            apop_query("insert into %s values (%g, %g);", tp, gsl_vector_get(beta,0), out);
-        } else {
-            if(!apop_table_exists(tp, 0))
-                apop_query("create table  %s (beta0, beta1, ll);", tp);
-            apop_query("insert into %s values (%g, %g, %g);", tp, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-        }
-    } else if (apop_opts.output_type == 'p'){
-        if (beta->size == 1)
-            fprintf(apop_opts.output_pipe, "%g\t %g\n",  gsl_vector_get(beta,0), out);
-        else
-            fprintf(apop_opts.output_pipe, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-    } else {
-        if (!*tf){
-            if (apop_opts.output_type == 's' && !strcmp(tp, "NULL"))
-                *tf = stdout;
-            else
-                Apop_stopif(!(*tf = fopen(tp, "a")), /*keep going.*/,
-                    0, "couldn't open %s for writing. Continuing without the path trace.", tp);
-        }
-        if (beta->size == 1)
-            fprintf(*tf, "%g\t %g\n",  gsl_vector_get(beta,0), out);
-        else
-            fprintf(*tf, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-    }
+static void tracepath(const gsl_vector *beta, apop_data **path){
+    size_t msize1 = *path ? (*path)->matrix->size1: 0;
+    if (!*path) *path = apop_data_alloc();
+    (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
+    Apop_matrix_row((*path)->matrix, msize1, lastv);
+    gsl_vector_memcpy(lastv, beta);
 }
 
 /* Every actual evaluation of the function go through the negshell and dnegshell fns,
@@ -345,8 +301,10 @@ static double negshell (const gsl_vector *beta, void * in){
     Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
                 0, "I got a NaN in evaluating the objective function.%s", 
                     !i->model->constraint ? " Maybe add a constraint to your model?" : "");
-    if (i->trace_path && strlen(i->trace_path))
-        tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
+    if (i->trace_path=='y'){
+        apop_mle_settings *mp =  apop_settings_get_group(i->model, apop_mle);
+        tracepath(i->model->parameters->vector, &(mp->path));
+    }
     if (i->want_info =='y'){
         //I report the log likelihood under the assumption that the final param set 
         //matches the best ll evaluated.
@@ -390,7 +348,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
-    if (i->trace_path && strlen(i->trace_path))
+    if (i->trace_path =='y')
         negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
@@ -605,12 +563,10 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
 
 void get_desires(apop_model *m, infostruct *info){
     apop_parts_wanted_settings *want = apop_settings_get_group(m, apop_parts_wanted);
-    apop_mle_settings *ms = apop_settings_get_group(m, apop_mle);
 
     info->want_tests = (want && want->tests =='y') ? 'y' : 'n';
-    info->want_cov = (info->want_tests=='y' || (want && want->covariance =='y') 
-            || (!want && ms && ms->want_cov =='y'))  //mle settings' want_cov only valid w/o parts_wanted
-            ? 'y' : 'n';
+    info->want_cov = (info->want_tests=='y' || (want && want->covariance =='y'))
+                            ? 'y' : 'n';
     info->want_info = (want && want->info =='y') ? 'y' : 'n';
 
     //doesn't do anything at the moment.
@@ -655,15 +611,14 @@ apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
     Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,
                        .use_constraint = 1,
-                       .trace_file     = malloc(sizeof(FILE *)),
                        .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
     if (setup_starting_point(mp, info.beta)) return NULL;
-    *info.trace_file = NULL;
+    apop_data_free(mp->path);
     info.model->data = data;
+    info.trace_path = mp->want_path;
     if (mp->dim_cycle_tolerance)          return dim_cycle(data, dist, info);
-    if (mp->trace_path)                   info.trace_path = mp->trace_path;
 	if (mp->method == APOP_SIMAN)         return apop_annealing(&info);  //below.
     else if (mp->method==APOP_SIMPLEX_NM) return apop_maximum_likelihood_no_d(data, &info);
     else if (mp->method == APOP_RF_NEWTON ||

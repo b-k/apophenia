@@ -201,7 +201,6 @@ delta;
                                  they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
-    char        want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     double      dim_cycle_tolerance; /**< If zero (the default), the usual procedure.
                              If \f$>0\f$, cycle across dimensions: fix all but the first dimension at the starting
                              point, optimize only the first dim. Then fix the all but the second dim, and optimize the
@@ -213,9 +212,9 @@ delta;
     int         n_tries, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    char        *trace_path; ///< See \ref trace_path
-    apop_model  *parent;   ///< Deprecated; does nothing.
-    int         use_score; ///< Deprecated; now does nothing. If you don't want to use the score, set it to \c NULL.
+    char        want_path; ///< If 'y', record the points tried by the optimizer in path
+    apop_data   *path;      /**< if want_path='y', record each vector tried by the optimizer as one row of this \ref apop_data set.
+                              If already allocated, free what is here and reallocate. This data set has no names; add them as desired.*/
 } apop_mle_settings;
 
 /** Settings for least-squares type models 

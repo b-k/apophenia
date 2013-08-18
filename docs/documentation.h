@@ -1899,6 +1899,14 @@ most of the code in the documentation, is part of Apophenia's test suite).
 
 \include ../eg/banana.c
 
+\li If you would like to see what the optimizer did, add <tt>.want_path='y'</tt> to the settings group, then get the <tt>path</tt> element from the settings group:
+
+\code
+Apop_settings_add_group(your_model, apop_mle, .want_path='y');
+apop_model *out = apop_estimate(your_data, your_model);
+apop_data_show(Apop_settings_get(out, apop_mle, path));
+\endcode
+
 Outlineheader constr Setting Constraints
 
 The problem is that the parameters of a function must not take on certain values, either because the function is undefined for those values or because parameters with certain values would not fit the real-world problem.
