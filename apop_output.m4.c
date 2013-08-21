@@ -16,7 +16,7 @@ consumption, while you are printing a matrix for import into another program.
 /** \defgroup apop_print 	Assorted printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
+or database, depending on how you set \c .output_type .
 The <tt>apop_*_show</tt> functions print only to screen, and are basically
 just a convenience shell to the corresponding <tt>apop_*_print</tt>
 function.
@@ -32,9 +32,7 @@ function.
   that uses this internally. You should never call this function directly, but do read
   this documentation.
 
-  There are four settings that affect how output happens, and they can be set globally,
-  via, e.g., <tt>apop_opts.output_type = 'f'</tt>, 
-  <tt>apop_opts.output_append = 'w'</tt>, et cetera, or they can be set when you call the
+  There are four settings that affect how output happens, which can be set when you call the
   function that sent you to this documentation, e.g:
 
   \code
@@ -47,38 +45,21 @@ function.
   \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
   \param output_append \c 'a' = append (default), \c 'w' = write over.
 
-This function merges the global and specific rules. It tries to do what you mean in
-ambiguous cases. Any function-specific option you send always overrules the global option.
-
 At the end, \c output_file, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
 void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
-    *output_append = *output_append ? *output_append :
-        ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
+    *output_append = *output_append ? *output_append : 'w';
 
-    if (!output_file && !*output_pipe){
-        *output_pipe = apop_opts.output_pipe;                  
-        if (!*output_type)              
-            *output_type = apop_opts.output_type;              
-    } else if (output_file && !*output_pipe){                  
-        *output_pipe = apop_opts.output_pipe;                  
-        if (!*output_type){            
-            if(*output_type == 'd' || apop_opts.output_type == 'd')  
-                 *output_type = 'd';  
-            else *output_type = 'f'; 
-        }                        
-    } else if ((!output_file && *output_pipe) && !*output_type) 
-        *output_type = 'p';     
-    if (*output_type =='p')    
-        *output_pipe = *output_pipe ? *output_pipe: stdout;      
-    else if (*output_type =='s')
-        *output_pipe = stdout; 
-    else if (*output_type =='d')
-        *output_pipe = stdout;  //won't be used.
-    else       
-        *output_pipe = output_file
-                        ? fopen(output_file, *output_append == 'a' ? "a" : "w") 
+    if (!output_file && !*output_pipe && !*output_type)     *output_type = 's';              
+    else if (output_file && !*output_pipe && !*output_type) *output_type = 'f'; 
+    else if (!output_file && *output_pipe && !*output_type) *output_type = 'p';     
+
+    if (*output_type =='p')      *output_pipe = *output_pipe ? *output_pipe: stdout;      
+    else if (*output_type =='s') *output_pipe = stdout; 
+    else if (*output_type =='d') *output_pipe = stdout;  //won't be used.
+    else *output_pipe = output_file
+                        ? fopen(output_file, *output_append == 'a' ? "a" : "w")
                         : stdout;
 }
 
@@ -112,8 +93,6 @@ hand for modifications.
 
 \li See \ref apop_prep_output for more on how settings are set.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup output
 */
 APOP_VAR_HEAD void apop_plot_line_and_scatter(apop_data *data, apop_model *est, Output_declares){
@@ -399,8 +378,10 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             if (data->vector || data->matrix)
                 a_pipe(f, displaytype);
             if (j < data->textsize[0])
-                for(i=0; i< data->textsize[1]; i++)
-                    fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
+                for(i=0; i< data->textsize[1]; i++){
+                    fprintf(f, "%s", data->text[j][i]);
+                    if (i < data->textsize[1]-1) fprintf(f, "%s", apop_opts.output_delimiter);
+                }
         }
         if (data->weights && j < data->weights->size){
             a_pipe(f, displaytype);
@@ -411,7 +392,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 }
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
-  as determined by the \ref apop_opts_type "apop_opts.output_type".
+  as determined by the \c .output_typei .
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
@@ -462,8 +443,6 @@ APOP_VAR_ENDHEAD
 /** Dump a <tt>gsl_matrix</tt> to the screen.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
     apop_data *dtmp = apop_matrix_to_data((gsl_matrix*) data);
@@ -555,9 +534,6 @@ APOP_VAR_ENDHEAD
 /** Plot the percentiles of a data set against the percentiles of a distribution.
 
 The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.
-
-The function respects the <tt>apop_opts.output_type</tt> option.
-It uses the \ref designated syntax for inputs.
 
 \param v    The data (No default, must not be \c NULL.)
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)

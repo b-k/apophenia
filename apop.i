@@ -274,7 +274,7 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     return  apop_matrix_pca($self, dimensions_we_want);}
 
     inline void increment( int i, int j, double amt){
-        return apop_matrix_increment($self, i, j, amt);}
+        return *gsl_matrix_ptr($self, i, j) += amt;}
 
     gsl_matrix *stack( gsl_matrix * m2=NULL, char posn='r', char inplace=0){
         return apop_matrix_stack($self,  m2, posn, inplace);}
@@ -360,7 +360,7 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
         apop_vector_normalize($self, out, normalization_type); }
 
     void increment(gsl_vector * v, int i, double amt){
-        return apop_vector_increment($self, i, amt);}
+        return *gsl_vector_ptr($self, i) += amt;}
 
     int bounded(double max=GSL_POSINF){ return apop_vector_bounded($self, max);}
     gsl_vector *apop_vector_stack(gsl_vector *v2=NULL, char inplace=0){ return apop_vector_stack($self, v2, 'n');}

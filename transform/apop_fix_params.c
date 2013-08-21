@@ -156,16 +156,16 @@ static apop_model *fixed_est(apop_data * data, apop_model *params){
     return e;
 }
 
-static void fixed_param_show(apop_model *m){
+static void fixed_param_show(apop_model *m, FILE *out){
     apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
-    printf("The fill-in table:\n");
-    apop_data_show(mset->predict);
+    fprintf(out, "The fill-in table:\n");
+    apop_data_print(mset->predict, .output_pipe=out);
     if (!m->parameters) printf("This copy of the model has not yet been estimated.\n");
     else {
-        printf("The base model, after unpacking:\n");
+        fprintf(out, "The base model, after unpacking:\n");
         unpack(mset->base_model->parameters, m);
     }
-        apop_model_print(mset->base_model);
+        apop_model_print(mset->base_model, out);
 }
 
 static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = fix_params_p, 

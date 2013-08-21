@@ -210,8 +210,8 @@ APOP_VAR_ENDHEAD
         //We get two estimates of the (k,j)th element, which are often very close,
         //and take the mean.
         for (size_t j=0; j< betasize; j++){
-            apop_matrix_increment(out->matrix, k, j, gsl_vector_get(dscore, j)/2);
-            apop_matrix_increment(out->matrix, j, k, gsl_vector_get(dscore, j)/2);
+            *gsl_matrix_ptr(out->matrix, k, j) += gsl_vector_get(dscore, j)/2;
+            *gsl_matrix_ptr(out->matrix, j, k) += gsl_vector_get(dscore, j)/2;
         }
         gsl_vector_free(dscore);
     }
@@ -763,7 +763,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         sign  = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
         scale = gsl_vector_get(i->starting_pt, j);
         amt   = cutpoints[j+1]- cutpoints[j];
-        apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
+        *gsl_vector_ptr(i->beta, j) += amt * sign * scale * step_size;
     }
     apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model))

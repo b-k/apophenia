@@ -123,7 +123,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
         else
             deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) / cdf;
         for (size_t j=0; j< d->matrix->size2; j++)
-            apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
+            *gsl_vector_ptr(gradient, j) += apop_data_get(d, i, j) * deriv_base;
 	}
 	apop_data_free(betadotx);
 }
@@ -268,8 +268,7 @@ static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop
         }
         for (int j=0; j< xdata->size; j++){ //add to each coefficient of the gradient matrix 
             double pick = (choice-1 == i) ? gsl_vector_get(xdata,j) : 0; //numeraire has no betas.
-            apop_matrix_increment(gmat->matrix, j, i, 
-                                            pick - gsl_vector_get(xdata, j)/gsl_vector_get(denom, j));
+            *gsl_matrix_ptr(gmat->matrix, j, i) += pick - gsl_vector_get(xdata, j)/gsl_vector_get(denom, j));
         }
         gsl_vector_free(denom);
     }

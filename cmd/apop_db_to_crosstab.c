@@ -20,14 +20,16 @@ int main(int argc, char **argv){
 		printf(msg, argv[0]);
 		return 1;
 	}
+    int output_append = 0;
+    char output_type = 's';
 	while ((c = getopt (argc, argv, "ad:f:ho")) != -1)
-		if      (c=='a') apop_opts.output_append = 1;
+		if      (c=='a') output_append = 1;
         else if (c=='d') strcpy(apop_opts.output_delimiter,optarg);
-        else if (c=='o') apop_opts.output_append = 0;
+        else if (c=='o') output_append = 0;
         else if (c=='h') printf(msg, argv[0]);
         else if (c=='f') {
               outfile = strdup(optarg);
-			  apop_opts.output_type	= 'f';
+			  output_type = 'f';
         } 
         else if (c=='v') {
             verbose++;
@@ -39,10 +41,10 @@ int main(int argc, char **argv){
             argv[optind], argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
         if (outfile) fprintf(stderr, "outfile: %s\n", outfile);
         else  fprintf(stderr, "output to stdout\n");
-        if (apop_opts.output_append) fprintf(stderr, "appending to output\n");
+        if (output_append) fprintf(stderr, "appending to output\n");
         else fprintf(stderr, "overwriting output\n");
     }
 	apop_db_open(argv[optind]);
     apop_data *m = apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
-	apop_data_print(m, outfile);
+	apop_data_print(m, outfile, .output_append=output_append, .output_type=output_type);
 }

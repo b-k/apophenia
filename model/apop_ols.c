@@ -182,7 +182,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
         apop_score(subdata, normscore, norm);
         weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         for(size_t j=0; j< data->size2; j++)
-            apop_vector_increment(gradient, j, weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
+            *gsl_vector_ptr(gradient, j) += weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0);
 	} 
     gsl_vector_free(errors);
     apop_model_free(norm);
@@ -371,8 +371,7 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
     return out;
 }
 
-void ols_print(apop_model *m){
-    FILE *ap = apop_opts.output_pipe;
+void ols_print(apop_model *m, FILE *ap){
     fprintf(ap, "Parameters:\n");
     apop_data_print(m->parameters, .output_pipe=(ap? ap : stdout));
     apop_data *predict = apop_data_rm_page(m->info, "<Predicted>", .free_p='n');

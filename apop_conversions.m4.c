@@ -303,10 +303,10 @@ apop_data *apop_data_rank_compress (apop_data *in){
                               in->vector ? gsl_vector_max(in->vector) : 0);
     apop_data *out = apop_data_calloc(1, upper_bound+1);
     for (int i=0; i< msize1; i++)
-        for (int j=0; j< msize2; j++)
-            apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, j));
-    for (int i=0; i< vsize; i++)
-        apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, -1));
+        for (int j=0; j< msize2; j++) 
+            (*gsl_matrix_ptr(out->matrix, 0, apop_data_get(in, i, j)))++;
+    for (int i=0; i< vsize; i++) 
+        (*gsl_matrix_ptr(out->matrix, 0, apop_data_get(in, i, -1)))++;
     return out;
 }
 

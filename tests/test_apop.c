@@ -69,7 +69,6 @@ static void test_printing(){
 
     if (!apop_table_exists("nandata"))
         test_nan_data();
-    apop_opts.output_type ='s';
     gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
     apop_matrix_print(m, .output_file=outfile, .output_append='w');
 
@@ -100,10 +99,7 @@ apop_system("cp %s xxx", outfile);
 
     fprintf(f, "\nand just the weights vector:\n");
     strcpy(apop_opts.output_delimiter, "\t");
-    apop_opts.output_type = 'p';
-    apop_opts.output_pipe = f;
-    apop_vector_print(d->weights);
-    apop_opts.output_type = 's';
+    apop_vector_print(d->weights, .output_type='p', .output_pipe=f);
     fclose(f);
     int has_diffs = apop_system("diff -b printing_sample %s", outfile);
     assert(!has_diffs);
@@ -312,8 +308,7 @@ void test_nan_data(){
     strcpy(apop_opts.db_name_column, "head");
     strcpy(apop_opts.db_nan, "(nan|\\.)");
     apop_data *d  = apop_query_to_data("select * from nandata");
-    apop_opts.output_type ='d';//check that rownames come in OK, and NaNs written right.
-    apop_data_print(d, "nantest");
+    apop_data_print(d, "nantest", .output_type='d');
     apop_data_free(d);
     apop_data *d2  = apop_query_to_data("select * from nantest");
     assert(gsl_isnan(apop_data_get(d2, .rowname="second", .colname="c")));
@@ -1032,16 +1027,13 @@ void db_to_text(){
     assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
     assert(apop_data_get(dc, 5, .colname="ab")==201);
 
-    char oldtype = apop_opts.output_type;
-    apop_opts.output_type = 'd';
-    apop_data_print(dc, "mixedtest");
+    apop_data_print(dc, "mixedtest", .output_type='d');
     apop_data *de = apop_query_to_mixed_data("mmmmtttt","select * from mixedtest");
     b_allele_col = apop_name_find(de->names, "b_all.*", 't');
     assert(!strcmp("T",  de->text[3][b_allele_col]));
     rsid_col = apop_name_find(de->names, "rsid", 't');
     assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
     assert(apop_data_get(de, 5, .colname="ab")==201);
-    apop_opts.output_type = oldtype;
     unlink("mixedtest");
 
     test_uniform(d);
@@ -1345,7 +1337,7 @@ void test_pmf(){
     for (size_t i=0; i< 1e5; i++){
         double out;
         apop_draw(&out, r, m);
-        apop_vector_increment(v, out);
+        (*gsl_vector_ptr(v, out))++;
     }
     apop_vector_normalize(d->weights);
     apop_vector_normalize(v);

@@ -245,7 +245,7 @@ double pmf_p(apop_data *d, apop_model *m){
     return p;
 }
 
-static void pmf_print(apop_model *est){ apop_data_print(est->data); }
+static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
 static void pmf_prep(apop_data * data, apop_model *model){
     Get_vmsizes(data) //msize2, firstcol
@@ -317,7 +317,7 @@ apop_data *apop_data_pmf_compress(apop_data *in){
             not_done = 1;
             Apop_data_row(in, j, compare_me);
             if (are_equal(subject, compare_me)){
-                apop_vector_increment(subject->weights, 0, gsl_vector_get (compare_me->weights, 0));
+                *gsl_vector_ptr(subject->weights, 0) += gsl_vector_get(compare_me->weights, 0);
                 cutme[j]=1;
             }
         }

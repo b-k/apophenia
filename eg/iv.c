@@ -25,7 +25,7 @@ void add_noise(gsl_vector *in, gsl_rng *r, double size){
     for (int i=0; i< in->size; i++){
         double noise;
         apop_draw(&noise, r, nnoise);
-        apop_vector_increment(in, i, noise);
+        *gsl_vector_ptr(in, i) += noise;
     }
     apop_model_free(nnoise);
 }

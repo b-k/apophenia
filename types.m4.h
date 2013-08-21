@@ -90,7 +90,7 @@ struct apop_model{
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
                 /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
-    void (*print)(apop_model *params);
+    void (*print)(apop_model *params, FILE *out);
     void    *more; /**< This element is copied and freed as necessary by Apophenia's
                      model-handling functions, but is otherwise untouched. Put whatever
                      information you want here. */
@@ -104,16 +104,8 @@ struct apop_model{
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
     char stop_on_warning; /**< See outline page on error handling. */
-    char output_type;
-           /**< 's'   = to screen
-                'f'   = to file
-                'd'   = to db. 
-                'p'   = to pipe (specifically, apop_opts.output_pipe). 
-             If 'f' or 'd', then you'll need to set output_name in the apop_..._print fn. default = 's'. */
-    FILE *output_pipe; /**< If printing to a pipe or FILE, set it here.  */
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
-    int output_append; /**< Append to output files(1), or overwrite(0)?  default = 0 */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
     char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
     char db_nan[100]; /**< The string that the database takes to indicate NaN. */
@@ -306,7 +298,7 @@ extern apop_model apop_stack;
 
 
 void apop_model_free (apop_model * free_me);
-void apop_model_print (apop_model * print_me);
+void apop_model_print (apop_model * print_me, FILE *out);
 void apop_model_show (apop_model * print_me); //deprecated
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);

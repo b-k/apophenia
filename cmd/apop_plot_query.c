@@ -62,14 +62,12 @@ gsl_matrix *query(char *d, char *q, int no_plot){
 }
 
 void print_out(FILE *f, char *outfile, gsl_matrix *m){
-    apop_opts.output_type = 'p';
-    apop_opts.output_pipe = f;
     if (!histoplotting){
         fprintf(f,"plot '-' with %s\n", plot_type);
-	    apop_matrix_print(m, NULL);
+	    apop_matrix_print(m, NULL, .output_type='p', .output_pipe=f);
     } else {
         APOP_MATRIX_COL(m, 0, v);
-        apop_plot_histogram(v, histobins);
+        apop_plot_histogram(v, histobins, .output_type='p', .output_pipe=f);
     }
     if (outfile) fclose(f);
 }
@@ -91,14 +89,10 @@ int main(int argc, char **argv){
 "-H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n"
 "-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n";
 
-	if(argc<2){
-		printf(msg, argv[0]);
-		return 1;
-	}
+	Apop_stopif(argc<2, return 1, 0, msg, argv[0]);
 	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:")) != -1)
 	    if (c=='f'){
               outfile = strdup(optarg);
-			  apop_opts.output_type	= 'f';
               sf++;
         } else if (c=='H'){
               histoplotting = 1;
@@ -120,10 +114,7 @@ int main(int argc, char **argv){
     } else if (optind == argc-1)
         q = argv[optind];
     
-    if (!q){
-        fprintf(stderr, "I need a query specified with -q.\n");
-        return 0;
-    }
+    Apop_stopif(!q, return 1, 0, "I need a query specified with -q.\n");
 
     if (!plot_type) plot_type = strdup("lines");
 

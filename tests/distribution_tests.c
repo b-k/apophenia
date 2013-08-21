@@ -190,7 +190,7 @@ int main(int argc, char **argv){
     apop_opts.thread_count = 2;
     char c, opts[] = "sqt:";
     if (argc==1)
-        printf("Distribution tests. Each dot is an optimization run, including some methods known to be inefficient.\nFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
+        printf("\tDistribution tests. Each dot is an optimization run, including some methods known to be inefficient.\n\tFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 'q')      verbose  --;
         else if (c == 't') apop_opts.thread_count  = atoi(optarg);

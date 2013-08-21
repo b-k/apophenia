@@ -10,6 +10,7 @@
 **Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
 **Apop_settings_set sets model->error='s' on error, instead of returning.
 **Add a .want_path='y' setting to your apop_mle_settings group, and I'll put a list of the points tried by the optimizer in an apop_data set named path (in the settings group); see documentation for details. Remove the former trace_path mechanism.
+**removed apop_(vector|matrix)_increment. Use, e.g., *gsl_vector_ptr(v, 7) += 3; or (*gsl_vector_ptr(v, 7))++.
 
 	June 2013
 --replaced makefile in base directory with ./configure.

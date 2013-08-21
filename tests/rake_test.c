@@ -10,10 +10,10 @@ void rake_check(apop_model *base, apop_model *fitted){
     /* Raking minimizes KL divergence given the margin constraints. So nudging the table 
        in a manner that fits the constraints should raise KLdiv. */
     double kl1= apop_kl_divergence(base, fitted);
-    apop_vector_increment(fitted->data->weights, 0, 0.05);
-    apop_vector_increment(fitted->data->weights, 1, -0.05);
-    apop_vector_increment(fitted->data->weights, 2, -0.05);
-    apop_vector_increment(fitted->data->weights, 3, 0.05);
+    *gsl_vector_ptr(fitted->data->weights, 0) += 0.05;
+    *gsl_vector_ptr(fitted->data->weights, 1) += -0.05;
+    *gsl_vector_ptr(fitted->data->weights, 2) += -0.05;
+    *gsl_vector_ptr(fitted->data->weights, 3) += 0.05;
     assert(kl1 < apop_kl_divergence(base, fitted));
 }
 

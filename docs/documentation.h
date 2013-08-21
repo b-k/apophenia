@@ -702,7 +702,6 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
 \li\ref apop_data_transpose()
 \li\ref apop_data_unpack()
 \li\ref apop_matrix_copy()
-\li\ref apop_matrix_increment()
 \li\ref apop_matrix_realloc()
 \li\ref apop_matrix_rm_columns()
 \li\ref apop_matrix_stack()
@@ -712,7 +711,6 @@ Easy data manipulation is essential for enjoying life as a researcher.  Thus, th
 \li\ref apop_vector_bounded()
 \li\ref apop_vector_copy()
 \li\ref apop_vector_fill()
-\li\ref apop_vector_increment()
 \li\ref apop_vector_stack()
 \li\ref apop_vector_realloc()
 
@@ -730,6 +728,7 @@ Note: Apophenia builds upon the GSL, but it would be inappropriate to redundantl
 \li <tt>void gsl_vector_set_zero (gsl_vector * v)</tt>
 \li <tt>int gsl_vector_set_basis (gsl_vector * v, size_t i)</tt>: set all elements to zero, but set item \f$i\f$ to one.
 \li <tt>gsl_vector_reverse (gsl_vector * v)</tt>: reverse the order of your vector's elements
+\li <tt>gsl_vector_ptr</tt> and <tt>gsl_matrix_ptr</tt>. To increment an element in a vector use, e.g., <tt>*gsl_vector_ptr(v, 7) += 3;</tt> or <tt>(*gsl_vector_ptr(v, 7))++</tt>.
 
 Outlineheader readin Reading from text files
 

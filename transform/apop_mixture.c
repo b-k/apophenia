@@ -117,7 +117,7 @@ void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
         double chosen_model;
         apop_draw(&chosen_model, ms->rng, odds);
         apop_data *pick = outsets[(int)chosen_model]; //alias
-        apop_vector_increment(&weightings, (int)chosen_model);
+        (*gsl_vector_ptr(&weightings, (int)chosen_model))++;
         if (!pick) outsets[(int)chosen_model] = apop_data_copy(onepoint);
         else {
             if (pick->vector) apop_vector_realloc(pick->vector, pick->vector->size+1);
@@ -251,18 +251,18 @@ static double mixture_cdf(apop_data *d, apop_model *model_in){
     return total;
 }
 
-void mixture_show(apop_model *m){
+void mixture_show(apop_model *m, FILE *out){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
     if (m->parameters){
         gsl_vector weightings = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
 
-        printf("Mixture of %i models, with weights: ", ms->model_count);
-        apop_vector_show(&weightings);
+        fprintf(out, "Mixture of %i models, with weights: ", ms->model_count);
+        apop_vector_print(&weightings, .output_pipe=out);
     } else
-        printf("Mixture of %i models, with unspecified weights\n", ms->model_count);
+        fprintf(out, "Mixture of %i models, with unspecified weights\n", ms->model_count);
 
     for (int i=0; i< ms->model_count; i++)
-        apop_model_show(ms->model_list[i]);
+        apop_model_print(ms->model_list[i], out);
 }
 
 //score

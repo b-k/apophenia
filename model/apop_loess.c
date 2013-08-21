@@ -3240,8 +3240,7 @@ void loess_free_mem(struct loess_struct *lo) {
     free(lo->kd_tree.vval);
 }
 
-void loess_summary(struct loess_struct lo) {
-    FILE *ap =apop_opts.output_pipe;
+void loess_summary(struct loess_struct lo, FILE *ap) {
     fprintf(ap, "Number of Observations: %ld\n", lo.in.n);
     fprintf(ap, "Equivalent Number of Parameters: %.1f\n", lo.out.enp);
     if(!strcmp(lo.model.family, "gaussian"))
@@ -3650,8 +3649,8 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
     return out;
 }
 
-static void apop_loess_print(apop_model *in){
-    loess_summary(Apop_settings_get(in, apop_loess, lo_s));
+static void apop_loess_print(apop_model *in, FILE *out){
+    loess_summary(Apop_settings_get(in, apop_loess, lo_s), out);
 }
 
 apop_model apop_loess = {.name="Loess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 

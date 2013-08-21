@@ -7,9 +7,8 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 /** Here are where the options are initially set. See the \ref apop_opts_type
     documentation for details.*/
 apop_opts_type apop_opts	= 
-          { .verbose=1,                    .output_type = 'f',
-            .output_pipe = NULL,           .output_delimiter ="\t", 
-            .output_append = 0,            .input_delimiters = "|,\t", 
+          { .verbose=1,
+            .output_delimiter ="\t",       .input_delimiters = "|,\t", 
             .db_name_column = "row_names", .db_nan = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,

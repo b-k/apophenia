@@ -20,12 +20,12 @@ static apop_model *betabinom(apop_data *data, apop_model prior, apop_model likel
     if (!data && likelihood.parameters){
         double n = likelihood.parameters->vector->data[0];
         double p = likelihood.parameters->vector->data[1];
-        apop_vector_increment(outp->parameters->vector, 0, n*p);
-        apop_vector_increment(outp->parameters->vector, 1, n*(1-p));
+        *gsl_vector_ptr(outp->parameters->vector, 0) += n*p;
+        *gsl_vector_ptr(outp->parameters->vector, 1) += n*(1-p);
     } else {
         double y = apop_matrix_sum(data->matrix);
-        apop_vector_increment(outp->parameters->vector, 0, y);
-        apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
+        *gsl_vector_ptr(outp->parameters->vector, 0) += y;
+        *gsl_vector_ptr(outp->parameters->vector, 1) += data->matrix->size1*data->matrix->size2 - y;
     }
     return outp;
 }
@@ -36,14 +36,14 @@ static apop_model *betabernie(apop_data *data, apop_model prior, apop_model like
     apop_model *outp = apop_model_copy(prior);
     Get_vmsizes(data);//tsize
     double sum = apop_map_sum(data, .fn_d=countup, .part='a');
-    apop_vector_increment(outp->parameters->vector, 0, sum);
-    apop_vector_increment(outp->parameters->vector, 1, tsize - sum);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += sum;
+    *gsl_vector_ptr(outp->parameters->vector, 1) += tsize - sum;
     return outp;
 }
 
 static apop_model *gammaexpo(apop_data *data, apop_model prior, apop_model likelihood){
     apop_model *outp = apop_model_copy(prior);
-    apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += data->matrix->size1*data->matrix->size2;
     apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
     return outp;
 }
@@ -55,7 +55,7 @@ static apop_model *gammapoisson(apop_data *data, apop_model prior, apop_model li
     double sum = 0;
     if (vsize)  sum = apop_sum(data->vector);
     if (msize1) sum += apop_matrix_sum(data->matrix);
-    apop_vector_increment(outp->parameters->vector, 0, sum);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += sum;
 
     double *beta = gsl_vector_ptr(outp->parameters->vector, 1);
     *beta = *beta/(*beta * tsize + 1);

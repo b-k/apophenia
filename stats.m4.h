@@ -26,8 +26,6 @@ extern "C" {
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 Apop_var_declare( apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2) )
 Apop_var_declare( int         apop_vector_bounded(const gsl_vector *in, long double max) )
-Apop_var_declare( void apop_vector_increment(gsl_vector * v, int i, double amt) )
-Apop_var_declare( void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt) )
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);

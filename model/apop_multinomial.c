@@ -135,12 +135,12 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     p[0] = N;
 }
 
-static void multinomial_show(apop_model *est){
+static void multinomial_show(apop_model *est, FILE *out){
     double * p = est->parameters->vector->data;
     int N=p[0];
     p[0] = 1 - (apop_sum(est->parameters->vector)-N);
-    fprintf(apop_opts.output_pipe, "%s, with %i draws.\nBin odds:\n", est->name, N);
-    apop_vector_print(est->parameters->vector, .output_pipe=apop_opts.output_pipe);
+    fprintf(out, "%s, with %i draws.\nBin odds:\n", est->name, N);
+    apop_vector_print(est->parameters->vector, .output_pipe=out);
     p[0]=N;
 }
 

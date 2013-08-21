@@ -66,9 +66,8 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
                       : 1;
 }
 
-static void bernie_print(apop_model *m){
-    fprintf(apop_opts.output_pipe,
-            "Bernoulli distribution with p = %g.\n", apop_data_get(m->parameters,0,-1));
+static void bernie_print(apop_model *m, FILE *out){
+    fprintf(out, "Bernoulli distribution with p = %g.\n", apop_data_get(m->parameters,0,-1));
 }
 
 /* \adoc Settings None. */
