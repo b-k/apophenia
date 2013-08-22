@@ -4,6 +4,9 @@
 !!Big.
 ]
 
+	August 2013
+--apop_map(_sum) properly threads data-row mappings. .inplace='v' to return NULL.
+
 	June 2013
 --replaced makefile in base directory with ./configure.
 --version number now equals build date.

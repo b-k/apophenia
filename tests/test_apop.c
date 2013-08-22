@@ -1295,7 +1295,7 @@ void test_posdef(gsl_rng *r){
     for(size_t j=0; j < 30; j ++){
         int size = gsl_rng_uniform(r) *10+1;
         apop_data *d = apop_data_alloc(size, size);
-        apop_map(d, .fn_dp=ran_uniform, .param=r, .inplace=1, .part='m');
+        apop_map(d, .fn_dp=ran_uniform, .param=r, .inplace='y', .part='m');
         apop_matrix_to_positive_semidefinite(d->matrix); 
         assert(apop_matrix_is_positive_semidefinite(d->matrix));
 

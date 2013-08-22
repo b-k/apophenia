@@ -300,7 +300,7 @@ gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl
   gsl_matrix *output, *t;
     output = apop_matrix_stack(ul, ur, 'c');
     t = apop_matrix_stack(dl, dr, 'c');
-    apop_matrix_stack(output, t, 'r', .inplace=1);
+    apop_matrix_stack(output, t, 'r', .inplace='y');
     gsl_matrix_free(t);
     return output;
 }

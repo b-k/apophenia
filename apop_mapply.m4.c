@@ -19,7 +19,8 @@
 
  */
 #include "apop_internal.h"
-static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22);
+#include <stdbool.h>
+static gsl_vector*mapply_core(apop_data *d, gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, bool use_index, bool use_param,void *param, char post_22, bool by_apop_rows);
 
 typedef double apop_fn_v(gsl_vector*);
 typedef void apop_fn_vtov(gsl_vector*);
@@ -51,7 +52,7 @@ double cutoff(double in, void *limit_in){
 }
 
 double param = 1;
-apop_map(your_data, .fn_dp=cutoff, .param=&param, .inplace=1);
+apop_map(your_data, .fn_dp=cutoff, .param=&param, .inplace='y');
 \endcode
 
 \param fn_v A function of the form <tt>double your_fn(gsl_vector *in)</tt>
@@ -95,7 +96,13 @@ or matrix parts).
 handle only the first page of data. [I abuse this for an internal semaphore, by the way, so your input must always be nonnegative and  less than 1,000. Of course, 'y' and 'n' fit these rules fine.]
 Default: \c 'n'. 
 
-\return if <tt>.inplace='n'</tt> (the default), a newly allocated \ref apop_data set representing the result of mapping your function onto the input data set. if <tt>.inplace='y'</tt>, a pointer to your original data set, modified in place.
+\param inplace  If 'n' (the default), generate a new \ref apop_data set for output,
+which will contain the mapped values (and the names from the original set). If 'y',
+modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c
+'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c
+double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you
+are writing in place and there is already a vector there, then the original vector is
+lost. If 'v' (as in void), return \c NULL.  (Default = 'n')
 
 \exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
 
@@ -116,7 +123,7 @@ APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_vi * apop_varad_var(fn_vi, NULL)
     apop_fn_di * apop_varad_var(fn_di, NULL)
     apop_fn_ri * apop_varad_var(fn_ri, NULL)
-    int apop_varad_var(inplace, 0)
+    int apop_varad_var(inplace, 'n')
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, 'a')
     int apop_varad_var(all_pages, 'n')
@@ -135,17 +142,15 @@ APOP_VAR_ENDHEAD
 
     //Allocate output
     Get_vmsizes(in); //vsize, msize1, msize2, maxsize
-    apop_data *out = NULL;
-    if (inplace)
-       out = in;
-    else 
-         out = by_apop_rows ? apop_data_alloc(GSL_MAX(in->textsize[0], maxsize))
-             : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize)
-             : part == 'm' ? apop_data_alloc(msize1, msize2)
-             : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
-             : part == 'r' ? apop_data_alloc(msize1)
-             : part == 'c' ?  apop_data_alloc(msize2) : NULL;
-    if (in->names){
+    apop_data *out =   (inplace=='y') ? in
+                     : (inplace=='v') ? NULL
+                     : by_apop_rows ? apop_data_alloc(GSL_MAX(in->textsize[0], maxsize))
+                     : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize)
+                     : part == 'm' ? apop_data_alloc(msize1, msize2)
+                     : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
+                     : part == 'r' ? apop_data_alloc(msize1)
+                     : part == 'c' ?  apop_data_alloc(msize2) : NULL;
+    if (in->names && out){
         if (part == 'v'  || (in->vector && ! in->matrix)) {
              apop_name_stack(out->names, in->names, 'v');
              apop_name_stack(out->names, in->names, 'r');
@@ -166,38 +171,28 @@ APOP_VAR_ENDHEAD
 #define PLACE(fn) {if (inplace == 'y') fn; else gsl_vector_set(out->vector, i, fn);}
 
     //Call mapply_core.
-    if (by_apop_rows){
-        for (size_t i=0; i<GSL_MAX(in->textsize[0], maxsize); i++){
-            Apop_data_row(in, i, the_row);
-            if (fn_r) PLACE(fn_r(the_row))
-            else if (fn_rp)
-                PLACE(fn_rp(the_row, param))
-            else if (fn_rpi)
-                PLACE(fn_rpi(the_row, param, i))
-            else if (fn_ri)
-                PLACE(fn_ri(the_row, i))
-        }
-    } else {
+    if (by_apop_rows) mapply_core(in, NULL, NULL, fn, out ? out->vector : NULL, use_index, use_param, param, 'r', by_apop_rows);
+    else {
         if (in->vector && (part == 'v' || part=='a'))
-            mapply_core(NULL, in->vector, fn, out->vector, use_index, use_param, param, 'r');
+            mapply_core(NULL, NULL, in->vector, fn, out ? out->vector : NULL, use_index, use_param, param, 'r', by_apop_rows);
         if (in->matrix && (part == 'm' || part=='a')){
             int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
             for (int i=0; i< smaller_dim; i++){
                 if (smaller_dim == in->matrix->size1){
-                    Apop_row(in, i, onevector);
-                    Apop_row(out, i, twovector);
-                    mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'r');
+                    Apop_matrix_row(in->matrix, i, onevector);
+                    Apop_matrix_row(out->matrix, i, twovector);
+                    mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
                 }else{
-                    Apop_col(in, i, onevector);
-                    Apop_col(out, i, twovector);
-                    mapply_core(NULL, onevector, fn, twovector, use_index, use_param, param, 'c');
+                    Apop_matrix_col(in->matrix, i, onevector);
+                    Apop_matrix_col(out->matrix, i, twovector);
+                    mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
                 }
             }
         }
         if (part == 'r' || part == 'c'){
             Apop_stopif(!in->matrix, if (!out) out=apop_data_alloc(); out->error='p'; return out,
                            0, "You asked for me to operate on the %cs of the matrix, but the matrix is NULL.", part);
-            mapply_core(in->matrix, NULL, fn, out->vector, use_index, use_param, param, part);
+            mapply_core(NULL, in->matrix, NULL, fn, out->vector, use_index, use_param, param, part, by_apop_rows);
         }
     }
     if ((all_pages=='y' || all_pages=='Y') && in->more){
@@ -208,14 +203,35 @@ APOP_VAR_ENDHEAD
 }
 
 typedef struct {
-    size_t      *limlist;
-    void        *fn;
+    size_t *limlist;
+    void *fn;
     gsl_matrix  *m;
     gsl_vector  *v, *vin;
-    int use_index, use_param;
+    apop_data *d;
+    bool use_index, use_param;
     char rc;
     void *param;
 } threadpass;
+
+/* Mapply_core splits the database into an array of threadpass structs, then one of the following
+  ...loop functions gets called, which does the actual for loop to step through the rows/columns/elements.  */
+
+static void *rowloop(void *t){
+    threadpass  *tc = t;
+    apop_fn_r   *rtod=tc->fn;
+    apop_fn_rp  *fn_rp=tc->fn;
+    apop_fn_rpi *fn_rpi=tc->fn;
+    apop_fn_ri  *fn_ri=tc->fn;
+    double  val;
+    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
+        Apop_data_row(tc->d, i, onerow);
+        val = 
+        tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
+                      : (tc->use_index ? fn_ri(onerow, i) : rtod(onerow) );
+        if(tc->v) gsl_vector_set(tc->v, i, val);
+    }
+    return NULL;
+}
 
 static void *forloop(void *t){
     threadpass  *tc = t;
@@ -228,10 +244,8 @@ static void *forloop(void *t){
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
         view    = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
         val     = 
-        tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : 
-                                     fn_vp(&view, tc->param) )
-                      : (tc->use_index ? fn_vi(&view, i) : 
-                                     vtod(&view) );
+        tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : fn_vp(&view, tc->param) )
+                      : (tc->use_index ? fn_vi(&view, i) : vtod(&view) );
         gsl_vector_set(tc->v, i, val);
     }
     return NULL;
@@ -292,26 +306,29 @@ static size_t *threadminmax(const int threadno, const int totalct, const int thr
     return out;
 }
 
-static gsl_vector*mapply_core(gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, int use_index, int use_param,void *param, char post_22){
-    int threadct = GSL_MIN((m? m->size1 : vin->size), apop_opts.thread_count);
+static gsl_vector*mapply_core(apop_data *d, gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, bool use_index, bool use_param, void *param, char post_22, bool by_apop_rows){
+    Get_vmsizes(d); //maxsize
+    int threadct = GSL_MIN((m? m->size1 : vin ? vin->size : maxsize), apop_opts.thread_count);
     pthread_t thread_id[threadct];
     threadpass tp[threadct];
     for (size_t i=0 ; i<threadct; i++)
         tp[i] = (threadpass) {
             .limlist   = threadminmax(i, 
-                    m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin->size ,threadct),
-            .fn = fn,   .m = m, 
+                    m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin ? vin->size: maxsize , threadct),
+            .fn = fn, .m = m, .d = d,
             .vin = vin, .v = vout,
             .use_index = use_index, .use_param= use_param,
             .param = param, .rc = post_22
         };
     if (threadct==1){ //don't thread.
-        if (m)  post_22 ? forloop(tp) : oldforloop(tp);
-        else    post_22 ? vectorloop(tp) : oldvectorloop(tp);
+        if (by_apop_rows) rowloop(tp);
+        else if (m)       post_22 ? forloop(tp) : oldforloop(tp);
+        else              post_22 ? vectorloop(tp) : oldvectorloop(tp);
     } else {
         for (size_t i=0 ; i<threadct; i++){
-            if (m)  pthread_create(&thread_id[i], NULL,post_22 ? forloop : oldforloop,(tp+i));
-            else    pthread_create(&thread_id[i], NULL,post_22 ? vectorloop : oldvectorloop,(tp+i));
+            if (by_apop_rows) pthread_create(&thread_id[i], NULL, rowloop, tp+i);
+            else if (m)       pthread_create(&thread_id[i], NULL, post_22 ? forloop : oldforloop, tp+i);
+            else              pthread_create(&thread_id[i], NULL, post_22 ? vectorloop : oldvectorloop, tp+i);
         }
         for (size_t i=0 ; i<threadct; i++)
             pthread_join(thread_id[i], NULL);
@@ -348,7 +365,7 @@ Here are a few technical details of usage:
 gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
     if (!m) return NULL;
     gsl_vector *out = gsl_vector_alloc(m->size1);
-    return mapply_core((gsl_matrix*) m, NULL, fn, out, 0, 0, NULL, 0);
+    return mapply_core(NULL, (gsl_matrix*) m, NULL, fn, out, 0, 0, NULL, 0, false);
 }
 
 /** Apply a function to every row of a matrix.  The function that you input takes in a gsl_vector and returns nothing. \c apop_matrix_apply will produce a vector view of each row, and send each row to your function.
@@ -361,7 +378,7 @@ gsl_vector *apop_matrix_map(const gsl_matrix *m, double (*fn)(gsl_vector*)){
  */
 void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
     if (!m) return;
-    mapply_core(m, NULL, fn, NULL, 0, 0, NULL, 0);
+    mapply_core(NULL, m, NULL, fn, NULL, 0, 0, NULL, 0, false);
 }
 
 /** Map a function onto every element of a vector.  The function that you input takes in a \c double and returns a \c double. \c apop_apply will send each element to your function, and will output a \c gsl_vector holding your function's output for each row.
@@ -377,7 +394,7 @@ void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
 gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
     if (!v) return NULL;
     gsl_vector *out = gsl_vector_alloc(v->size);
-    return mapply_core(NULL, (gsl_vector*) v, fn, out, 0, 0, NULL, 0);
+    return mapply_core(NULL, NULL, (gsl_vector*) v, fn, out, 0, 0, NULL, 0, false);
 }
 
 /** Apply a function to every row of a matrix.  The function that you input takes in a gsl_vector and returns nothing. \c apop_apply will
@@ -391,10 +408,10 @@ gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
  */
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
     if (!v) return;
-    mapply_core(NULL, v, fn, NULL, 0, 0, NULL, 0); }
+    mapply_core(NULL, NULL, v, fn, NULL, 0, 0, NULL, 0, false); }
 
 static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *outv, double (*fn)(double)){
-    mapply_core(NULL, (gsl_vector *) in, fn, outv, 0, 0, NULL, 0); }
+    mapply_core(NULL, NULL, (gsl_vector *) in, fn, outv, 0, 0, NULL, 0, false); }
 
 /** Maps a function to every element in a matrix (as opposed to every row)
 
