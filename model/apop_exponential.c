@@ -38,7 +38,7 @@ static double exponential_log_likelihood(apop_data *d, apop_model *p){
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
-    apop_name_add(est->parameters->names, "mu", 'r');
+    apop_name_add(est->parameters->names, "μ", 'r');
     Get_vmsizes(data); //msize1, msize2, vsize, tsize
     double mu =  (vsize ? vsize * apop_vector_mean(data->vector):0
                 + msize1 ? msize1*msize2 * apop_matrix_mean(data->matrix):0)/tsize;

@@ -65,8 +65,8 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
     double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     est->parameters->vector->data[0] = mean;
     est->parameters->vector->data[1] = sqrt(var);
-	apop_name_add(est->parameters->names, "mu", 'r');
-	apop_name_add(est->parameters->names, "sigma",'r');
+	apop_name_add(est->parameters->names, "μ", 'r');
+	apop_name_add(est->parameters->names, "σ",'r');
 
     apop_lm_settings *p = apop_settings_get_group(est, apop_lm);
     if (!p) p = Apop_model_add_group(est, apop_lm);
@@ -186,8 +186,8 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
     est->parameters->vector->data[0] = mean;
     est->parameters->vector->data[1] = sqrt(var);
 
-    apop_name_add(est->parameters->names, "mu", 'r');
-    apop_name_add(est->parameters->names, "sigma", 'r');
+    apop_name_add(est->parameters->names, "μ", 'r');
+    apop_name_add(est->parameters->names, "σ", 'r');
     apop_data_add_named_elmt(est->info, "log likelihood", lognormal_log_likelihood(data, est));
 	return est;
 }
