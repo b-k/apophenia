@@ -569,7 +569,10 @@ APOP_VAR_ENDHEAD
     char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");
 
     if (nudge || !init_table){
-        apop_query("drop table if exists apop_zerocontrasts_%i", run_number);
+        char *tab;
+        asprintf(&tab, "apop_zerocontrasts_%i", run_number);
+        apop_table_exists(tab, 'd');
+        free(tab);
         Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d,  
                         run_number, list_of_fields, contras, contrast_ct, (nudge ? nudge : 1), structural_zeros, init_table),
                  apop_return_data_error(q),

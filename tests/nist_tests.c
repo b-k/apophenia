@@ -7,7 +7,8 @@ of the relative accuracies of various operations. */
 #define TOL 1e-15
 #define TOL2 1e-5
 #define TOL3 1e-9
-#define TOL4 1e-4
+
+#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R))<(eps), return, 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 void pontius(){
     apop_text_to_db("pontius.dat","pont", .delimiters=" ");
@@ -31,17 +32,17 @@ void wampler1(){
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");
     apop_model *est = apop_estimate(d, apop_ols);
     for (int i=0; i<6; i++)
-        assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < TOL4*10);
+        assert(fabs(apop_data_get(est->parameters, i, -1) - 1) < 1e-3);
     apop_data *cov = apop_data_get_page(est->parameters, "cov");
     for (int i=0; i<6; i++)
         assert(fabs(apop_data_get(cov, i, i)) < TOL2);
-    assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 1)    < TOL);
+    assert(fabs(apop_data_get(est->info, .rowname="R.sq.*") - 1) < TOL);
 }
 
 void numacc4(){
-    apop_data *d  = apop_text_to_data("numacc4.dat", 0, 0);
-    APOP_COL(d, 0, v)
-    assert(apop_vector_mean(v) == 10000000.2);
+    apop_data *d  = apop_text_to_data("numacc4.dat");
+    Apop_col(d, 0, v)
+    Diff(apop_vector_mean(v), 10000000.2, 1e-5);
     assert(apop_vector_var(v)*(v->size -1)/v->size - 0.01 < TOL3);
     //I don't do this yet:
     //Sample Autocorrelation Coefficient (lag 1) r(1):   -0.999     (exact)
