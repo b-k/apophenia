@@ -85,7 +85,7 @@ static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
     return m;
 }
 
-static double kernel_p_cdf_base(apop_data *d, apop_model *m,
+static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
     Nullcheck_d(d, GSL_NAN);
     Nullcheck_m(m, GSL_NAN);
@@ -95,11 +95,11 @@ static double kernel_p_cdf_base(apop_data *d, apop_model *m,
     Get_vmsizes(pmf_data); //maxsize
     for (size_t k = 0; k < maxsize; k++){
         Apop_data_row(pmf_data, k, r);
-        double wt = r->weights ? r->weights->data[0] : 1;
+        double wt = r->weights ? *r->weights->data : 1;
         (ks->set_fn)(r, ks->kernel);
         total += fn(d, ks->kernel)*wt;
     }
-    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
+    long double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
     total /= weight;
     return total;
 }

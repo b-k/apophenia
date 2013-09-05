@@ -2496,7 +2496,7 @@ replicate weights, and column names in bold labeling the variables:
 As per the example above, Apophenia will generally assume that one row across all of these elements
 describes a single observation or data point.
 
-Also, \ref apop_data_get and \ref apop_data_set consider the vector to be the -1st column,
+Also, \ref apop_data_get, \ref apop_data_set, and \ref apop_data_ptr consider the vector to be the -1st column,
 so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, .col=-1) == 1</tt>.
 
 \par Reading in data

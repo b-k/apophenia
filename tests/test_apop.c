@@ -977,7 +977,7 @@ void test_uniform(apop_data *d){
     apop_data_add_names(&ab_d, 'v', "a vector");
     apop_data_set(&ab_d, .colname="a vector", .row=0, .val=-297);
     assert(apop_p(&ab_d, u) == 0);
-    assert(isinf(apop_log_likelihood(&ab_d, u)) == -1);
+    assert(isinf(apop_log_likelihood(&ab_d, u)));
 
     apop_model *iu = apop_estimate(&ab_d, apop_improper_uniform);
     assert(apop_p(&ab_d, iu) == 1);
