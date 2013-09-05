@@ -26,4 +26,4 @@ make dist
 echo
 echo ---------------------
 echo
-echo "OK, built. From the $workdir directory, you can run: make; sudo make install"
+echo "OK, built. From the $workdir directory, you can run: make && sudo make install"

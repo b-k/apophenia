@@ -1010,6 +1010,8 @@ endofdiv
 
 Outlineheader  moments  Moments
 
+For most of these, you can add a weights vector for weighted mean/var/cov/....
+
 \li\ref apop_data_correlation ()
 \li\ref apop_data_covariance ()
 \li\ref apop_data_summarize ()
@@ -1029,11 +1031,8 @@ Outlineheader  moments  Moments
 \li\ref apop_vector_sum()
 \li\ref apop_vector_var()
 \li\ref apop_vector_var_m ()
-\li\ref apop_vector_weighted_cov ()
 \li\ref apop_vector_weighted_kurtosis ()
-\li\ref apop_vector_weighted_mean ()
 \li\ref apop_vector_weighted_skew ()
-\li\ref apop_vector_weighted_var ()
 
 endofdiv
 
@@ -1043,7 +1042,7 @@ An \ref apop_data set binds together names, text, weights, a vector, and a matri
 
 \code
 apop_data *d = apop_text_to_mixed_data("vmw", "select result, age, income, sampleweight from data");
-double avg_result = apop_vector_weighted_mean(d->vector, d->weights);
+double avg_result = apop_vector_mean(d->vector, .weights=d->weights);
 \endcode
 
 In the other direction, you can use compound literals to wrap an \ref apop_data struct around a loose vector or matrix:

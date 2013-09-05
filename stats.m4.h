@@ -1,5 +1,5 @@
 /** \file stats.h */
-/* Copyright (c) 2005--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2010, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef APOP_STATS_H
 #define APOP_STATS_H
 #include <math.h>
@@ -103,31 +103,24 @@ gsl_vector * v = &( apop_vv_##v );
 #define apop_data_row Apop_row
 
 long double apop_vector_sum(const gsl_vector *in);
-double apop_var(const gsl_vector *in);
 double apop_vector_var_m(const gsl_vector *in, const double mean);
-double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb);
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
-double apop_vector_kurtosis_pop(const gsl_vector *in);
 double apop_vector_kurtosis(const gsl_vector *in);
 double apop_vector_skew(const gsl_vector *in);
-double apop_vector_skew_pop(const gsl_vector *in);
-double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w);
 
 #define apop_sum(in) apop_vector_sum(in)
 #define apop_var(in) apop_vector_var(in) 
-#define apop_vector_covar(in) apop_vector_cov(in) 
 #define apop_mean(in) apop_vector_mean(in)
 
 /** Find the mean of the input vector.
 
 */
-#define apop_vector_mean(in)  ((!in) ? GSL_NAN : gsl_stats_mean((in)->data,(in)->stride, (in)->size))
-
-#define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)->data,(in)->stride, (in)->size))
+Apop_var_declare( double apop_vector_mean(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_var(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_skew_pop(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_cov(gsl_vector const *v1, gsl_vector const *v2,
+                                         gsl_vector const *weights))
 
 Apop_var_declare( double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm) )
 
@@ -259,12 +252,4 @@ view, that you can use as you would any \ref apop_data set. This macro expands t
 
 /** \def apop_mean(v)
  Returns the mean of the elements of the vector \c v.
-\hideinitializer */
-
-/** \def apop_vector_mean(v)
- Returns the mean of the elements of the vector \c v.
-\hideinitializer */
-
-/** \def apop_vector_var(v)
- Returns the sample variance of the elements of the vector \c v.
 \hideinitializer */

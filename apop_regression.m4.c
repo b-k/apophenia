@@ -516,7 +516,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
         gsl_vector_free(v_times_w);
     }
     Apop_col(expected, 0, vv);
-    sst = apop_vector_weighted_var(vv, m->data->weights) * (vv->size-1);
+    sst = apop_vector_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);

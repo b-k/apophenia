@@ -336,15 +336,12 @@ void test_nan_data(){
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
-    assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
-    assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
-    assert(apop_vector_weighted_mean(v,w) == mean);
-    Diff (apop_vector_var(v), apop_vector_weighted_var(v,NULL), tol5);
-    Diff (apop_vector_cov(v,v2), apop_vector_weighted_cov(v,v2,NULL), tol5);
-    Diff (apop_vector_var(av), apop_vector_weighted_var(v,w), tol5);
-    Diff (apop_vector_cov(av,av2), apop_vector_weighted_cov(v,v2,w), tol5);
-    Diff (apop_vector_skew_pop(av), apop_vector_weighted_skew(v,w), tol5);
-    Diff (apop_vector_kurtosis_pop(av), apop_vector_weighted_kurtosis(v,w), tol5);
+    assert(apop_vector_mean(av) == apop_vector_mean(v,w));
+    assert(apop_vector_mean(v, w) == mean);
+    Diff (apop_vector_var(av), apop_vector_var(v, w), tol5);
+    Diff (apop_vector_cov(av, av2), apop_vector_cov(v, v2, w), tol5);
+    Diff (apop_vector_skew_pop(av), apop_vector_skew_pop(v, w), tol5);
+    Diff (apop_vector_kurtosis_pop(av), apop_vector_kurtosis_pop(v, w), tol5);
 }
 
 void test_weigted_moments(){
@@ -368,9 +365,9 @@ void test_weigted_moments(){
     v2            = apop_array_to_vector(data4, 5);
     av            = apop_array_to_vector(alldata2, 10);
     av2           = apop_array_to_vector(alldata4, 10);
-    gsl_vector    *w2          = gsl_vector_alloc(5);
+    gsl_vector *w2 = gsl_vector_alloc(5);
     apop_vector_fill(w2, 4, 3, 2, 1, 0);
-    wmt(v,v2,w2,av,av2,1);
+    wmt(v, v2, w2, av, av2, 1);
 }
 
 void test_split_and_stack(gsl_rng *r){

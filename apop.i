@@ -331,11 +331,11 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     //double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
     apop_double * percentiles(char rounding='d') {return apop_vector_percentiles_base($self, rounding);}
     double weighted_mean( const gsl_vector *weight) {
-        return apop_vector_weighted_mean($self, weight);
+        return apop_vector_mean($self, weight);
     }
 
     double weighted_var( const gsl_vector *weight) {
-        return apop_vector_weighted_var($self, weight) ;
+        return apop_vector_var($self, weight) ;
     }
 
     double weighted_cov(const gsl_vector *inb, const gsl_vector *weights) {
