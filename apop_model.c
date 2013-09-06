@@ -26,14 +26,14 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     Get_vmsizes(data)
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
     Apop_stopif(model->dsize==-1 && !width, model->error='d', 0, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->vbase==-1 && !width, model->error='d', 0, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->mbase1==-1 && !width, model->error='d', 0, "The model's mbase1==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->mbase2==-1 && !width, model->error='d', 0, "The model's mbase2==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->vsize==-1 && !width, model->error='d', 0, "The model's vsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->msize1==-1 && !width, model->error='d', 0, "The model's msize1==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->msize2==-1 && !width, model->error='d', 0, "The model's msize2==-1, meaning size=data width, but the input data has NULL vector and matrix.");
 
     model->dsize  = (model->dsize == -1 ? width : model->dsize);
-    vsize  = model->vbase  == -1 ? width : model->vbase;
-    msize1 = model->mbase1 == -1 ? width : model->mbase1 ;
-    msize2 = model->mbase2 == -1 ? width : model->mbase2 ;
+    vsize  = model->vsize  == -1 ? width : model->vsize;
+    msize1 = model->msize1 == -1 ? width : model->msize1 ;
+    msize2 = model->msize2 == -1 ? width : model->msize2 ;
     if (!model->parameters) model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info) model->info = apop_data_alloc();
     free(model->info->names->title);
@@ -166,14 +166,14 @@ If you have a situation where these options are out, you'll have to do something
 \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
 \param ... The list of parameters.
 \return A copy of the input model, with parameters set.
-\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vbase or .mbase1 and .mbase2 first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
+\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vsize or .msize1 and .msize2 first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
 \hideinitializer   
 \ingroup models
 */
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
     apop_model *out = apop_model_copy(in);
     apop_prep(NULL, out);
-    Apop_stopif((in.vbase == -1) || (in.mbase1 == -1) || (in.mbase2 == -1), out->error='d', 
+    Apop_stopif((in.vsize == -1) || (in.msize1 == -1) || (in.msize2 == -1), out->error='d', 
             0, "This function only works with models whose number of params does not "
             "depend on data size. You'll have to use apop_model *new = apop_model_copy(in); "
            " apop_model_clear(your_data, in); and then set in->parameters using your data.");
@@ -200,9 +200,9 @@ method may assume that \c apop_prep has already been called.
 apop_model *apop_estimate(apop_data *d, apop_model m){
     apop_model *out = apop_model_copy(m);
     apop_prep(d, out);
-    if (out->estimate)
-        return out->estimate(d, out); 
-    return apop_maximum_likelihood(d, out);
+    if (out->estimate) out->estimate(d, out); 
+    else               apop_maximum_likelihood(d, out);
+    return out;
 }
 
 /** Find the probability of a data/parametrized model pair.
@@ -327,7 +327,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     else if (d){
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
         apop_model *out = apop_model_copy(apop_multivariate_normal);
-        out->mbase1 = out->vbase = out->mbase2 = out->dsize = vsize+msize1+msize2;
+        out->msize1 = out->vsize = out->msize2 = out->dsize = vsize+msize1+msize2;
         out->parameters = apop_bootstrap_cov(d, *m, settings->rng, settings->draws);
         out->parameters->vector = apop_data_pack(m->parameters);
         if (settings->index == -1)

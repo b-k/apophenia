@@ -301,7 +301,7 @@ Given your estimate \c est, the zeroth element is one of <br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="residual").</tt><br>
 */
 static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    Nullcheck_mpd(inset, ep, NULL);
+    Nullcheck_mpd(inset, ep, );
     apop_data *set;
     apop_lm_settings *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
@@ -384,7 +384,7 @@ void ols_print(apop_model *m, FILE *ap){
     apop_data_add_page(m->info, predict, predict->names->title);
 }
 
-apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
+apop_model apop_ols = {.name="Ordinary Least Squares", .vsize = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .prep = ols_prep,
             .draw=ols_rng, .print=ols_print};
 
@@ -438,12 +438,12 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
 }
 
 static void apop_estimate_IV(apop_data *inset, apop_model *ep){
-    Nullcheck_mpd(inset, ep, NULL);
+    Nullcheck_mpd(inset, ep, );
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) olp = Apop_model_add_group(ep, apop_lm);
     if (!olp->instruments || !(olp->instruments->matrix || olp->instruments->vector)) 
-        return apop_estimate(inset, apop_ols);
+        apop_ols.estimate(inset, ep);
     ep->data = inset;
     if (ep->parameters) apop_data_free(ep->parameters);
     ep->parameters = apop_data_alloc(inset->matrix->size2);
@@ -512,6 +512,6 @@ static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     if (!olp->destroy_data) apop_data_free(set);
 }
 
-apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1,
+apop_model apop_iv = {.name="instrumental variables", .vsize = -1, .dsize=-1,
     .estimate =apop_estimate_IV, .prep=ols_prep,
     .log_likelihood = ols_log_likelihood, .print=ols_print};

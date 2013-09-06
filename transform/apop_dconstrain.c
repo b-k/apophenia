@@ -60,9 +60,9 @@ static void dc_prep(apop_data *d, apop_model *m){
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;
     m->constraint=cs->base_model->constraint;
-    m->vbase = cs->base_model->vbase;
-    m->m1base = cs->base_model->m1base;
-    m->m2base = cs->base_model->m2base;
+    m->vsize = cs->base_model->vsize;
+    m->msize1 = cs->base_model->msize1;
+    m->msize2 = cs->base_model->msize2;
     m->dsize=cs->base_model->dsize;
 }
 

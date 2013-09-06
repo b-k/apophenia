@@ -62,7 +62,7 @@ typedef struct apop_model apop_model;
 /** The elements of the \ref apop_model type, representing a statistical model. */
 struct apop_model{
     char name[101]; 
-    int vbase, mbase1, mbase2, dsize; /**< The size of the parameter set.
+    int vsize, msize1, msize2, dsize; /**< The size of the parameter set.
                      If a dimension is -1, then use yourdata->matrix->size2. For
                     anything more complex, allocate the parameter set in the prep
                     method. \c dsize is for the canonical form, and is

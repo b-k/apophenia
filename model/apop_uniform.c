@@ -45,7 +45,7 @@ static long double unif_p(apop_data *d, apop_model *m){
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void uniform_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_d(data, NULL);
+    Nullcheck_d(data, );
     apop_name_add(est->parameters->names, "min", 'r');
     apop_name_add(est->parameters->names, "max", 'r');
     getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);

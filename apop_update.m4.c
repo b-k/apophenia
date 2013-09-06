@@ -168,14 +168,14 @@ APOP_VAR_END_HEAD
     if (!s) s = Apop_model_add_group(prior, apop_update);
     int ll_is_a_copy=0;
     if (!likelihood->parameters){
-        if ( likelihood->vbase  >= 0 &&     // A hackish indication that
-             likelihood->mbase1 >= 0 &&     // there is still prep to do.
-             likelihood->mbase2 >= 0 && likelihood->prep){
+        if ( likelihood->vsize  >= 0 &&     // A hackish indication that
+             likelihood->msize1 >= 0 &&     // there is still prep to do.
+             likelihood->msize2 >= 0 && likelihood->prep){
                 ll_is_a_copy++;
                 likelihood =apop_model_copy(*likelihood);
                 apop_prep(data, likelihood);
         }
-        likelihood->parameters = apop_data_alloc(likelihood->vbase, likelihood->mbase1, likelihood->mbase2);
+        likelihood->parameters = apop_data_alloc(likelihood->vsize, likelihood->msize1, likelihood->msize2);
     }
     Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2
     double    ratio, ll, cp_ll = GSL_NEGINF;

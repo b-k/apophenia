@@ -68,7 +68,7 @@ static void repaste(twop_s dd){
     twop_s datas = get_second(d, s->splitpage);
 
 static void stack_est(apop_data *d, apop_model *m){
-    Preliminaries(m);
+    Preliminaries();
 
     s->model1 = apop_estimate(datas.d1, *s->model1);
     s->model2 = apop_estimate(datas.d2, *s->model2);

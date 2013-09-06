@@ -146,7 +146,7 @@ void test_distributions(gsl_rng *r){
     for (int i=0; strcmp(dist[i].name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
         true_params   = apop_model_copy(dist[i]);
-        true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vbase==1 ? 1 : 2,0,0);
+        true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vsize==1 ? 1 : 2,0,0);
         if (!strcmp(dist[i].name, "Dirichlet distribution"))
             dist[i].dsize=2;
         if (!strcmp(dist[i].name, "Beta distribution"))

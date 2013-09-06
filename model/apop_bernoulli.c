@@ -30,7 +30,7 @@ static double nonzero (double in) { return in !=0; }
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */
 static void bernoulli_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est, NULL); Get_vmsizes(data); //tsize;
+    Nullcheck_mpd(data, est, ); Get_vmsizes(data); //tsize;
     double n = tsize;
     double p = apop_map_sum(data, nonzero)/n;
     apop_name_add(est->parameters->names, "p", 'r');

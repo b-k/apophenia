@@ -89,9 +89,9 @@ APOP_VAR_ENDHEAD
     apop_model *actual_base = ml_model->more; \
     actual_base->parameters = d; 
 
-static apop_model * i_est(apop_data *d, apop_model *ml_model){
+static void i_est(apop_data *d, apop_model *ml_model){
     Switch_back
-    return apop_estimate(real_data, *actual_base);
+    actual_base = apop_estimate(real_data, *actual_base);
 }
 
 static long double i_ll(apop_data *d, apop_model *ml_model){

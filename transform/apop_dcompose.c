@@ -26,8 +26,8 @@ Apop_settings_init(apop_composition,
 static int unpack(apop_model *m){
    //predict table --> real param set
    Get_cs(m, -1)
-   int generator_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
-   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+   int generator_psize = cs->generator_m->vsize + cs->generator_m->msize1 + cs->generator_m->msize2;
+   int ll_psize = cs->ll_m->vsize + cs->ll_m->msize1 + cs->ll_m->msize2;
    Apop_stopif(generator_psize+ll_psize && !m->parameters, return -1,
            0, "Trying to use parameters for an apop_dcompose model, but they are NULL. Run apop_estimate() first?");
 
@@ -44,8 +44,8 @@ static int unpack(apop_model *m){
 
 static int pack(apop_model *m){
     Get_cs(m, -1);
-   int generator_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
-   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+   int generator_psize = cs->generator_m->vsize + cs->generator_m->msize1 + cs->generator_m->msize2;
+   int ll_psize = cs->ll_m->vsize + cs->ll_m->msize1 + cs->ll_m->msize2;
 
    if (generator_psize){
        Apop_data_rows(m->parameters, 0, generator_psize, genparams);
@@ -67,12 +67,12 @@ static void compose_prep(apop_data *d, apop_model *m){
     if (!cs->generator_m->parameters) apop_prep(d, cs->generator_m);
     if (!cs->ll_m->parameters)         apop_prep(d, cs->ll_m);
 
-   int gen_psize = cs->generator_m->vbase + cs->generator_m->m1base + cs->generator_m->m2base;
-   int ll_psize = cs->ll_m->vbase + cs->ll_m->m1base + cs->ll_m->m2base;
+   int gen_psize = cs->generator_m->vsize + cs->generator_m->msize1 + cs->generator_m->msize2;
+   int ll_psize = cs->ll_m->vsize + cs->ll_m->msize1 + cs->ll_m->msize2;
 
-    m->vbase = gen_psize + ll_psize;
-    if (m->vbase) {
-        m->parameters = apop_data_alloc(m->vbase);
+    m->vsize = gen_psize + ll_psize;
+    if (m->vsize) {
+        m->parameters = apop_data_alloc(m->vsize);
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
     }
     pack(m);

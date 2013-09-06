@@ -215,21 +215,21 @@ void test_score(){
     apop_model *estme = apop_model_copy(apop_normal);
     Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN);
     apop_prep(data, estme);
-    apop_model *out = apop_maximum_likelihood(data, estme);
+    apop_maximum_likelihood(data, estme);
 
     apop_model *straight_est = apop_estimate(data, apop_normal);
     Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
     Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
     apop_model_free(straight_est); 
 
-    double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
-    apop_data *cov = apop_data_get_page(out->parameters, "cov", 'r');
+    double sigsqn = gsl_pow_2(estme->parameters->vector->data[1])/len;
+    apop_data *cov = apop_data_get_page(estme->parameters, "cov", 'r');
     Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
     Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
-    double *cov1 = apop_data_ptr(out->parameters, .page="<covariance>", .row=1, .col=1);
+    double *cov1 = apop_data_ptr(estme->parameters, .page="<covariance>", .row=1, .col=1);
     Diff (*cov1 ,sigsqn/2 , tol3);
     Diff(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1), 0, tol3);
-    apop_model_free(out);
+    apop_model_free(estme);
     apop_model_free(source); 
     apop_data_free(data);
 }
@@ -714,9 +714,9 @@ void test_model_fix_parameters(gsl_rng *r){
     size_t ct = 1000;
     apop_data *d = apop_data_alloc(0,ct,2);
     double draw[2];
-    apop_multivariate_normal.vbase =
-    apop_multivariate_normal.m1base =
-    apop_multivariate_normal.m2base = 2;
+    apop_multivariate_normal.vsize =
+    apop_multivariate_normal.msize1 =
+    apop_multivariate_normal.msize2 = 2;
     apop_model *pp = apop_model_set_parameters(apop_multivariate_normal,
                                         8, 1, 0.5,
                                         2, 0.5, 1);
@@ -786,22 +786,22 @@ void test_linear_constraint(){
     assert(gsl_vector_get(beta2,2)==0);
 }
 
-static apop_model * broken_est(apop_data *d, apop_model *m){
+static void broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 1./100.) {
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
-        return m;
+        return;
     }
-    return apop_normal.estimate(d, m);
+    apop_normal.estimate(d, m);
 }
 
-static apop_model * super_broken_est(apop_data *d, apop_model *m){
+static void super_broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 3./4.) {
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
-        return m;
+        return;
     }
-    return apop_normal.estimate(d, m);
+    apop_normal.estimate(d, m);
 }
 
 void test_jackknife(gsl_rng *r){

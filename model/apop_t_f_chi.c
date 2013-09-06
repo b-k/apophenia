@@ -3,7 +3,7 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 #include "apop_internal.h"
 
 static void apop_t_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double v_sum_sq = vsize ? apop_var(d->vector)*(vsize-1) : 0;
@@ -21,7 +21,7 @@ static void apop_t_estimate(apop_data *d, apop_model *m){
 }
 
 static void apop_chi_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2
     apop_name_add(m->parameters->names, "df",  'r');
     apop_data_set(m->parameters, 0, -1, tsize -1);
@@ -29,7 +29,7 @@ static void apop_chi_estimate(apop_data *d, apop_model *m){
 }
 
 static void apop_fdist_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     apop_name_add(m->parameters->names, "df",  'r');
     apop_name_add(m->parameters->names, "df2",  'r');
     apop_data_set(m->parameters, 0, -1, d->vector->size -1);
@@ -227,7 +227,7 @@ static long double fixed_wishart_ll(apop_data *in, apop_model *m){
 }
 
 static void wishart_estimate(apop_data *d, apop_model *m){
-    Nullcheck_m(m, NULL);
+    Nullcheck_m(m, );
     //apop_data_set(m->parameters, 0, -1, d->matrix->size1);
     //Start with cov matrix via mean of inputs; df=NaN
     apop_data_set(m->parameters, 0, -1, GSL_NAN);

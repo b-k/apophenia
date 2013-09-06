@@ -133,8 +133,8 @@ void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
 }
 
 static void mixture_estimate(apop_data *d, apop_model *m){
-    apop_model *mle = apop_maximum_likelihood(d, m);
-    Apop_stopif(mle->error, return mle, 0, "Trouble estimating the initial MLEs.");
+    apop_maximum_likelihood(d, m);
+    Apop_stopif(m->error, return, 0, "Trouble estimating the initial MLEs.");
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
 
     apop_data **datasets = calloc(ms->model_count, sizeof(apop_data*));

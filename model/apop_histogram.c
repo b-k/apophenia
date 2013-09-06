@@ -79,7 +79,7 @@ Apop_settings_free(apop_kernel_density,
 )
 
 static void apop_kernel_estimate(apop_data *d, apop_model *m){
-    Nullcheck_d(d, NULL);
+    Nullcheck_d(d, );
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
 }

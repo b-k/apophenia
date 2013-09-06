@@ -86,7 +86,7 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
 
 static void mvn_prep(apop_data *d, apop_model *m){
     if (d && d->matrix)    m->dsize = d->matrix->size2; 
-    else if (m->vbase > 0) m->dsize = m->vbase;
+    else if (m->vsize > 0) m->dsize = m->vsize;
     apop_model_clear(d, m);
 }
 

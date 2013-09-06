@@ -14,7 +14,7 @@ double ll (apop_data *d, apop_model *in){
 
 int main(){
     coeff_struct co = {.scaling=100};
-    apop_model b = {"¡Bananas!", .log_likelihood= ll, .vbase=2, 
+    apop_model b = {"¡Bananas!", .log_likelihood= ll, .vsize=2, 
                                 .more = &co, .more_size=sizeof(coeff_struct)};
     Apop_model_add_group(&b, apop_mle, .verbose='y', .method=APOP_SIMPLEX_NM);
     Apop_model_add_group(&b, apop_parts_wanted);

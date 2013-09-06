@@ -182,7 +182,7 @@ Apop_var_declare( gsl_vector * apop_numerical_gradient(apop_data * data, apop_mo
 Apop_var_declare( apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta) )
 Apop_var_declare( apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta) )
 
-apop_model * apop_maximum_likelihood(apop_data * data, apop_model *dist);
+void apop_maximum_likelihood(apop_data * data, apop_model *dist);
 
 Apop_var_declare( apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary) )
 

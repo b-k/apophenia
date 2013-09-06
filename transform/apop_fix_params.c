@@ -149,10 +149,10 @@ static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
 }
 
 static void fixed_est(apop_data * data, apop_model *params){
-    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
     if (!data) data = params->data;
-    apop_model *e = apop_maximum_likelihood(data, params);
-    unpack(base_model->parameters, e);
+    apop_maximum_likelihood(data, params);
+    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
+    unpack(base_model->parameters, params);
 }
 
 static void fixed_param_show(apop_model *m, FILE *out){
@@ -232,7 +232,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     cut_if_missing(draw);
     cut_if_missing(constraint);
     cut_if_missing(log_likelihood);
-    model_out->vbase = predict_tab->matrix->size1;
+    model_out->vsize = predict_tab->matrix->size1;
     model_out->dsize = model_in->dsize;
     snprintf(model_out->name, 100, "%s, with some params fixed", model_in->name);
     return model_out;

@@ -3657,5 +3657,5 @@ static void loess_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_loess = {.name="Loess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
+apop_model apop_loess = {.name="Loess smoothing", .vsize = -1, .dsize=1, .estimate =apop_loess_est, 
     .print=apop_loess_print, .log_likelihood = loess_ll, .prep = loess_prep};

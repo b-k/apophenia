@@ -1621,16 +1621,16 @@ This function will return the value of the log likelihood function at the given 
 
 \code
 apop_model your_new_model = {"The Me distribution", 
-            .vbase=n0, .mbase1=n1, .mbase2=n2, .dbase=nd,
+            .vsize=n0, .msize1=n1, .msize2=n2, .dbase=nd,
             .log_likelihood = new_log_likelihood };
 \endcode
 
 \li The first element is the human-language name for your model.
-\li the \c vbase, \c mbase1, and \c mbase2 specify the shape of the parameter set. For example, if it's three numbers in the vector, then set <tt>.vbase=3</tt> and omit the matrix sizes. The default model-prep routine will basically call 
-<tt>new_est->parameters = apop_data_alloc(vbase, mbase1, mbase2)</tt>. 
+\li the \c vsize, \c msize1, and \c msize2 specify the shape of the parameter set. For example, if it's three numbers in the vector, then set <tt>.vsize=3</tt> and omit the matrix sizes. The default model-prep routine will basically call 
+<tt>new_est->parameters = apop_data_alloc(vsize, msize1, msize2)</tt>. 
 \li The \c dbase is the size of one random draw from your model.
 \li It's common to have (the number of columns in your data set) parameters; this
-count will be filled in if you specify \c -1 for \c vbase, <tt>mbase(1|2)</tt>, or
+count will be filled in if you specify \c -1 for \c vsize, <tt>mbase(1|2)</tt>, or
 <tt>dsbase</tt>. If the allocation is exceptional in a different way, then you will
 need to allocate parameters via a \c prep method.
 
@@ -1859,11 +1859,11 @@ double ll (apop_data *d, apop_model *in){
 
 int main(){
     coeff_struct co = {.scaling=100};
-    apop_model b = {"Bananas!", .log_likelihood= ll, .vbase=2,
+    apop_model b = {"Bananas!", .log_likelihood= ll, .vsize=2,
                                 .more = &co, .more_size=sizeof(coeff_struct)};
 \endcode
 
-The <tt>.vbase=2</tt> specified that your parameters are a vector of size two, which
+The <tt>.vsize=2</tt> specified that your parameters are a vector of size two, which
 means that <tt>in->parameters->vector->data</tt> is the list of <tt>double</tt>s that you
 should send to \c banana. The \c more element of the structure is designed to hold any
 arbitrary structure; if you use it, you will also need to use the \c more_size element, as

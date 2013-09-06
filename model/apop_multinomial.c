@@ -5,7 +5,7 @@ Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the modified 
 This differs from the \ref apop_multinomial only in the input data format.
 
 It is implemented as an alias of the \ref apop_multinomial model, except that it has
-a CDF, <tt>.vbase==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
+a CDF, <tt>.vsize==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
 and a draw returns a scalar).
 
 \adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$p_1\f$. Thus, \f$p_0\f$
@@ -21,7 +21,7 @@ and a draw returns a scalar).
     vector of length two giving both the failure bin and success bin. This is notable
     because it differs from the input data format, but it tends to be what people expect
     from a Binomial RNG. For draws with both dimensions, use a \ref apop_multinomial model
-    with <tt>.vbase =2</tt>.
+    with <tt>.vsize =2</tt>.
 */
 
 #include "apop_internal.h"
@@ -151,7 +151,7 @@ double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 \adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void multinomial_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est, NULL);
+    Nullcheck_mpd(data, est, );
     Get_vmsizes(data); //vsize, msize1
     est->parameters= apop_map(data, .fn_v=avs, .part='c');
     gsl_vector *v = est->parameters->vector;
