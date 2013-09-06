@@ -26,6 +26,7 @@ See also the \ref apop_multivariate_normal.
 */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double positive_sigma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
@@ -54,6 +55,7 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
  \adoc estimated_info Reports the log likelihood.*/
 static apop_model * normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, NULL);
+    apop_model_prep(data, est);
     Get_vmsizes(data)
     double mmean=0, mvar=0, vmean=0, vvar=0;
     if (vsize){
@@ -124,9 +126,14 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
 }
 
+static void normal_prep(apop_data *data, apop_model *params){
+    apop_score_insert(normal_dlog_likelihood, apop_normal);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, 
- .score = normal_dlog_likelihood, .constraint = positive_sigma_constraint, 
+ .prep = normal_prep, .constraint = positive_sigma_constraint, 
  .draw = normal_rng, .cdf = normal_cdf, .predict = normal_predict};
 
 
@@ -162,6 +169,7 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
     apop_data *cp = apop_data_copy(data);
+    apop_model_prep(data, est);
     Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return est, 
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1
@@ -226,7 +234,12 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = exp(gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0]);
 }
 
+static void lognormal_prep(apop_data *data, apop_model *params){
+    apop_score_insert(lognormal_dlog_likelihood, apop_lognormal);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0, .dsize=1,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood,
- .score = lognormal_dlog_likelihood, .constraint = positive_sigma_constraint, 
+ .prep = lognormal_prep, .constraint = positive_sigma_constraint, 
  .draw = lognormal_rng, .cdf= lognormal_cdf};

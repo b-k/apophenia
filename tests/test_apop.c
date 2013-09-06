@@ -1176,7 +1176,6 @@ void test_probit_and_logit(gsl_rng *r){
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
     Apop_model_add_group(&apop_logit, apop_mle, .tolerance=1e-5);
     Apop_model_add_group(&apop_logit, apop_parts_wanted);
-    apop_logit.score=NULL; //Basically OK, but still too imprecise.
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);

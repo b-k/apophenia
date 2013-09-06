@@ -2,6 +2,7 @@
 /* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 /** Allocate an \ref apop_model.
 
@@ -247,8 +248,9 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
-    if (m->score){
-        m->score(d, out, m);
+    apop_score_type ms = apop_score_get(*m);
+    if (ms){
+        ms(d, out, m);
         return;
     }
     gsl_vector * numeric_default = apop_numerical_gradient(d, m);
@@ -382,10 +384,8 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
 \ingroup models
  */
 void apop_prep(apop_data *d, apop_model *m){
-    if (m->prep)
-        m->prep(d, m);
-    else
-        apop_model_clear(d, m);
+    if (m->prep) m->prep(d, m);
+    else         apop_model_clear(d, m);
 }
 
 static double disnan(double in) {return gsl_isnan(in);}

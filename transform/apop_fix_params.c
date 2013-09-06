@@ -231,7 +231,6 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     #define cut_if_missing(method) if (!model_in->method) model_out->method = NULL;
     cut_if_missing(p);
     cut_if_missing(draw);
-    cut_if_missing(score);
     cut_if_missing(constraint);
     cut_if_missing(log_likelihood);
     model_out->vbase = predict_tab->matrix->size1;

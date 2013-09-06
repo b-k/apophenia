@@ -49,6 +49,8 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 */
 
 #include "apop_internal.h"
+#include "vtables.h"
+static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p);
 
 Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
@@ -106,6 +108,7 @@ static void ols_shuffle(apop_data *d){
 }
 
 static void ols_prep(apop_data *d, apop_model *m){
+    apop_score_insert(ols_score, apop_ols);
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
@@ -380,7 +383,7 @@ void ols_print(apop_model *m, FILE *ap){
 }
 
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, 
+            .log_likelihood = ols_log_likelihood, .prep = ols_prep, .predict=ols_predict, 
             .draw=ols_rng, .parameter_model = ols_param_models, .print=ols_print};
 
 

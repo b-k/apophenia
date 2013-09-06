@@ -21,6 +21,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double yule_constraint(apop_data *returned_beta, apop_model *m){
   Nullcheck_mp(m, GSL_NAN);
@@ -69,5 +70,10 @@ static void yule_rng( double *out, gsl_rng * r, apop_model *a){
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
 }
 
+static void yule_prep(apop_data *data, apop_model *params){
+    apop_score_insert(yule_dlog_likelihood, apop_yule);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_yule = {"Yule distribution", 1,0,0, .dsize=1, .log_likelihood = yule_log_likelihood, 
-    .score = yule_dlog_likelihood, .constraint = yule_constraint, .draw = yule_rng};
+    .prep = yule_prep, .constraint = yule_constraint, .draw = yule_rng};

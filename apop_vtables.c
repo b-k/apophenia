@@ -5,7 +5,7 @@ typedef struct {
 } apop_vtable_elmt_s;
 
 typedef struct {
-    char *name;
+    char const *name;
     unsigned long int hashed_name;
     int elmt_ct;
     apop_vtable_elmt_s *elmts;
@@ -14,14 +14,14 @@ typedef struct {
 apop_vtable_s *vtable_list;
 
 //The Dan J Bernstein string hashing algorithm.
-static unsigned long apop_settings_hash(char *str){
+static unsigned long apop_settings_hash(char const *str){
     unsigned long int hash = 5381;
     char c;
     while ((c = *str++)) hash = hash*33 + c;
     return hash;
 }
 
-int apop_vtable_insert(char *tabname, void *fn_in, unsigned long hash){
+int apop_vtable_insert(char const *tabname, void *fn_in, unsigned long hash){
     if (!vtable_list){vtable_list = calloc(1, sizeof(apop_vtable_s));}
 
     //find the table we want
@@ -32,7 +32,7 @@ int apop_vtable_insert(char *tabname, void *fn_in, unsigned long hash){
 
     //add a table if need be.
     if (!v->hashed_name){
-        vtable_list=realloc(vtable_list, ctr+2* sizeof(apop_vtable_s));
+        vtable_list=realloc(vtable_list, (ctr+2)* sizeof(apop_vtable_s));
         vtable_list[ctr] = (apop_vtable_s){.name=tabname, .hashed_name = h, .elmts=calloc(1, sizeof(apop_vtable_elmt_s))};
         vtable_list[ctr+1] = (apop_vtable_s){ };
         v = vtable_list+ctr;
@@ -44,7 +44,7 @@ int apop_vtable_insert(char *tabname, void *fn_in, unsigned long hash){
     return 0;
 }
 
-void *apop_vtable_get(char *tabname, unsigned long hash){
+void *apop_vtable_get(char const *tabname, unsigned long hash){
     if (!vtable_list) return NULL;
     unsigned long thash = apop_settings_hash(tabname);
     apop_vtable_s *v = vtable_list;

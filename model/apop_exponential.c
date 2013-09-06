@@ -21,6 +21,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 \adoc    settings   None.  */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1
@@ -36,8 +37,19 @@ static long double exponential_log_likelihood(apop_data *d, apop_model *p){
 	return llikelihood;
 }
 
+static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
+    Nullcheck_mpd(d, p, );
+    Get_vmsizes(d) //tsize
+    double mu = gsl_vector_get(p->parameters->vector, 0);
+    double d_likelihood = (d->matrix ? apop_matrix_sum(d->matrix):0) + (d->vector ? apop_sum(d->vector) : 0);
+	d_likelihood /= gsl_pow_2(mu);
+	d_likelihood -= tsize /mu;
+	gsl_vector_set(gradient,0, d_likelihood);
+}
+
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
+    apop_score_insert(exponential_dlog_likelihood, apop_exponential);
     apop_name_add(est->parameters->names, "μ", 'r');
     Get_vmsizes(data); //msize1, msize2, vsize, tsize
     double mu =  (vsize ? vsize * apop_vector_mean(data->vector):0
@@ -55,22 +67,17 @@ static long double expo_cdf(apop_data *d, apop_model *params){
     return gsl_cdf_exponential_P(val, lambda);
 }
 
-static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
-    Nullcheck_mpd(d, p, );
-    Get_vmsizes(d) //tsize
-    double mu = gsl_vector_get(p->parameters->vector, 0);
-    double d_likelihood = (d->matrix ? apop_matrix_sum(d->matrix):0) + (d->vector ? apop_sum(d->vector) : 0);
-	d_likelihood /= gsl_pow_2(mu);
-	d_likelihood -= tsize /mu;
-	gsl_vector_set(gradient,0, d_likelihood);
-}
-
 /* \adoc RNG Just a wrapper for \c gsl_ran_exponential.  */
 static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }
 
+static void exponential_prep(apop_data *data, apop_model *params){
+    apop_score_insert(exponential_dlog_likelihood, apop_exponential);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,.dsize=1,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
-     .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
+     .prep = exponential_prep, .constraint = beta_greater_than_x_constraint, 
      .draw = exponential_rng, .cdf = expo_cdf};

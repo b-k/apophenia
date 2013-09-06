@@ -9,6 +9,7 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double dirichletlnmap(gsl_vector *v, void *pin) {
     //we used gsl_matrix_row to get here==>guaranteed that v->stride==1.
@@ -47,6 +48,11 @@ static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
 }
 
+static void dirichlet_prep(apop_data *data, apop_model *params){
+    apop_score_insert(dirichlet_dlog_likelihood, apop_dirichlet);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_dirichlet = {"Dirichlet distribution", -1,0,0, .dsize=-1,
-    .log_likelihood = dirichlet_log_likelihood, .score = dirichlet_dlog_likelihood,
+    .log_likelihood = dirichlet_log_likelihood, .prep = dirichlet_prep,
     .constraint = dirichlet_constraint, .draw = dirichlet_rng};

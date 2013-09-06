@@ -80,8 +80,6 @@ struct apop_model{
                 /**< Probability of the given data and parameterized model. Call via \ref apop_p */
     long double (*log_likelihood)(apop_data *d, apop_model *params);
                 /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
-    void (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
-                /**< Derivative of the log likelihood. Call via \ref apop_score */
     apop_data * (*predict)(apop_data *d, apop_model *params);
     apop_model * (*parameter_model)(apop_data *, apop_model *);
     long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 

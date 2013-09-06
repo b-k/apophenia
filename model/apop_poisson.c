@@ -10,6 +10,7 @@
 \adoc    settings   \ref apop_parts_wanted_settings, for the \c .want_cov element.  */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double apply_me(double x, void *in){
     if (x < 0) return -INFINITY;
@@ -41,6 +42,7 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
+    apop_prep(data, est);
     double mean = data_mean(data);
 	apop_data_set(est->parameters, .val=mean);
     apop_data_add_names(est->parameters, 'r', "λ");
@@ -84,7 +86,12 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
             *(p->parameters->vector ? p->parameters->vector->data: p->parameters->matrix->data));
 }
 
+static void poisson_prep(apop_data *data, apop_model *params){
+    apop_score_insert(poisson_dlog_likelihood, apop_poisson);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_poisson = {"Poisson distribution", 1, 0, 0, .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
-     .score = poisson_dlog_likelihood, .constraint = positive_beta_constraint, 
+     .prep = poisson_prep, .constraint = positive_beta_constraint, 
      .draw = poisson_rng};

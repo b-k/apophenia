@@ -12,12 +12,14 @@ may also find \ref apop_beta_from_mean_var to be useful.
 \adoc    settings None.  */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static long double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * beta_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
+    apop_prep(data, est);
     Get_vmsizes(data) //vsize, msize1,...
     double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
     if (vsize){
@@ -94,6 +96,11 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
     } while (*out <= 0 || *out >= 1);
 }
 
+static void beta_prep(apop_data *data, apop_model *params){
+    apop_score_insert(beta_dlog_likelihood, apop_beta);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_beta = {"Beta distribution", 2,0,0, .dsize=1, .estimate = beta_estimate, 
-    .log_likelihood = beta_log_likelihood, .score = beta_dlog_likelihood, 
+    .log_likelihood = beta_log_likelihood, .prep = beta_prep, 
     .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf};

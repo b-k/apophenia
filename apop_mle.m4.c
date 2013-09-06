@@ -8,6 +8,7 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 
 /*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
+#include "vtables.h"
 #include <setjmp.h>
 #include <signal.h>
 #include <gsl/gsl_deriv.h>
@@ -17,8 +18,8 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include <gsl/gsl_multiroots.h>
 
 typedef long double (*apop_fn_with_params) (apop_data *, apop_model *);
-typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+typedef	void (*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
+typedef	void (*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
 typedef struct {
 	gsl_vector	*beta;
@@ -156,12 +157,13 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
-    if (mm->score){
+    apop_score_type ms = apop_score_get(*mm);
+    if (ms){
         if (!v || v->size != mm->parameters->vector->size){
             if (v) gsl_vector_free(v);
             v = gsl_vector_alloc(mm->parameters->vector->size);
         }
-         mm->score(d, v, mm);
+        ms(d, v, mm);
         return gsl_vector_get(v, *settings->current_index);
     } //else:
         gsl_vector *vv = apop_numerical_gradient(d, mm);
@@ -342,8 +344,8 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
             apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
-    if (i->model->score)
-        i->model->score(i->data, g, i->model);
+    apop_score_type ms = apop_score_get(*(i->model));
+    if (ms) ms(i->data, g, i->model);
     else {
         apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
@@ -605,8 +607,9 @@ else
 apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
+    apop_score_type ms = apop_score_get(*dist);
     if (mp->method == APOP_UNKNOWN_ML)
-        mp->method = (dist->score) ? APOP_CG_FR : APOP_SIMPLEX_NM;
+        mp->method = ms ? APOP_CG_FR : APOP_SIMPLEX_NM;
 
     Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,

@@ -20,6 +20,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
   */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 static double gamma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
@@ -80,6 +81,11 @@ static long double gamma_cdf(apop_data *d, apop_model *params){
     return gsl_cdf_gamma_P(val, alpha, beta);
 }
 
+static void gamma_prep(apop_data *data, apop_model *params){
+    apop_score_insert(gamma_dlog_likelihood, apop_gamma);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, .dsize=1, 
-      .log_likelihood = gamma_log_likelihood, .score = gamma_dlog_likelihood, 
+      .log_likelihood = gamma_log_likelihood, .prep = gamma_prep, 
       .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};

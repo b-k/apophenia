@@ -27,6 +27,8 @@ replace that matrix column with a constant column of ones, just like with OLS.
 */
 
 #include "apop_internal.h"
+#include "vtables.h"
+static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p);
 
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;
@@ -40,6 +42,8 @@ static apop_data *get_category_table(apop_data *d){
 
 static void probit_prep(apop_data *d, apop_model *m){
     apop_data *factor_list = get_category_table(d);
+    apop_score_insert(probit_dlog_likelihood, apop_probit);
+    //apop_score_insert(logit_dlog_likelihood, apop_logit);
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
     int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
@@ -47,8 +51,6 @@ static void probit_prep(apop_data *d, apop_model *m){
     for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
-    //haven't yet implemented the score for probit && $N>2$
-    if (!strcmp(m->name, apop_probit.name) && count > 2) m->score = NULL;
     char *tmp = strdup(m->name);
     snprintf(m->name, 100, "%s with %s as numeraire", tmp, factor_list->text[0][0]);
     free(tmp);
@@ -128,8 +130,8 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	apop_data_free(betadotx);
 }
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
-    .score = probit_dlog_likelihood, .prep = probit_prep};
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood,
+    .dsize=-1, .prep = probit_prep};
 
 
 /* \amodel apop_multinomial_probit The Multinomial Probit model.
