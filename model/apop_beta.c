@@ -17,7 +17,7 @@ may also find \ref apop_beta_from_mean_var to be useful.
 static long double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * beta_estimate(apop_data * data,  apop_model *est){
+static void beta_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     apop_prep(data, est);
     Get_vmsizes(data) //vsize, msize1,...
@@ -37,7 +37,6 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *est){
 	gsl_vector_set(est->parameters->vector, 1, beta);
     apop_data_add_named_elmt(est->info, "log likelihood", beta_log_likelihood(data, est));
     //apop_numerical_covariance_matrix(apop_beta, est, data);
-	return est;
 }
 
 typedef struct{

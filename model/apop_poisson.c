@@ -40,7 +40,7 @@ static double data_mean(apop_data *d){
 Unless you decline it by adding the \ref apop_parts_wanted_settings group, I will also give you the variance of the parameter, via bootstrap, stored in a page named <tt>\<Covariance\></tt>.
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
+static void poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     apop_prep(data, est);
     double mean = data_mean(data);
@@ -58,7 +58,6 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
         if (!p) Apop_settings_rm_group(est, apop_parts_wanted);
         else p->covariance='y';
     }
-	return est;
 }
 
 static double positive_beta_constraint(apop_data *returned_beta, apop_model *v){

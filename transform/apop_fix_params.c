@@ -148,12 +148,11 @@ static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
     base_model->draw(out, r, base_model);
 }
 
-static apop_model *fixed_est(apop_data * data, apop_model *params){
+static void fixed_est(apop_data * data, apop_model *params){
     apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
     if (!data) data = params->data;
     apop_model *e = apop_maximum_likelihood(data, params);
     unpack(base_model->parameters, e);
-    return e;
 }
 
 static void fixed_param_show(apop_model *m, FILE *out){

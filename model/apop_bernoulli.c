@@ -29,7 +29,7 @@ static double nonzero (double in) { return in !=0; }
 <tt>\<Covariance\></tt> page has the variance of \f$p\f$ in the (0,0)th element of the matrix.
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */
-static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
+static void bernoulli_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL); Get_vmsizes(data); //tsize;
     double n = tsize;
     double p = apop_map_sum(data, nonzero)/n;
@@ -38,7 +38,6 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->info, "log likelihood", bernoulli_log_likelihood(data, est));
     apop_data *cov = apop_data_add_page(est->parameters, apop_data_alloc(1,1), "<Covariance>");
     apop_data_set(cov, 0,0, p*(1-p));
-	return est;
 }
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){

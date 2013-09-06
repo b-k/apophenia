@@ -3619,7 +3619,7 @@ static long double loess_ll(apop_data *d, apop_model *m){
     return apop_map_sum(exp, .param=&sd, .part='r', .fn_vp= onerow);
 }
 
-static apop_model *apop_loess_est(apop_data *d, apop_model *m){
+static void apop_loess_est(apop_data *d, apop_model *m){
   apop_model *out = apop_model_copy(apop_loess);
     if (!Apop_settings_get_group(out, apop_loess))
         Apop_model_add_group(out, apop_loess, .data=d);
@@ -3646,8 +3646,6 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
     gsl_vector_memcpy(resid, v);
     v->data = holding;
     gsl_vector_free(v);
-
-    return out;
 }
 
 static void apop_loess_print(apop_model *in, FILE *out){

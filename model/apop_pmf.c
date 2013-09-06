@@ -81,7 +81,7 @@ Apop_settings_init(apop_pmf,
 
 /* \adoc    estimated_data  The data you sent in is linked to (not copied).
 \adoc    estimated_parameters  Still \c NULL.    */
-static apop_model *estim (apop_data *d, apop_model *out){
+static void estim (apop_data *d, apop_model *out){
     out->data = d;
     apop_data_free(out->parameters); //may have been auto-alloced by prep.
 
@@ -92,7 +92,6 @@ static apop_model *estim (apop_data *d, apop_model *out){
         Apop_stopif(!isfinite(settings->total_weight),
             out->error='w', 0, "total weight in the input data is %Lg.\n", settings->total_weight);
     }
-    return out;
 }
 
 /* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a

@@ -62,7 +62,7 @@ typedef struct apop_model apop_model;
 /** The elements of the \ref apop_model type, representing a statistical model. */
 struct apop_model{
     char name[101]; 
-    int vbase, m1base, m2base, dsize; /**< The size of the parameter set.
+    int vbase, mbase1, mbase2, dsize; /**< The size of the parameter set.
                      If a dimension is -1, then use yourdata->matrix->size2. For
                     anything more complex, allocate the parameter set in the prep
                     method. \c dsize is for the canonical form, and is
@@ -74,7 +74,7 @@ struct apop_model{
                         covariance matrix, confidence intervals, expected score. See your
                         specific model's documentation for what it puts here.
                         */
-    apop_model * (*estimate)(apop_data * data, apop_model *params); 
+    void (*estimate)(apop_data * data, apop_model *params); 
                 /**< The estimation routine. Call via \ref apop_estimate */
     long double (*p)(apop_data *d, apop_model *params);
                 /**< Probability of the given data and parameterized model. Call via \ref apop_p */

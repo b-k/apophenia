@@ -300,7 +300,7 @@ Given your estimate \c est, the zeroth element is one of <br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="predicted") or</tt><br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="residual").</tt><br>
 */
-static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
+static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
     Nullcheck_mpd(inset, ep, NULL);
     apop_data *set;
     apop_lm_settings *olp =  apop_settings_get_group(ep, apop_lm);
@@ -344,7 +344,6 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         if (weights) gsl_vector_free(weights);
         apop_data_free(set);
     }
-    return ep;
 }
 
 /* \adoc predict This function is limited to taking in a data set with a matrix, and
@@ -385,7 +384,7 @@ void ols_print(apop_model *m, FILE *ap){
     apop_data_add_page(m->info, predict, predict->names->title);
 }
 
-apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
+apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .prep = ols_prep,
             .draw=ols_rng, .print=ols_print};
 
@@ -438,7 +437,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     return out;
 }
 
-static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
+static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     Nullcheck_mpd(inset, ep, NULL);
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
@@ -511,7 +510,6 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     apop_data_free(zpy);
 
     if (!olp->destroy_data) apop_data_free(set);
-    return ep;
 }
 
 apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1,

@@ -53,7 +53,7 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
 /*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
  A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
  \adoc estimated_info Reports the log likelihood.*/
-static apop_model * normal_estimate(apop_data * data, apop_model *est){
+static void normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     apop_model_prep(data, est);
     Get_vmsizes(data)
@@ -80,7 +80,6 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
     }
     est->data = data;
     apop_data_add_named_elmt(est->info, "log likelihood", normal_log_likelihood(data, est));
-	return est;
 }
 
 static long double normal_cdf(apop_data *d, apop_model *params){
@@ -168,7 +167,7 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
 }
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
+static void lognormal_estimate(apop_data * data, apop_model *est){
     apop_data *cp = apop_data_copy(data);
     apop_model_prep(data, est);
     Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return est, 
@@ -197,7 +196,6 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
     apop_name_add(est->parameters->names, "μ", 'r');
     apop_name_add(est->parameters->names, "σ", 'r');
     apop_data_add_named_elmt(est->info, "log likelihood", lognormal_log_likelihood(data, est));
-	return est;
 }
 
 static long double lognormal_cdf(apop_data *d, apop_model *params){

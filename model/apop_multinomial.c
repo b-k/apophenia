@@ -150,7 +150,7 @@ double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 
 \adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
+static void multinomial_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, NULL);
     Get_vmsizes(data); //vsize, msize1
     est->parameters= apop_map(data, .fn_v=avs, .part='c');
@@ -167,7 +167,6 @@ static apop_model * multinomial_estimate(apop_data * data,  apop_model *est){
     est->dsize = data->matrix->size1;
     make_covar(est);
     apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
-    return est;
 }
 
 /* \adoc    Input_format Each row of the matrix is one observation: a set of draws from a single bin.

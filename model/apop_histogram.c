@@ -78,11 +78,10 @@ Apop_settings_free(apop_kernel_density,
     if (in->own_kernel) apop_model_free(in->kernel);
 )
 
-static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
+static void apop_kernel_estimate(apop_data *d, apop_model *m){
     Nullcheck_d(d, NULL);
     if (!apop_settings_get_group(m, apop_kernel_density))
         apop_model_add_group(m, apop_kernel_density, .base_data=d);
-    return m;
 }
 
 static long double kernel_p_cdf_base(apop_data *d, apop_model *m,

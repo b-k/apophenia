@@ -2,7 +2,7 @@
 Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 
-apop_model* apop_t_estimate(apop_data *d, apop_model *m){
+static void apop_t_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
     double vmu = vsize ? apop_mean(d->vector) : 0;
@@ -18,26 +18,23 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     apop_data_set(m->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
     apop_data_set(m->parameters, 2, -1, tsize-1);
     apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
-    return m;
 }
 
-apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
+static void apop_chi_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2
     apop_name_add(m->parameters->names, "df",  'r');
     apop_data_set(m->parameters, 0, -1, tsize -1);
     apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
-    return m;
 }
 
-apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
+static void apop_fdist_estimate(apop_data *d, apop_model *m){
     Apop_assert(d, "No data with which to count df. (the default estimation method)");
     apop_name_add(m->parameters->names, "df",  'r');
     apop_name_add(m->parameters->names, "df2",  'r');
     apop_data_set(m->parameters, 0, -1, d->vector->size -1);
     apop_data_set(m->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
     apop_data_add_named_elmt(m->info, "log likelihood", apop_f_distribution.log_likelihood(d, m));
-    return m;
 }
 
 static double one_f(double in, void *df_in){ 
@@ -229,7 +226,7 @@ static long double fixed_wishart_ll(apop_data *in, apop_model *m){
     return out;
 }
 
-apop_model *wishart_estimate(apop_data *d, apop_model *m){
+static void wishart_estimate(apop_data *d, apop_model *m){
     Nullcheck_m(m, NULL);
     //apop_data_set(m->parameters, 0, -1, d->matrix->size1);
     //Start with cov matrix via mean of inputs; df=NaN
@@ -253,7 +250,6 @@ apop_model *wishart_estimate(apop_data *d, apop_model *m){
     apop_data_free(summ);
     apop_model_free(modified_wish);
     apop_model_free(fixed_wish);
-    return m;
 }
 
 /*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 

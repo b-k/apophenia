@@ -132,7 +132,7 @@ void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
     apop_model_free(odds);
 }
 
-static apop_model *mixture_estimate(apop_data *d, apop_model *m){
+static void mixture_estimate(apop_data *d, apop_model *m){
     apop_model *mle = apop_maximum_likelihood(d, m);
     Apop_stopif(mle->error, return mle, 0, "Trouble estimating the initial MLEs.");
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
@@ -149,7 +149,6 @@ static apop_model *mixture_estimate(apop_data *d, apop_model *m){
         for (int i=0; i< ms->model_count; i++)
             apop_data_free(datasets[i]);
     }
-    return m;
 }
 
 static void mixture_prep(apop_data * data, apop_model *model){

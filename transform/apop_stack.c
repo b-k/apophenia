@@ -67,14 +67,13 @@ static void repaste(twop_s dd){
     check_settings(ret);        \
     twop_s datas = get_second(d, s->splitpage);
 
-static apop_model *stack_est(apop_data *d, apop_model *m){
+static void stack_est(apop_data *d, apop_model *m){
     Preliminaries(m);
 
     s->model1 = apop_estimate(datas.d1, *s->model1);
     s->model2 = apop_estimate(datas.d2, *s->model2);
 
     repaste(datas);
-    return m;
 }
 
 static long double stack_ll(apop_data *d, apop_model *m){

@@ -44,13 +44,12 @@ static long double unif_p(apop_data *d, apop_model *m){
 }
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
+static void uniform_estimate(apop_data * data,  apop_model *est){
     Nullcheck_d(data, NULL);
     apop_name_add(est->parameters->names, "min", 'r');
     apop_name_add(est->parameters->names, "max", 'r');
     getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
     apop_data_add_named_elmt(est->info, "log likelihood", unif_ll(data, est));
-    return est;
 }
 
 static long double unif_cdf(apop_data *d, apop_model *m){
@@ -90,7 +89,7 @@ fully neutral prior.
 \adoc    settings None. 
           */
 
-static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
+static void improper_uniform_estimate(apop_data * data,  apop_model *m){ }
 
 static long double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
 static long double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }

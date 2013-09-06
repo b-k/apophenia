@@ -48,7 +48,7 @@ static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop
 }
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
+static void exponential_estimate(apop_data * data,  apop_model *est){
     apop_score_insert(exponential_dlog_likelihood, apop_exponential);
     apop_name_add(est->parameters->names, "μ", 'r');
     Get_vmsizes(data); //msize1, msize2, vsize, tsize
@@ -56,7 +56,6 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
                 + msize1 ? msize1*msize2 * apop_matrix_mean(data->matrix):0)/tsize;
 	gsl_vector_set(est->parameters->vector, 0, mu);
     apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
-	return est;
 }
 
 static long double expo_cdf(apop_data *d, apop_model *params){
