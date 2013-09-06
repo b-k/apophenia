@@ -2,6 +2,7 @@
 #include <apophenia/asst.h>
 #include <apophenia/types.h>
 #include <apophenia/stats.h>
+#include <apophenia/vtables.h>
 #include <apophenia/settings.h>
 #include <apophenia/deprecated.h>
 

@@ -51,6 +51,8 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 #include "apop_internal.h"
 #include "vtables.h"
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p);
+apop_model *ols_param_models(apop_data *d, apop_model *m);
+apop_data *ols_predict(apop_data *in, apop_model *m);
 
 Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
@@ -109,6 +111,8 @@ static void ols_shuffle(apop_data *d){
 
 static void ols_prep(apop_data *d, apop_model *m){
     apop_score_insert(ols_score, apop_ols);
+    apop_parameter_model_insert(ols_param_models, apop_ols);
+    apop_predict_insert(ols_predict, apop_ols);
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
@@ -367,10 +371,9 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default
-    void *tmp = m->parameter_model;
-    m->parameter_model = NULL;
+    apop_parameter_model_rm(*m);
     apop_model *out = apop_parameter_model(d, m);
-    m->parameter_model=tmp;
+    apop_parameter_model_insert(ols_param_models, *m);
     return out;
 }
 
@@ -383,8 +386,8 @@ void ols_print(apop_model *m, FILE *ap){
 }
 
 apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .prep = ols_prep, .predict=ols_predict, 
-            .draw=ols_rng, .parameter_model = ols_param_models, .print=ols_print};
+            .log_likelihood = ols_log_likelihood, .prep = ols_prep,
+            .draw=ols_rng, .print=ols_print};
 
 
 /*\amodel apop_iv Instrumental variable regression

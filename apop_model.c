@@ -2,6 +2,7 @@
 /* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
+#define Declare_type_checking_fns
 #include "vtables.h"
 
 /** Allocate an \ref apop_model.
@@ -321,9 +322,9 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
         settings = apop_model_add_group(m, apop_pm, .base= m);
-    if (m->parameter_model)
-        return m->parameter_model(d, m);
-    if (d){
+    apop_parameter_model_type pm = apop_parameter_model_get(*m);
+    if (pm) return pm(d, m);
+    else if (d){
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
         apop_model *out = apop_model_copy(apop_multivariate_normal);
         out->m1base = out->vbase = out->m2base = out->dsize = vsize+msize1+msize2;
@@ -339,8 +340,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
             apop_model_free(out);
             return out2;
         }
-    }
-    //else
+    } //else
     Get_vmsizes(m->parameters);//vsize, msize1, msize2
     apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
     for (int i=0; i < settings->draws; i++){
@@ -417,14 +417,12 @@ This segment of the framework is in beta---subject to revision of the details.
 apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
     apop_data *out = d ? d : apop_data_alloc(0, 1, m->dsize);
-    if (!d)
-        gsl_matrix_set_all(out->matrix, GSL_NAN);
-    if (m->predict)
-        prediction = m->predict(out, m);
-    if (prediction)
-        return prediction;
-    if (!apop_map_sum(out, disnan))
-        return out;
+    if (!d) gsl_matrix_set_all(out->matrix, GSL_NAN);
+    apop_predict_type mp = apop_predict_get(*m);
+    if (mp) prediction = mp(out, m);
+    if (prediction) return prediction;
+    if (!apop_map_sum(out, disnan)) return out;
+    //default:
     apop_model *f = apop_ml_imputation(out, m);
     apop_model_free(f);
     return out;

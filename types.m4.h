@@ -80,8 +80,6 @@ struct apop_model{
                 /**< Probability of the given data and parameterized model. Call via \ref apop_p */
     long double (*log_likelihood)(apop_data *d, apop_model *params);
                 /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
-    apop_data * (*predict)(apop_data *d, apop_model *params);
-    apop_model * (*parameter_model)(apop_data *, apop_model *);
     long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
                             the integral up to the single data point you provide.  Call via \ref apop_cdf */
     double (*constraint)(apop_data *data, apop_model *params);
@@ -248,7 +246,7 @@ apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
 int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
-    // Models and model support functions
+// Models and model support functions
 
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;

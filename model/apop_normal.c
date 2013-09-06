@@ -128,13 +128,14 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 
 static void normal_prep(apop_data *data, apop_model *params){
     apop_score_insert(normal_dlog_likelihood, apop_normal);
+    apop_predict_insert(normal_predict, apop_normal);
     apop_model_clear(data, params);
 }
 
 apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, 
  .prep = normal_prep, .constraint = positive_sigma_constraint, 
- .draw = normal_rng, .cdf = normal_cdf, .predict = normal_predict};
+ .draw = normal_rng, .cdf = normal_cdf};
 
 
 /*\amodel apop_lognormal The Lognormal distribution

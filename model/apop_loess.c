@@ -72,6 +72,7 @@ This routine is in beta testing.
 \adoc    settings \ref apop_loess_settings */
 
 #include "apop_internal.h"
+#include "vtables.h"
 
 ////////////a few lines from f2c.h
 #define TRUE_ (1)
@@ -3653,5 +3654,10 @@ static void apop_loess_print(apop_model *in, FILE *out){
     loess_summary(Apop_settings_get(in, apop_loess, lo_s), out);
 }
 
+static void loess_prep(apop_data *data, apop_model *params){
+    apop_predict_insert(loess_predict, apop_loess);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_loess = {.name="Loess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
-    .print=apop_loess_print, .log_likelihood = loess_ll, .predict = loess_predict};
+    .print=apop_loess_print, .log_likelihood = loess_ll, .prep = loess_prep};
