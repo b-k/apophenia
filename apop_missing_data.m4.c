@@ -94,12 +94,12 @@ static apop_model * i_est(apop_data *d, apop_model *ml_model){
     return apop_estimate(real_data, *actual_base);
 }
 
-static double i_ll(apop_data *d, apop_model *ml_model){
+static long double i_ll(apop_data *d, apop_model *ml_model){
     Switch_back
     return apop_log_likelihood(real_data, actual_base);
 }
 
-static double i_p(apop_data *d, apop_model *ml_model){
+static long double i_p(apop_data *d, apop_model *ml_model){
     Switch_back
     return apop_p(real_data, actual_base);
 }

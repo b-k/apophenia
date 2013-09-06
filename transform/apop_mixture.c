@@ -195,7 +195,7 @@ void unpack(apop_model *min){
     }
 
 
-static double mixture_log_likelihood(apop_data *d, apop_model *model_in){
+static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     Apop_stopif(!ms, model_in->error='p'; return GSL_NAN, 0, "No apop_mixture_settings group. "
                                               "Did you estimate this with apop_model_mixture?");
@@ -242,7 +242,7 @@ static double weights_over_zero(apop_data *data, apop_model *m){
     return apop_linear_constraint(&v);
 }
 
-static double mixture_cdf(apop_data *d, apop_model *model_in){
+static long double mixture_cdf(apop_data *d, apop_model *model_in){
     Nullcheck_m(model_in, GSL_NAN)
     Nullcheck_d(d, GSL_NAN)
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);

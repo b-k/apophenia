@@ -81,7 +81,7 @@ static double constr(apop_data *d, void *csin){
     return !cs->constraint(d, cs->base_model);
 }
 
-static double dc_ll(apop_data *indata, apop_model* m){
+static long double dc_ll(apop_data *indata, apop_model* m){
     Get_set(m, GSL_NAN)
     Apop_stopif(!cs->base_model, return GSL_NAN, 0, "No base model.");
     double any_outside = apop_map_sum(indata, .fn_rp=constr, .param=cs);

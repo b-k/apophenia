@@ -16,7 +16,7 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_multiroots.h>
 
-typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
+typedef long double (*apop_fn_with_params) (apop_data *, apop_model *);
 typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
@@ -26,9 +26,9 @@ typedef struct {
 } grad_params;
 
 typedef struct {
-    apop_model  *model;
-    apop_data   *data;
-    apop_fn_with_params   *f;
+    apop_model *model;
+    apop_data *data;
+    apop_fn_with_params *f;
     grad_params *gp; //Used only by apop_internal_numerical_gradient.
     gsl_vector  *beta, *starting_pt;
     int         use_constraint;
@@ -139,7 +139,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
     }
 APOP_VAR_ENDHEAD
     Get_vmsizes(model->parameters); //tsize
-    apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
+    apop_fn_with_params ll = model->log_likelihood ? model->log_likelihood : model->p;
     Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
     gsl_vector *out = gsl_vector_calloc(tsize);
     infostruct i = (infostruct) {.model = model, .data = data};
@@ -152,7 +152,7 @@ typedef struct {
     int *current_index;
 } apop_model_for_infomatrix_struct;
 
-static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
+static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
@@ -288,7 +288,7 @@ static double negshell (const gsl_vector *beta, void * in){
     infostruct *i = in;
     double penalty = 0,
            out     = 0; 
-    double (*f)(apop_data *, apop_model *);
+    long double (*f)(apop_data *, apop_model *);
     f = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
     Apop_stopif(!f, longjmp(i->bad_eval_jump, -1),
                 0, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
@@ -308,7 +308,7 @@ static double negshell (const gsl_vector *beta, void * in){
     if (i->want_info =='y'){
         //I report the log likelihood under the assumption that the final param set 
         //matches the best ll evaluated.
-        double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+        long double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
 
         if(gsl_isnan(this_ll)){
             Apop_stopif(!i->model->log_likelihood && penalty > f_val, /*continue*/,
@@ -345,7 +345,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     if (i->model->score)
         i->model->score(i->data, g, i->model);
     else {
-        apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
+        apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
     if (i->trace_path =='y')

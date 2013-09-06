@@ -28,7 +28,7 @@ static double zipf_constraint(apop_data *returned_beta, apop_model *m){
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 
-static double zipf_log_likelihood(apop_data *d, apop_model *m){
+static long double zipf_log_likelihood(apop_data *d, apop_model *m){
     Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
     long double bb = apop_data_get(m->parameters, 0, -1);

@@ -17,9 +17,9 @@ static double bernie_ll(double x, void * pin){
     return x ? log(*p) : log(1-*p); 
 }
 
-static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
+static long double bernoulli_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
-    double p = apop_data_get(params->parameters,0,-1);
+    double p = apop_data_get(params->parameters, 0, -1);
 	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }
 
@@ -53,7 +53,7 @@ static void bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
 }
 
-static double bernoulli_cdf(apop_data *d, apop_model *params){
+static long double bernoulli_cdf(apop_data *d, apop_model *params){
 //One of those functions that just fills out the form.
 //CDF to zero = 1-p
 //CDF to one = 1

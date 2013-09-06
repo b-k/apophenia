@@ -34,7 +34,7 @@ static void jacobian_prep(apop_data *d, apop_model *m){
     m->dsize=cs->base_model->dsize;
 }
 
-static double ct_ll(apop_data *indata, apop_model* mj){
+static long double ct_ll(apop_data *indata, apop_model* mj){
     Get_cs(mj, GSL_NAN)
     Apop_stopif(!cs->base_model, return GSL_NAN, 0, "No base model to transform back to.");
     Apop_stopif(!cs->transformed_to_base, return GSL_NAN, 0, "No reverse transformation function.");

@@ -16,7 +16,7 @@ static double dirichletlnmap(gsl_vector *v, void *pin) {
     return gsl_ran_dirichlet_lnpdf (params->size, params->data, v->data);
 }
 
-static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
+static long double dirichlet_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
     Apop_stopif(!p->parameters->vector, return GSL_NAN, 0, "parameters should be in inmodel->parameters->vector.");
     double paramsum = apop_sum(p->parameters->vector);

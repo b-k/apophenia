@@ -18,7 +18,7 @@ static double apply_me(double x, void *in){
     return x==0 ? 0 : *ln_l *x - gsl_sf_lngamma(x+1);
 }
 
-static double poisson_log_likelihood(apop_data *d, apop_model * p){
+static long double poisson_log_likelihood(apop_data *d, apop_model * p){
     Nullcheck_mpd(d, p, GSL_NAN)
     Get_vmsizes(d) //tsize
     double lambda = apop_data_get(p->parameters);

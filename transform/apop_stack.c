@@ -77,7 +77,7 @@ static apop_model *stack_est(apop_data *d, apop_model *m){
     return m;
 }
 
-static double stack_ll(apop_data *d, apop_model *m){
+static long double stack_ll(apop_data *d, apop_model *m){
     Preliminaries(GSL_NAN);
 
     double out =  apop_log_likelihood(datas.d1, s->model1)
@@ -86,7 +86,7 @@ static double stack_ll(apop_data *d, apop_model *m){
     return out;
 }
 
-static double stack_p(apop_data *d, apop_model *m){
+static long double stack_p(apop_data *d, apop_model *m){
     Preliminaries(GSL_NAN)
 
     double out =  apop_p(datas.d1, s->model1) *apop_p(datas.d2, s->model2);

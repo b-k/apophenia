@@ -29,7 +29,7 @@ static double yule_constraint(apop_data *returned_beta, apop_model *m){
     return apop_linear_constraint(m->parameters->vector, constraint, 1e-4);
 }
 
-static double  apply_me(double pt, void *bb){
+static double apply_me(double pt, void *bb){
     double ln_k = (pt>=1) 
                    ? gsl_sf_lngamma(pt)
                    : 0;
@@ -37,9 +37,9 @@ static double  apply_me(double pt, void *bb){
     return ln_k - ln_bb_k;
 }
 
-static double  dapply_me(double pt, void *bb){ return -gsl_sf_psi(pt+*(double*)bb); }
+static double dapply_me(double pt, void *bb){ return -gsl_sf_psi(pt+*(double*)bb); }
 
-static double yule_log_likelihood(apop_data *d, apop_model *m){
+static long double yule_log_likelihood(apop_data *d, apop_model *m){
   Nullcheck_mpd(d, m, GSL_NAN);
   Get_vmsizes(d) //tsize
     double bb = gsl_vector_get(m->parameters->vector, 0);

@@ -30,7 +30,7 @@ and a draw returns a scalar).
   Let the first element of the data set (top of the vector or point (0,0) in the
   matrix, your pick) be $L$; then I return the sum of the odds of a draw from the given
   Binomial distribution returning $0, 1, \dots, L$ hits.  */
-static double binomial_cdf(apop_data *d, apop_model *est){
+static long double binomial_cdf(apop_data *d, apop_model *est){
     Nullcheck_mpd(d, est, GSL_NAN)
     Get_vmsizes(d); //firstcol
     double hitcount = apop_data_get(d, .col=firstcol);
@@ -70,7 +70,7 @@ static double binomial_ll(gsl_vector *hits, void *paramv){
     return log(gsl_ran_binomial_pdf(hits->data[1], ((gsl_vector*)paramv)->data[1], ((gsl_vector*)paramv)->data[0]));
 }
 
-double multinomial_ll(gsl_vector *v, void *params){
+static double multinomial_ll(gsl_vector *v, void *params){
     double *pv = ((apop_model*)params)->parameters->vector->data;
     size_t size = ((apop_model*)params)->parameters->vector->size;
     unsigned int hv[v->size]; //The GSL wants our hit count in an int*.
@@ -79,7 +79,7 @@ double multinomial_ll(gsl_vector *v, void *params){
     return gsl_ran_multinomial_lnpdf(size, pv, hv);
 }
 
-static double multinomial_log_likelihood(apop_data *d, apop_model *params){
+static long double multinomial_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
     double *pv = params->parameters->vector->data;
     double n = pv[0]; 

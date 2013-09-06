@@ -223,7 +223,8 @@ static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one 
     }
     return -1;
 }
-double pmf_p(apop_data *d, apop_model *m){
+
+static long double pmf_p(apop_data *d, apop_model *m){
     apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
     Nullcheck_d(d, GSL_NAN) 
     Nullcheck_m(m, GSL_NAN) 

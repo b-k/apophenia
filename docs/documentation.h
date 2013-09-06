@@ -1031,8 +1031,6 @@ For most of these, you can add a weights vector for weighted mean/var/cov/....
 \li\ref apop_vector_sum()
 \li\ref apop_vector_var()
 \li\ref apop_vector_var_m ()
-\li\ref apop_vector_weighted_kurtosis ()
-\li\ref apop_vector_weighted_skew ()
 
 endofdiv
 
@@ -1610,7 +1608,7 @@ Here is how one would set up a model that could be estimated using maximum likel
 \li Write a likelihood function. Its header will look like this:
 
 \code
-double apop_new_log_likelihood(apop_data *data, apop_model *m)
+long double apop_new_log_likelihood(apop_data *data, apop_model *m)
 \endcode
 
 where \c data is the input data, and \c

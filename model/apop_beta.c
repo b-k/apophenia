@@ -13,7 +13,7 @@ may also find \ref apop_beta_from_mean_var to be useful.
 
 #include "apop_internal.h"
 
-static double beta_log_likelihood(apop_data *d, apop_model *p);
+static long double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static apop_model * beta_estimate(apop_data * data,  apop_model *est){
@@ -52,7 +52,7 @@ static double betamap(double x, void *abin) {
     ab_type ab = { .alpha = apop_data_get(p->parameters,0,-1), \
                    .beta  = apop_data_get(p->parameters,1,-1) };
 
-static double beta_log_likelihood(apop_data *d, apop_model *p){
+static long double beta_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN); 
     Get_vmsizes(d) //tsize
     Get_ab(p) //ab
@@ -78,7 +78,7 @@ static double beta_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
 
-static double beta_cdf(apop_data *d, apop_model *params){
+static long double beta_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     Get_ab(params)

@@ -104,12 +104,12 @@ static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
     return total;
 }
 
-static double kernel_p(apop_data *d, apop_model *m){
+static long double kernel_p(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_p);
 }
 
 /* \adoc    CDF Sums the CDF to the given point of all the sub-distributions.*/
-static double kernel_cdf(apop_data *d, apop_model *m){
+static long double kernel_cdf(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_cdf);
 }
 

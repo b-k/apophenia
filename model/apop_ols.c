@@ -118,7 +118,7 @@ errors are normally distributed.
 
 This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.  */
-static double ols_log_likelihood (apop_data *d, apop_model *p){ 
+static long double ols_log_likelihood (apop_data *d, apop_model *p){ 
     Nullcheck_mpd(d, p, GSL_NAN); Nullcheck(d->matrix, GSL_NAN);
   long double ll  = 0; 
   long double sigma, actual, weight;
@@ -344,7 +344,7 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
 filling the vector with \f$X\beta\f$. Like, the OLS estimation will shuffle a matrix around
 to insert a column of ones (see \ref dataprep).
  */
-apop_data *ols_predict (apop_data *in, apop_model *m){
+apop_data *ols_predict(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, NULL);
     if (!in->vector)  ols_shuffle(in);  
 

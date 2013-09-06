@@ -53,18 +53,18 @@ static double one_t(double in, void *params){
 }
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
-double apop_tdist_llike(apop_data *d, apop_model *m){ 
+static long double apop_tdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     double *params = m->parameters->vector->data;
     return apop_map_sum(d, .fn_dp=one_t, .param=params);
 }
 
-double apop_chisq_llike(apop_data *d, apop_model *m){ 
+static long double apop_chisq_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     return apop_map_sum(d, .fn_dp=one_chisq, .param =m->parameters->vector->data);
 }
 
-double apop_fdist_llike(apop_data *d, apop_model *m){ 
+static long double apop_fdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     return apop_map_sum(d, .fn_dp=one_f, .param =m->parameters->vector->data);
 }
@@ -77,7 +77,7 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
     *out = gsl_ran_tdist (r, df)*(sigma/sqrt(df))+mu;
 }
 
-double apop_t_dist_cdf(apop_data *in, apop_model *m){
+static long double apop_t_dist_cdf(apop_data *in, apop_model *m){
     Nullcheck_mp(m, GSL_NAN);
     double val = in->vector ? apop_data_get(in, 0, -1) : apop_data_get(in, 0, 0);
     double mu = m->parameters->vector->data[0];
@@ -137,7 +137,7 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
     return out;
 }
 
-static double wishart_ll(apop_data *in, apop_model *m){
+static long double wishart_ll(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, GSL_NAN);
     wishartstruct_t ws = {
             .paramdet = apop_matrix_determinant(m->parameters->matrix),
@@ -215,9 +215,9 @@ double wishart_constraint(apop_data *d, apop_model *m){
 
 static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
- }
+}
 
-static double fixed_wishart_ll(apop_data *in, apop_model *m){
+static long double fixed_wishart_ll(apop_data *in, apop_model *m){
     //Let the mean of the input covariances be CM.
     //We need to estimate the df via MLE.
     //However, the right value of the wishart covariance grid is CM/df.

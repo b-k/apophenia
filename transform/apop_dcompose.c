@@ -80,7 +80,7 @@ static void compose_prep(apop_data *d, apop_model *m){
     m->dsize = cs->ll_m->dsize;
 }
 
-static double compose_ll(apop_data *indata, apop_model*composition){
+static long double compose_ll(apop_data *indata, apop_model*composition){
     Get_cs(composition, GSL_NAN)
     Apop_stopif(unpack(composition), return GSL_NAN, 0, "Trouble unpacking parameters.");
     apop_data *draws = apop_model_draws(cs->generator_m, .count=cs->draw_ct, .rng=cs->rng);

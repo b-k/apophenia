@@ -21,7 +21,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
     return the_result;
 }
 
-static double apop_multinormal_ll(apop_data *data, apop_model * m){
+static long double apop_multinormal_ll(apop_data *data, apop_model * m){
     Nullcheck_mpd(data, m, GSL_NAN);
     double determinant = 0;
     gsl_matrix* inverse = NULL;

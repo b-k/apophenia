@@ -54,7 +54,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     free(tmp);
 }
 
-double biprobit_ll_row(apop_data *r){
+static double biprobit_ll_row(apop_data *r){
     long double n = gsl_cdf_gaussian_P(-gsl_matrix_get(r->matrix, 0, 0),1);
     n = n ? n : 1e-10; //prevent -inf in the next step.
     n = n<1 ? n : 1-1e-10; 
@@ -62,7 +62,7 @@ double biprobit_ll_row(apop_data *r){
 }
 
 //The case where outcome is a single zero/one option.
-static double biprobit_log_likelihood(apop_data *d, apop_model *p){
+static long double biprobit_log_likelihood(apop_data *d, apop_model *p){
     apop_data *betadotx = apop_dot(d, p->parameters); 
     betadotx->vector = d->vector;
     double total_prob = apop_map_sum(betadotx, .fn_r=biprobit_ll_row);
@@ -75,7 +75,7 @@ static double val;
 static double unordered(double in){ return in == val; }
 
 // This is just a for loop that runs a probit on each column.
-static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
+static long double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
     gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2) return biprobit_log_likelihood(d, p);
@@ -225,7 +225,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
     return num - (max + (isfinite(expmax)? logl(apop_vector_sum(thisrow) +  expmax) : -max) );
 }
 
-static double multilogit_log_likelihood(apop_data *d, apop_model *p){
+static long double multilogit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
     Nullcheck(d->matrix, GSL_NAN)
     //Find X\beta_i for each row of X and each column of \beta.

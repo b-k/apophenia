@@ -39,7 +39,7 @@ static double apply_me(double x, void *mu){ return x - *(double *)mu; }
 
 static double apply_me2(double x, void *mu){ return gsl_pow_2(x - *(double *)mu); }
 
-static double normal_log_likelihood(apop_data *d, apop_model *params){
+static long double normal_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
     Get_vmsizes(d)
     double mu = gsl_vector_get(params->parameters->vector,0);
@@ -81,7 +81,7 @@ static apop_model * normal_estimate(apop_data * data, apop_model *est){
 	return est;
 }
 
-static double normal_cdf(apop_data *d, apop_model *params){
+static long double normal_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
@@ -147,7 +147,7 @@ static double lnx_minus_mu_squared(double x, void *mu_in){
 	return gsl_pow_2(log(x) - *(double *)mu_in);
 }
 
-static double lognormal_log_likelihood(apop_data *d, apop_model *params){
+static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d) //tsize
     double mu = gsl_vector_get(params->parameters->vector, 0);
@@ -165,7 +165,6 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
     Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return est, 
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1
-
 
     double mmean=0, mvar=0, vmean=0, vvar=0;
     if (vsize){
@@ -192,7 +191,7 @@ static apop_model * lognormal_estimate(apop_data * data, apop_model *est){
 	return est;
 }
 
-static double lognormal_cdf(apop_data *d, apop_model *params){
+static long double lognormal_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);

@@ -27,7 +27,7 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin = 1e-3);
 }
 
-static double exponential_log_likelihood(apop_data *d, apop_model *p){
+static long double exponential_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
     Get_vmsizes(d) //tsize
     double mu = gsl_vector_get(p->parameters->vector, 0);
@@ -47,7 +47,7 @@ static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
 	return est;
 }
 
-static double expo_cdf(apop_data *d, apop_model *params){
+static long double expo_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);

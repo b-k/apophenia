@@ -3611,7 +3611,7 @@ static double onerow(gsl_vector *v, void *sd){
 }
 
 //Assumes one gaussian, unweighted.
-static double loess_ll(apop_data *d, apop_model *m){
+static long double loess_ll(apop_data *d, apop_model *m){
     apop_data *exp = apop_data_get_page(d, "<Predicted>");
     Apop_col_t(exp, "residual", residuals);
     double sd = sqrt(apop_vector_var(residuals));
