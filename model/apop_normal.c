@@ -126,8 +126,8 @@ static void normal_rng(double *out, gsl_rng *r, apop_model *p){
 }
 
 static void normal_prep(apop_data *data, apop_model *params){
-    apop_score_insert(normal_dlog_likelihood, apop_normal);
-    apop_predict_insert(normal_predict, apop_normal);
+    apop_score_vtable_add(normal_dlog_likelihood, apop_normal);
+    apop_predict_vtable_add(normal_predict, apop_normal);
     apop_model_clear(data, params);
 }
 
@@ -234,7 +234,7 @@ static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 }
 
 static void lognormal_prep(apop_data *data, apop_model *params){
-    apop_score_insert(lognormal_dlog_likelihood, apop_lognormal);
+    apop_score_vtable_add(lognormal_dlog_likelihood, apop_lognormal);
     apop_model_clear(data, params);
 }
 

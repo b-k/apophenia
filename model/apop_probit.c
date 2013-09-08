@@ -42,8 +42,8 @@ static apop_data *get_category_table(apop_data *d){
 
 static void probit_prep(apop_data *d, apop_model *m){
     apop_data *factor_list = get_category_table(d);
-    apop_score_insert(probit_dlog_likelihood, apop_probit);
-    //apop_score_insert(logit_dlog_likelihood, apop_logit);
+    apop_score_vtable_add(probit_dlog_likelihood, apop_probit);
+    //apop_score_vtable_add(logit_dlog_likelihood, apop_logit);
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
     int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
@@ -201,7 +201,7 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
 
 static void logit_prep(apop_data *d, apop_model *m){
     probit_prep(d, m);
-    apop_predict_insert(multilogit_expected, apop_logit);
+    apop_predict_vtable_add(multilogit_expected, apop_logit);
 }
 
 static size_t find_index(double in, double *m, size_t max){

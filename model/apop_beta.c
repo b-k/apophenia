@@ -96,7 +96,7 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
 }
 
 static void beta_prep(apop_data *data, apop_model *params){
-    apop_score_insert(beta_dlog_likelihood, apop_beta);
+    apop_score_vtable_add(beta_dlog_likelihood, apop_beta);
     apop_model_clear(data, params);
 }
 

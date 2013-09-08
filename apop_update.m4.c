@@ -155,13 +155,13 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
     }
 APOP_VAR_END_HEAD
     static int setup=0; if (!(setup++)){
-        apop_update_insert(betabinom, apop_beta, apop_binomial);
-        apop_update_insert(betabernie, apop_beta, apop_bernoulli);
-        apop_update_insert(gammaexpo, apop_gamma, apop_exponential);
-        apop_update_insert(gammapoisson, apop_gamma, apop_poisson);
-        apop_update_insert(normnorm, apop_normal, apop_normal);
+        apop_update_vtable_add(betabinom, apop_beta, apop_binomial);
+        apop_update_vtable_add(betabernie, apop_beta, apop_bernoulli);
+        apop_update_vtable_add(gammaexpo, apop_gamma, apop_exponential);
+        apop_update_vtable_add(gammapoisson, apop_gamma, apop_poisson);
+        apop_update_vtable_add(normnorm, apop_normal, apop_normal);
     }
-    apop_update_type conj = apop_update_get(*prior, *likelihood);
+    apop_update_type conj = apop_update_vtable_get(*prior, *likelihood);
     if (conj) return conj(data, *prior, *likelihood);
 
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);

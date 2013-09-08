@@ -110,9 +110,9 @@ static void ols_shuffle(apop_data *d){
 }
 
 static void ols_prep(apop_data *d, apop_model *m){
-    apop_score_insert(ols_score, apop_ols);
-    apop_parameter_model_insert(ols_param_models, apop_ols);
-    apop_predict_insert(ols_predict, apop_ols);
+    apop_score_vtable_add(ols_score, apop_ols);
+    apop_parameter_model_vtable_add(ols_param_models, apop_ols);
+    apop_predict_vtable_add(ols_predict, apop_ols);
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
@@ -370,9 +370,9 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default
-    apop_parameter_model_rm(*m);
+    apop_parameter_model_vtable_drop(*m);
     apop_model *out = apop_parameter_model(d, m);
-    apop_parameter_model_insert(ols_param_models, *m);
+    apop_parameter_model_vtable_add(ols_param_models, *m);
     return out;
 }
 

@@ -249,7 +249,7 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
-    apop_score_type ms = apop_score_get(*m);
+    apop_score_type ms = apop_score_vtable_get(*m);
     if (ms){
         ms(d, out, m);
         return;
@@ -322,7 +322,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
         settings = apop_model_add_group(m, apop_pm, .base= m);
-    apop_parameter_model_type pm = apop_parameter_model_get(*m);
+    apop_parameter_model_type pm = apop_parameter_model_vtable_get(*m);
     if (pm) return pm(d, m);
     else if (d){
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
@@ -418,7 +418,7 @@ apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
     apop_data *out = d ? d : apop_data_alloc(0, 1, m->dsize);
     if (!d) gsl_matrix_set_all(out->matrix, GSL_NAN);
-    apop_predict_type mp = apop_predict_get(*m);
+    apop_predict_type mp = apop_predict_vtable_get(*m);
     if (mp) prediction = mp(out, m);
     if (prediction) return prediction;
     if (!apop_map_sum(out, disnan)) return out;

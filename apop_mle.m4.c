@@ -157,7 +157,7 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
-    apop_score_type ms = apop_score_get(*mm);
+    apop_score_type ms = apop_score_vtable_get(*mm);
     if (ms){
         if (!v || v->size != mm->parameters->vector->size){
             if (v) gsl_vector_free(v);
@@ -344,7 +344,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
             apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
-    apop_score_type ms = apop_score_get(*(i->model));
+    apop_score_type ms = apop_score_vtable_get(*(i->model));
     if (ms) ms(i->data, g, i->model);
     else {
         apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
@@ -605,7 +605,7 @@ else
 void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
-    apop_score_type ms = apop_score_get(*dist);
+    apop_score_type ms = apop_score_vtable_get(*dist);
     if (mp->method == APOP_UNKNOWN_ML)
         mp->method = ms ? APOP_CG_FR : APOP_SIMPLEX_NM;
 

@@ -82,7 +82,7 @@ static long double gamma_cdf(apop_data *d, apop_model *params){
 }
 
 static void gamma_prep(apop_data *data, apop_model *params){
-    apop_score_insert(gamma_dlog_likelihood, apop_gamma);
+    apop_score_vtable_add(gamma_dlog_likelihood, apop_gamma);
     apop_model_clear(data, params);
 }
 

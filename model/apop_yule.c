@@ -71,7 +71,7 @@ static void yule_rng( double *out, gsl_rng * r, apop_model *a){
 }
 
 static void yule_prep(apop_data *data, apop_model *params){
-    apop_score_insert(yule_dlog_likelihood, apop_yule);
+    apop_score_vtable_add(yule_dlog_likelihood, apop_yule);
     apop_model_clear(data, params);
 }
 

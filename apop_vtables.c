@@ -32,7 +32,7 @@ static apop_vtable_s *find_tab(unsigned long h, int *ctr){
 
 //return 0 = found; removed
 //return 1 = not found; no-op
-int apop_vtable_rm(char const *tabname, unsigned long hash){
+int apop_vtable_drop(char const *tabname, unsigned long hash){
     if (!vtable_list) return 1;
     unsigned long h = apop_settings_hash(tabname);
     apop_vtable_s *v = find_tab(h, &ignore_me);
@@ -46,7 +46,7 @@ int apop_vtable_rm(char const *tabname, unsigned long hash){
     return 1;
 }
 
-int apop_vtable_insert(char const *tabname, void *fn_in, unsigned long hash){
+int apop_vtable_add(char const *tabname, void *fn_in, unsigned long hash){
     if (!vtable_list){vtable_list = calloc(1, sizeof(apop_vtable_s));}
 
     unsigned long h = apop_settings_hash(tabname);
@@ -55,11 +55,15 @@ int apop_vtable_insert(char const *tabname, void *fn_in, unsigned long hash){
 
     //add a table if need be.
     if (!v->hashed_name){
-        vtable_list=realloc(vtable_list, (ctr+2)* sizeof(apop_vtable_s));
+        vtable_list = realloc(vtable_list, (ctr+2)* sizeof(apop_vtable_s));
         vtable_list[ctr] = (apop_vtable_s){.name=tabname, .hashed_name = h, .elmts=calloc(1, sizeof(apop_vtable_elmt_s))};
         vtable_list[ctr+1] = (apop_vtable_s){ };
         v = vtable_list+ctr;
     }
+
+    //If this hash is already present, don't re-add. 
+    for (int i=0; i< v->elmt_ct; i++) if (hash == v->elmts[i].hash) return 0;
+
 
     //insert
     v->elmts = realloc(v->elmts, (++(v->elmt_ct))* sizeof(apop_vtable_elmt_s));

@@ -49,7 +49,7 @@ static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
 }
 
 static void dirichlet_prep(apop_data *data, apop_model *params){
-    apop_score_insert(dirichlet_dlog_likelihood, apop_dirichlet);
+    apop_score_vtable_add(dirichlet_dlog_likelihood, apop_dirichlet);
     apop_model_clear(data, params);
 }
 

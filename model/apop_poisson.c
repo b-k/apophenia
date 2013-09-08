@@ -86,7 +86,7 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
 }
 
 static void poisson_prep(apop_data *data, apop_model *params){
-    apop_score_insert(poisson_dlog_likelihood, apop_poisson);
+    apop_score_vtable_add(poisson_dlog_likelihood, apop_poisson);
     apop_model_clear(data, params);
 }
 

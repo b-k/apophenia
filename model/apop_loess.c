@@ -3653,7 +3653,7 @@ static void apop_loess_print(apop_model *in, FILE *out){
 }
 
 static void loess_prep(apop_data *data, apop_model *params){
-    apop_predict_insert(loess_predict, apop_loess);
+    apop_predict_vtable_add(loess_predict, apop_loess);
     apop_model_clear(data, params);
 }
 
