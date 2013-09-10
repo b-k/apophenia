@@ -21,6 +21,8 @@
 **Add a .want_path='y' setting to your apop_mle_settings group, and I'll put a list of the points tried by the optimizer in an apop_data set named path (in the settings group); see documentation for details. Remove the former trace_path mechanism.
 **removed apop_(vector|matrix)_increment. Use, e.g., *gsl_vector_ptr(v, 7) += 3; or (*gsl_vector_ptr(v, 7))++.
 **Some mu and sigmas => μ and σ
+**Removed apop_settings_alloc, apop_settings_group_alloc
+**Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
 
 	June 2013
 --replaced makefile in base directory with ./configure.

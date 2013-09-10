@@ -224,8 +224,8 @@ void test_score(){
 
     double sigsqn = gsl_pow_2(estme->parameters->vector->data[1])/len;
     apop_data *cov = apop_data_get_page(estme->parameters, "cov", 'r');
-    Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
-    Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
+    Diff (apop_data_get(cov, 0, 0), sigsqn , tol3);
+    Diff (apop_data_get(cov, 1, 1), sigsqn/2 , tol3);
     double *cov1 = apop_data_ptr(estme->parameters, .page="<covariance>", .row=1, .col=1);
     Diff (*cov1 ,sigsqn/2 , tol3);
     Diff(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1), 0, tol3);
