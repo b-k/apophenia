@@ -80,7 +80,7 @@ apop_map(your_data, .fn_dp=cutoff, .param=&param, .inplace='y');
 Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if your data set has only a vector (for example), that's what I'll use.
 
 \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
-\ref Apop_data_row to get each row in turn, and send it to the function. The first
+\ref Apop_row to get each row in turn, and send it to the function. The first
 implication is that your function should be expecting a \ref apop_data set with
 exactly one row in it. The second is that \c part is ignored: it only makes sense to go
 row-by-row. If you set \c inplace='y', then you will be modifying your input data set, row by row;
@@ -168,8 +168,6 @@ APOP_VAR_ENDHEAD
             apop_name_stack(in->names, out->names, 'r', 'c');
     }
 
-#define PLACE(fn) {if (inplace == 'y') fn; else gsl_vector_set(out->vector, i, fn);}
-
     //Call mapply_core.
     if (by_apop_rows) mapply_core(in, NULL, NULL, fn, out ? out->vector : NULL, use_index, use_param, param, 'r', by_apop_rows);
     else {
@@ -224,7 +222,7 @@ static void *rowloop(void *t){
     apop_fn_ri  *fn_ri=tc->fn;
     double  val;
     for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
-        Apop_data_row(tc->d, i, onerow);
+        Apop_row(tc->d, i, onerow);
         val = 
         tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
                       : (tc->use_index ? fn_ri(onerow, i) : rtod(onerow) );
@@ -580,7 +578,7 @@ APOP_VAR_ENDHEAD
     double outsum = 0;
     if (fn_r || fn_ri || fn_rpi || fn_rp)
         for (int i=0; i < GSL_MAX(maxsize, in->textsize[0]); i++){
-            Apop_data_row(in, i, arow);
+            Apop_row(in, i, arow);
             if (fn_r) outsum += fn_r(arow);
             else if (fn_rp) outsum += fn_rp(arow, param);
             else if (fn_ri) outsum += fn_ri(arow, i);

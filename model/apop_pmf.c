@@ -34,7 +34,7 @@ in the \c matrix element of the data set, and the cell values are held in the \c
 element (<em>not the vector</em>).
 
 If your data is in a crosstab (with entries in the matrix element for 2-D data or the
-vector for 1-D data), then use \ref apop_crosstab_to_pmf to make the conversion.
+vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.
 
 If your data is already in the sparse listing format (which is probably the case for 3-
 or more dimensional data), then just point the model to your parameter set:

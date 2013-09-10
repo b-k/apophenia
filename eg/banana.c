@@ -4,11 +4,11 @@ typedef struct {
     double scaling;
 } coeff_struct;
 
-double banana (double *params, coeff_struct *in){
+long double banana (double *params, coeff_struct *in){
     return (gsl_pow_2(1-params[0]) + in->scaling*gsl_pow_2(params[1]-gsl_pow_2(params[0])));
 }
 
-double ll (apop_data *d, apop_model *in){
+long double ll (apop_data *d, apop_model *in){
     return - banana(in->parameters->vector->data, in->more);
 }
 

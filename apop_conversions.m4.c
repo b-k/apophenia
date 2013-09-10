@@ -962,7 +962,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
 The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo"</tt>, leaving you with only five strings.
 
 \li If you have a \c NULL-delimited array of strings (not just a loose list as above),
-then use \ref apop_text_fill_base. 
+then use \c apop_text_fill_base. 
 */
 apop_data *apop_text_fill_base(apop_data *data, char* text[]){
     int textct = 0;

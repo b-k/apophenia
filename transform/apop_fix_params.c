@@ -238,6 +238,11 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     return model_out;
 }
 
+/** The \ref apop_model_fix_params function produces a model that has only the non-fixed
+  parameters of the model. After estimation of the fixed-parameter model, this function
+  fills the \c parameters element of the base model and returns a pointer to the
+  base model.
+*/
 apop_model * apop_model_fix_params_get_base(apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);

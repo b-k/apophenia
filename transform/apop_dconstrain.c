@@ -95,9 +95,9 @@ static long double dc_ll(apop_data *indata, apop_model* m){
 apop_model apop_dconstrain = {"Data-constrained model", .log_likelihood=dc_ll, .draw=dc_rng, .prep=dc_prep};
 
 /** \def apop_model_dconstrain
-Build an \ref apop_dconstrain model, qv., which applies a data constraint to the data set. For example, this is how one would truncate a model to have data above zero.
+Build an \c apop_dconstrain model, q.v., which applies a data constraint to the data set. For example, this is how one would truncate a model to have data above zero.
 
-\return An \ref apop_model that is a copy of \ref apop_dconstrained and is appropriately set up.
+\return An \ref apop_model that is a copy of \ref apop_dconstrain and is appropriately set up.
 
 \li Uses the \ref apop_dconstrain_settings group. This macro takes elements of that struct as inputs.
 

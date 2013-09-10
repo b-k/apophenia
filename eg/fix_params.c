@@ -2,7 +2,7 @@
 
 int main(){
     gsl_rng *r = apop_rng_alloc(10);
-    size_t i, ct = 5e4;
+    size_t ct = 5e4;
 
     //set up the model & params
     apop_data *params = apop_data_alloc(2,2,2);

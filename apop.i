@@ -160,7 +160,6 @@ def apop_pylist_to_data(inlist):
 %include "stats.h"
 %include "variadic.h"
 %include "settings.h"
-%include "deprecated.h"
 
 /* Variadics: */
 int apop_db_close(char vacuum='q');

@@ -1,3 +1,27 @@
+/*
+This declares the vtable macros for each procedure that uses the mechanism.
+
+--We want to have type-checking on the functions put into the vtables. Type checking
+happens only with functions, not macros, so we need a type_check function for every
+vtable.
+
+--Only once in your codebase, you'll need to #define Declare_type_checking_fns to
+actually define the type checking function. Everywhere else, the function is merely
+declared.
+
+--All other uses point to having a macro, such as using __VA_ARGS__ to allow any sort
+of inputs to the hash.
+
+--We want to have such a macro for every vtable. That means that we need a macro
+to write macros. We can't do that with C macros.  Thus, this file uses m4 macros to
+generate C macros.
+
+--After the m4 definition of make_vtab_fns, each new vtable requires a typedef, a hash
+definition, and a call to make_vtab_fns to do the rest.
+
+--the typedef and has are defined inside of an m4 macro so that we can also paste the
+same text into documentation as needed.
+*/
 m4_define(make_vtab_fns, <|m4_dnl
 #ifdef Declare_type_checking_fns
 void $1_type_check($1_type in){ };

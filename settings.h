@@ -169,9 +169,6 @@ Apop_settings_copy (ysg,
         free(in);  \
     }
 
-//see deprecated.h for the apop_settings_add_group
-
-
         //Part II: the details of extant settings groups.
 
 typedef enum {

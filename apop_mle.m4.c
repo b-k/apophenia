@@ -8,7 +8,6 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 
 /*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
-#include "vtables.h"
 #include <setjmp.h>
 #include <signal.h>
 #include <gsl/gsl_deriv.h>

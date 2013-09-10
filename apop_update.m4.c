@@ -3,7 +3,6 @@
 /* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 Apop_settings_init(apop_update,
    Apop_varad_set(periods, 6e3);
@@ -128,6 +127,13 @@ Here are the conjugate distributions currently defined:
 </td></tr>
 </table>
 
+\li The conjugate table is stored using a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+
+\code
+typedef apop_model *(*apop_update_type)(apop_data *, apop_model , apop_model);
+#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)
+\endcode
+
 \param data     The input data, that will be used by the likelihood function (default = \c NULL.)
 \param  prior   The prior \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.  (No default, must not be \c NULL.)
@@ -135,7 +141,6 @@ estimate the posterior via MCMC, this needs to have a \c draw method.  (No defau
 estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method (ll preferred). (No default, must not be \c NULL.)
 \param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
-\todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
 Here is a test function that compares the output via conjugate table and via
 Gibbs sampling: 

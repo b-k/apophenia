@@ -795,7 +795,7 @@ static double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col)
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
-\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param col The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
 \param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
 \param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
@@ -880,7 +880,7 @@ static double apop_data_get_tt(const apop_data *in, const char *row, const char*
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
-\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param col The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
 \param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
 \param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
@@ -987,7 +987,7 @@ extension enabled.
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
-\param com The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param col The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
 \param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
 \param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.

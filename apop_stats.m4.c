@@ -482,9 +482,9 @@ apop_data * apop_data_summarize(apop_data *indata){
 
 /** Find the mean, weighted or unweighted. 
 
-\param  v   The data vector
-\param  w   the weight vector. Default: assume equal weights.
-\return     The weighted mean 
+\param v        The data vector
+\param weights  The weight vector. Default: assume equal weights.
+\return         The weighted mean 
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD double apop_vector_mean(gsl_vector const *v, gsl_vector const *weights){

@@ -3619,8 +3619,7 @@ static long double loess_ll(apop_data *d, apop_model *m){
     return apop_map_sum(exp, .param=&sd, .part='r', .fn_vp= onerow);
 }
 
-static void apop_loess_est(apop_data *d, apop_model *m){
-  apop_model *out = apop_model_copy(apop_loess);
+static void apop_loess_est(apop_data *d, apop_model *out){
     if (!Apop_settings_get_group(out, apop_loess))
         Apop_model_add_group(out, apop_loess, .data=d);
     out->data = d;
