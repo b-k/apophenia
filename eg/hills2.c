@@ -49,7 +49,7 @@ int main(){
     gsl_matrix_set_all(x->matrix, NAN);
 
     apop_opts.stop_on_warning='v';
-    apop_model_add_group(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method=APOP_SIMAN);
+    Apop_settings_add_group(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method=APOP_SIMAN);
     apop_ml_impute(x, many_humps);
     #ifndef Testing
     printf("Optimum found at:\n");

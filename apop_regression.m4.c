@@ -34,7 +34,7 @@ void apop_estimate_parameter_tests (apop_model *est){
     apop_data *one_elmt = apop_data_alloc(1, 1);
     gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
-        apop_model_add_group(est, apop_pm, .index=i);
+        Apop_settings_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
 
         double zero = apop_cdf(one_elmt, m);

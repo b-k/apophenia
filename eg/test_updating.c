@@ -17,7 +17,7 @@ int main(){
     apop_model *bcopy = apop_model_set_parameters(apop_binomial, n, GSL_NAN);
     apop_data *bin_draws = apop_data_falloc((1,2), n*(1-binom_start), n*binom_start);
     bin = apop_model_fix_params(bcopy);
-    apop_model_add_group(beta, apop_update, .burnin=.1, .periods=1e4);
+    Apop_settings_add_group(beta, apop_update, .burnin=.1, .periods=1e4);
     apop_model *out_h = apop_update(bin_draws, beta, bin, NULL);
 
     //We now have a histogram of values for p. What's the closest beta

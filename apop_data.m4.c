@@ -71,6 +71,7 @@ APOP_VAR_ENDHEAD
 /** Allocate a \ref apop_data structure, to be filled with data; set everything in the allocated portion to zero. See \ref apop_data_alloc for details.
 
 \return    The \ref apop_data structure, allocated and zeroed out.
+\exception out->error=='m' malloc error; probably out of memory.
 \see apop_data_alloc 
 \ingroup data_struct
 \li This function uses the \ref designated syntax for inputs.
@@ -93,15 +94,15 @@ APOP_VAR_ENDHEAD
     }
     else vsize = size1;
     apop_data *setme = malloc(sizeof(apop_data));
-    apop_assert(setme, "malloc failed. Probably out of memory.");
+    Apop_stopif(!setme, apop_return_data_error('m'), 0, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
         setme->matrix = gsl_matrix_calloc(msize1,msize2);
-        apop_assert(setme->matrix, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        Apop_stopif(!setme->matrix, apop_return_data_error('m'), 0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector = gsl_vector_calloc(vsize);
-        apop_assert(setme->vector, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        Apop_stopif(!setme->vector, apop_return_data_error('m'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     setme->names = apop_name_alloc();
     return setme;
@@ -333,7 +334,7 @@ if 'c', stack columns of m1's matrix to left of m2's<br>
 \param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
-\exception out->error=='d'  Dimension error; couldn't copy.
+\exception out->error=='d'  Dimension error; couldn't make a complete copy.
 
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
 both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
@@ -395,7 +396,8 @@ APOP_VAR_ENDHEAD
 
     if (m2->text){ //we've already copied m1->text, if any, so if m2->text is NULL, we're done.
         if (posn=='r'){
-            apop_assert(!out->text || m2->textsize[1]==out->textsize[1], 
+            Apop_stopif(out->text && m2->textsize[1]!=out->textsize[1], 
+                    out->error='d'; return out, 0,
                             "The first data set has %zu columns of text and the second has %zu columns. "
                             "I can't stack that.", out->textsize[1], m2->textsize[1]);
             int basetextsize = out->textsize[0];
@@ -405,12 +407,13 @@ APOP_VAR_ENDHEAD
                 for(int j=0; j< m2->textsize[1]; j++)
                     apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
         } else {
-            apop_assert(!out->text || m2->textsize[0]==out->textsize[0], 
+            Apop_stopif(out->text && m2->textsize[0]!=out->textsize[0], 
+                    out->error='d'; return out, 0,
                             "The first data set has %zu rows of text and the second has %zu rows. "
                             "I can't stack that.", out->textsize[0], m2->textsize[0]);
             int basetextsize = out->textsize[1];
             apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
-            Apop_stopif(out->error, return out, 0, "Allocation error.");
+            Apop_stopif(out->error, out->error='a'; return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
                     apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
@@ -814,7 +817,7 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
     apop_data *d;
     if (page){
         d = apop_data_get_page(data, page);
-        Apop_assert(d, "I couldn't find a page with label '%s'.", page);
+        Apop_stopif(!d, return NULL, 0, "I couldn't find a page with label '%s'. Returning NULL.", page);
     } else d = data;
     if (rowname && colname)
         return apop_data_ptr_tt(d, rowname,colname);
@@ -825,10 +828,10 @@ APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int c
 
     //else: row number, column number
     if (col == -1 || (col == 0 && !d->matrix && d->vector)){
-        Apop_assert(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
+        Apop_stopif(!d->vector, return NULL, 0, "You asked for the vector element (col=-1) but it is NULL. Returning NULL.");
         return gsl_vector_ptr(d->vector, row);
     } else {
-        Apop_assert(d->matrix, "You asked for the matrix element (%i, %i) but the matrix is NULL.", row, col);
+        Apop_stopif(!d->matrix, return NULL, 0, "You asked for the matrix element (%i, %i) but the matrix is NULL Returning NULL..", row, col);
         return gsl_matrix_ptr(d->matrix, row,col);
     }
 APOP_VAR_ENDHEAD
@@ -888,7 +891,7 @@ static double apop_data_get_tt(const apop_data *in, const char *row, const char*
 \return The value at the given location. */
 APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page){
     const apop_data * apop_varad_var(data, NULL);
-    Apop_assert(data, "You sent me a NULL data set.");
+    Apop_stopif(!data, return NAN, 0, "You sent me a NULL data set. Returning NaN.");
     const size_t apop_varad_var(row, 0);
     const int apop_varad_var(col, 0);
     const char * apop_varad_var(rowname, NULL);
@@ -1307,8 +1310,8 @@ gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidt
     if (!m)
         return (newheight && newwidth) ?  gsl_matrix_alloc(newheight, newwidth) : NULL;
     size_t i, oldoffset=0, newoffset=0, realloced = 0;
-    apop_assert((m->block->data==m->data) && m->owner & (m->tda == m->size2),
-                                    "I can't resize submatrices or other subviews.");
+    Apop_stopif(m->block->data!=m->data || !m->owner || m->tda != m->size2,
+            return NULL, 0, "I can't resize submatrices or other subviews.");
     m->block->size = newheight * newwidth;
     if (m->size2 > newwidth)
         for (i=1; i< GSL_MIN(m->size1, newheight); i++){
@@ -1358,8 +1361,8 @@ resizing a portion of a parent matrix makes no sense.]
  */
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
     if (!v) return newheight ? gsl_vector_alloc(newheight) : NULL;
-    apop_assert((v->block->data==v->data) && v->owner & (v->stride == 1),
-                                    "I can't resize subvectors or other views.");
+    Apop_stopif(v->block->data!=v->data || !v->owner || v->stride != 1,
+                    return NULL, 0, "I can't resize subvectors or other views.");
     v->block->size = newheight;
     v->size = newheight;
     v->block->data = 

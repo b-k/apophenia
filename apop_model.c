@@ -340,7 +340,7 @@ typedef apop_model* (*apop_parameter_model_type)(apop_data *, apop_model *);
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
-        settings = apop_model_add_group(m, apop_pm, .base= m);
+        settings = Apop_settings_add_group(m, apop_pm, .base= m);
     apop_parameter_model_type pm = apop_parameter_model_vtable_get(*m);
     if (pm) return pm(d, m);
     else if (d){

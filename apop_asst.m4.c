@@ -100,7 +100,7 @@ Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\d
 
 When reading the code, remember that the zeroth element holds the value for N=1, and so on.
 */
-    Apop_assert_c(N>0, GSL_NAN, 1, "N is %i, but most be greater than 0.", N);
+    Apop_stopif(N<=0, return GSL_NAN, 0, "N is %i, but must be greater than 0.", N);
     static double *  eses	= NULL;
     static int * 	 lengths= NULL;
     static int		 count	= 0;
@@ -171,7 +171,7 @@ static int find_min_unsorted(size_t *sorted, size_t height, size_t min){
 
  Uses the \c gsl_sort_vector_index function internally, and that function just ignores NaNs; therefore this function just leaves NaNs exactly where they lay.
 
-\param data    The input set to be modified. (No default, must not be \c NULL.)
+\param data    The input set to be modified. (No default. If \c NULL, return \c NULL and emit a warning if <tt>apop_opts.verbose >= 1</tt>.)
 \param sortby  The column of data by which the sorting will take place. As usual, -1 indicates the vector element. (default: column zero of the matrix if there is a matrix; if there's a vector but no matrix, then -1).
 \param asc   If 'd' or 'D', sort in descending order; else sort in ascending order. (Default: ascending)
 \return A pointer to the data set, so you can do things like \c apop_data_show(apop_data_sort(d, -1)).
@@ -184,7 +184,7 @@ The following example sorts the <tt>test_data2</tt> file (which you can copy fro
 */
 APOP_VAR_HEAD apop_data * apop_data_sort(apop_data *data, int sortby, char asc){
     apop_data * apop_varad_var(data, NULL);
-    apop_assert_s(data, "You gave me NULL data to sort.");
+    Apop_stopif(!data, return NULL, 1, "You gave me NULL data to sort. Returning NULL");
     int apop_varad_var(sortby, 0);
     if (sortby==0 && !data->matrix && data->vector) //you meant sort the vector
         sortby = -1;
@@ -233,15 +233,15 @@ APOP_VAR_ENDHEAD
 
 /** Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
 
-\param data	a gsl_vector of data. (No default, must not be \c NULL.)
-\param rounding This will either be 'u', 'd', or 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If 'u', then round up (use the next highest value); if 'd' (or anything else), round down to the next lowest value; if 'a', take the mean of the two nearest points. If 'u' or 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if 'd' or 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = 'd'.)
+\param data	a \c gsl_vector of data. (No default, must not be \c NULL.)
+\param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. If \c 'u' or \c 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = \c 'd'.)
 
 \li You may eventually want to \c free() the array returned by this function.
 \li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);
-    Apop_assert(data, "You gave me NULL data.");
+    Apop_stopif(!data, return NULL, 0, "You gave me NULL data.");
     char apop_varad_var(rounding, 'd');
 APOP_VAR_ENDHEAD
     gsl_vector *sorted	= gsl_vector_alloc(data->size);
@@ -382,9 +382,12 @@ is in [0,1].
 The variance which the Beta distribution should have. It is in (0, 1/12), where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near 1/12 and mean far from 1/2.
 
 \return Returns an \c apop_beta model with its parameters appropriately set.
+\exception out->error=='r' Range error: mean is not within [0, 1].
 */
 apop_model *apop_beta_from_mean_var(double m, double v){
-    Apop_assert(m<1&&m > 0, "You asked for a beta distribution "
+    Apop_stopif(m>=1|| m<=0, apop_model *out = apop_model_copy(apop_beta);
+                        out->error='r'; return out,
+                       0, "You asked for a beta distribution "
                         "with mean %g, but the mean of the beta will always "
                         "be strictly between zero and one.", m);
     double k     = (m * (1- m)/ v) -1;

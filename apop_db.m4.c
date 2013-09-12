@@ -19,8 +19,8 @@ apop_opts_type apop_opts	=
 #include "apop_db_mysql.c"
 #endif
 
-#define ERRCHECK {Apop_assert_c(err==NULL, 1, 0, "%s: %s",query, err); }
-#define ERRCHECK_NR {Apop_assert_c(err==NULL, NULL, 0, "%s: %s",query, err); }
+#define ERRCHECK {Apop_stopif(err, return 1, 0, "%s: %s",query, err); }
+#define ERRCHECK_NR {Apop_stopif(err, return NULL, 0, "%s: %s",query, err); }
 #define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; sqlite3_free(err); return outdata, 0, "%s: %s",query, err); }
 
 #include "apop_db_sqlite.c" // callback_t is defined here, btw.
@@ -70,7 +70,7 @@ int apop_db_open(char const *filename){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_db_open(filename);
 #else
-        {Apop_assert_c(0, 0, 0, "apop_db_open: Apophenia was compiled without mysql support.");}
+        {Apop_stopif(1, return -1, 0, "Apophenia was compiled without mysql support.");}
 #endif
         return apop_sqlite_db_open(filename);
 }
@@ -198,10 +198,10 @@ int apop_query(const char *fmt, ...){
     Fillin(query, fmt)
     if (apop_opts.db_engine == 'm')
 #ifdef HAVE_LIBMYSQLCLIENT
-        {Apop_assert_c(mysql_db, 1, 0, "No mySQL database is open.");
+        {Apop_stopif(!mysql_db, return 1, 0, "No mySQL database is open.");
         apop_mysql_query(query);}
 #else
-        Apop_assert_c(0, 1, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return 1, 0, "Apophenia was compiled without mysql support.")
 #endif
     else 
         {if (!db) apop_db_open(NULL);
@@ -231,7 +231,8 @@ int apop_query(const char *fmt, ...){
 For example, the following function will list the tables in an SQLite database (much like you
 could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
-\exception out->error='q' The database engine was unable to run the query (e.g.,  invalid SQL syntax). Again, a valid query that returns zero rows is not an error, and \c NULL is returned.
+\exception out->error=='q' The database engine was unable to run the query (e.g.,  invalid SQL syntax). Again, a valid query that returns zero rows is not an error, and \c NULL is returned.
+\exception out->error=='d' Database error.
 \include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){
@@ -241,7 +242,7 @@ apop_data * apop_query_to_text(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         out = apop_mysql_query_core(query, process_result_set_chars);
 #else
-        Apop_assert_c(0, NULL, 0, "Apophenia was compiled without mysql support.");
+        Apop_stopif(1, apop_return_data_error('d'), 0, "Apophenia was compiled without mysql support.");
 #endif
     } else out = apop_sqlite_query_to_text(query);
     free(query);
@@ -300,7 +301,7 @@ apop_data * apop_query_to_data(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_data);
 #else
-        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, apop_return_data_error('d'), 0, "Apophenia was compiled without mysql support.");
 #endif
 
     //else
@@ -342,7 +343,7 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_matrix);
 #else
-        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return NULL, 0, "Apophenia was compiled without mysql support.");
 #endif
     Store_settings
     apop_data * outd = apop_query_to_data("%s", query);
@@ -377,7 +378,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         return apop_mysql_query_core(query, process_result_set_vector);
 #else
-        Apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return NULL, 0, "Apophenia was compiled without mysql support.");
 #endif
     apop_data *d=NULL;
     gsl_vector *out;
@@ -385,7 +386,7 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Store_settings
 	d	= apop_query_to_data("%s", query);
     Restore_settings
-    Apop_assert_c(d, NULL, 2, "Query [%s] turned up a blank table. Returning NULL.", query);
+    Apop_stopif(!d, return NULL, 2, "Query [%s] turned up a blank table. Returning NULL.", query);
     //else:
     out = gsl_vector_alloc(d->matrix->size1);
 	gsl_matrix_get_col(out, d->matrix, 0);
@@ -417,7 +418,7 @@ double apop_query_to_float(const char * fmt, ...){
 #ifdef HAVE_LIBMYSQLCLIENT
         out = apop_mysql_query_to_float(query);
 #else
-        apop_assert_c(0, 0, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return NAN, 0, "Apophenia was compiled without mysql support.")
 #endif
     } else {
         apop_data *d=NULL;
@@ -537,7 +538,7 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
         Apop_stopif(sqlite3_reset(p_stmt), return -1, apop_errorlevel, "SQLite error.");
         Apop_stopif(sqlite3_clear_bindings(p_stmt), return -1, apop_errorlevel, "SQLite error."); //needed for NULLs
     }
-    Apop_assert_c(sqlite3_finalize(p_stmt) ==SQLITE_OK, -1, apop_errorlevel, "SQLite error.");
+    Apop_stopif(sqlite3_finalize(p_stmt)!=SQLITE_OK, return -1, apop_errorlevel, "SQLite error.");
     return 0;
 #endif
 }

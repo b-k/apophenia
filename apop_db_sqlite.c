@@ -349,8 +349,8 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
 }
 
 apop_data *apop_sqlite_multiquery(const char *intypes, char *query){
-    apop_assert(intypes, "You gave me NULL for the list of input types. I can't work with that.");
-    apop_assert(query, "You gave me a NULL query. I can't work with that.");
+    Apop_stopif(!intypes, apop_return_data_error('t'), 0, "You gave me NULL for the list of input types. I can't work with that.");
+    Apop_stopif(!query, apop_return_data_error('q'), 0, "You gave me a NULL query. I can't work with that.");
     char *err = NULL;
     apop_qt info = { };
     count_types(&info, intypes);

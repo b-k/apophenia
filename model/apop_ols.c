@@ -366,7 +366,7 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         int i = settings->index;
         double mu = apop_data_get(m->parameters, i, -1);
         double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>"));
-        int df = apop_data_get(m->info, .rowname="df", .page = "info");
+        int df = apop_data_get(m->info, .rowname="df");
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default

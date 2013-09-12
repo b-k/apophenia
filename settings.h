@@ -42,7 +42,7 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
  \return A pointer to the newly-prepped group.
 \hideinitializer \ingroup settings
  */
-#define Apop_model_add_group(model, type, ...)  \
+#define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_model_add_group.
@@ -80,13 +80,16 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
 #define apop_settings_set Apop_settings_set
 #define APOP_SETTINGS_GET Apop_settings_get
 #define apop_settings_get Apop_settings_get
-#define APOP_MODEL_ADD_GROUP Apop_model_add_group
-#define apop_model_add_group Apop_model_add_group
+#define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
+#define apop_settings_add_group Apop_settings_add_group
 #define APOP_SETTINGS_GET_GROUP Apop_settings_get_group
 #define apop_settings_get_group Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
 #define apop_settings_rm_group Apop_settings_rm_group
 #define Apop_model_copy_set apop_model_copy_set
+
+//deprecated:
+#define Apop_model_add_group Apop_settings_add_group
 
 /** \endcond */ //End of Doxygen ignore.
 

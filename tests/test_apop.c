@@ -1083,7 +1083,7 @@ void dummies_and_factors(){
     apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
     apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
     check_for_dummies(d, dum, 0);
-    apop_text_to_factors(d, 0, 2);
+    apop_data_to_factors(d, 't', 0, 2);
     for(int i=0; i < d->textsize[0]; i ++) //the set is only As and Cs.
         if (!strcmp(d->text[i][0], "A"))
             assert(apop_data_get(d, i, 2) == 0);

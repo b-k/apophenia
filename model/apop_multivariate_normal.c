@@ -33,7 +33,7 @@ static long double apop_multinormal_ll(apop_data *data, apop_model * m){
         gsl_vector_free(x_minus_mu);
         Apop_assert_c(0, GSL_NEGINF, 1, "the determinant of the given covariance is zero. Returning GSL_NEGINF."); 
     }
-    apop_assert(determinant > 0, "The determinant of the covariance matrix you gave me "
+    Apop_stopif(determinant <= 0, return NAN, 0, "The determinant of the covariance matrix you gave me "
             "is negative, but a covariance matrix must always be positive semidefinite "
             "(and so have nonnegative determinant). Maybe run apop_matrix_to_positive_semidefinite?");
     for (i=0; i< data->matrix->size1; i++){

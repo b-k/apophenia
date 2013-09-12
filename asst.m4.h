@@ -87,11 +87,6 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 #define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
 
-#define apop_assert_s Apop_assert
-#define apop_assert Apop_assert
-#define Apop_assert_s Apop_assert
-#define apop_assert_c Apop_assert_c
-
 //Missing data
 Apop_var_declare( apop_data * apop_data_listwise_delete(apop_data *d, char inplace) )
 apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);

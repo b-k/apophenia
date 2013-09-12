@@ -586,7 +586,8 @@ APOP_VAR_ENDHEAD
         }
     else {
         if (part =='m' || part == 'v' || part == 'a'){
-        apop_assert(fn_d || fn_dp || fn_di || fn_dpi, "You specified .part='a', which means I need one of .fn_d, .fn_dp, .fn_di, or .fn_dpi specified");
+        Apop_stopif(!fn_d && !fn_dp && !fn_di && !fn_dpi, return NAN, 0, 
+                "You specified .part='a', which means I need one of .fn_d, .fn_dp, .fn_di, or .fn_dpi specified");
         if (part =='m') firstcol= 0; //don't traverse vector, even if present
         if (part =='v') msize2= 0; //don't traverse matrix, even if present
         for (int i=0; i < GSL_MAX(vsize, msize1); i++)
@@ -598,7 +599,8 @@ APOP_VAR_ENDHEAD
                 else            outsum += fn_dpi(val, param, i);
             }
         } else if (part =='r' ||part =='c'){
-            apop_assert(fn_v || fn_vp || fn_vi || fn_vpi, "You specified .part='a', which means I need one of .fn_v, .fn_vp, .fn_vi, or .fn_vpi specified");
+            Apop_stopif(!fn_v && !fn_vp && !fn_vi && !fn_vpi, return NAN, 0,
+                    "You specified .part='a', which means I need one of .fn_v, .fn_vp, .fn_vi, or .fn_vpi specified");
             long int max = (part=='r') ? msize1 : msize2;
             gsl_vector_view v;
             for (int i=0; i < max; i++){
