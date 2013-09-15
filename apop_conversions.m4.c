@@ -1187,7 +1187,7 @@ APOP_VAR_ENDHEAD
         not_ok = tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
     Apop_stopif(not_ok, return -1, 0, "Creating the table in the database failed.");
 #if SQLITE_VERSION_NUMBER < 3003009
-    apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
+    Apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "
                     "so if errors crop up please see about installing a more recent version of SQLite's library.");
 #endif
