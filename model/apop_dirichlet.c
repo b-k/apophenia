@@ -37,7 +37,7 @@ static void dirichlet_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
     }
 }
 
-static double dirichlet_constraint(apop_data *data, apop_model *v){
+static long double dirichlet_constraint(apop_data *data, apop_model *v){
     //all elements are > 0.
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }

@@ -40,7 +40,7 @@ static void bernoulli_estimate(apop_data * data,  apop_model *est){
     apop_data_set(cov, 0,0, p*(1-p));
 }
 
-static double bernoulli_constraint(apop_data *data, apop_model *inmodel){
+static long double bernoulli_constraint(apop_data *data, apop_model *inmodel){
     //constraint is 0 < b and  1 > b
     Staticdef(apop_data *, constraint, apop_data_falloc((2,2,1), 0., 1.,
                                                                 -1., -1.));

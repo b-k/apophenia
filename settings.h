@@ -45,7 +45,7 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
-/** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_model_add_group.
+/** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_settings_add_group.
 
  \return A pointer to the newly-prepped model.
 \hideinitializer \ingroup settings

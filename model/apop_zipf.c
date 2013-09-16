@@ -21,7 +21,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 #include "apop_internal.h"
 #include <gsl/gsl_sf_zeta.h>
 
-static double zipf_constraint(apop_data *returned_beta, apop_model *m){
+static long double zipf_constraint(apop_data *returned_beta, apop_model *m){
     //constraint is 1 < beta_1
     Nullcheck_mp(m, GSL_NAN);
     Staticdef(apop_data *, constraint, apop_data_falloc((1,1,1), 1, 1));

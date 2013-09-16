@@ -106,7 +106,7 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
 \li This function uses the \ref designated syntax for inputs.
 \todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
  */
-APOP_VAR_HEAD double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
+APOP_VAR_HEAD long double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
     static apop_data *default_constraint;
     gsl_vector * apop_varad_var(beta, NULL);
     double apop_varad_var(margin, 0);
@@ -145,8 +145,7 @@ APOP_VAR_ENDHEAD
         bound           +=
         bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c, margin);
     }
-    if (!bound)    //All constraints met.
-        return 0;
+    if (!bound) return 0;   //All constraints met.
     gsl_vector *base_beta = apop_vector_copy(beta);
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
@@ -180,7 +179,7 @@ add_margin:
             gsl_vector_add(beta, fix);
         }
     }
-    double out = apop_vector_distance(base_beta, beta);
+    long double out = apop_vector_distance(base_beta, beta);
     gsl_vector_free(base_beta);
     return out;
 }

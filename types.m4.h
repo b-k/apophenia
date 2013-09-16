@@ -82,7 +82,7 @@ struct apop_model{
                 /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
     long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
                             the integral up to the single data point you provide.  Call via \ref apop_cdf */
-    double (*constraint)(apop_data *data, apop_model *params);
+    long double (*constraint)(apop_data *data, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
                 /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);

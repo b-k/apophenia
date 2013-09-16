@@ -90,7 +90,7 @@ static void mvn_prep(apop_data *d, apop_model *m){
     apop_model_clear(d, m);
 }
 
-double mvn_constraint(apop_data *d, apop_model *m){
+static long double mvn_constraint(apop_data *d, apop_model *m){
     return apop_matrix_to_positive_semidefinite(m->parameters->matrix);
 }
 

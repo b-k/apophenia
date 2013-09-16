@@ -84,7 +84,7 @@ static void apop_annealing(infostruct*); //below.
 
 static double one_d(double b, void *in){
     infostruct *i  = in;
-    double penalty = 0;
+    long double penalty = 0;
     gsl_vector_set(i->gp->beta, i->gp->dimension, b);
     apop_data_unpack(i->gp->beta, i->model->parameters);
 	if (i->model->constraint)

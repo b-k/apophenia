@@ -59,7 +59,7 @@ static void poisson_estimate(apop_data * data,  apop_model *est){
     }
 }
 
-static double positive_beta_constraint(apop_data *returned_beta, apop_model *v){
+static long double positive_beta_constraint(apop_data *returned_beta, apop_model *v){
     //constraint is 0 < beta_1
     if (v->parameters->vector)
         return apop_linear_constraint(v->parameters->vector, .margin = 1e-4);

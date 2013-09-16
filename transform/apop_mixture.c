@@ -235,7 +235,7 @@ static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
     apop_draw(out, r, ms->model_list[(int)index]);
 }
 
-static double weights_over_zero(apop_data *data, apop_model *m){
+static long double weights_over_zero(apop_data *data, apop_model *m){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
     gsl_vector v = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
     return apop_linear_constraint(&v);

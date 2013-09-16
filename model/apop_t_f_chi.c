@@ -93,7 +93,7 @@ void apop_chisq_dist_draw(double *out, gsl_rng *r, apop_model *m){
     *out = gsl_ran_chisq (r, m->parameters->vector->data[0]);
 }
 
-double apop_t_dist_constraint(apop_data *beta, apop_model *m){
+static long double apop_t_dist_constraint(apop_data *beta, apop_model *m){
     Staticdef(apop_data *, d_constr, apop_data_falloc((2,2,3),
                              0, 0, 1, 0,  //0 < sigma
                             .9, 0, 0, 1)); //.9 < df
@@ -101,7 +101,7 @@ double apop_t_dist_constraint(apop_data *beta, apop_model *m){
 }
 
 
-static double pos_def(apop_data *data, apop_model *candidate){
+static long double pos_def(apop_data *data, apop_model *candidate){
     return apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
 }
 
@@ -200,7 +200,7 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
     apop_data_free(crrc);    apop_data_free(crr);
 }
 
-double wishart_constraint(apop_data *d, apop_model *m){
+static long double wishart_constraint(apop_data *d, apop_model *m){
     double out= apop_matrix_to_positive_semidefinite(m->parameters->matrix);
     double df_minus_dim = m->parameters->vector->data[0] - (m->parameters->matrix->size1-2)-1e-4;
     if (df_minus_dim <= 0){

@@ -133,12 +133,11 @@ static long double fix_params_p(apop_data *d, apop_model *fixed_model){
     return apop_p(d, base_model);
 }
 
-static double  fix_params_constraint(apop_data *data, apop_model *fixed_model){
+static long double fix_params_constraint(apop_data *data, apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
-    double out = base_model->constraint(data, base_model);
-    if (out) 
-        pack(base_model->parameters, fixed_model);
+    long double out = base_model->constraint(data, base_model);
+    if (out) pack(base_model->parameters, fixed_model);
     return out;
 }
 

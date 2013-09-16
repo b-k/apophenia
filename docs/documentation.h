@@ -1062,10 +1062,9 @@ apop_data *v_dot_m2 = apop_dot((apop_data){.vector=v}, (apop_data){.matrix=m});
 \endcode
 
 \li\ref apop_array_to_vector() : <tt>double*</tt>\f$\to\f$ <tt>gsl_vector</tt>
-\li\ref apop_line_to_data() : <tt>double*</tt>\f$\to\f$ vector and/or matrix parts of <tt>apop_data</tt> (`line' was intended to distinguish from a 2-D array, <tt>double**</tt>)
-\li\ref apop_line_to_matrix() : <tt>double*</tt>\f$\to\f$ <tt>gsl_matrix</tt>
+\li\ref apop_data_fill() : <tt>double*</tt>\f$\to\f$  \ref apop_data. See also \ref apop_data_falloc
 \li\ref apop_matrix_to_data()
-\li\ref apop_text_to_data() : delimited text file\f$\to\f$ <tt>apop_data</tt>
+\li\ref apop_text_to_data() : delimited text file\f$\to\f$ \ref apop_data
 \li\ref apop_text_to_db() : delimited text file\f$\to\f$ database
 \li\ref apop_vector_to_data()
 \li\ref apop_vector_to_matrix()
@@ -1700,7 +1699,7 @@ be non-negative.
 \li Statisticians want the covariance and basic tests about the parameters. If you just
 want the optimal value, then adding this line will shut off all auxiliary calculations:
 \code
-Apop_model_add_group(your_model, apop_parts_wanted);
+Apop_settings_add_group(your_model, apop_parts_wanted);
 \endcode
 See the documentation for \ref apop_parts_wanted_settings for details about how this works. 
 It can also offer quite the speedup: finding the covariance matrix without any information can 
@@ -1742,7 +1741,7 @@ A constraint function must do three things:
 The idea is that if the constraint returns zero, the log likelihood function will return the log likelihood as usual, and if not, it will return the log likelihood at the constraint's return vector minus the penalty. To give a concrete example, here is a constraint function that will ensure that both parameters of a two-dimensional input are both greater than zero:
 
 \code
-static double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
+static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
     static apop_data *constraint = NULL;
     if (!constraint){
@@ -2432,7 +2431,7 @@ on hand.
 
 \code
 apop_model *beta = apop_model_set_parameters(apop_beta, 0.5, 0.25);
-Apop_model_add_group(beta, apop_update, .burnin = 0.2, .periods =1e5);
+Apop_settings_add_group(beta, apop_update, .burnin = 0.2, .periods =1e5);
 apop_model *my_pmf = apop_estimate(your_data, apop_pmf);
 apop_model *posterior = apop_update(.prior= beta, .likelihood = my_pmf);
 \endcode
@@ -2693,7 +2692,7 @@ main structure, copying one struct to another, freeing the main structure.
 The spaces after the commas indicate that no special code gets added to
 the functions that these macros generate.
 
-You'll never call these funtions directly; they are called by \ref Apop_model_add_group,
+You'll never call these funtions directly; they are called by \ref Apop_settings_add_group,
 \ref apop_model_free, and other model or settings-group handling functions.
 
 Now that initializing/copying/freeing of

@@ -17,7 +17,7 @@ void pack_prep(apop_data *d, apop_model *m){
         Apop_model_add_group(m, apop_mle, .tolerance=1e-6, .step_size=3);
 }
 
-double pack_constraint(apop_data *d, apop_model *m){
+long double pack_constraint(apop_data *d, apop_model *m){
     return apop_linear_constraint(apop_data_pack(m->parameters, .all_pages='y'))*1e-5;
     //penalty size is irrelevant, but must be smaller than p().
 }

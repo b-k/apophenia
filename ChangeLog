@@ -9,7 +9,7 @@
 **Estimate returns void (was apop_model*)
 --vtable mechanism improvements
 **Remove score, predict, and parameter_model from the apop_model object; use the vtable mechanism.
-**Upgrade model p, ll, cdf to return long double (was double)
+**Upgrade model p, ll, cdf, constraint to return long double (was double)
 **consolidate vector_var and vector_weighted_var. same with cov, mean, weighted_skew, and weighted_pop. Users just have to replace apop_vector_weighted_var with apop_vector_var.
 **removed deprecated.h entirely.
 --apop_data_add_named_elmts puts new data in the vector, not the matrix, because it is intended for a list of scalars (==a vector). If you use apop_data_get(infodata, .rowname="statistic name") then you'll be able to retrieve the element either way.

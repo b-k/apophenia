@@ -22,7 +22,7 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 
 #include "apop_internal.h"
 
-static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
+static long double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1
     return apop_linear_constraint(v->parameters->vector, .margin = 1e-3);
 }

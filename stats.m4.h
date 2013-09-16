@@ -187,7 +187,7 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist);
 Apop_var_declare( apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary) )
 
 //in apop_linear_constraint.c
-Apop_var_declare( double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin) )
+Apop_var_declare( long double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin) )
 
 //in apop_model_fix_params.c
 apop_model * apop_model_fix_params(apop_model *model_in);

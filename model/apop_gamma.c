@@ -21,7 +21,7 @@ Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M a
 
 #include "apop_internal.h"
 
-static double gamma_constraint(apop_data *data, apop_model *v){
+static long double gamma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and 0 < beta_2
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
 }

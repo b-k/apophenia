@@ -22,7 +22,7 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 
 #include "apop_internal.h"
 
-static double yule_constraint(apop_data *returned_beta, apop_model *m){
+static long double yule_constraint(apop_data *returned_beta, apop_model *m){
   Nullcheck_mp(m, GSL_NAN);
     //constraint is 1 < beta_1
   Staticdef(apop_data *, constraint, apop_data_falloc((1,1,1), 1, 1));

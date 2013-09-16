@@ -61,7 +61,7 @@ static void make_covar(apop_model *est){
     pv[0]=n;
 }
 
-static double multinomial_constraint(apop_data *data, apop_model *b){
+static long double multinomial_constraint(apop_data *data, apop_model *b){
   //constraint is that 0 < all elmts 
     return apop_linear_constraint(b->parameters->vector, .margin = 1e-3);
 }

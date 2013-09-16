@@ -89,12 +89,12 @@ static long double compose_ll(apop_data *indata, apop_model*composition){
     return ll;
 }
 
-static double composed_constraint(apop_data *data, apop_model *m){
+static long double composed_constraint(apop_data *data, apop_model *m){
     Get_cs(m, GSL_NAN)
     Apop_stopif(unpack(m), return GSL_NAN, 0, "Trouble unpacking parameters.");
-    if(!cs->generator_m->constraint && !cs->ll_m->constraint) return 0;
+    if (!cs->generator_m->constraint && !cs->ll_m->constraint) return 0;
 
-    double penalty = 
+    long double penalty = 
             (cs->generator_m->constraint ? cs->generator_m->constraint(data, cs->generator_m) : 0)
           + (cs->ll_m->constraint ? cs->ll_m->constraint(NULL, cs->ll_m) : 0);
     pack(m);

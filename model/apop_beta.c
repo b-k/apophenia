@@ -73,7 +73,7 @@ static void beta_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model 
 	gsl_vector_set(gradient, 1, ln_x_minus_1_sum  + (gsl_sf_psi(ab.alpha + ab.beta) - gsl_sf_psi(ab.beta))*tsize);
 }
 
-static double beta_constraint(apop_data *data, apop_model *v){
+static long double beta_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1 and  0 < beta_2
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
