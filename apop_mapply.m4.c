@@ -153,7 +153,7 @@ APOP_VAR_ENDHEAD
                      : part == 'c' ?  apop_data_alloc(msize2) : NULL;
     Apop_stopif(inplace=='y' && !in->vector, in->vector=gsl_vector_alloc(maxsize), 2, 
                             "No vector in your input data set for me to write outputs to; "
-                            "allocating one for you of size %zu", maxsize);
+                            "allocating one for you of size %i", maxsize);
     if (in->names && out){
         if (part == 'v'  || (in->vector && ! in->matrix)) {
              apop_name_stack(out->names, in->names, 'v');

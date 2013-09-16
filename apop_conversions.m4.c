@@ -75,53 +75,6 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** Convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>. Input data is copied.
-
-\param line	the array to read in
-\param rows, cols	the size of the array.
-\return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
-
-usage: \code gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); \endcode
-\see apop_arrary_to_matrix
-\ingroup conversions
-*/
-gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
-    gsl_matrix *out= gsl_matrix_alloc(rows, cols);
-    gsl_matrix_view	m = gsl_matrix_view_array(line, rows,cols);
-	gsl_matrix_memcpy(out, &(m.matrix));
-    return out;
-}
-
-/** A convenience function to convert a <tt>double *</tt> array to an \ref apop_data set. It will
-have no names. The input data is copied, not pointed to.
-
-See also \ref apop_line_to_matrix or \ref apop_array_to_vector; this function will use these and then wrap an \ref apop_data struct around the output(s).
-
-\param in	The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example,
-\code
-double params[] = {0, 1, 2
-                   3, 4, 5};
-apop_data *out = apop_line_to_data(params, 2, 2, 2);
-\endcode
-will produce an \ref apop_data set with a vector \f$\left[\matrix{0 \cr 3}\right]\f$ and a matrix \f$\left[\matrix{1 & 2 \cr 4 & 5}\right]\f$.
-\param vsize    The vector size. If there are also rows/cols, I expect this to equal the number or rows.
-\param rows, cols	the size of the array.
-\return the \ref apop_data set, allocated for you and ready to use.
-\exception out->error=='d' Dimension error: vector and matrix heights have to be the same.
-\ingroup conversions
-*/
-apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
-    if (vsize==0 && (rows>0 && cols>0))
-        return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
-    if ((rows==0 || cols==0) && vsize>0)
-        return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    Apop_stopif(vsize!=rows, apop_return_data_error(d), 
-            0, "apop_line_to_data expects either only a matrix, only a vector, or that matrix "
-            "row count and vector size are equal. You gave me a row size of %i and a vector "
-            "size of %i. Returning NULL.\n", rows, vsize);
-  return apop_data_fill_base(apop_data_alloc(vsize, rows, cols), in);
-}
-
 static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
     int i = start_from % size;	//i is probably the same or i+1.
@@ -897,7 +850,7 @@ generate a unit vector for three dimensions:
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
 
-\see apop_line_to_data, apop_text_fill, apop_data_falloc
+\see apop_text_fill, apop_data_falloc
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){

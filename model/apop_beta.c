@@ -12,7 +12,6 @@ may also find \ref apop_beta_from_mean_var to be useful.
 \adoc    settings None.  */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static long double beta_log_likelihood(apop_data *d, apop_model *p);
 

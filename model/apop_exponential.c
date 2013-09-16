@@ -21,7 +21,6 @@ Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or
 \adoc    settings   None.  */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_1

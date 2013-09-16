@@ -9,7 +9,6 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static double dirichletlnmap(gsl_vector *v, void *pin) {
     //we used gsl_matrix_row to get here==>guaranteed that v->stride==1.

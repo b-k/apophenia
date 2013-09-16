@@ -10,7 +10,6 @@
 \adoc    settings   \ref apop_parts_wanted_settings, for the \c .want_cov element.  */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static double apply_me(double x, void *in){
     if (x < 0) return -INFINITY;

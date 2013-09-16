@@ -49,7 +49,7 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 */
 
 #include "apop_internal.h"
-#include "vtables.h"
+
 static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p);
 apop_model *ols_param_models(apop_data *d, apop_model *m);
 apop_data *ols_predict(apop_data *in, apop_model *m);

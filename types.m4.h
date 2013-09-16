@@ -214,10 +214,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 Apop_var_declare( gsl_vector * apop_array_to_vector(double *in, int size) )
 #define apop_line_to_vector apop_array_to_vector
 
-//From line
-gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
-apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
-
 //From text
 Apop_var_declare( apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters) )
 Apop_var_declare( int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters) )

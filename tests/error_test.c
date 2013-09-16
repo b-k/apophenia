@@ -1,5 +1,7 @@
 #include <apop.h>
+#if _POSIX_C_SOURCE >= 200809L
 #define HAVE_FMEMOPEN
+#endif
 FILE *fmemopen(void *buf, size_t size, const char *mode); //POSIX.
 
 /* Set up an error, and check for the presence of:

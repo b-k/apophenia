@@ -26,7 +26,6 @@ See also the \ref apop_multivariate_normal.
 */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static double positive_sigma_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2

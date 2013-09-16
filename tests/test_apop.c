@@ -852,7 +852,7 @@ int test_jack(gsl_rng *r){
   apop_data *d  =apop_data_alloc(draws, 1);
   apop_model  m   = apop_normal;
   double      pv[] = {1., 3.};
-    m.parameters = apop_line_to_data(pv, 2,0,0);
+    m.parameters = apop_data_fill_base(apop_data_alloc(2), pv);
     for (i =0; i< draws; i++)
         m.draw(apop_data_ptr(d, i, 0), r, &m); 
     apop_data *out = apop_jackknife_cov(d, m);
@@ -903,7 +903,7 @@ void test_multivariate_normal(gsl_rng *r){
     int len = 4e5;
     double params[] = {1, 3, 0,
                        2, 0, 1};
-    apop_data *p = apop_line_to_data(params, 2,2,2);
+    apop_data *p = apop_data_fill_base(apop_data_alloc(2, 2, 2), params);
     apop_model *mv = apop_model_copy(apop_multivariate_normal);
     mv->parameters=p;
     mv->dsize=2;

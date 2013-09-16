@@ -96,12 +96,12 @@ def apop_pylist_to_data(inlist):
     if rowsize == 1:
         for i in xrange(colsize):
             dlist[i] = inlist[i]
-        out = apop_line_to_data(dlist, rowsize, 0, 0)
+        out = apop_data_falloc((rowsize), dlist)
     else:
         for i in xrange(colsize):
             for j in xrange(rowsize):
                 dlist[i + j*rowsize] = inlist[i][j]
-        out = apop_line_to_data(dlist, 0, rowsize, colsize)
+        out = apop_data_falloc((0, rowsize, colsize), dlist)
     return out
 %}
 #endif

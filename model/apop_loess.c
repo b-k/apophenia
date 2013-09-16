@@ -72,7 +72,6 @@ This routine is in beta testing.
 \adoc    settings \ref apop_loess_settings */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 ////////////a few lines from f2c.h
 #define TRUE_ (1)

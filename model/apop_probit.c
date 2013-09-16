@@ -27,7 +27,7 @@ replace that matrix column with a constant column of ones, just like with OLS.
 */
 
 #include "apop_internal.h"
-#include "vtables.h"
+
 static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p);
 
 static apop_data *get_category_table(apop_data *d){

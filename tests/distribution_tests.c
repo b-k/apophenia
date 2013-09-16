@@ -131,8 +131,8 @@ void test_distributions(gsl_rng *r){
 
     for (int i=0; strcmp(dist[i].name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
-        true_params   = apop_model_copy(dist[i]);
-        true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vsize==1 ? 1 : 2,0,0);
+        true_params = apop_model_copy(dist[i]);
+        true_params->parameters = apop_data_fill_base(apop_data_alloc(dist[i].vsize==1 ? 1 : 2), true_parameter_v);
         if (!strcmp(dist[i].name, "Dirichlet distribution"))
             dist[i].dsize=2;
         if (!strcmp(dist[i].name, "Beta distribution"))
@@ -149,20 +149,20 @@ void test_distributions(gsl_rng *r){
             dist[i].dsize=2;
         }
         if (!strcmp(dist[i].name, "Multinomial distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .5, .2, .1} , 4,0,0);
+            true_params->parameters = apop_data_falloc((4), 15, .5, .2, .1);
             dist[i].dsize=4;
         }
         if (apop_regex(dist[i].name, "gamma distribution"))
-            true_params->parameters = apop_line_to_data((double[]){1.5, 2.5} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2), 1.5, 2.5);
         if (!strcmp(dist[i].name, "Chi squared distribution"))
-            true_params->parameters = apop_line_to_data((double[]){996} , 1,0,0);
+            true_params->parameters = apop_data_falloc((1), 996);
         if (!strcmp(dist[i].name, "F distribution"))
-            true_params->parameters = apop_line_to_data((double[]){996, 996} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2),996, 996);
         if (!strcmp(dist[i].name, "t distribution"))
-            true_params->parameters = apop_line_to_data((double[]){1, 3, 996} , 3,0,0);
+            true_params->parameters = apop_data_falloc((3), 1, 3, 996);
         if (!strcmp(dist[i].name, "Wishart distribution")){
-            true_params->parameters = apop_line_to_data((double[]){996, .2, .1,
-                                                                     0, .1, .2}, 2,2,2);
+            true_params->parameters = apop_data_falloc((2, 2, 2), 996, .2, .1,
+                                                                    0, .1, .2);
             apop_vector_realloc(true_params->parameters->vector, 1);
         }
         test_one_distribution(r, dist+i, true_params);

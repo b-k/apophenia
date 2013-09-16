@@ -21,7 +21,6 @@ See also \ref apop_data_rank_compress for means of dealing with one more input d
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 static double yule_constraint(apop_data *returned_beta, apop_model *m){
   Nullcheck_mp(m, GSL_NAN);
