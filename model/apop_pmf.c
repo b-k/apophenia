@@ -34,7 +34,7 @@ in the \c matrix element of the data set, and the cell values are held in the \c
 element (<em>not the vector</em>).
 
 If your data is in a crosstab (with entries in the matrix element for 2-D data or the
-vector for 1-D data), then use \ref apop_crosstab_to_pmf to make the conversion.
+vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.
 
 If your data is already in the sparse listing format (which is probably the case for 3-
 or more dimensional data), then just point the model to your parameter set:
@@ -81,7 +81,7 @@ Apop_settings_init(apop_pmf,
 
 /* \adoc    estimated_data  The data you sent in is linked to (not copied).
 \adoc    estimated_parameters  Still \c NULL.    */
-static apop_model *estim (apop_data *d, apop_model *out){
+static void estim (apop_data *d, apop_model *out){
     out->data = d;
     apop_data_free(out->parameters); //may have been auto-alloced by prep.
 
@@ -92,7 +92,6 @@ static apop_model *estim (apop_data *d, apop_model *out){
         Apop_stopif(!isfinite(settings->total_weight),
             out->error='w', 0, "total weight in the input data is %Lg.\n", settings->total_weight);
     }
-    return out;
 }
 
 /* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a
@@ -223,7 +222,8 @@ static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one 
     }
     return -1;
 }
-double pmf_p(apop_data *d, apop_model *m){
+
+static long double pmf_p(apop_data *d, apop_model *m){
     apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
     Nullcheck_d(d, GSL_NAN) 
     Nullcheck_m(m, GSL_NAN) 
@@ -245,7 +245,7 @@ double pmf_p(apop_data *d, apop_model *m){
     return p;
 }
 
-static void pmf_print(apop_model *est){ apop_data_print(est->data); }
+static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
 static void pmf_prep(apop_data * data, apop_model *model){
     Get_vmsizes(data) //msize2, firstcol
@@ -317,7 +317,7 @@ apop_data *apop_data_pmf_compress(apop_data *in){
             not_done = 1;
             Apop_data_row(in, j, compare_me);
             if (are_equal(subject, compare_me)){
-                apop_vector_increment(subject->weights, 0, gsl_vector_get (compare_me->weights, 0));
+                *gsl_vector_ptr(subject->weights, 0) += gsl_vector_get(compare_me->weights, 0);
                 cutme[j]=1;
             }
         }

@@ -3,7 +3,7 @@ Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 
 \amodel apop_dirichlet A multivariate generalization of the \ref apop_beta "Beta distribution".
 
-\adoc    Input_format      Each row of your data is a single observation.  
+\adoc    Input_format      Each row of your data matrix is a single observation.  
 \adoc    Parameter_format   The estimated parameters are in the output model's <tt>parameters->vector</tt>. The size of the model is determined by the width of your input data set, so later RNG draws, \&c will match in size.
 \adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */
@@ -16,7 +16,7 @@ static double dirichletlnmap(gsl_vector *v, void *pin) {
     return gsl_ran_dirichlet_lnpdf (params->size, params->data, v->data);
 }
 
-static double dirichlet_log_likelihood(apop_data *d, apop_model *p){
+static long double dirichlet_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
     Apop_stopif(!p->parameters->vector, return GSL_NAN, 0, "parameters should be in inmodel->parameters->vector.");
     double paramsum = apop_sum(p->parameters->vector);
@@ -47,6 +47,11 @@ static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
 }
 
+static void dirichlet_prep(apop_data *data, apop_model *params){
+    apop_score_vtable_add(dirichlet_dlog_likelihood, apop_dirichlet);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_dirichlet = {"Dirichlet distribution", -1,0,0, .dsize=-1,
-    .log_likelihood = dirichlet_log_likelihood, .score = dirichlet_dlog_likelihood,
+    .log_likelihood = dirichlet_log_likelihood, .prep = dirichlet_prep,
     .constraint = dirichlet_constraint, .draw = dirichlet_rng};

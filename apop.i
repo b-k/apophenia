@@ -89,11 +89,6 @@ def apop_col(data, colno):
     vive.thisown = 0
     return vive.vector
 
-def apop_row(data, colno):
-    vive = data.matrix.row(colno)
-    vive.thisown = 0
-    return vive.vector
-
 def apop_pylist_to_data(inlist):
     colsize =len(inlist)
     rowsize =len(inlist[1])
@@ -101,12 +96,12 @@ def apop_pylist_to_data(inlist):
     if rowsize == 1:
         for i in xrange(colsize):
             dlist[i] = inlist[i]
-        out = apop_line_to_data(dlist, rowsize, 0, 0)
+        out = apop_data_falloc((rowsize), dlist)
     else:
         for i in xrange(colsize):
             for j in xrange(rowsize):
                 dlist[i + j*rowsize] = inlist[i][j]
-        out = apop_line_to_data(dlist, 0, rowsize, colsize)
+        out = apop_data_falloc((0, rowsize, colsize), dlist)
     return out
 %}
 #endif
@@ -165,7 +160,6 @@ def apop_pylist_to_data(inlist):
 %include "stats.h"
 %include "variadic.h"
 %include "settings.h"
-%include "deprecated.h"
 
 /* Variadics: */
 int apop_db_close(char vacuum='q');
@@ -202,17 +196,17 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     char* __str__() {apop_data_show($self); return " ";}
     void __show()   {apop_data_show($self);}
     double __get(size_t row, int  col)              { return apop_data_get($self, row, col); }
-    double __get(size_t row, char*  col)            { return apop_data_get_it($self, row, col); }
-    double __get(char* row, int col)                { return apop_data_get_ti($self, row, col); }
-    double __get(char* row, char* col)              { return apop_data_get_tt($self, row,  col); }
+    double __get(size_t row, char*  col)            { return apop_data_get($self, .row=row, .colname=col); }
+    double __get(char* row, int col)                { return apop_data_get($self, .rowname=row, .col=col); }
+    double __get(char* row, char* col)              { return apop_data_get($self, .rowname=row,  .colname=col); }
     double *__ptr(size_t row, int  col)             { return apop_data_ptr($self, row, col); }
-    double *__ptr(size_t row, char*  col)           { return apop_data_ptr_it($self, row, col); }
-    double *__ptr(char* row, int col)               { return apop_data_ptr_ti($self, row, col); }
-    double *__ptr(char* row, char* col)             { return apop_data_ptr_tt($self, row,  col); }
-    void __set(size_t row, int  col, double data)   { apop_data_set($self, row, col, data); }
-    void __set(size_t row, char*  col, double data) { apop_data_set_it($self, row, col, data); }
-    void __set(char* row, int col, double data)     { apop_data_set_ti($self, row, col, data); }
-    void __set(char* row, char* col, double data)   { apop_data_set_tt($self, row,  col, data); }
+    double *__ptr(size_t row, char*  col)           { return apop_data_ptr($self, .row=row, .colname=col); }
+    double *__ptr(char* row, int col)               { return apop_data_ptr($self, .rowname=row, .col=col); }
+    double *__ptr(char* row, char* col)             { return apop_data_ptr($self, .rowname=row,  .colname=col); }
+    void __set(size_t row, int  col, double data)   { apop_data_set($self, row, col, .val=data); }
+    void __set(size_t row, char*  col, double data) { apop_data_set($self, .row=row, .colname=col, .val=data); }
+    void __set(char* row, int col, double data)     { apop_data_set($self, .rowname=row, .col=col, .val=data); }
+    void __set(char* row, char* col, double data)   { apop_data_set($self, .rowname=row,  .colname=col, .val=data); }
     apop_data * __copy()                            { return apop_data_copy($self); }
     apop_data** __split(int splitpoint, char r_or_c){ return apop_data_split($self, splitpoint, r_or_c); }
     apop_data*  __rm_columns(int *drop)             { apop_data_rm_columns($self, drop); return $self; }
@@ -279,7 +273,7 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     return  apop_matrix_pca($self, dimensions_we_want);}
 
     inline void increment( int i, int j, double amt){
-        return apop_matrix_increment($self, i, j, amt);}
+        return *gsl_matrix_ptr($self, i, j) += amt;}
 
     gsl_matrix *stack( gsl_matrix * m2=NULL, char posn='r', char inplace=0){
         return apop_matrix_stack($self,  m2, posn, inplace);}
@@ -336,11 +330,11 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
     //double * percentiles(char rounding) {return apop_vector_percentiles_base($self, rounding);}
     apop_double * percentiles(char rounding='d') {return apop_vector_percentiles_base($self, rounding);}
     double weighted_mean( const gsl_vector *weight) {
-        return apop_vector_weighted_mean($self, weight);
+        return apop_vector_mean($self, weight);
     }
 
     double weighted_var( const gsl_vector *weight) {
-        return apop_vector_weighted_var($self, weight) ;
+        return apop_vector_var($self, weight) ;
     }
 
     double weighted_cov(const gsl_vector *inb, const gsl_vector *weights) {
@@ -365,7 +359,7 @@ void apop_plot_lattice(const apop_data *d, char *outfile=NULL);
         apop_vector_normalize($self, out, normalization_type); }
 
     void increment(gsl_vector * v, int i, double amt){
-        return apop_vector_increment($self, i, amt);}
+        return *gsl_vector_ptr($self, i) += amt;}
 
     int bounded(double max=GSL_POSINF){ return apop_vector_bounded($self, max);}
     gsl_vector *apop_vector_stack(gsl_vector *v2=NULL, char inplace=0){ return apop_vector_stack($self, v2, 'n');}

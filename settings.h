@@ -42,7 +42,7 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
  \return A pointer to the newly-prepped group.
 \hideinitializer \ingroup settings
  */
-#define Apop_model_add_group(model, type, ...)  \
+#define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_model_add_group.
@@ -60,13 +60,18 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
 /** Modifies a single element of a settings group to the given value. 
+
+\li If <tt>model==NULL</tt>, fails silently. 
+\li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
 \hideinitializer \ingroup settings
  */
-#define Apop_settings_set(model, type, setting, data)  \
-    do { type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
-    Apop_assert(apop_tmp_settings, "You're trying to modify a setting in " \
+#define Apop_settings_set(model, type, setting, data)   \
+    do {                                                \
+        if (!(model)) continue; /* silent fail. */      \
+        type ## _settings *apop_tmp_settings = apop_settings_get_grp(model, #type, 'c');  \
+        Apop_stopif(!apop_tmp_settings, (model)->error='s', 0, "You're trying to modify a setting in " \
                         #model "'s setting group of type " #type " but that model doesn't have such a group."); \
-    apop_tmp_settings->setting = (data);    \
+    apop_tmp_settings->setting = (data);                \
     } while (0);
 
 /** \cond doxy_ignore */
@@ -75,13 +80,16 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
 #define apop_settings_set Apop_settings_set
 #define APOP_SETTINGS_GET Apop_settings_get
 #define apop_settings_get Apop_settings_get
-#define APOP_MODEL_ADD_GROUP Apop_model_add_group
-#define apop_model_add_group Apop_model_add_group
+#define APOP_SETTINGS_ADD_GROUP Apop_settings_add_group
+#define apop_settings_add_group Apop_settings_add_group
 #define APOP_SETTINGS_GET_GROUP Apop_settings_get_group
 #define apop_settings_get_group Apop_settings_get_group
 #define APOP_SETTINGS_RM_GROUP Apop_settings_rm_group
 #define apop_settings_rm_group Apop_settings_rm_group
 #define Apop_model_copy_set apop_model_copy_set
+
+//deprecated:
+#define Apop_model_add_group Apop_settings_add_group
 
 /** \endcond */ //End of Doxygen ignore.
 
@@ -164,9 +172,6 @@ Apop_settings_copy (ysg,
         free(in);  \
     }
 
-//see deprecated.h for the apop_settings_add_group
-
-
         //Part II: the details of extant settings groups.
 
 typedef enum {
@@ -196,7 +201,6 @@ delta;
                                  they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
-    char        want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     double      dim_cycle_tolerance; /**< If zero (the default), the usual procedure.
                              If \f$>0\f$, cycle across dimensions: fix all but the first dimension at the starting
                              point, optimize only the first dim. Then fix the all but the second dim, and optimize the
@@ -208,9 +212,9 @@ delta;
     int         n_tries, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    char        *trace_path; ///< See \ref trace_path
-    apop_model  *parent;   ///< Deprecated; does nothing.
-    int         use_score; ///< Deprecated; now does nothing. If you don't want to use the score, set it to \c NULL.
+    char        want_path; ///< If 'y', record the points tried by the optimizer in path
+    apop_data   *path;      /**< if want_path='y', record each vector tried by the optimizer as one row of this \ref apop_data set.
+                              If already allocated, free what is here and reallocate. This data set has no names; add them as desired.*/
 } apop_mle_settings;
 
 /** Settings for least-squares type models 

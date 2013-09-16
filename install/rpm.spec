@@ -1,6 +1,6 @@
 Vendor:       Ben Klemens
 Name:         apophenia
-Version:      0.99
+Version:      0.995
 Release:      1
 License:      GPLv2 w/Affero-type addendum
 Provides:     apophenia, apophenia-devel

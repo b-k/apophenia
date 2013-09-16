@@ -3,7 +3,6 @@
 /* Copyright (c) 2006--2009 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
-#include "vtables.h"
 
 Apop_settings_init(apop_update,
    Apop_varad_set(periods, 6e3);
@@ -20,12 +19,12 @@ static apop_model *betabinom(apop_data *data, apop_model prior, apop_model likel
     if (!data && likelihood.parameters){
         double n = likelihood.parameters->vector->data[0];
         double p = likelihood.parameters->vector->data[1];
-        apop_vector_increment(outp->parameters->vector, 0, n*p);
-        apop_vector_increment(outp->parameters->vector, 1, n*(1-p));
+        *gsl_vector_ptr(outp->parameters->vector, 0) += n*p;
+        *gsl_vector_ptr(outp->parameters->vector, 1) += n*(1-p);
     } else {
         double y = apop_matrix_sum(data->matrix);
-        apop_vector_increment(outp->parameters->vector, 0, y);
-        apop_vector_increment(outp->parameters->vector, 1, data->matrix->size1*data->matrix->size2 - y);
+        *gsl_vector_ptr(outp->parameters->vector, 0) += y;
+        *gsl_vector_ptr(outp->parameters->vector, 1) += data->matrix->size1*data->matrix->size2 - y;
     }
     return outp;
 }
@@ -36,14 +35,14 @@ static apop_model *betabernie(apop_data *data, apop_model prior, apop_model like
     apop_model *outp = apop_model_copy(prior);
     Get_vmsizes(data);//tsize
     double sum = apop_map_sum(data, .fn_d=countup, .part='a');
-    apop_vector_increment(outp->parameters->vector, 0, sum);
-    apop_vector_increment(outp->parameters->vector, 1, tsize - sum);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += sum;
+    *gsl_vector_ptr(outp->parameters->vector, 1) += tsize - sum;
     return outp;
 }
 
 static apop_model *gammaexpo(apop_data *data, apop_model prior, apop_model likelihood){
     apop_model *outp = apop_model_copy(prior);
-    apop_vector_increment(outp->parameters->vector, 0, data->matrix->size1*data->matrix->size2);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += data->matrix->size1*data->matrix->size2;
     apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
     return outp;
 }
@@ -55,7 +54,7 @@ static apop_model *gammapoisson(apop_data *data, apop_model prior, apop_model li
     double sum = 0;
     if (vsize)  sum = apop_sum(data->vector);
     if (msize1) sum += apop_matrix_sum(data->matrix);
-    apop_vector_increment(outp->parameters->vector, 0, sum);
+    *gsl_vector_ptr(outp->parameters->vector, 0) += sum;
 
     double *beta = gsl_vector_ptr(outp->parameters->vector, 1);
     *beta = *beta/(*beta * tsize + 1);
@@ -128,6 +127,13 @@ Here are the conjugate distributions currently defined:
 </td></tr>
 </table>
 
+\li The conjugate table is stored using a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+
+\code
+typedef apop_model *(*apop_update_type)(apop_data *, apop_model , apop_model);
+#define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)
+\endcode
+
 \param data     The input data, that will be used by the likelihood function (default = \c NULL.)
 \param  prior   The prior \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c draw method.  (No default, must not be \c NULL.)
@@ -135,7 +141,6 @@ estimate the posterior via MCMC, this needs to have a \c draw method.  (No defau
 estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method (ll preferred). (No default, must not be \c NULL.)
 \param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
-\todo The table of conjugate prior/posteriors (in its static \c check_conjugacy subfuction), is a little short, and can always be longer.
 
 Here is a test function that compares the output via conjugate table and via
 Gibbs sampling: 
@@ -155,27 +160,27 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
     }
 APOP_VAR_END_HEAD
     static int setup=0; if (!(setup++)){
-        apop_update_insert(betabinom, apop_beta, apop_binomial);
-        apop_update_insert(betabernie, apop_beta, apop_bernoulli);
-        apop_update_insert(gammaexpo, apop_gamma, apop_exponential);
-        apop_update_insert(gammapoisson, apop_gamma, apop_poisson);
-        apop_update_insert(normnorm, apop_normal, apop_normal);
+        apop_update_vtable_add(betabinom, apop_beta, apop_binomial);
+        apop_update_vtable_add(betabernie, apop_beta, apop_bernoulli);
+        apop_update_vtable_add(gammaexpo, apop_gamma, apop_exponential);
+        apop_update_vtable_add(gammapoisson, apop_gamma, apop_poisson);
+        apop_update_vtable_add(normnorm, apop_normal, apop_normal);
     }
-    apop_update_type conj = apop_update_get(*prior, *likelihood);
+    apop_update_type conj = apop_update_vtable_get(*prior, *likelihood);
     if (conj) return conj(data, *prior, *likelihood);
 
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) s = Apop_model_add_group(prior, apop_update);
     int ll_is_a_copy=0;
     if (!likelihood->parameters){
-        if ( likelihood->vbase  >= 0 &&     // A hackish indication that
-             likelihood->m1base >= 0 &&     // there is still prep to do.
-             likelihood->m2base >= 0 && likelihood->prep){
+        if ( likelihood->vsize  >= 0 &&     // A hackish indication that
+             likelihood->msize1 >= 0 &&     // there is still prep to do.
+             likelihood->msize2 >= 0 && likelihood->prep){
                 ll_is_a_copy++;
                 likelihood =apop_model_copy(*likelihood);
                 apop_prep(data, likelihood);
         }
-        likelihood->parameters = apop_data_alloc(likelihood->vbase, likelihood->m1base, likelihood->m2base);
+        likelihood->parameters = apop_data_alloc(likelihood->vsize, likelihood->msize1, likelihood->msize2);
     }
     Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2
     double    ratio, ll, cp_ll = GSL_NEGINF;
@@ -213,7 +218,7 @@ APOP_VAR_END_HEAD
             Apop_notify(3, "reject, with exp(ll_now-ll_prior) = exp(%g-%g) = %g.", ll, cp_ll, exp(ratio));
         }
         if (i >= s->periods * s->burnin){
-            APOP_ROW(out, i-(s->periods *s->burnin), v)
+            Apop_matrix_row(out->matrix, i-(s->periods *s->burnin), v)
             apop_data_pack(current_param, v);
         }
     }

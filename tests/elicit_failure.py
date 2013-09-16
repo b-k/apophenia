@@ -32,13 +32,9 @@ array_of_failures = [
     , "apop_check_dimensions: You sent me a matrix with 10 columns to multiply against a matrix with 9 rows (after the two transpositions you requested). Those two need to be equal."],
 ['apop_data *d = apop_data_alloc(10,9); apop_matrix_inverse(d->matrix);'
     , "apop_det_and_inv: You asked me to invert a 10 X 9 matrix, but inversion requires a square matrix."],
-['apop_data *d = apop_data_alloc(); apop_vector_increment(d->vector, 3, 3);'
-    , "variadic_apop_vector_increment: You sent me a NULL vector."],
-['apop_data *d = apop_data_alloc(); apop_matrix_increment(d->matrix, 3, 3);'
-    , "variadic_apop_matrix_increment: You sent me a NULL matrix."],
 ["""
 apop_data *d = apop_data_alloc(2,2);
-Apop_row(d, 0, r);
+Apop_matrix_row(d->matrix, 0, r);
 apop_vector_realloc(r, 3);
     """, "apop_vector_realloc: I can't resize subvectors or other views."],
 ['apop_db_to_crosstab("faketab", "r1", "r2", "d");'

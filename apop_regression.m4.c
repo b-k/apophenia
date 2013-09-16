@@ -34,7 +34,7 @@ void apop_estimate_parameter_tests (apop_model *est){
     apop_data *one_elmt = apop_data_alloc(1, 1);
     gsl_vector *param_v = apop_data_pack(est->parameters);
     for (size_t i=0; i< est->parameters->vector->size; i++){
-        apop_model_add_group(est, apop_pm, .index=i);
+        Apop_settings_add_group(est, apop_pm, .index=i);
         apop_model *m = apop_parameter_model(est->data, est);
 
         double zero = apop_cdf(one_elmt, m);
@@ -130,7 +130,7 @@ static char *apop_get_factor_basename(apop_data *d, int col, char type){
     char *catname =   d->names == NULL ? NULL
                     : type == 't' && d->names && d->names->textct > col ? d->names->text[col]
                     : col == -1 && d->names && d->names->vector         ? d->names->vector
-                    : col >=0 && d->names && d->names->colct > col      ? d->names->column[col]
+                    : col >=0 && d->names && d->names->colct > col      ? d->names->col[col]
                     : NULL;
     if (catname){
         asprintf(&name, "%s", catname);
@@ -313,7 +313,7 @@ APOP_VAR_ENDHEAD
         apop_data **split = apop_data_split(d, col+1, 'c');
         //stack names, then matrices
         for (int i=0; i < d->names->colct; i++)
-            free(d->names->column[i]);
+            free(d->names->col[i]);
         apop_name_stack(d->names, split[0]->names, 'c');
         for (int k = d->names->colct; k < (split[0]->matrix ? split[0]->matrix->size2 : 0); k++)
             apop_name_add(d->names, "", 'c'); //pad so the name stacking is aligned (if needed)
@@ -516,7 +516,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
         gsl_vector_free(v_times_w);
     }
     Apop_col(expected, 0, vv);
-    sst = apop_vector_weighted_var(vv, m->data->weights) * (vv->size-1);
+    sst = apop_vector_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
     apop_data_add_named_elmt(out, "R_squared", rsq);

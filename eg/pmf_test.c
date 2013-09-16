@@ -1,6 +1,6 @@
 #include <apop.h>
 
-double pack_p (apop_data *d, apop_model *m){
+long double pack_p (apop_data *d, apop_model *m){
     double loss = 0;
     gsl_vector *v = apop_data_pack(m->parameters, NULL, 'y');
     int i;

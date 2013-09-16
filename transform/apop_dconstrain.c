@@ -60,9 +60,9 @@ static void dc_prep(apop_data *d, apop_model *m){
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;
     m->constraint=cs->base_model->constraint;
-    m->vbase = cs->base_model->vbase;
-    m->m1base = cs->base_model->m1base;
-    m->m2base = cs->base_model->m2base;
+    m->vsize = cs->base_model->vsize;
+    m->msize1 = cs->base_model->msize1;
+    m->msize2 = cs->base_model->msize2;
     m->dsize=cs->base_model->dsize;
 }
 
@@ -81,7 +81,7 @@ static double constr(apop_data *d, void *csin){
     return !cs->constraint(d, cs->base_model);
 }
 
-static double dc_ll(apop_data *indata, apop_model* m){
+static long double dc_ll(apop_data *indata, apop_model* m){
     Get_set(m, GSL_NAN)
     Apop_stopif(!cs->base_model, return GSL_NAN, 0, "No base model.");
     double any_outside = apop_map_sum(indata, .fn_rp=constr, .param=cs);
@@ -95,9 +95,9 @@ static double dc_ll(apop_data *indata, apop_model* m){
 apop_model apop_dconstrain = {"Data-constrained model", .log_likelihood=dc_ll, .draw=dc_rng, .prep=dc_prep};
 
 /** \def apop_model_dconstrain
-Build an \ref apop_dconstrain model, qv., which applies a data constraint to the data set. For example, this is how one would truncate a model to have data above zero.
+Build an \c apop_dconstrain model, q.v., which applies a data constraint to the data set. For example, this is how one would truncate a model to have data above zero.
 
-\return An \ref apop_model that is a copy of \ref apop_dconstrained and is appropriately set up.
+\return An \ref apop_model that is a copy of \ref apop_dconstrain and is appropriately set up.
 
 \li Uses the \ref apop_dconstrain_settings group. This macro takes elements of that struct as inputs.
 

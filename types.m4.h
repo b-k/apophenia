@@ -18,11 +18,11 @@ extern "C" {
 */
 typedef struct{
 	char * vector;
-	char ** column;
+	char ** col;
 	char ** row;
 	char ** text;
 	int colct, rowct, textct;
-    char title[101];
+    char *title;
 } apop_name;
 
 /** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
@@ -61,42 +61,38 @@ typedef struct apop_model apop_model;
 
 /** The elements of the \ref apop_model type, representing a statistical model. */
 struct apop_model{
-    char        name[101]; 
-    int         vbase, m1base, m2base, dsize; /**< The size of the parameter set.
+    char name[101]; 
+    int vsize, msize1, msize2, dsize; /**< The size of the parameter set.
                      If a dimension is -1, then use yourdata->matrix->size2. For
                     anything more complex, allocate the parameter set in the prep
                     method. \c dsize is for the canonical form, and is
                     the size of the data the RNG will return. */
     apop_settings_type *settings;
-    apop_data   *parameters; /**< The coefficients or parameters estimated by the model. */
-    apop_data   *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
-    apop_data   *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
+    apop_data *parameters; /**< The coefficients or parameters estimated by the model. */
+    apop_data *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
+    apop_data *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
                         covariance matrix, confidence intervals, expected score. See your
                         specific model's documentation for what it puts here.
                         */
-    apop_model * (*estimate)(apop_data * data, apop_model *params); 
+    void (*estimate)(apop_data * data, apop_model *params); 
                 /**< The estimation routine. Call via \ref apop_estimate */
-    double  (*p)(apop_data *d, apop_model *params);
+    long double (*p)(apop_data *d, apop_model *params);
                 /**< Probability of the given data and parameterized model. Call via \ref apop_p */
-    double  (*log_likelihood)(apop_data *d, apop_model *params);
+    long double (*log_likelihood)(apop_data *d, apop_model *params);
                 /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
-    void    (*score)(apop_data *d, gsl_vector *gradient, apop_model *params);
-                /**< Derivative of the log likelihood. Call via \ref apop_score */
-    apop_data*  (*predict)(apop_data *d, apop_model *params);
-    apop_model * (*parameter_model)(apop_data *, apop_model *);
-    double  (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
+    long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
                             the integral up to the single data point you provide.  Call via \ref apop_cdf */
-    double  (*constraint)(apop_data *data, apop_model *params);
+    double (*constraint)(apop_data *data, apop_model *params);
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
                 /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
-    void (*print)(apop_model *params);
-    void    *more; /**< This element is copied and freed as necessary by Apophenia's
+    void (*print)(apop_model *params, FILE *out);
+    void *more; /**< This element is copied and freed as necessary by Apophenia's
                      model-handling functions, but is otherwise untouched. Put whatever
                      information you want here. */
-    size_t  more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
+    size_t more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
                          \ref apop_model_copy can do the \c memcpy as necessary. */
-    char        error;
+    char error;
 };
 
 /** The global options.
@@ -104,16 +100,8 @@ struct apop_model{
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
     char stop_on_warning; /**< See outline page on error handling. */
-    char output_type;
-           /**< 's'   = to screen
-                'f'   = to file
-                'd'   = to db. 
-                'p'   = to pipe (specifically, apop_opts.output_pipe). 
-             If 'f' or 'd', then you'll need to set output_name in the apop_..._print fn. default = 's'. */
-    FILE *output_pipe; /**< If printing to a pipe or FILE, set it here.  */
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
-    int output_append; /**< Append to output files(1), or overwrite(0)?  default = 0 */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
     char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
     char db_nan[100]; /**< The string that the database takes to indicate NaN. */
@@ -226,10 +214,6 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 Apop_var_declare( gsl_vector * apop_array_to_vector(double *in, int size) )
 #define apop_line_to_vector apop_array_to_vector
 
-//From line
-gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols);
-apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols);
-
 //From text
 Apop_var_declare( apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters) )
 Apop_var_declare( int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters) )
@@ -258,7 +242,7 @@ apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
 int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
-    // Models and model support functions
+// Models and model support functions
 
 extern apop_model apop_beta;
 extern apop_model apop_bernoulli;
@@ -306,7 +290,7 @@ extern apop_model apop_stack;
 
 
 void apop_model_free (apop_model * free_me);
-void apop_model_print (apop_model * print_me);
+void apop_model_print (apop_model * print_me, FILE *out);
 void apop_model_show (apop_model * print_me); //deprecated
 apop_model * apop_model_copy(apop_model in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);

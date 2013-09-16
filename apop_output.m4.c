@@ -16,7 +16,7 @@ consumption, while you are printing a matrix for import into another program.
 /** \defgroup apop_print 	Assorted printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \ref apop_opts_type "apop_opts.output_type".
+or database, depending on how you set \c .output_type .
 The <tt>apop_*_show</tt> functions print only to screen, and are basically
 just a convenience shell to the corresponding <tt>apop_*_print</tt>
 function.
@@ -32,9 +32,7 @@ function.
   that uses this internally. You should never call this function directly, but do read
   this documentation.
 
-  There are four settings that affect how output happens, and they can be set globally,
-  via, e.g., <tt>apop_opts.output_type = 'f'</tt>, 
-  <tt>apop_opts.output_append = 'w'</tt>, et cetera, or they can be set when you call the
+  There are four settings that affect how output happens, which can be set when you call the
   function that sent you to this documentation, e.g:
 
   \code
@@ -47,38 +45,21 @@ function.
   \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
   \param output_append \c 'a' = append (default), \c 'w' = write over.
 
-This function merges the global and specific rules. It tries to do what you mean in
-ambiguous cases. Any function-specific option you send always overrules the global option.
-
 At the end, \c output_file, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
 void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
-    *output_append = *output_append ? *output_append :
-        ((apop_opts.output_append==1 || apop_opts.output_append== 'a') ? 'a' : 'w');
+    *output_append = *output_append ? *output_append : 'w';
 
-    if (!output_file && !*output_pipe){
-        *output_pipe = apop_opts.output_pipe;                  
-        if (!*output_type)              
-            *output_type = apop_opts.output_type;              
-    } else if (output_file && !*output_pipe){                  
-        *output_pipe = apop_opts.output_pipe;                  
-        if (!*output_type){            
-            if(*output_type == 'd' || apop_opts.output_type == 'd')  
-                 *output_type = 'd';  
-            else *output_type = 'f'; 
-        }                        
-    } else if ((!output_file && *output_pipe) && !*output_type) 
-        *output_type = 'p';     
-    if (*output_type =='p')    
-        *output_pipe = *output_pipe ? *output_pipe: stdout;      
-    else if (*output_type =='s')
-        *output_pipe = stdout; 
-    else if (*output_type =='d')
-        *output_pipe = stdout;  //won't be used.
-    else       
-        *output_pipe = output_file
-                        ? fopen(output_file, *output_append == 'a' ? "a" : "w") 
+    if (!output_file && !*output_pipe && !*output_type)     *output_type = 's';              
+    else if (output_file && !*output_pipe && !*output_type) *output_type = 'f'; 
+    else if (!output_file && *output_pipe && !*output_type) *output_type = 'p';     
+
+    if (*output_type =='p')      *output_pipe = *output_pipe ? *output_pipe: stdout;      
+    else if (*output_type =='s') *output_pipe = stdout; 
+    else if (*output_type =='d') *output_pipe = stdout;  //won't be used.
+    else *output_pipe = output_file
+                        ? fopen(output_file, *output_append == 'a' ? "a" : "w")
                         : stdout;
 }
 
@@ -112,8 +93,6 @@ hand for modifications.
 
 \li See \ref apop_prep_output for more on how settings are set.
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup output
 */
 APOP_VAR_HEAD void apop_plot_line_and_scatter(apop_data *data, apop_model *est, Output_declares){
@@ -133,7 +112,7 @@ APOP_VAR_ENDHEAD
     FILE *f = output_pipe;
 	fprintf(f, "f(x) = %g  + %g * x\n", gsl_vector_get(est->parameters->vector,0), gsl_vector_get(est->parameters->vector,1));
 	if (data->names){
-		fprintf(f, "set xlabel \"%s\"\n", data->names->column[1]);
+		fprintf(f, "set xlabel \"%s\"\n", data->names->col[1]);
 		fprintf(f, "set xlabel \"%s\"\n", data->names->vector);
 	}
 	fprintf(f, "plot \"-\" using 2:1 , f(x) with lines;\n");
@@ -248,7 +227,7 @@ void apop_data_show(const apop_data *in){
             apop_text_add(printout, 0 , hasrownames,  in->names->vector);
         if (msize2 && in->names)
             for (size_t i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->column[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->col[i]);
         if (in->textsize[1] && in->names)
             for (size_t i=0; i < in->names->textct; i ++)
                 apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
@@ -265,7 +244,7 @@ void apop_data_show(const apop_data *in){
     }
 
 //Finally, print
-    if (in->names && strlen(in->names->title))
+    if (in->names && in->names->title && strlen(in->names->title))
         printf("\t%s\n\n", in->names->title);
     for (size_t j=0; j < outsize_r; j ++){
         for (size_t i=0; i < outsize_c; i ++){
@@ -349,7 +328,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         start   = (data->vector)? -1 : 0,
         end     = (data->matrix)? data->matrix->size2 : 0,
         rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
-    if (strlen(data->names->title))
+    if (data->names->title && strlen(data->names->title))
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
@@ -365,9 +344,9 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         }
         for(i=0; i< data->names->colct; i++){
             if (i < data->names->colct -1)
-                fprintf(f, "%s%s", data->names->column[i], apop_opts.output_delimiter);
+                fprintf(f, "%s%s", data->names->col[i], apop_opts.output_delimiter);
             else
-                fprintf(f, "%s", data->names->column[i]);
+                fprintf(f, "%s", data->names->col[i]);
         }
     }
     if (data->textsize[1] && data->names->textct){
@@ -399,8 +378,10 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             if (data->vector || data->matrix)
                 a_pipe(f, displaytype);
             if (j < data->textsize[0])
-                for(i=0; i< data->textsize[1]; i++)
-                    fprintf(f, "%s%s", data->text[j][i], apop_opts.output_delimiter);
+                for(i=0; i< data->textsize[1]; i++){
+                    fprintf(f, "%s", data->text[j][i]);
+                    if (i < data->textsize[1]-1) fprintf(f, "%s", apop_opts.output_delimiter);
+                }
         }
         if (data->weights && j < data->weights->size){
             a_pipe(f, displaytype);
@@ -411,7 +392,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 }
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
-  as determined by the \ref apop_opts_type "apop_opts.output_type".
+  as determined by the \c .output_typei .
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
@@ -422,11 +403,8 @@ APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     Dispatch_output
 APOP_VAR_ENDHEAD 
     if (output_type  == 'd'){
-        char *undotted = apop_strip_dots(apop_strip_dots(output_file,1),0);
-        if (output_append == 'w')
-            apop_table_exists(undotted, 'd');
-        apop_data_to_db(data, undotted, output_append);
-        free(undotted);
+        if (output_append == 'w') apop_table_exists(output_file, 'd');
+        apop_data_to_db(data, output_file, output_append);
         return;
     }
     apop_data_print_core(data, output_pipe, output_type);
@@ -465,8 +443,6 @@ APOP_VAR_ENDHEAD
 /** Dump a <tt>gsl_matrix</tt> to the screen.
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 \li This function uses the \ref designated syntax for inputs.
-\li This function respects the global \c apop_opts.output_type and \c apop_opts.output_pipe
-variables; see the legible output section of the \ref outline for details.
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
     apop_data *dtmp = apop_matrix_to_data((gsl_matrix*) data);
@@ -498,9 +474,9 @@ static void printone(FILE *f, double width, double height, double margin, int xp
     //labels have to be drawn with a long offset from one of the
     //plots we do display.
     if (xposn  == yposn+1)
-        fprintf(f, "set label %i '%s' center at graph %g, %g\n",yposn+1, (d->names->colct >yposn)? d->names->column[yposn]: "",  -0.5, 0.5);
+        fprintf(f, "set label %i '%s' center at graph %g, %g\n",yposn+1, (d->names->colct >yposn)? d->names->col[yposn]: "",  -0.5, 0.5);
     if ((yposn == count-1) && (xposn  == count-2))
-        fprintf(f, "set label %zu '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->column[count -1]: "",  1.5, 0.5);
+        fprintf(f, "set label %zu '%s' center at graph %g, %g\n",count, (d->names->colct >count -1)? d->names->col[count -1]: "",  1.5, 0.5);
     if (xposn != yposn){
         fprintf(f, "plot '-'\n");
         fflush(f);
@@ -558,9 +534,6 @@ APOP_VAR_ENDHEAD
 /** Plot the percentiles of a data set against the percentiles of a distribution.
 
 The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.
-
-The function respects the <tt>apop_opts.output_type</tt> option.
-It uses the \ref designated syntax for inputs.
 
 \param v    The data (No default, must not be \c NULL.)
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
@@ -636,9 +609,9 @@ APOP_VAR_ENDHEAD
     FILE *f=output_pipe;
     Apop_assert_n(f, "Error opening file %s for writing.", output_file);
     if (in->names && in->names->colct>=3){
-        fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->column[0]);
-        fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->column[1]);
-        fprintf(f, "set label '%s' at 0.5, 1/sqrt(2)+0.05 center; \n", in->names->column[2]);
+        fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->col[0]);
+        fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->col[1]);
+        fprintf(f, "set label '%s' at 0.5, 1/sqrt(2)+0.05 center; \n", in->names->col[2]);
     }
     fprintf(f, 
         " set size square;      \n"

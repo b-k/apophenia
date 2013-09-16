@@ -78,14 +78,13 @@ Apop_settings_free(apop_kernel_density,
     if (in->own_kernel) apop_model_free(in->kernel);
 )
 
-static apop_model *apop_kernel_estimate(apop_data *d, apop_model *m){
-    Nullcheck_d(d, NULL);
+static void apop_kernel_estimate(apop_data *d, apop_model *m){
+    Nullcheck_d(d, );
     if (!apop_settings_get_group(m, apop_kernel_density))
-        apop_model_add_group(m, apop_kernel_density, .base_data=d);
-    return m;
+        Apop_settings_add_group(m, apop_kernel_density, .base_data=d);
 }
 
-static double kernel_p_cdf_base(apop_data *d, apop_model *m,
+static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
     Nullcheck_d(d, GSL_NAN);
     Nullcheck_m(m, GSL_NAN);
@@ -95,21 +94,21 @@ static double kernel_p_cdf_base(apop_data *d, apop_model *m,
     Get_vmsizes(pmf_data); //maxsize
     for (size_t k = 0; k < maxsize; k++){
         Apop_data_row(pmf_data, k, r);
-        double wt = r->weights ? r->weights->data[0] : 1;
+        double wt = r->weights ? *r->weights->data : 1;
         (ks->set_fn)(r, ks->kernel);
         total += fn(d, ks->kernel)*wt;
     }
-    double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
+    long double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
     total /= weight;
     return total;
 }
 
-static double kernel_p(apop_data *d, apop_model *m){
+static long double kernel_p(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_p);
 }
 
 /* \adoc    CDF Sums the CDF to the given point of all the sub-distributions.*/
-static double kernel_cdf(apop_data *d, apop_model *m){
+static long double kernel_cdf(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_cdf);
 }
 
@@ -119,7 +118,7 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
     apop_data *point = apop_data_alloc(1, pmf->dsize);
-    Apop_row(point, 0, draw_here);
+    Apop_matrix_row(point->matrix, 0, draw_here);
     apop_draw(draw_here->data, r, pmf);
     (ks->set_fn)(point, ks->kernel);
     //Now draw from the distribution around that point.

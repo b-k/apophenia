@@ -28,6 +28,8 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 #include "apop_internal.h"
 
+static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p);
+
 static apop_data *get_category_table(apop_data *d){
     int first_col = d->vector ? -1 : 0;
     apop_data *out = apop_data_get_factor_names(d, .col=first_col);
@@ -40,6 +42,8 @@ static apop_data *get_category_table(apop_data *d){
 
 static void probit_prep(apop_data *d, apop_model *m){
     apop_data *factor_list = get_category_table(d);
+    apop_score_vtable_add(probit_dlog_likelihood, apop_probit);
+    //apop_score_vtable_add(logit_dlog_likelihood, apop_logit);
     apop_ols.prep(d, m);//also runs the default apop_model_clear.
     int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
@@ -47,14 +51,36 @@ static void probit_prep(apop_data *d, apop_model *m){
     for (int i=1; i< count; i++) 
         apop_name_add(m->parameters->names, factor_list->text[i][0], 'c');
     gsl_matrix_set_all(m->parameters->matrix, 1);
-    //haven't yet implemented the score for probit && $N>2$
-    if (!strcmp(m->name, apop_probit.name) && count > 2) m->score = NULL;
     char *tmp = strdup(m->name);
     snprintf(m->name, 100, "%s with %s as numeraire", tmp, factor_list->text[0][0]);
     free(tmp);
+
+    apop_mle_settings *sets = apop_settings_get_group(m, apop_mle);
+    if (sets && sets->starting_pt) return;
+    /*Because of the exponentiation, it's easy to get overflows. If the user
+      didn't set a starting point, pick one that is of the same order of 
+      magnitude as the average data element. 
+      If a data point is zero, we more-or-less ignore it.
+      */
+    size_t matrix_cols = m->data->matrix->size2;
+    for (size_t i=0; i< matrix_cols; i++){
+        Apop_col(m->data, i, onecol);
+        long double logtotal = 0;
+        for (int i=0; i< onecol->size; i++){
+            double val =gsl_vector_get(onecol, i);
+            logtotal += val ? logl(fabs(val)): 0;
+        }
+        logtotal /= onecol->size; //we now have average log magnitude.
+        Apop_stopif(!isfinite(logtotal), m->error='d'; return, 0, "Not-finite data (maybe NaN) in column %zu", i);
+        Apop_matrix_row(m->parameters->matrix, i, betas_i);
+        gsl_vector_set_all(betas_i, expl(logtotal));
+    }
+    if (!sets) sets = Apop_model_add_group(m, apop_mle);
+    gsl_vector *params_as_vector=apop_data_pack(m->parameters); //li'l leak.
+    sets->starting_pt= params_as_vector->data;
 }
 
-double biprobit_ll_row(apop_data *r){
+static double biprobit_ll_row(apop_data *r){
     long double n = gsl_cdf_gaussian_P(-gsl_matrix_get(r->matrix, 0, 0),1);
     n = n ? n : 1e-10; //prevent -inf in the next step.
     n = n<1 ? n : 1-1e-10; 
@@ -62,7 +88,7 @@ double biprobit_ll_row(apop_data *r){
 }
 
 //The case where outcome is a single zero/one option.
-static double biprobit_log_likelihood(apop_data *d, apop_model *p){
+static long double biprobit_log_likelihood(apop_data *d, apop_model *p){
     apop_data *betadotx = apop_dot(d, p->parameters); 
     betadotx->vector = d->vector;
     double total_prob = apop_map_sum(betadotx, .fn_r=biprobit_ll_row);
@@ -75,7 +101,7 @@ static double val;
 static double unordered(double in){ return in == val; }
 
 // This is just a for loop that runs a probit on each column.
-static double multiprobit_log_likelihood(apop_data *d, apop_model *p){
+static long double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
     gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2) return biprobit_log_likelihood(d, p);
@@ -123,13 +149,13 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
         else
             deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) / cdf;
         for (size_t j=0; j< d->matrix->size2; j++)
-            apop_vector_increment(gradient, j, apop_data_get(d, i, j) * deriv_base);
+            *gsl_vector_ptr(gradient, j) += apop_data_get(d, i, j) * deriv_base;
 	}
 	apop_data_free(betadotx);
 }
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood, .dsize=-1,
-    .score = probit_dlog_likelihood, .prep = probit_prep};
+apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood,
+    .dsize=-1, .prep = probit_prep};
 
 
 /* \amodel apop_multinomial_probit The Multinomial Probit model.
@@ -138,40 +164,13 @@ apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood
 
 /////////  Multinomial Logit (plain logit is a special case)
 
-static void logit_prep(apop_data *d, apop_model *m){
-    probit_prep(d, m);
-    apop_mle_settings *sets = apop_settings_get_group(m, apop_mle);
-    if (sets && sets->starting_pt) return;
-    /*Because of the exponentiation, it's easy to get overflows. If the user
-      didn't set a starting point, pick one that is of the same order of 
-      magnitude as the average data element. 
-      If a data point is zero, we more-or-less ignore it.
-      */
-    size_t matrix_cols = m->data->matrix->size2;
-    for (size_t i=0; i< matrix_cols; i++){
-        Apop_col(m->data, i, onecol);
-        long double logtotal = 0;
-        for (int i=0; i< onecol->size; i++){
-            double val =gsl_vector_get(onecol, i);
-            logtotal += val ? logl(fabs(val)): 0;
-        }
-        logtotal /= onecol->size; //we now have average log magnitude.
-        Apop_stopif(!isfinite(logtotal), m->error='d'; return, 0, "Not-finite data (maybe NaN) in column %zu", i);
-        Apop_row(m->parameters, i, betas_i);
-        gsl_vector_set_all(betas_i, expl(logtotal));
-    }
-    if (!sets) sets = Apop_model_add_group(m, apop_mle);
-    gsl_vector *params_as_vector=apop_data_pack(m->parameters); //li'l leak.
-    sets->starting_pt= params_as_vector->data;
-}
-
 static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, NULL)
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
-        Apop_row(in, i, observation);
-        Apop_row(out, i, outrow);
+        Apop_matrix_row(in->matrix, i, observation);
+        Apop_matrix_row(out->matrix, i, outrow);
         double oneterm;
         int bestindex = 0;
         double bestscore = 0;
@@ -200,6 +199,11 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     return out;
 }
 
+static void logit_prep(apop_data *d, apop_model *m){
+    probit_prep(d, m);
+    apop_predict_vtable_add(multilogit_expected, apop_logit);
+}
+
 static size_t find_index(double in, double *m, size_t max){
     size_t i = 0;
     while (in !=m[i] && i<max) i++;
@@ -210,7 +214,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
     //get the $x\beta_j$ numerator for the appropriate choice:
     size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
                                 factor_list, thisobservation->matrix->size2);
-    Apop_row(thisobservation, 0, thisrow);
+    Apop_matrix_row(thisobservation->matrix, 0, thisrow);
     double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
 
     /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
@@ -225,7 +229,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
     return num - (max + (isfinite(expmax)? logl(apop_vector_sum(thisrow) +  expmax) : -max) );
 }
 
-static double multilogit_log_likelihood(apop_data *d, apop_model *p){
+static long double multilogit_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN)
     Nullcheck(d->matrix, GSL_NAN)
     //Find X\beta_i for each row of X and each column of \beta.
@@ -243,7 +247,7 @@ static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_i e^(x\beta_j)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
-    Apop_row(x, 0, xdata);
+    Apop_matrix_row(x->matrix, 0, xdata);
     assert(gmat->matrix->size1 == x->matrix->size2);     //the j index---input vars (incl. 1 column)
     assert(gmat->matrix->size2 == beta->size2); //the i index---choices
     assert(xdata->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)
@@ -268,8 +272,7 @@ static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop
         }
         for (int j=0; j< xdata->size; j++){ //add to each coefficient of the gradient matrix 
             double pick = (choice-1 == i) ? gsl_vector_get(xdata,j) : 0; //numeraire has no betas.
-            apop_matrix_increment(gmat->matrix, j, i, 
-                                            pick - gsl_vector_get(xdata, j)/gsl_vector_get(denom, j));
+            *gsl_matrix_ptr(gmat->matrix, j, i) += pick - gsl_vector_get(xdata, j)/gsl_vector_get(denom, j));
         }
         gsl_vector_free(denom);
     }
@@ -374,5 +377,5 @@ Here is an artifical example:
 \include fake_logit.c
 */
 apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
-/*.score = logit_dlog_likelihood,*/ .predict=multilogit_expected, .prep = logit_prep, .draw=logit_rng
+/*.score = logit_dlog_likelihood,*/ .prep = logit_prep, .draw=logit_rng
 };

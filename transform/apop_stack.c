@@ -42,12 +42,12 @@ static twop_s get_second(apop_data *d, char *splitpage){
     twop_s out = {.d1=d, .d2=d};
     if (splitpage) {
         apop_data *ctr = d;
-        if (!ctr ||(ctr->names && !strcasecmp(ctr->names->title, splitpage))){
+        if (!ctr ||(ctr->names && ctr->names->title && !strcasecmp(ctr->names->title, splitpage))){
             out.d1 = NULL;
             out.d2 = d;
             return out;
         }
-        for ( ; ctr->more && (!ctr->more->names || strcasecmp(ctr->more->names->title, splitpage)); ) 
+        for ( ; ctr->more && (!ctr->more->names || !ctr->more->names->title || strcasecmp(ctr->more->names->title, splitpage)); ) 
             ctr = ctr->more; 
         out.d2 = ctr->more;
         out.dangly_bit = ctr;
@@ -67,17 +67,16 @@ static void repaste(twop_s dd){
     check_settings(ret);        \
     twop_s datas = get_second(d, s->splitpage);
 
-static apop_model *stack_est(apop_data *d, apop_model *m){
-    Preliminaries(m);
+static void stack_est(apop_data *d, apop_model *m){
+    Preliminaries();
 
     s->model1 = apop_estimate(datas.d1, *s->model1);
     s->model2 = apop_estimate(datas.d2, *s->model2);
 
     repaste(datas);
-    return m;
 }
 
-static double stack_ll(apop_data *d, apop_model *m){
+static long double stack_ll(apop_data *d, apop_model *m){
     Preliminaries(GSL_NAN);
 
     double out =  apop_log_likelihood(datas.d1, s->model1)
@@ -86,7 +85,7 @@ static double stack_ll(apop_data *d, apop_model *m){
     return out;
 }
 
-static double stack_p(apop_data *d, apop_model *m){
+static long double stack_p(apop_data *d, apop_model *m){
     Preliminaries(GSL_NAN)
 
     double out =  apop_p(datas.d1, s->model1) *apop_p(datas.d2, s->model2);

@@ -21,7 +21,7 @@ static double x_prime_sigma_x(gsl_vector *x, gsl_matrix *sigma){
     return the_result;
 }
 
-static double apop_multinormal_ll(apop_data *data, apop_model * m){
+static long double apop_multinormal_ll(apop_data *data, apop_model * m){
     Nullcheck_mpd(data, m, GSL_NAN);
     double determinant = 0;
     gsl_matrix* inverse = NULL;
@@ -33,11 +33,11 @@ static double apop_multinormal_ll(apop_data *data, apop_model * m){
         gsl_vector_free(x_minus_mu);
         Apop_assert_c(0, GSL_NEGINF, 1, "the determinant of the given covariance is zero. Returning GSL_NEGINF."); 
     }
-    apop_assert(determinant > 0, "The determinant of the covariance matrix you gave me "
+    Apop_stopif(determinant <= 0, return NAN, 0, "The determinant of the covariance matrix you gave me "
             "is negative, but a covariance matrix must always be positive semidefinite "
             "(and so have nonnegative determinant). Maybe run apop_matrix_to_positive_semidefinite?");
     for (i=0; i< data->matrix->size1; i++){
-        Apop_row(data,i, vv);
+        Apop_matrix_row(data->matrix, i, vv);
         gsl_vector_memcpy(x_minus_mu, vv);
         gsl_vector_sub(x_minus_mu, m->parameters->vector);
         ll += - x_prime_sigma_x(x_minus_mu, inverse) / 2;
@@ -54,13 +54,12 @@ static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 the covariance matrix of the means.
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>.  */ 
-static apop_model * multivariate_normal_estimate(apop_data * data, apop_model *p){
+static void multivariate_normal_estimate(apop_data * data, apop_model *p){
     p->parameters = apop_map(data, .fn_v=a_mean, .part='c'); 
     apop_data *cov =  apop_data_covariance(data);
     p->parameters->matrix =  cov->matrix;
     cov->matrix = NULL; apop_data_free(cov);
     apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
-    return p;
 }
 
 /* \adoc    RNG  The RNG fills an input array whose length is based on the input parameters.
@@ -87,7 +86,7 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
 
 static void mvn_prep(apop_data *d, apop_model *m){
     if (d && d->matrix)    m->dsize = d->matrix->size2; 
-    else if (m->vbase > 0) m->dsize = m->vbase;
+    else if (m->vsize > 0) m->dsize = m->vsize;
     apop_model_clear(d, m);
 }
 

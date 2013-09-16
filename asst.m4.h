@@ -32,7 +32,6 @@ Apop_var_declare( apop_data * apop_data_to_bins(apop_data *indata, apop_data *bi
 Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) )
 
 //text conveniences
-char * apop_strip_dots(char const *in, char strip_type);
 Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter) )
 /** Notify the user of errors, warning, or debug info. 
 
@@ -60,8 +59,8 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 \param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
 \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
 
-\li If \ref apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
-\li If \ref apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
+\li If \c apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
+\li If \c apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
 */
 #define Apop_stopif(test, onfail, level, ...) {\
      if (test) {  \
@@ -87,11 +86,6 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 #define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
-
-#define apop_assert_s Apop_assert
-#define apop_assert Apop_assert
-#define Apop_assert_s Apop_assert
-#define apop_assert_c Apop_assert_c
 
 //Missing data
 Apop_var_declare( apop_data * apop_data_listwise_delete(apop_data *d, char inplace) )

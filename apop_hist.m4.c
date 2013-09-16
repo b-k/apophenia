@@ -45,7 +45,7 @@ APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
     apop_data *outd = apop_data_alloc(draws, model->dsize); 
     for (long int i=0; i< draws; i++){
-        Apop_row(outd, i, ach);
+        Apop_matrix_row(outd->matrix, i, ach);
         apop_draw(ach->data, rng, model);
     }
     apop_data *outbinned = apop_data_to_bins(outd, binspec, .bin_count=bin_count);
@@ -90,7 +90,7 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
     //Data gathered. Now output
     apop_data   *out    = apop_data_alloc();
     double      toptail = gsl_cdf_chisq_Q(diff, df-1);
-    sprintf(out->names->title, "Goodness-of-fit test via Chi-squared statistic");
+    asprintf(&out->names->title, "Goodness-of-fit test via Chi-squared statistic");
     apop_data_add_named_elmt(out, "Chi squared statistic", diff);
     apop_data_add_named_elmt(out, "df", df-1);
     apop_data_add_named_elmt(out, "p value",  toptail); 
@@ -157,7 +157,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         largest_diff = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
     }
     apop_data *out = apop_data_alloc();
-    sprintf(out->names->title, "Kolmogorov-Smirnov test");
+    asprintf(&out->names->title, "Kolmogorov-Smirnov test");
     apop_data_add_named_elmt(out, "max distance", largest_diff);
     double ps = psmirnov2x(largest_diff, maxsize1, maxsize2);
     apop_data_add_named_elmt(out, "p value, 2 tail", 1-ps);

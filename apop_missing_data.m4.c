@@ -8,7 +8,7 @@
 /** If there is an NaN anywhere in the row of data (including the matrix, the vector, the weights, and the text) then delete the row from the data set.
 
 \li If every row has an NaN, then this returns \c NULL.
-\li If \c apop_opts.db_nan is not \c NULL, then I will use that as a regular expression to check the text elements for bad data as well.
+\li If \c apop_opts.db_nan is not \c NULL, then I will make case-insensitive comparisons to the text elements to check for bad data as well.
 \li If \c inplace = 'y', then I'll free each element of the input data
     set and refill it with the pruned elements. I'll still take up (up to)
     twice the size of the data set in memory during the function. If
@@ -17,13 +17,12 @@
 \li I only look at the first page of data (i.e. the \c more element is ignored).
 \li This function uses the \ref designated syntax for inputs.
 
-    \param d    The data, with NaNs
-    \param inplace If \c 'y', clear out the pointer-to-\ref apop_data that
-    you sent in and refill with the pruned data. If \c 'n', leave the
-    set alone and return a new data set.
-    \return     A (potentially shorter) copy of the data set, without
-    NaNs. If <tt>inplace=='y'</tt>, redundant with the input. If the entire data set is
-    cleared out, then this will be \c NULL.
+\param d       The data, with NaNs
+\param inplace If \c 'y', clear out the pointer-to-\ref apop_data that
+you sent in and refill with the pruned data. If \c 'n', leave the
+set alone and return a new data set.
+\return        A (potentially shorter) copy of the data set, without
+NaNs. If <tt>inplace=='y'</tt>, a pointer to the input, which was shortened in place. If the entire data set is cleared out, then this will be \c NULL.
 */
 APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     apop_data * apop_varad_var(d, NULL);
@@ -31,7 +30,7 @@ APOP_VAR_HEAD apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     Get_vmsizes(d) //defines firstcol, vsize, wsize, msize1, msize2.
-    apop_assert_c(msize1 || vsize || d->textsize[0], NULL, 0, 
+    Apop_stopif(!msize1 && !vsize && !*d->textsize, return NULL, 0, 
             "You sent to apop_data_listwise_delete a data set with NULL matrix, NULL vector, and no text. "
             "Confused, it is returning NULL.");
     //find out where the NaNs are
@@ -49,20 +48,13 @@ APOP_VAR_ENDHEAD
         if (gsl_isnan(gsl_vector_get(d->weights, i)))
             marked[i] = 1;
     if (d->textsize[0] && apop_opts.db_nan){
-        regex_t    rex;
-        int compiled_ok = !regcomp(&rex, apop_opts.db_nan, REG_EXTENDED +  REG_ICASE + REG_NOSUB);
-        apop_assert(compiled_ok, "apop_opts.db_nan needs to be a regular expression that "
-                                "I can use to check the text element of your data set for "
-                                "NaNs, But compiling %s into a regex failed. Or, set "
-                                "apop_opts.db_nan=NULL to bypass text checking.", apop_opts.db_nan);
         for(int i=0; i< d->textsize[0]; i++)
             if (!marked[i])
                 for(int j=0; j< d->textsize[1]; j++)
-                    if (!regexec(&rex, d->text[i][j], 0, 0, 0)){
+                    if (!strcasecmp(apop_opts.db_nan, d->text[i][j])){
                         marked[i] ++;
                         break;
                     }
-        regfree(&rex);
     }
 
     //check that at least something isn't NULL.
@@ -89,17 +81,17 @@ APOP_VAR_ENDHEAD
     apop_model *actual_base = ml_model->more; \
     actual_base->parameters = d; 
 
-static apop_model * i_est(apop_data *d, apop_model *ml_model){
+static void i_est(apop_data *d, apop_model *ml_model){
     Switch_back
-    return apop_estimate(real_data, *actual_base);
+    actual_base = apop_estimate(real_data, *actual_base);
 }
 
-static double i_ll(apop_data *d, apop_model *ml_model){
+static long double i_ll(apop_data *d, apop_model *ml_model){
     Switch_back
     return apop_log_likelihood(real_data, actual_base);
 }
 
-static double i_p(apop_data *d, apop_model *ml_model){
+static long double i_p(apop_data *d, apop_model *ml_model){
     Switch_back
     return apop_p(real_data, actual_base);
 }
@@ -123,7 +115,7 @@ if \c NULL, then I'll use the Multivariate Normal that best fits the data after 
 apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     if (!mvn){
         apop_data *list_d = apop_data_listwise_delete(d);
-        apop_assert_s(list_d, "Listwise deletion returned no whole rows, "
+        Apop_stopif(!list_d, return NULL, 0, "Listwise deletion returned no whole rows, "
                             "so I couldn't fit a Multivariate Normal to your data. "
                             "Please provide a pre-estimated initial model.");
         mvn = apop_estimate(list_d, apop_multivariate_normal);
@@ -133,7 +125,6 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
-    Apop_settings_set(fixed, apop_mle, want_cov, 'n');
     Apop_model_add_group(fixed, apop_parts_wanted);
     apop_model *m = apop_estimate(mvn->parameters, *fixed);
     apop_model_free(fixed);

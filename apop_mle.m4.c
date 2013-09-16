@@ -16,9 +16,9 @@ At the bottom are the maximum likelihood procedures themselves. There are four: 
 #include <gsl/gsl_multimin.h>
 #include <gsl/gsl_multiroots.h>
 
-typedef double 	(*apop_fn_with_params) (apop_data *, apop_model *);
-typedef	void 	(*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
-typedef	void 	(*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
+typedef long double (*apop_fn_with_params) (apop_data *, apop_model *);
+typedef	void (*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
+typedef	void (*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
 typedef struct {
 	gsl_vector	*beta;
@@ -26,39 +26,19 @@ typedef struct {
 } grad_params;
 
 typedef struct {
-    apop_model  *model;
-    apop_data   *data;
-    apop_fn_with_params   *f;
+    apop_model *model;
+    apop_data *data;
+    apop_fn_with_params *f;
     grad_params *gp; //Used only by apop_internal_numerical_gradient.
     gsl_vector  *beta, *starting_pt;
     int         use_constraint;
-    char        *trace_path;
-    FILE        **trace_file;
+    char        trace_path;
     double      best_ll;
     char        want_cov, want_predicted, want_tests, want_info;
     jmp_buf     bad_eval_jump;
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
-
-/** \page trace_path Plotting the path of an ML estimation.
-
-If \c trace_path (in the \ref apop_mle_settings struct) has a name of positive
-length, then every time the MLE evaluates the function, then the value
-will be output to a table in the database/a file with the given name
-(depending on the value of \ref apop_opts_type "apop_opts.output_type"). You can then plot this
-table to get an idea of the path the estimation routine used to arrive
-at its MLE.
-
-To write to a pipe or stdout, set \ref apop_opts_type "apop_opts.output_type" appropriately and set \c trace_path to the literal string \c "NULL".
-
-
-Below is a sample of the sort of output one would get:<br>
-\image latex "search.gif" "An ML search, tracing out the surface of the function" width=\textwidth
-\image html "search.gif" "An ML search, tracing out the surface of the function" 
-
-\ingroup mle
-*/
 
 double default_delta = 1e-3;
 
@@ -73,18 +53,17 @@ Apop_settings_init(apop_parts_wanted,
 )
 
 Apop_settings_copy(apop_mle, )
-Apop_settings_free(apop_mle, )
+Apop_settings_free(apop_mle, 
+        apop_data_free(in->path);
+        )
 Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-5);
     Apop_varad_set(max_iterations, 5000);
     Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
-    Apop_varad_set(use_score, 'y'); //deprecated.
     Apop_varad_set(step_size, 0.05);
     Apop_varad_set(delta, default_delta);
-    Apop_varad_set(want_cov, 'y');
-    if (in.want_cov == 1) out->want_cov = 'y';
     Apop_varad_set(dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
@@ -97,15 +76,11 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(rng, NULL);
 )
 
-//deprecated; left to make some examples in Modeling with Data coherent.
-apop_mle_settings *apop_mle_settings_alloc(apop_model *parent){
-    return apop_mle_settings_init((apop_mle_settings){ }); }
-
 //      MLE support functions
 //Including numerical differentiation and a couple of functions to
 //negate the likelihood fns without bothering the user.
 
-static apop_model * apop_annealing(infostruct*); //below.
+static void apop_annealing(infostruct*); //below.
 
 static double one_d(double b, void *in){
     infostruct *i  = in;
@@ -164,7 +139,7 @@ APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *
     }
 APOP_VAR_ENDHEAD
     Get_vmsizes(model->parameters); //tsize
-    apop_fn_with_params ll  = model->log_likelihood ? model->log_likelihood : model->p;
+    apop_fn_with_params ll = model->log_likelihood ? model->log_likelihood : model->p;
     Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
     gsl_vector *out = gsl_vector_calloc(tsize);
     infostruct i = (infostruct) {.model = model, .data = data};
@@ -177,16 +152,17 @@ typedef struct {
     int *current_index;
 } apop_model_for_infomatrix_struct;
 
-static double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
+static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
-    if (mm->score){
+    apop_score_type ms = apop_score_vtable_get(*mm);
+    if (ms){
         if (!v || v->size != mm->parameters->vector->size){
             if (v) gsl_vector_free(v);
             v = gsl_vector_alloc(mm->parameters->vector->size);
         }
-         mm->score(d, v, mm);
+        ms(d, v, mm);
         return gsl_vector_get(v, *settings->current_index);
     } //else:
         gsl_vector *vv = apop_numerical_gradient(d, mm);
@@ -235,8 +211,8 @@ APOP_VAR_ENDHEAD
         //We get two estimates of the (k,j)th element, which are often very close,
         //and take the mean.
         for (size_t j=0; j< betasize; j++){
-            apop_matrix_increment(out->matrix, k, j, gsl_vector_get(dscore, j)/2);
-            apop_matrix_increment(out->matrix, j, k, gsl_vector_get(dscore, j)/2);
+            *gsl_matrix_ptr(out->matrix, k, j) += gsl_vector_get(dscore, j)/2;
+            *gsl_matrix_ptr(out->matrix, j, k) += gsl_vector_get(dscore, j)/2;
         }
         gsl_vector_free(dscore);
     }
@@ -289,35 +265,12 @@ APOP_VAR_ENDHEAD
 
 ///On to the interfaces between the models and the methods
 
-static void tracepath(const gsl_vector *beta, double out, char tp[], FILE **tf){
-    if (apop_opts.output_type == 'd'){
-        if (beta->size == 1){
-            if(!apop_table_exists(tp, 0))
-                apop_query("create table  %s (beta0, ll);", tp);
-            apop_query("insert into %s values (%g, %g);", tp, gsl_vector_get(beta,0), out);
-        } else {
-            if(!apop_table_exists(tp, 0))
-                apop_query("create table  %s (beta0, beta1, ll);", tp);
-            apop_query("insert into %s values (%g, %g, %g);", tp, gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-        }
-    } else if (apop_opts.output_type == 'p'){
-        if (beta->size == 1)
-            fprintf(apop_opts.output_pipe, "%g\t %g\n",  gsl_vector_get(beta,0), out);
-        else
-            fprintf(apop_opts.output_pipe, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-    } else {
-        if (!*tf){
-            if (apop_opts.output_type == 's' && !strcmp(tp, "NULL"))
-                *tf = stdout;
-            else
-                Apop_stopif(!(*tf = fopen(tp, "a")), /*keep going.*/,
-                    0, "couldn't open %s for writing. Continuing without the path trace.", tp);
-        }
-        if (beta->size == 1)
-            fprintf(*tf, "%g\t %g\n",  gsl_vector_get(beta,0), out);
-        else
-            fprintf(*tf, "%g\t %g\t %g\n",  gsl_vector_get(beta,0), gsl_vector_get(beta,1), out);
-    }
+static void tracepath(const gsl_vector *beta, apop_data **path){
+    size_t msize1 = *path ? (*path)->matrix->size1: 0;
+    if (!*path) *path = apop_data_alloc();
+    (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
+    Apop_matrix_row((*path)->matrix, msize1, lastv);
+    gsl_vector_memcpy(lastv, beta);
 }
 
 /* Every actual evaluation of the function go through the negshell and dnegshell fns,
@@ -336,7 +289,7 @@ static double negshell (const gsl_vector *beta, void * in){
     infostruct *i = in;
     double penalty = 0,
            out     = 0; 
-    double (*f)(apop_data *, apop_model *);
+    long double (*f)(apop_data *, apop_model *);
     f = i->model->log_likelihood? i->model->log_likelihood : i->model->p;
     Apop_stopif(!f, longjmp(i->bad_eval_jump, -1),
                 0, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
@@ -349,12 +302,14 @@ static double negshell (const gsl_vector *beta, void * in){
     Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
                 0, "I got a NaN in evaluating the objective function.%s", 
                     !i->model->constraint ? " Maybe add a constraint to your model?" : "");
-    if (i->trace_path && strlen(i->trace_path))
-        tracepath(i->model->parameters->vector,-out, i->trace_path, i->trace_file);
+    if (i->trace_path=='y'){
+        apop_mle_settings *mp =  apop_settings_get_group(i->model, apop_mle);
+        tracepath(i->model->parameters->vector, &(mp->path));
+    }
     if (i->want_info =='y'){
         //I report the log likelihood under the assumption that the final param set 
         //matches the best ll evaluated.
-        double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
+        long double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
 
         if(gsl_isnan(this_ll)){
             Apop_stopif(!i->model->log_likelihood && penalty > f_val, /*continue*/,
@@ -388,13 +343,13 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
             apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
-    if (i->model->score)
-        i->model->score(i->data, g, i->model);
+    apop_score_type ms = apop_score_vtable_get(*(i->model));
+    if (ms) ms(i->data, g, i->model);
     else {
-        apop_fn_with_params ll  = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
+        apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
-    if (i->trace_path && strlen(i->trace_path))
+    if (i->trace_path =='y')
         negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
@@ -446,7 +401,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
     }
 }
 
-static apop_model *	apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
+static void apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
 /* The maximum likelihood calculations, given a derivative of the log likelihood.
 
 If no derivative exists, will calculate a numerical gradient.
@@ -467,7 +422,6 @@ Inside the infostruct, you'll find these elements:
 	    status  = 0,
 	    apopstatus  = 0,
 	    betasize= i->beta->size;
-    Apop_assert(mp, "No apop_mle settings group in the working model");
     if (mp->method == APOP_CG_BFGS)
 	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
     else if (mp->method == APOP_CG_PR)
@@ -506,14 +460,12 @@ Inside the infostruct, you'll find these elements:
 	gsl_multimin_fdfminimizer_free(s);
     gsl_vector_free(i->beta);
     auxinfo(est->parameters, i, apopstatus, i->best_ll);
-	return est;
 }
 
 /* See apop_maximum_likelihood_w_d for notes. */
-static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
+static void apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
     apop_model *est = i->model;
     apop_mle_settings *mp = apop_settings_get_group(est, apop_mle);
-    Apop_assert(mp, "No apop_mle settings group in the working model");
     int status=0,
         apopstatus = 0,
         iter = 0,
@@ -561,21 +513,18 @@ static apop_model *	apop_maximum_likelihood_no_d(apop_data * data, infostruct * 
     apop_data_unpack(s->x, est->parameters);
 	gsl_multimin_fminimizer_free(s);
     auxinfo(est->parameters, i, apopstatus, i->best_ll);
-	return est;
 }
 
 /*There is a basically standard location for the log likelihood. Search there, and if you don't
 find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
-    if (apop_name_find(est->info->names, "Info", 'r')){
-        int index = apop_name_find(est->info->names, "log likelihood", 'r');
-        if (index>-2) return apop_data_get(est->info, index);
-    }
+    int index = apop_name_find(est->info->names, "log likelihood", 'r');
+    if (index>-2) return apop_data_get(est->info, index);
     //last resort: recalculate
     return apop_log_likelihood(d, est);
 }
 
-static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
+static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
     double last_ll, this_ll = GSL_NEGINF;
     int iteration = 0;
     apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
@@ -604,41 +553,41 @@ static apop_model * dim_cycle(apop_data *d, apop_model *est, infostruct info){
         if (mp->verbose) printf("\n");
     } while (fabs(this_ll - last_ll) > tol);
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
-    return est;
 }
 
 void get_desires(apop_model *m, infostruct *info){
     apop_parts_wanted_settings *want = apop_settings_get_group(m, apop_parts_wanted);
-    apop_mle_settings *ms = apop_settings_get_group(m, apop_mle);
 
     info->want_tests = (want && want->tests =='y') ? 'y' : 'n';
-    info->want_cov = (info->want_tests=='y' || (want && want->covariance =='y') 
-            || (!want && ms && ms->want_cov =='y'))  //mle settings' want_cov only valid w/o parts_wanted
-            ? 'y' : 'n';
-    info->want_info = (want && want->info =='y') ? 'y' : 'n';
+    info->want_cov = (info->want_tests=='y' || (want && want->covariance =='y'))
+                            ? 'y' : 'n';
+    info->want_info = want ? (want->info =='y' ? 'y' : 'n') : 'y';
 
     //doesn't do anything at the moment.
     info->want_predicted = (want && want->predicted =='y') ? 'y' : 'n';
 }
 
-/** The maximum likelihood calculations. All of the settings are specified by adding a
+/** The maximum likelihood calculations. 
+
+\li I assume that \c apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
+
+\li All of the settings are specified by adding a
   \ref apop_mle_settings struct to your model, so see the many notes there. Notably,
   the default method is the Fletcher-Reeves conjugate gradient method, and if your model
   does not have a dlog likelihood function, then a numeric gradient will be calculated
   via \ref apop_numerical_gradient. Add a \ref apop_mle_settings group to your model
   for other methods, including the Nelder-Mead simplex and simulated annealing.
 
-\param data	The data matrix (an \ref apop_data set).
-\param	dist	The \ref apop_model object: waring, probit, zipf, &amp;c. You can add
+\param data	    An \ref apop_data set.
+
+\param	dist	The \ref apop_model object: \ref apop_gamma, \ref apop_probit, \ref apop_zipf, &amp;c. You can add
     an \c apop_mle_settings struct to it (<tt>Apop_model_add_group(your_model, apop_mle,
     .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings
     documentation for the many options, such as choice of method and tuning parameters.
 
-\return	an \ref apop_model with the parameter estimates, &c. 
+\return	None, but the input model is modified to include the parameter estimates, &c. 
 
-\li I only look at the first page of your parameter set. If you need more, perhaps use \ref apop_data_pack .
-
-\li Get auxiliary info via, e.g.:
+\li There is auxiliary info in the <tt>->info</tt> element of the post-estimation struct. Get elements via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
 int status = apop_data_get(est->info, .rowname="status");
@@ -650,31 +599,30 @@ else
 
 \li During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time.
  \ingroup mle */
-apop_model *apop_maximum_likelihood(apop_data * data, apop_model *dist){
-    apop_mle_settings   *mp = apop_settings_get_group(dist, apop_mle);
+void apop_maximum_likelihood(apop_data * data, apop_model *dist){
+    apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
+    apop_score_type ms = apop_score_vtable_get(*dist);
     if (mp->method == APOP_UNKNOWN_ML)
-        mp->method = (dist->score) ? APOP_CG_FR : APOP_SIMPLEX_NM;
+        mp->method = ms ? APOP_CG_FR : APOP_SIMPLEX_NM;
 
-    Apop_assert(dist->parameters, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
+    Apop_stopif(!dist->parameters, dist->error='p'; return, 0, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,
                        .use_constraint = 1,
-                       .trace_file     = malloc(sizeof(FILE *)),
                        .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
-    if (setup_starting_point(mp, info.beta)) return NULL;
-    *info.trace_file = NULL;
+    if (setup_starting_point(mp, info.beta)) return;
+    apop_data_free(mp->path);
     info.model->data = data;
-    if (mp->dim_cycle_tolerance)          return dim_cycle(data, dist, info);
-    if (mp->trace_path)                   info.trace_path = mp->trace_path;
-	if (mp->method == APOP_SIMAN)         return apop_annealing(&info);  //below.
-    else if (mp->method==APOP_SIMPLEX_NM) return apop_maximum_likelihood_no_d(data, &info);
+    info.trace_path = mp->want_path;
+    if (mp->dim_cycle_tolerance)            dim_cycle(data, dist, info);
+    else if (mp->method == APOP_SIMAN)      apop_annealing(&info);  //below.
+    else if (mp->method==APOP_SIMPLEX_NM)   apop_maximum_likelihood_no_d(data, &info);
     else if (mp->method == APOP_RF_NEWTON ||
             mp->method == APOP_RF_HYBRID_NOSCALE ||
-            mp->method == APOP_RF_HYBRID) return  find_roots (info);
-	//else, Conjugate Gradient:
-	return apop_maximum_likelihood_w_d(data, &info);
+            mp->method == APOP_RF_HYBRID)   find_roots (info);
+    else   /* Conjugate Gradient*/          apop_maximum_likelihood_w_d(data, &info);
 }
 
 /** 
@@ -812,7 +760,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         sign  = (gsl_rng_uniform(r) > 0.5) ? 1 : -1;
         scale = gsl_vector_get(i->starting_pt, j);
         amt   = cutpoints[j+1]- cutpoints[j];
-        apop_vector_increment(i->beta, j,  amt * sign * scale * step_size); 
+        *gsl_vector_ptr(i->beta, j) += amt * sign * scale * step_size;
     }
     apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model))
@@ -849,10 +797,10 @@ static double set_start(double in){ return in ? in : 1; }
 jmp_buf anneal_jump;
 static void anneal_sigint(){ longjmp(anneal_jump,1); }
 
-static apop_model * apop_annealing(infostruct *i){
+static void apop_annealing(infostruct *i){
     apop_model *ep = i->model;
     apop_mle_settings *mp = apop_settings_get_group(ep, apop_mle);
-    Apop_assert(mp, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
+    Apop_stopif(!mp, ep->error='l'; return, 0, "The model you sent to the MLE function has neither log_likelihood element nor p element.");
     gsl_siman_params_t simparams = (gsl_siman_params_t) {
                          .n_tries       = mp->n_tries, 
                          .iters_fixed_T = mp->iters_fixed_T,
@@ -898,7 +846,6 @@ static apop_model * apop_annealing(infostruct *i){
 done:
     if (mp->rng) r = NULL;
     auxinfo(i->model->parameters, i, apopstatus, i->best_ll);
-    return i->model;
 }
 
 /* This function calls the various GSL root-finding algorithms to find the zero of the score.

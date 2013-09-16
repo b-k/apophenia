@@ -2,8 +2,8 @@
 Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 
-apop_model* apop_t_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+static void apop_t_estimate(apop_data *d, apop_model *m){
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2, tsize
     double vmu = vsize ? apop_mean(d->vector) : 0;
     double v_sum_sq = vsize ? apop_var(d->vector)*(vsize-1) : 0;
@@ -18,26 +18,23 @@ apop_model* apop_t_estimate(apop_data *d, apop_model *m){
     apop_data_set(m->parameters, 1, -1, sqrt((v_sum_sq*vsize + m_sum_sq * msize1*msize2)/(tsize-1))); 
     apop_data_set(m->parameters, 2, -1, tsize-1);
     apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
-    return m;
 }
 
-apop_model* apop_chi_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+static void apop_chi_estimate(apop_data *d, apop_model *m){
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     Get_vmsizes(d); //vsize, msize1, msize2
     apop_name_add(m->parameters->names, "df",  'r');
     apop_data_set(m->parameters, 0, -1, tsize -1);
     apop_data_add_named_elmt(m->info, "log likelihood", m->log_likelihood(d, m));
-    return m;
 }
 
-apop_model* apop_fdist_estimate(apop_data *d, apop_model *m){
-    Apop_assert(d, "No data with which to count df. (the default estimation method)");
+static void apop_fdist_estimate(apop_data *d, apop_model *m){
+    Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
     apop_name_add(m->parameters->names, "df",  'r');
     apop_name_add(m->parameters->names, "df2",  'r');
     apop_data_set(m->parameters, 0, -1, d->vector->size -1);
     apop_data_set(m->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
     apop_data_add_named_elmt(m->info, "log likelihood", apop_f_distribution.log_likelihood(d, m));
-    return m;
 }
 
 static double one_f(double in, void *df_in){ 
@@ -53,18 +50,18 @@ static double one_t(double in, void *params){
 }
 static double one_chisq(double in, void *df){ return log(gsl_ran_chisq_pdf(in, *(double*)df)); }
 
-double apop_tdist_llike(apop_data *d, apop_model *m){ 
+static long double apop_tdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     double *params = m->parameters->vector->data;
     return apop_map_sum(d, .fn_dp=one_t, .param=params);
 }
 
-double apop_chisq_llike(apop_data *d, apop_model *m){ 
+static long double apop_chisq_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     return apop_map_sum(d, .fn_dp=one_chisq, .param =m->parameters->vector->data);
 }
 
-double apop_fdist_llike(apop_data *d, apop_model *m){ 
+static long double apop_fdist_llike(apop_data *d, apop_model *m){ 
     Nullcheck_mpd(d, m, GSL_NAN);
     return apop_map_sum(d, .fn_dp=one_f, .param =m->parameters->vector->data);
 }
@@ -77,7 +74,7 @@ void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){
     *out = gsl_ran_tdist (r, df)*(sigma/sqrt(df))+mu;
 }
 
-double apop_t_dist_cdf(apop_data *in, apop_model *m){
+static long double apop_t_dist_cdf(apop_data *in, apop_model *m){
     Nullcheck_mp(m, GSL_NAN);
     double val = in->vector ? apop_data_get(in, 0, -1) : apop_data_get(in, 0, 0);
     double mu = m->parameters->vector->data[0];
@@ -137,7 +134,7 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
     return out;
 }
 
-static double wishart_ll(apop_data *in, apop_model *m){
+static long double wishart_ll(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, GSL_NAN);
     wishartstruct_t ws = {
             .paramdet = apop_matrix_determinant(m->parameters->matrix),
@@ -215,9 +212,9 @@ double wishart_constraint(apop_data *d, apop_model *m){
 
 static void wishart_prep(apop_data *d, apop_model *m){
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
- }
+}
 
-static double fixed_wishart_ll(apop_data *in, apop_model *m){
+static long double fixed_wishart_ll(apop_data *in, apop_model *m){
     //Let the mean of the input covariances be CM.
     //We need to estimate the df via MLE.
     //However, the right value of the wishart covariance grid is CM/df.
@@ -229,8 +226,8 @@ static double fixed_wishart_ll(apop_data *in, apop_model *m){
     return out;
 }
 
-apop_model *wishart_estimate(apop_data *d, apop_model *m){
-    Nullcheck_m(m, NULL);
+static void wishart_estimate(apop_data *d, apop_model *m){
+    Nullcheck_m(m, );
     //apop_data_set(m->parameters, 0, -1, d->matrix->size1);
     //Start with cov matrix via mean of inputs; df=NaN
     apop_data_set(m->parameters, 0, -1, GSL_NAN);
@@ -253,7 +250,6 @@ apop_model *wishart_estimate(apop_data *d, apop_model *m){
     apop_data_free(summ);
     apop_model_free(modified_wish);
     apop_model_free(fixed_wish);
-    return m;
 }
 
 /*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 

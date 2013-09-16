@@ -1,6 +1,7 @@
 /** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
 /* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
+#define Declare_type_checking_fns
 #include "apop_internal.h"
 
 /** Allocate an \ref apop_model.
@@ -24,17 +25,18 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     Get_vmsizes(data)
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
     Apop_stopif(model->dsize==-1 && !width, model->error='d', 0, "The model's dsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->vbase==-1 && !width, model->error='d', 0, "The model's vbase==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->m1base==-1 && !width, model->error='d', 0, "The model's m1base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
-    Apop_stopif(model->m2base==-1 && !width, model->error='d', 0, "The model's m2base==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->vsize==-1 && !width, model->error='d', 0, "The model's vsize==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->msize1==-1 && !width, model->error='d', 0, "The model's msize1==-1, meaning size=data width, but the input data has NULL vector and matrix.");
+    Apop_stopif(model->msize2==-1 && !width, model->error='d', 0, "The model's msize2==-1, meaning size=data width, but the input data has NULL vector and matrix.");
 
     model->dsize  = (model->dsize == -1 ? width : model->dsize);
-    vsize  = model->vbase  == -1 ? width : model->vbase;
-    msize1 = model->m1base == -1 ? width : model->m1base ;
-    msize2 = model->m2base == -1 ? width : model->m2base ;
+    vsize  = model->vsize  == -1 ? width : model->vsize;
+    msize1 = model->msize1 == -1 ? width : model->msize1 ;
+    msize2 = model->msize2 == -1 ? width : model->msize2 ;
     if (!model->parameters) model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info) model->info = apop_data_alloc();
-    snprintf(model->info->names->title, 100, "Info");
+    free(model->info->names->title);
+    asprintf(&model->info->names->title, "<Info>");
     model->data = data;
 	return model;
 }
@@ -88,51 +90,30 @@ void print_method(apop_model *in){
 }
  \endcode
 
-I always print to the file/pipe connected to {\ref apop_opts.output_pipe}. The default is
+I always print to the file/pipe connected to \c apop_opts.output_pipe. The default is
 \c stdout, but if you'd like something else, use fopen. E.g.:
  \code
-apop_opts.output_pipe=fopen("outfile.txt", "w"); //or "a" to append.
-apop_model_print(the_model);
-fclose(apop_opts.output_pipe);//optional in most cases.
+FILE *out =fopen("outfile.txt", "w"); //or "a" to append.
+apop_model_print(the_model, out);
+fclose(out);//optional in most cases.
  \endcode
 \ingroup output */
-void apop_model_print (apop_model * print_me){
-/*    FILE *original_pipe = NULL;
-    if (apop_opts.output_type !='f' && !apop_opts.output_pipe)
-        apop_opts.output_pipe = stdout;
-    if (apop_opts.output_type =='f'){
-        FILE *original_pipe = apop_opts.output_pipe;
-        if (apop_opts.output_file)
-            apop_opts.output_pipe = fopen(apop_opts.output_file, 
-                                      apop_opts.output_append ? "a" : "w");
-        else
-            apop_opts.output_pipe = stdout;
-        Apop_assert(apop_opts.output_pipe, "Trouble opening file %s.", apop_opts.output_file);
-    }*/
-    int nullout = 0;
-    if (!apop_opts.output_pipe){
-        nullout++;
-        apop_opts.output_pipe = stdout;
-    }
-    FILE *ap = apop_opts.output_pipe; //abbreviation
+void apop_model_print (apop_model * print_me, FILE *ap){
+    if (!ap) ap = stdout;
     if (print_me->print){
-        print_me->print(print_me);
+        print_me->print(print_me, ap);
         return;
     }
-    if (strlen(print_me->name))
-        fprintf (ap, "%s", print_me->name);
+    if (strlen(print_me->name)) fprintf (ap, "%s", print_me->name);
     fprintf(ap, "\n\n");
-	if (print_me->parameters)
-        apop_data_print(print_me->parameters, .output_pipe=ap);
-    if (print_me->info)
-        apop_data_print(print_me->info, .output_pipe=ap);
-    if (nullout)
-        apop_opts.output_pipe = NULL; //return to the default. Probably not worth it.
+	if (print_me->parameters) apop_data_print(print_me->parameters, .output_pipe=ap);
+    Get_vmsizes(print_me->info); //maxsize
+    if (print_me->info && maxsize) apop_data_print(print_me->info, .output_pipe=ap);
 }
 
 /* Alias for \ref apop_model_print. Use that one. */
 void apop_model_show (apop_model * print_me){
-    apop_model_print(print_me);
+    apop_model_print(print_me, NULL);
 }
 
 /** Outputs a copy of the \ref apop_model input.
@@ -170,10 +151,9 @@ apop_model * apop_model_copy(apop_model in){
     return out;
 }
 
-/** \def apop_model_set_parameters
-Take in an unparameterized \c apop_model and return a new \c apop_model with the given parameters. This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
-
-For example, if you need a N(0,1) quickly: 
+/** \def apop_model_set_parameters(in, ...)
+Take in an unparameterized \c apop_model and return a new \c apop_model with the given parameters.  
+For example, if you need a N(0,1) quickly:
 \code
 apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
 \endcode
@@ -185,14 +165,15 @@ If you have a situation where these options are out, you'll have to do something
 \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
 \param ... The list of parameters.
 \return A copy of the input model, with parameters set.
-\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vbase or .m2base and .m2base first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
+\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vsize or .msize1 and .msize2 first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
 \hideinitializer   
 \ingroup models
+\li This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
 */
 apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
     apop_model *out = apop_model_copy(in);
     apop_prep(NULL, out);
-    Apop_stopif((in.vbase == -1) || (in.m1base == -1) || (in.m2base == -1), out->error='d', 
+    Apop_stopif((in.vsize == -1) || (in.msize1 == -1) || (in.msize2 == -1), out->error='d', 
             0, "This function only works with models whose number of params does not "
             "depend on data size. You'll have to use apop_model *new = apop_model_copy(in); "
            " apop_model_clear(your_data, in); and then set in->parameters using your data.");
@@ -219,9 +200,9 @@ method may assume that \c apop_prep has already been called.
 apop_model *apop_estimate(apop_data *d, apop_model m){
     apop_model *out = apop_model_copy(m);
     apop_prep(d, out);
-    if (out->estimate)
-        return out->estimate(d, out); 
-    return apop_maximum_likelihood(d, out);
+    if (out->estimate) out->estimate(d, out); 
+    else               apop_maximum_likelihood(d, out);
+    return out;
 }
 
 /** Find the probability of a data/parametrized model pair.
@@ -258,18 +239,35 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
     return GSL_NAN;
 }
 
-/** Find the vector of derivatives of the log likelihood of a data/parametrized model pair.
+/** Find the vector of first derivatives (aka the gradient) of the log likelihood of a data/parametrized model pair.
 
 \param d    The data
 \param out  The score to be returned. I expect you to have allocated this already.
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
 
+\li The default is to use \ref apop_numerical_gradient, but special-case calculations
+for certain models are held in a vtable; see \ref vtables for details. The typedef
+new functions must conform to and the hash used for lookups are:
+
+\code
+typedef void (*apop_score_type)(apop_data *d, gsl_vector *gradient, apop_model *m);
+#define apop_score_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p))
+\endcode
+
+As input to your function, you can expect that the model \c m is sufficiently prepped
+that the log likelihood can be evaluated; see \ref psubsection for details.
+On output, the a \c gsl_vector input to the function must be filled with the gradients
+(or <tt>NaN</tt>s on errors). If the model parameters have a more complex shape
+than a simple vector, then the vector must be in \c apop_data_pack order; use \c
+apop_data_unpack to reformat to the preferred shape.
+
 \ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
-    if (m->score){
-        m->score(d, out, m);
+    apop_score_type ms = apop_score_vtable_get(*m);
+    if (ms){
+        ms(d, out, m);
         return;
     }
     gsl_vector * numeric_default = apop_numerical_gradient(d, m);
@@ -301,51 +299,54 @@ void distract_doxygen(){/*Doxygen gets thrown by the settings macros. This decoy
 
 /** Get a model describing the distribution of the given parameter estimates.
 
-  For many models, the parameter estimates are well-known, such as the
-  \f$t\f$-distribution of the parameters for OLS.
+For many models, the parameter estimates are well-known, such as the
+\f$t\f$-distribution of the parameters for OLS.
 
-  For models where the distribution of \f$\hat{}p\f$ is not known, if you give me data, I
-  will return a \ref apop_normal or \ref apop_multivariate_normal model, using the parameter estimates as mean and \ref apop_bootstrap_cov for the variances.
+For models where the distribution of \f$\hat{}p\f$ is not known, if you give me data, I
+will return a \ref apop_normal or \ref apop_multivariate_normal model, using the parameter estimates as mean and \ref apop_bootstrap_cov for the variances.
 
-  If you don't give me data, then I will assume that this is a stochastic model where 
-  re-running the model will produce different parameter estimates each time. In this case, I will
-  run the model 1e4 times and return a \ref apop_pmf model with the resulting parameter
-  distributions.
+If you don't give me data, then I will assume that this is a stochastic model where 
+re-running the model will produce different parameter estimates each time. In this case, I will
+run the model 1e4 times and return a \ref apop_pmf model with the resulting parameter
+distributions.
 
-  Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{}p\f$.
+Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{}p\f$.
 
-  The \ref apop_pm_settings structure dictates details of how the model is generated.
-  For example, if you want only the distribution of the third parameter, and you know the
-  distribution will be a PMF generated via random draws, then set settings and call the
-  model via:
-  \code
-    apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
-    apop_model *dist = apop_parameter_model(your_data, your_model);
-  \endcode
+The \ref apop_pm_settings structure dictates details of how the model is generated.
+For example, if you want only the distribution of the third parameter, and you know the
+distribution will be a PMF generated via random draws, then set settings and call the
+model via:
+\code
+  apop_model_group_add(your_model, apop_pm, .index =3, .draws=3e5);
+  apop_model *dist = apop_parameter_model(your_data, your_model);
+\endcode
 
-  \li \c index gives the position of the parameter (in \ref apop_data_pack order)
-  in which you are interested. Thus, if this is zero or more, then you will get a
-  univariate output distribution describing a single parameter. If <tt>index == -1</tt>,
-  then I will give you the multivariate distribution across all parameters.  The default
-  is zero (i.e. the univariate distribution of the zeroth parameter).
-  
-  \li \c rng If the method requires random draws (as the default bootstrap will), then use this.
-    If you provide \c NULL and one is needed, see the \ref autorng section on how one is provided for you.
+\li \c index gives the position of the parameter (in \ref apop_data_pack order)
+in which you are interested. Thus, if this is zero or more, then you will get a
+univariate output distribution describing a single parameter. If <tt>index == -1</tt>,
+then I will give you the multivariate distribution across all parameters.  The default
+is zero (i.e. the univariate distribution of the zeroth parameter).
+\li \c rng If the method requires random draws (as the default bootstrap will), then use this. If you provide \c NULL and one is needed, see the \ref autorng section on how one is provided for you.
+\li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
+the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
+\li The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
 
-  \li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
-  the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
+\code
+typedef apop_model* (*apop_parameter_model_type)(apop_data *, apop_model *);
+#define apop_parameter_model_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)
+\endcode
 \ingroup models
 */ 
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
-        settings = apop_model_add_group(m, apop_pm, .base= m);
-    if (m->parameter_model)
-        return m->parameter_model(d, m);
-    if (d){
+        settings = Apop_settings_add_group(m, apop_pm, .base= m);
+    apop_parameter_model_type pm = apop_parameter_model_vtable_get(*m);
+    if (pm) return pm(d, m);
+    else if (d){
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
         apop_model *out = apop_model_copy(apop_multivariate_normal);
-        out->m1base = out->vbase = out->m2base = out->dsize = vsize+msize1+msize2;
+        out->msize1 = out->vsize = out->msize2 = out->dsize = vsize+msize1+msize2;
         out->parameters = apop_bootstrap_cov(d, *m, settings->rng, settings->draws);
         out->parameters->vector = apop_data_pack(m->parameters);
         if (settings->index == -1)
@@ -358,13 +359,12 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
             apop_model_free(out);
             return out2;
         }
-    }
-    //else
+    } //else
     Get_vmsizes(m->parameters);//vsize, msize1, msize2
     apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
     for (int i=0; i < settings->draws; i++){
         apop_model *mm = apop_estimate (NULL, *m);//If you're here, d==NULL.
-        Apop_row(param_draws, i, onerow);
+        Apop_matrix_row(param_draws->matrix, i, onerow);
         apop_data_pack(mm->parameters, onerow);
         apop_model_free(mm);
     }
@@ -403,10 +403,8 @@ void apop_draw(double *out, gsl_rng *r, apop_model *m){
 \ingroup models
  */
 void apop_prep(apop_data *d, apop_model *m){
-    if (m->prep)
-        m->prep(d, m);
-    else
-        apop_model_clear(d, m);
+    if (m->prep) m->prep(d, m);
+    else         apop_model_clear(d, m);
 }
 
 static double disnan(double in) {return gsl_isnan(in);}
@@ -433,19 +431,23 @@ There may be a second page (i.e., a \ref apop_data set attached to the <tt>->mor
 
 This segment of the framework is in beta---subject to revision of the details.
 
+\li The default is to use \ref apop_ml_impute, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+
+\code
+typedef apop_data * (*apop_predict_type)(apop_data *d, apop_model *params);
+#define apop_predict_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)
+\endcode
 \ingroup models
-  */
+*/
 apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
     apop_data *out = d ? d : apop_data_alloc(0, 1, m->dsize);
-    if (!d)
-        gsl_matrix_set_all(out->matrix, GSL_NAN);
-    if (m->predict)
-        prediction = m->predict(out, m);
-    if (prediction)
-        return prediction;
-    if (!apop_map_sum(out, disnan))
-        return out;
+    if (!d) gsl_matrix_set_all(out->matrix, GSL_NAN);
+    apop_predict_type mp = apop_predict_vtable_get(*m);
+    if (mp) prediction = mp(out, m);
+    if (prediction) return prediction;
+    if (!apop_map_sum(out, disnan)) return out;
+    //default:
     apop_model *f = apop_ml_imputation(out, m);
     apop_model_free(f);
     return out;
@@ -484,7 +486,7 @@ double apop_cdf(apop_data *d, apop_model *m){
     if (!cs)
         cs = Apop_model_add_group(m, apop_cdf);
     long int tally = 0; 
-    Apop_row(d, 0, ref);
+    Apop_matrix_row(d->matrix, 0, ref);
     if (!cs->draws_made){
         cs->draws_made= gsl_matrix_alloc(cs->draws, m->dsize == -1? ref->size : m->dsize);
         for (int i=0; i< cs->draws; i++){

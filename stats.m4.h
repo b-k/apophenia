@@ -1,5 +1,5 @@
 /** \file stats.h */
-/* Copyright (c) 2005--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2010, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
 #ifndef APOP_STATS_H
 #define APOP_STATS_H
 #include <math.h>
@@ -26,8 +26,6 @@ extern "C" {
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 Apop_var_declare( apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2) )
 Apop_var_declare( int         apop_vector_bounded(const gsl_vector *in, long double max) )
-Apop_var_declare( void apop_vector_increment(gsl_vector * v, int i, double amt) )
-Apop_var_declare( void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt) )
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
@@ -49,13 +47,10 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_MATRIX_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define APOP_ROW_T(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
+#define APOP_MATRIX_ROW_T(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
 #define APOP_COL_T(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, apop_name_find((m)->names, col, 'c')).vector;\
-gsl_vector * v = &( apop_vv_##v );
-
-#define APOP_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, (row)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
 //-1st column is the vector.
@@ -74,8 +69,9 @@ gsl_vector * v = &( apop_vv_##v );
                                 : (gsl_matrix) { };             \
     apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
             (apop_name){                                                         \
+                .title = (d)->names->title,                                      \
                 .vector = (d)->names->vector,                                    \
-                .column = (d)->names->column,                                    \
+                .col = (d)->names->col,                                          \
                 .row = ((d)->names->row && (d)->names->rowct > rownum) ? &((d)->names->row[rownum]) : NULL,  \
                 .text = (d)->names->text,                                        \
                 .colct = (d)->names->colct,                                      \
@@ -91,46 +87,40 @@ gsl_vector * v = &( apop_vv_##v );
                 .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
     apop_data *outd =  &apop_dd_##outd;
 
-#define Apop_data_row(d, row, outd) Apop_data_rows(d, row, 1, outd)
+#define Apop_row(d, row, outd) Apop_data_rows(d, row, 1, outd)
 
 #define Apop_col APOP_COL 
 #define apop_col APOP_COL 
-#define Apop_row APOP_ROW
-#define apop_row APOP_ROW
+#define APOP_ROW Apop_row
+#define apop_row Apop_row
 #define Apop_col_t APOP_COL_T
-#define Apop_row_t APOP_ROW_T
+#define Apop_matrix_row_t APOP_MATRIX_ROW_T
 #define Apop_matrix_col APOP_MATRIX_COL 
 #define Apop_matrix_row APOP_MATRIX_ROW
 #define Apop_submatrix APOP_SUBMATRIX
 #define apop_data_rows Apop_data_rows
-#define apop_data_row Apop_data_row
+#define Apop_data_row Apop_row
+#define apop_data_row Apop_row
 
 long double apop_vector_sum(const gsl_vector *in);
-double apop_var(const gsl_vector *in);
 double apop_vector_var_m(const gsl_vector *in, const double mean);
-double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb);
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
-double apop_vector_kurtosis_pop(const gsl_vector *in);
 double apop_vector_kurtosis(const gsl_vector *in);
 double apop_vector_skew(const gsl_vector *in);
-double apop_vector_skew_pop(const gsl_vector *in);
-double apop_vector_weighted_mean(const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_cov(const gsl_vector *, const gsl_vector *, const gsl_vector *);
-double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w);
-double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w);
 
 #define apop_sum(in) apop_vector_sum(in)
 #define apop_var(in) apop_vector_var(in) 
-#define apop_vector_covar(in) apop_vector_cov(in) 
 #define apop_mean(in) apop_vector_mean(in)
 
 /** Find the mean of the input vector.
 
 */
-#define apop_vector_mean(in)  ((!in) ? GSL_NAN : gsl_stats_mean((in)->data,(in)->stride, (in)->size))
-
-#define apop_vector_var(in)  ((!in) ? GSL_NAN : gsl_stats_variance((in)->data,(in)->stride, (in)->size))
+Apop_var_declare( double apop_vector_mean(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_var(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_skew_pop(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights))
+Apop_var_declare( double apop_vector_cov(gsl_vector const *v1, gsl_vector const *v2,
+                                         gsl_vector const *weights))
 
 Apop_var_declare( double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm) )
 
@@ -192,7 +182,7 @@ Apop_var_declare( gsl_vector * apop_numerical_gradient(apop_data * data, apop_mo
 Apop_var_declare( apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta) )
 Apop_var_declare( apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta) )
 
-apop_model * apop_maximum_likelihood(apop_data * data, apop_model *dist);
+void apop_maximum_likelihood(apop_data * data, apop_model *dist);
 
 Apop_var_declare( apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary) )
 
@@ -218,9 +208,9 @@ Pull a pointer to a submatrix into a \c gsl_matrix
  \param ncol number of columns in the submatrix
 \hideinitializer */
 
-/** \def Apop_row_t(m, row_name, v)
+/** \def Apop_matrix_row_t(m, row_name, v)
  After this call, \c v will hold a vector view of the <tt>row</tt>th row of \c m.
- Unlike \ref Apop_row, the second argument is a row name, that I'll look up using \ref apop_name_find.
+ Unlike \ref Apop_matrix_row, the second argument is a row name, that I'll look up using \ref apop_name_find.
 \hideinitializer */
 
 /** \def Apop_col_t(m, col_name, v)
@@ -236,7 +226,7 @@ Pull a pointer to a submatrix into a \c gsl_matrix
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of \c m.
 \hideinitializer */
 
-/** \def Apop_row(d, row, v)
+/** \def Apop_matrix_row(d, row, v)
  After this call, \c v will hold a vector view of the <tt>row</tt>th row of \ref apop_data set \c d.
 \hideinitializer */
 
@@ -252,7 +242,7 @@ view, that you can use as you would any \ref apop_data set. However,
 it expires as soon as the program leaves the current scope (like with the usual statically declared vars). 
 \hideinitializer */
 
-/** \def Apop_data_row(d, row, outd)
+/** \def Apop_row(d, row, outd)
 A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
 row \c row. 
 After this call, \c outd will be a pointer to this temporary
@@ -262,12 +252,4 @@ view, that you can use as you would any \ref apop_data set. This macro expands t
 
 /** \def apop_mean(v)
  Returns the mean of the elements of the vector \c v.
-\hideinitializer */
-
-/** \def apop_vector_mean(v)
- Returns the mean of the elements of the vector \c v.
-\hideinitializer */
-
-/** \def apop_vector_var(v)
- Returns the sample variance of the elements of the vector \c v.
 \hideinitializer */

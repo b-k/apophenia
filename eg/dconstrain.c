@@ -3,7 +3,7 @@
 #ifdef Testing
 #define Show_results(m)
 #else
-#define Show_results(m) apop_model_print(m);
+#define Show_results(m) apop_model_print(m, NULL);
 #endif
 
 //The constraint function.

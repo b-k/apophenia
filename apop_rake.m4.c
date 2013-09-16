@@ -365,7 +365,8 @@ static int get_var_index(char *const *all_vars, int len, char *findme){
 	for (int i=0; i< len; i++)
 		if (all_vars[i] && !strcmp(all_vars[i], findme))
 			return i;
-	Apop_assert_c(0, -1, 0, "I couldn't find %s in the full list of variables. Returning -1.", findme);
+	Apop_notify(0, "I couldn't find %s in the full list of variables. Returning -1.", findme);
+    return -1;
 }
 
 void nan_to_zero(double *in){ if (gsl_isnan(*in)) *in=0;}

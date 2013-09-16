@@ -69,7 +69,6 @@ static void test_printing(){
 
     if (!apop_table_exists("nandata"))
         test_nan_data();
-    apop_opts.output_type ='s';
     gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
     apop_matrix_print(m, .output_file=outfile, .output_append='w');
 
@@ -100,10 +99,7 @@ apop_system("cp %s xxx", outfile);
 
     fprintf(f, "\nand just the weights vector:\n");
     strcpy(apop_opts.output_delimiter, "\t");
-    apop_opts.output_type = 'p';
-    apop_opts.output_pipe = f;
-    apop_vector_print(d->weights);
-    apop_opts.output_type = 's';
+    apop_vector_print(d->weights, .output_type='p', .output_pipe=f);
     fclose(f);
     int has_diffs = apop_system("diff -b printing_sample %s", outfile);
     assert(!has_diffs);
@@ -219,21 +215,21 @@ void test_score(){
     apop_model *estme = apop_model_copy(apop_normal);
     Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN);
     apop_prep(data, estme);
-    apop_model *out = apop_maximum_likelihood(data, estme);
+    apop_maximum_likelihood(data, estme);
 
     apop_model *straight_est = apop_estimate(data, apop_normal);
     Diff (straight_est->parameters->vector->data[0], source->parameters->vector->data[0], tol1);
     Diff (straight_est->parameters->vector->data[1], source->parameters->vector->data[1], tol1);
     apop_model_free(straight_est); 
 
-    double sigsqn = gsl_pow_2(out->parameters->vector->data[1])/len;
-    apop_data *cov = apop_data_get_page(out->parameters, "cov");
-    Diff (apop_data_get(cov, 0,0),sigsqn , tol3);
-    Diff (apop_data_get(cov, 1,1),sigsqn/2 , tol3);
-    double *cov1 = apop_data_ptr(out->parameters, .page="cov", .row=1, .col=1);
+    double sigsqn = gsl_pow_2(estme->parameters->vector->data[1])/len;
+    apop_data *cov = apop_data_get_page(estme->parameters, "cov", 'r');
+    Diff (apop_data_get(cov, 0, 0), sigsqn , tol3);
+    Diff (apop_data_get(cov, 1, 1), sigsqn/2 , tol3);
+    double *cov1 = apop_data_ptr(estme->parameters, .page="<covariance>", .row=1, .col=1);
     Diff (*cov1 ,sigsqn/2 , tol3);
     Diff(apop_data_get(cov, 0,1) + apop_data_get(cov, 0,1), 0, tol3);
-    apop_model_free(out);
+    apop_model_free(estme);
     apop_model_free(source); 
     apop_data_free(data);
 }
@@ -312,13 +308,12 @@ void test_nan_data(){
     strcpy(apop_opts.db_name_column, "head");
     strcpy(apop_opts.db_nan, "(nan|\\.)");
     apop_data *d  = apop_query_to_data("select * from nandata");
-    apop_opts.output_type ='d';//check that rownames come in OK, and NaNs written right.
-    apop_data_print(d, "nantest");
+    apop_data_print(d, "nantest", .output_type='d');
     apop_data_free(d);
     apop_data *d2  = apop_query_to_data("select * from nantest");
-    assert(gsl_isnan(apop_data_get_tt(d2,"second", "c")));
-    assert(gsl_isnan(apop_data_get_tt(d2,"third", "b")));
-    assert(!apop_data_get_tt(d2,"fourth", "b"));
+    assert(gsl_isnan(apop_data_get(d2, .rowname="second", .colname="c")));
+    assert(gsl_isnan(apop_data_get(d2, .rowname="third", .colname="b")));
+    assert(!apop_data_get(d2, .rowname="fourth", .colname="b"));
     apop_data_free(d2);
     strcpy(apop_opts.db_nan, "NaN");
     
@@ -341,15 +336,12 @@ void test_nan_data(){
 }
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
-    assert(apop_vector_mean(v) == apop_vector_weighted_mean(v,NULL));
-    assert(apop_vector_mean(av) == apop_vector_weighted_mean(v,w));
-    assert(apop_vector_weighted_mean(v,w) == mean);
-    Diff (apop_vector_var(v), apop_vector_weighted_var(v,NULL), tol5);
-    Diff (apop_vector_cov(v,v2), apop_vector_weighted_cov(v,v2,NULL), tol5);
-    Diff (apop_vector_var(av), apop_vector_weighted_var(v,w), tol5);
-    Diff (apop_vector_cov(av,av2), apop_vector_weighted_cov(v,v2,w), tol5);
-    Diff (apop_vector_skew_pop(av), apop_vector_weighted_skew(v,w), tol5);
-    Diff (apop_vector_kurtosis_pop(av), apop_vector_weighted_kurtosis(v,w), tol5);
+    assert(apop_vector_mean(av) == apop_vector_mean(v,w));
+    assert(apop_vector_mean(v, w) == mean);
+    Diff (apop_vector_var(av), apop_vector_var(v, w), tol5);
+    Diff (apop_vector_cov(av, av2), apop_vector_cov(v, v2, w), tol5);
+    Diff (apop_vector_skew_pop(av), apop_vector_skew_pop(v, w), tol5);
+    Diff (apop_vector_kurtosis_pop(av), apop_vector_kurtosis_pop(v, w), tol5);
 }
 
 void test_weigted_moments(){
@@ -373,9 +365,9 @@ void test_weigted_moments(){
     v2            = apop_array_to_vector(data4, 5);
     av            = apop_array_to_vector(alldata2, 10);
     av2           = apop_array_to_vector(alldata4, 10);
-    gsl_vector    *w2          = gsl_vector_alloc(5);
+    gsl_vector *w2 = gsl_vector_alloc(5);
     apop_vector_fill(w2, 4, 3, 2, 1, 0);
-    wmt(v,v2,w2,av,av2,1);
+    wmt(v, v2, w2, av, av2, 1);
 }
 
 void test_split_and_stack(gsl_rng *r){
@@ -536,7 +528,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(m, 0).vector;
     gsl_vector_set_all(&v, 1);
 
-    apop_data *predict_tab = apop_data_get_page(est->info, "predict");
+    apop_data *predict_tab = apop_data_get_page(est->info, "predict", 'r');
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tol5);
 
@@ -561,7 +553,7 @@ void test_f(apop_model *est){
     //apop_data_show(ftab2);
     double n = est->data->matrix->size1;
     double K = est->parameters->vector->size-1;
-    double r = apop_data_get_ti(rsq, "R.squared", 0);
+    double r = apop_data_get(rsq, .rowname="R.squared");
     double f = apop_data_get(ftab, .rowname="F.stat");
     double f2 = apop_data_get(ftab2, .rowname="F.stat");
     Diff (f , r*(n-K)/((1-r)*K) , tol5);
@@ -722,9 +714,9 @@ void test_model_fix_parameters(gsl_rng *r){
     size_t ct = 1000;
     apop_data *d = apop_data_alloc(0,ct,2);
     double draw[2];
-    apop_multivariate_normal.vbase =
-    apop_multivariate_normal.m1base =
-    apop_multivariate_normal.m2base = 2;
+    apop_multivariate_normal.vsize =
+    apop_multivariate_normal.msize1 =
+    apop_multivariate_normal.msize2 = 2;
     apop_model *pp = apop_model_set_parameters(apop_multivariate_normal,
                                         8, 1, 0.5,
                                         2, 0.5, 1);
@@ -794,22 +786,22 @@ void test_linear_constraint(){
     assert(gsl_vector_get(beta2,2)==0);
 }
 
-static apop_model * broken_est(apop_data *d, apop_model *m){
+static void broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 1./100.) {
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
-        return m;
+        return;
     }
-    return apop_normal.estimate(d, m);
+    apop_normal.estimate(d, m);
 }
 
-static apop_model * super_broken_est(apop_data *d, apop_model *m){
+static void super_broken_est(apop_data *d, apop_model *m){
     static gsl_rng *r; if (!r) r = apop_rng_alloc(1);
     if (gsl_rng_uniform(r) < 3./4.) {
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
-        return m;
+        return;
     }
-    return apop_normal.estimate(d, m);
+    apop_normal.estimate(d, m);
 }
 
 void test_jackknife(gsl_rng *r){
@@ -860,7 +852,7 @@ int test_jack(gsl_rng *r){
   apop_data *d  =apop_data_alloc(draws, 1);
   apop_model  m   = apop_normal;
   double      pv[] = {1., 3.};
-    m.parameters = apop_line_to_data(pv, 2,0,0);
+    m.parameters = apop_data_fill_base(apop_data_alloc(2), pv);
     for (i =0; i< draws; i++)
         m.draw(apop_data_ptr(d, i, 0), r, &m); 
     apop_data *out = apop_jackknife_cov(d, m);
@@ -911,7 +903,7 @@ void test_multivariate_normal(gsl_rng *r){
     int len = 4e5;
     double params[] = {1, 3, 0,
                        2, 0, 1};
-    apop_data *p = apop_line_to_data(params, 2,2,2);
+    apop_data *p = apop_data_fill_base(apop_data_alloc(2, 2, 2), params);
     apop_model *mv = apop_model_copy(apop_multivariate_normal);
     mv->parameters=p;
     mv->dsize=2;
@@ -1010,14 +1002,14 @@ void db_to_text(){
     assert(!strcmp("T",  d->text[3][b_allele_col]));
     int rsid_col = apop_name_find(d->names, "rsid", 't');
     assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
-    assert(apop_data_get_it(d, 5, "ab")==201);
+    assert(apop_data_get(d, .row=5, .colname="ab")==201);
 
     assert(!strcmp(d->text[3][rsid_col], "rs'11804171"));
 
     apop_data *dcc = apop_data_copy(d); //test apop_data_copy
     assert(!strcmp("T",  dcc->text[3][b_allele_col]));
     assert(!strcmp("rs2977656",  dcc->text[4][rsid_col]));
-    assert(apop_data_get_it(dcc, 5, "ab")==201);
+    assert(apop_data_get(dcc, 5, .colname="ab")==201);
 
     apop_data *dd = apop_query_to_text ("select * from d");
     b_allele_col = apop_name_find(dd->names, "b_all.*", 't');
@@ -1030,18 +1022,15 @@ void db_to_text(){
     assert(!strcmp("T",  dc->text[3][b_allele_col]));
     rsid_col = apop_name_find(dc->names, "rsid", 't');
     assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
-    assert(apop_data_get_it(dc, 5, "ab")==201);
+    assert(apop_data_get(dc, 5, .colname="ab")==201);
 
-    char oldtype = apop_opts.output_type;
-    apop_opts.output_type = 'd';
-    apop_data_print(dc, "mixedtest");
+    apop_data_print(dc, "mixedtest", .output_type='d');
     apop_data *de = apop_query_to_mixed_data("mmmmtttt","select * from mixedtest");
     b_allele_col = apop_name_find(de->names, "b_all.*", 't');
     assert(!strcmp("T",  de->text[3][b_allele_col]));
     rsid_col = apop_name_find(de->names, "rsid", 't');
     assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
-    assert(apop_data_get_it(de, 5, "ab")==201);
-    apop_opts.output_type = oldtype;
+    assert(apop_data_get(de, 5, .colname="ab")==201);
     unlink("mixedtest");
 
     test_uniform(d);
@@ -1094,7 +1083,7 @@ void dummies_and_factors(){
     apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
     apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
     check_for_dummies(d, dum, 0);
-    apop_text_to_factors(d, 0, 2);
+    apop_data_to_factors(d, 't', 0, 2);
     for(int i=0; i < d->textsize[0]; i ++) //the set is only As and Cs.
         if (!strcmp(d->text[i][0], "A"))
             assert(apop_data_get(d, i, 2) == 0);
@@ -1141,7 +1130,7 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
             apop_data_set(data, i, 0, 1);
             for (j = 1; j < true_params->size; j++)
                 apop_data_set(data, i, j, (gsl_rng_uniform(r)-0.5) *2);
-            APOP_ROW(data, i, asample);
+            Apop_matrix_row(data->matrix, i, asample);
             gsl_blas_ddot(asample, true_params, &val);
             if (method == &apop_probit)
                 apop_data_set(data, i, 0, (gsl_ran_gaussian(r, 1) > -val));
@@ -1185,8 +1174,8 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Logit
     apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
-    Apop_model_add_group(&apop_logit, apop_mle, .want_cov='n', .tolerance=1e-5);
-    apop_logit.score=NULL; //Basically OK, but still too imprecise.
+    Apop_model_add_group(&apop_logit, apop_mle, .tolerance=1e-5);
+    Apop_model_add_group(&apop_logit, apop_parts_wanted);
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
@@ -1195,7 +1184,8 @@ void test_probit_and_logit(gsl_rng *r){
 
     //Probit
     apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
-    Apop_model_add_group(&apop_probit, apop_mle, .want_cov='n');
+    Apop_model_add_group(&apop_probit, apop_mle);
+    Apop_model_add_group(&apop_logit, apop_parts_wanted);
     m = apop_estimate(data2, apop_probit);
     APOP_COL(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
@@ -1240,8 +1230,8 @@ void test_crosstabbing() {
                  " select a_allele, b_allele, count(*) as ct "
                  " from snps group by a_allele, b_allele ");
     apop_data *d = apop_db_to_crosstab("snp_ct", "a_allele", "b_allele", "ct");
-    assert(apop_data_get_tt(d, "A", "G")==5);
-    assert(apop_data_get_tt(d, "C", "G")==1);
+    assert(apop_data_get(d, .rowname="A", "G")==5);
+    assert(apop_data_get(d, .rowname="C", "G")==1);
 
     apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
     apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
@@ -1343,7 +1333,7 @@ void test_pmf(){
     for (size_t i=0; i< 1e5; i++){
         double out;
         apop_draw(&out, r, m);
-        apop_vector_increment(v, out);
+        (*gsl_vector_ptr(v, out))++;
     }
     apop_vector_normalize(d->weights);
     apop_vector_normalize(v);
@@ -1474,8 +1464,8 @@ void test_ols_offset(gsl_rng *r){
     Apop_col(cp, 1, off);
     gsl_vector_add_constant(off, 20);
     apop_model *way_off = apop_estimate(cp, apop_ols);
-    Apop_col(zero_off->info, 0, zinfo);
-    Apop_col(way_off->info, 0, winfo);
+    Apop_col(zero_off->info, -1, zinfo);
+    Apop_col(way_off->info, -1, winfo);
     assert(apop_vector_distance(zinfo, winfo) < 1e-4);
     gsl_vector *zcov = apop_data_pack(apop_data_get_page(zero_off->parameters, "<covariance>"), .use_info_pages='y');
     gsl_vector *wcov = apop_data_pack(apop_data_get_page( way_off->parameters, "<covariance>"), .use_info_pages='y');
@@ -1514,7 +1504,7 @@ int main(int argc, char **argv){
     gsl_rng *r = apop_rng_alloc(8); 
     apop_data *d = apop_text_to_data("test_data2",0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
-    Apop_model_add_group(an_ols_model, apop_lm, .want_cov=1, .want_expected_value= 1);
+    Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, *an_ols_model);
 
     do_test("db_to_text", db_to_text());

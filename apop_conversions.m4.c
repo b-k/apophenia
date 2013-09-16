@@ -2,7 +2,6 @@
 /* Copyright (c) 2006--2010, 2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 #include <gsl/gsl_math.h> //GSL_NAN
-#include <regex.h>
 #include <assert.h>
 #include <stdbool.h>
 
@@ -76,53 +75,6 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** Convert a <tt>double *</tt> array to a <tt>gsl_matrix</tt>. Input data is copied.
-
-\param line	the array to read in
-\param rows, cols	the size of the array.
-\return the <tt>gsl_matrix</tt>, allocated for you and ready to use.
-
-usage: \code gsl_matrix *m = apop_line_to_matrix(indata, 34, 4); \endcode
-\see apop_arrary_to_matrix
-\ingroup conversions
-*/
-gsl_matrix * apop_line_to_matrix(double *line, int rows, int cols){
-    gsl_matrix *out= gsl_matrix_alloc(rows, cols);
-    gsl_matrix_view	m = gsl_matrix_view_array(line, rows,cols);
-	gsl_matrix_memcpy(out, &(m.matrix));
-    return out;
-}
-
-/** A convenience function to convert a <tt>double *</tt> array to an \ref apop_data set. It will
-have no names. The input data is copied, not pointed to.
-
-See also \ref apop_line_to_matrix or \ref apop_array_to_vector; this function will use these and then wrap an \ref apop_data struct around the output(s).
-
-\param in	The array to read in. If there were appropriately placed line breaks, then this would look like the eventual data set. For example,
-\code
-double params[] = {0, 1, 2
-                   3, 4, 5};
-apop_data *out = apop_line_to_data(params, 2, 2, 2);
-\endcode
-will produce an \ref apop_data set with a vector \f$\left[\matrix{0 \cr 3}\right]\f$ and a matrix \f$\left[\matrix{1 & 2 \cr 4 & 5}\right]\f$.
-\param vsize    The vector size. If there are also rows/cols, I expect this to equal the number or rows.
-\param rows, cols	the size of the array.
-\return the \ref apop_data set, allocated for you and ready to use.
-\exception out->error=='d' Dimension error: vector and matrix heights have to be the same.
-\ingroup conversions
-*/
-apop_data * apop_line_to_data(double *in, int vsize, int rows, int cols){
-    if (vsize==0 && (rows>0 && cols>0))
-        return apop_matrix_to_data(apop_line_to_matrix(in, rows, cols));
-    if ((rows==0 || cols==0) && vsize>0)
-        return apop_vector_to_data(apop_array_to_vector(in, vsize));
-    Apop_stopif(vsize!=rows, apop_return_data_error(d), 
-            0, "apop_line_to_data expects either only a matrix, only a vector, or that matrix "
-            "row count and vector size are equal. You gave me a row size of %i and a vector "
-            "size of %i. Returning NULL.\n", rows, vsize);
-  return apop_data_fill_base(apop_data_alloc(vsize, rows, cols), in);
-}
-
 static int find_cat_index(char **d, char * r, int start_from, int size){
 //used for apop_db_to_crosstab.
     int i = start_from % size;	//i is probably the same or i+1.
@@ -193,7 +145,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 	out	= gsl_matrix_calloc(pre_d1->textsize[0], pre_d2->textsize[0]);
 	for (size_t k =0; k< datachars->textsize[0]; k++){
 		i = find_cat_index(outdata->names->row, datachars->text[k][0], i, pre_d1->textsize[0]);
-		j = find_cat_index(outdata->names->column, datachars->text[k][1], j, pre_d2->textsize[0]);
+		j = find_cat_index(outdata->names->col, datachars->text[k][1], j, pre_d2->textsize[0]);
         Apop_stopif(i==-2 || j == -2, outdata->error='n'; goto bailout, 0, "Something went wrong in the crosstabbing; "
                                                  "couldn't find %s or %s.", datachars->text[k][0], datachars->text[k][1]);
 		gsl_matrix_set(out, i, j, atof(datachars->text[k][2]));
@@ -244,14 +196,12 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
     char sparerow[msize1 > 0 ? (int)log10(msize1)+1 : 0];
     char sparecol[maxcol > 0 ? (int)log10(maxcol)+1 : 0];
 	apop_query("CREATE TABLE %s (%s , %s , %s);", tabname, 
-            apop_strip_dots(row_col_name, 'd'), 
-            apop_strip_dots(col_col_name, 'd'), 
-            apop_strip_dots(data_col_name, 'd'));
+                        row_col_name, col_col_name, data_col_name);
 	apop_query("begin;");
     for (int i=0; i< msize1; i++){
         rowname = (n->rowct > i) ?  n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
         for (int j=0; j< msize2; j++){
-            colname = (n->colct > j) ? n->column[j] : (sprintf(sparecol, "c%i", j), sparecol);
+            colname = (n->colct > j) ? n->col[j] : (sprintf(sparecol, "c%i", j), sparecol);
             double x = gsl_matrix_get(in->matrix, i, j); 
             if (!isnan(x)) apop_query("INSERT INTO %s VALUES ('%s', '%s', %g);", 
                                                 tabname, rowname, colname, x);
@@ -306,10 +256,10 @@ apop_data *apop_data_rank_compress (apop_data *in){
                               in->vector ? gsl_vector_max(in->vector) : 0);
     apop_data *out = apop_data_calloc(1, upper_bound+1);
     for (int i=0; i< msize1; i++)
-        for (int j=0; j< msize2; j++)
-            apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, j));
-    for (int i=0; i< vsize; i++)
-        apop_matrix_increment(out->matrix, 0, apop_data_get(in, i, -1));
+        for (int j=0; j< msize2; j++) 
+            (*gsl_matrix_ptr(out->matrix, 0, apop_data_get(in, i, j)))++;
+    for (int i=0; i< vsize; i++) 
+        (*gsl_matrix_ptr(out->matrix, 0, apop_data_get(in, i, -1)))++;
     return out;
 }
 
@@ -654,8 +604,8 @@ APOP_VAR_ENDHEAD
         get_field_names(1, NULL, infile, buffer, &ptr, add_this_line, field_names, field_ends, delimiters);
         L.ct = *add_this_line->textsize;
         set = apop_data_alloc(0,1, L.ct - hasrows);
-	    set->names->colct   = 0;
-	    set->names->column	= malloc(sizeof(char*));
+	    set->names->colct = 0;
+	    set->names->col = malloc(sizeof(char*));
         for (int j=0; j< L.ct - hasrows; j++)
             apop_name_add(set->names, *field_names->text[j], 'c');
         apop_data_free(field_names);
@@ -900,7 +850,7 @@ generate a unit vector for three dimensions:
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
 
-\see apop_line_to_data, apop_text_fill, apop_data_falloc
+\see apop_text_fill, apop_data_falloc
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){
@@ -965,7 +915,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
 The preprocessor will join <tt>"three" "two"</tt> to form <tt>"threetwo"</tt>, leaving you with only five strings.
 
 \li If you have a \c NULL-delimited array of strings (not just a loose list as above),
-then use \ref apop_text_fill_base. 
+then use \c apop_text_fill_base. 
 */
 apop_data *apop_text_fill_base(apop_data *data, char* text[]){
     int textct = 0;
@@ -1120,6 +1070,12 @@ int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3
     #endif
 }
 
+char *cut_at_dot(char const *infile){
+    char *out = strdup(infile);
+    for (char *c = out; *c; c++) if (*c=='.') {*c='\0'; return out;}
+    return out;
+}
+
 /** Read a text file into a database table.
 
   See \ref text_format.
@@ -1136,9 +1092,9 @@ apop_query("commit;");
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
 \param tabname      The name to give the table in the database (default
-= <tt> apop_strip_dots (text_file, 'd')</tt>; default in Python/R interfaces="t")
+= \c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>; default in Python/R interfaces="t")
 \param has_row_names Does the lines of data have row names? (default = 0)
-\param has_col_names Is the top line a list of column names? All dots in the column names are converted to underscores, by the way. (default = 1)
+\param has_col_names Is the top line a list of column names? (default = 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
 \param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
 \param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
@@ -1152,7 +1108,7 @@ apop_query("commit;");
 */
 APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters){
     char const *apop_varad_var(text_file, "-")
-    char *apop_varad_var(tabname, apop_strip_dots(text_file, 'd'))
+    char *apop_varad_var(tabname, cut_at_dot(text_file))
     int apop_varad_var(has_row_names, 'n')
     int apop_varad_var(has_col_names, 'y')
     if (has_row_names==1||has_row_names=='Y') has_row_names ='y';

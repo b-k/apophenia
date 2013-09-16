@@ -150,57 +150,6 @@ APOP_VAR_ENDHEAD
     return pc_space;
 }
 
-/** Just add <tt>amt</tt> to a \c gsl_vector element. 
- This is a readable convenience function that does some checks along the way. If you need speed, try, e.g.,
-
-  \code
-  *gsl_vector_ptr(v, i) += amt;
-  \endcode
-
-  which is roughly 25\% faster by my tests.
-
-\param v The \c gsl_vector in question (No default, must not be NULL)
-\param i The location in the vector to be incremented. (No default)
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use \c apop_vector_increment_base.)
-
-\li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
- */
-APOP_VAR_HEAD void apop_vector_increment(gsl_vector * v, int i, double amt){
-    gsl_vector * apop_varad_var(v, NULL);
-    Apop_stopif(!v, return, 0, "You sent me a NULL vector.");
-    int apop_varad_var(i, 0);
-    double apop_varad_var(amt, 1);
-APOP_VAR_END_HEAD
-	v->data[i * v->stride]	+= amt;
-}
-
-/** Just add <tt>amt</tt> to a \c gsl_matrix element.
- This is a readable convenience function that does some checks along the way. If you need speed, try, e.g.,
-
-  \code
-  *gsl_matrix_ptr(v, i, j) += amt;
-  \endcode
-
-  which is roughly 25\% faster by my tests.
-
-\param m The \c gsl_matrix in question (No default, must not be \c NULL)
-\param i The row of the element to be incremented. (No default)
-\param j The column of the element to be incremented. (No default)
-\param amt The amount by which to increment. Of course, one can decrement by specifying a negative amount. (default = 1. Please note that it is impossible to increment by zero. If that glitch is a possibility, use \c apop_vector_increment_base.)
-\ingroup convenience_fns
- */
-APOP_VAR_HEAD void apop_matrix_increment(gsl_matrix * m, int i, int j, double amt){
-    gsl_matrix * apop_varad_var(m, NULL);
-    Apop_stopif(!m, return, 0, "You sent me a NULL matrix.");
-    int apop_varad_var(i, 0);
-    int apop_varad_var(j, 0);
-    double apop_varad_var(amt, 1);
-APOP_VAR_END_HEAD
-	m->data[i * m->tda +j]	+= amt;
-}
-
-
 /** Take the log (base ten) of every element in a vector.
 
 \li If the input vector is \c NULL, do nothing. 
@@ -330,7 +279,7 @@ APOP_VAR_ENDHEAD
         return NULL;
 
     if (posn == 'r'){
-        apop_assert(m1->size2 == m2->size2, "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%zu and m2->size2==%zu. Halting.\n", m1->size2, m2->size2);
+        Apop_stopif(m1->size2 != m2->size2, return NULL, 0, "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%zu and m2->size2==%zu. Returning NULL.", m1->size2, m2->size2);
         int m1size = m1->size1;
         if (inplace)
             out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
@@ -347,8 +296,8 @@ APOP_VAR_ENDHEAD
         }
         return out;
     } else {
-        apop_assert(m1->size1 == m2->size1, "When stacking matrices side by side, "
-                "they have to have the same number of rows, but m1->size1==%zu and m2->size1==%zu. "
+        Apop_stopif(m1->size1 != m2->size1, return NULL, 0, "When stacking matrices side by side, "
+                "they have to have the same number of rows, but m1->size1==%zu and m2->size1==%zu. Returning NULL."
                 , m1->size1, m2->size1);
         int m1size = m1->size2;
         if (inplace)
@@ -414,7 +363,7 @@ Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether al
  */
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
-    apop_assert_c(in, 0, 1, "You sent in a NULL vector; returning 1.");
+    Apop_stopif(!in, return 1, 1, "You sent in a NULL vector; returning 1.");
     long double apop_varad_var(max, GSL_POSINF)
 APOP_VAR_END_HEAD
     double x;
@@ -496,8 +445,8 @@ Sample code:
 APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
     const apop_data * apop_varad_var(d1, NULL)
     const apop_data * apop_varad_var(d2, NULL)
-    Apop_assert_c(d1, NULL, 1, "d1 is NULL; returning NULL");
-    Apop_assert_c(d2, NULL, 1, "d2 is NULL; returning NULL");
+    Apop_stopif(!d1, return NULL, 1, "d1 is NULL; returning NULL");
+    Apop_stopif(!d2, return NULL, 1, "d2 is NULL; returning NULL");
     char apop_varad_var(form1, 0)
     char apop_varad_var(form2, 0)
 APOP_VAR_ENDHEAD

@@ -50,6 +50,10 @@ int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols));
 
 #include "apop_internal.h"
 
+static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p);
+apop_model *ols_param_models(apop_data *d, apop_model *m);
+apop_data *ols_predict(apop_data *in, apop_model *m);
+
 Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
     if (in->input_distribution)
@@ -73,16 +77,16 @@ static void prep_names (apop_model *e){
     apop_parts_wanted_settings *pwant = apop_settings_get_group(e, apop_parts_wanted);
     apop_data *predicted = apop_data_get_page(e->info, "<Predicted>");
     if (predicted){
-        apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->column[0] : "Observed"), 'c');
+        apop_name_add(predicted->names, (e->data->names->colct ? e->data->names->col[0] : "Observed"), 'c');
         apop_name_add(predicted->names, "Predicted", 'c');
         apop_name_add(predicted->names, "Residual", 'c');
     }
 	if (e->data->names->vector) { //this is post ols shuffle.
         if (e->parameters)
-            snprintf(e->parameters->names->title, 100, "Regression of %s", e->data->names->vector);
+            asprintf(&e->parameters->names->title, "Regression of %s", e->data->names->vector);
         apop_name_add(e->parameters->names, "parameters", 'v');
         for(int i=0; i< e->data->names->colct; i++)
-            apop_name_add(e->parameters->names, e->data->names->column[i], 'r');
+            apop_name_add(e->parameters->names, e->data->names->col[i], 'r');
         if ((pwant && pwant->covariance) || (!pwant && p && p->want_cov== 'y')){
             apop_data *cov = apop_data_get_page(e->parameters, "<Covariance>");
             if (cov && e->data->names){
@@ -99,13 +103,16 @@ static void ols_shuffle(apop_data *d){
         d->vector = apop_vector_copy(independent);
         gsl_vector_set_all(independent, 1);     //affine; first column is ones.
         if (d->names->colct > 0) {		
-            apop_name_add(d->names, d->names->column[0], 'v');
-            sprintf(d->names->column[0], "1");
+            apop_name_add(d->names, d->names->col[0], 'v');
+            sprintf(d->names->col[0], "1");
         }
     }
 }
 
 static void ols_prep(apop_data *d, apop_model *m){
+    apop_score_vtable_add(ols_score, apop_ols);
+    apop_parameter_model_vtable_add(ols_param_models, apop_ols);
+    apop_predict_vtable_add(ols_predict, apop_ols);
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
     m->prep = NULL;
@@ -118,7 +125,7 @@ errors are normally distributed.
 
 This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.  */
-static double ols_log_likelihood (apop_data *d, apop_model *p){ 
+static long double ols_log_likelihood (apop_data *d, apop_model *p){ 
     Nullcheck_mpd(d, p, GSL_NAN); Nullcheck(d->matrix, GSL_NAN);
   long double ll  = 0; 
   long double sigma, actual, weight;
@@ -128,7 +135,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
   gsl_matrix *data	 = d->matrix;
   gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
-        Apop_row(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual    = apop_data_get(d,i, -1);
@@ -140,7 +147,7 @@ static double ols_log_likelihood (apop_data *d, apop_model *p){
     }
     sigma   = sqrt(apop_vector_var(errors));
 	for(size_t i=0;i< data->size1; i++){
-        Apop_row(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
         apop_data justarow = {.matrix=&(m.matrix)};
         if (input_distribution)
@@ -164,7 +171,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
   gsl_vector *normscore = gsl_vector_alloc(2);
   apop_data  *subdata  = apop_data_alloc(1,1);
 	for(size_t i=0;i< data->size1; i++){
-        APOP_ROW(d, i, datarow);
+        Apop_matrix_row(d->matrix, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);
@@ -182,7 +189,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
         apop_score(subdata, normscore, norm);
         weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         for(size_t j=0; j< data->size2; j++)
-            apop_vector_increment(gradient, j, weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0));
+            *gsl_vector_ptr(gradient, j) += weight * apop_data_get(d, i, j) * gsl_vector_get(normscore, 0);
 	} 
     gsl_vector_free(errors);
     apop_model_free(norm);
@@ -293,8 +300,8 @@ Given your estimate \c est, the zeroth element is one of <br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="predicted") or</tt><br>
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="residual").</tt><br>
 */
-static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
-    Nullcheck_mpd(inset, ep, NULL);
+static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
+    Nullcheck_mpd(inset, ep, );
     apop_data *set;
     apop_lm_settings *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
@@ -337,14 +344,13 @@ static apop_model * apop_estimate_OLS(apop_data *inset, apop_model *ep){
         if (weights) gsl_vector_free(weights);
         apop_data_free(set);
     }
-    return ep;
 }
 
 /* \adoc predict This function is limited to taking in a data set with a matrix, and
 filling the vector with \f$X\beta\f$. Like, the OLS estimation will shuffle a matrix around
 to insert a column of ones (see \ref dataprep).
  */
-apop_data *ols_predict (apop_data *in, apop_model *m){
+apop_data *ols_predict(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, NULL);
     if (!in->vector)  ols_shuffle(in);  
 
@@ -360,19 +366,17 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         int i = settings->index;
         double mu = apop_data_get(m->parameters, i, -1);
         double sigma = sqrt(apop_data_get(m->parameters, i, i, .page="<Covariance>"));
-        int df = apop_data_get(m->info, .rowname="df", .page = "info");
+        int df = apop_data_get(m->info, .rowname="df");
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default
-    void *tmp = m->parameter_model;
-    m->parameter_model = NULL;
+    apop_parameter_model_vtable_drop(*m);
     apop_model *out = apop_parameter_model(d, m);
-    m->parameter_model=tmp;
+    apop_parameter_model_vtable_add(ols_param_models, *m);
     return out;
 }
 
-void ols_print(apop_model *m){
-    FILE *ap = apop_opts.output_pipe;
+void ols_print(apop_model *m, FILE *ap){
     fprintf(ap, "Parameters:\n");
     apop_data_print(m->parameters, .output_pipe=(ap? ap : stdout));
     apop_data *predict = apop_data_rm_page(m->info, "<Predicted>", .free_p='n');
@@ -380,9 +384,9 @@ void ols_print(apop_model *m){
     apop_data_add_page(m->info, predict, predict->names->title);
 }
 
-apop_model apop_ols = {.name="Ordinary Least Squares", .vbase = -1, .dsize=-1, .estimate =apop_estimate_OLS, 
-            .log_likelihood = ols_log_likelihood, .score=ols_score, .prep = ols_prep, .predict=ols_predict, 
-            .draw=ols_rng, .parameter_model = ols_param_models, .print=ols_print};
+apop_model apop_ols = {.name="Ordinary Least Squares", .vsize = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
+            .log_likelihood = ols_log_likelihood, .prep = ols_prep,
+            .draw=ols_rng, .print=ols_print};
 
 
 /*\amodel apop_iv Instrumental variable regression
@@ -421,9 +425,9 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
         }
     else if (instruments->names->colct)
         for (int i=0; i< instruments->names->colct; i++){
-            int colnumber = apop_name_find(x->names, instruments->names->column[i], 'c');
+            int colnumber = apop_name_find(x->names, instruments->names->col[i], 'c');
             Apop_assert(colnumber != -2, "You asked me to substitute instrument column %i "
-                    "for the data column named %s, but I could find no such name.",  i, instruments->names->column[i]);
+                    "for the data column named %s, but I could find no such name.",  i, instruments->names->col[i]);
             Apop_col(instruments, i, inv);
             Apop_col(out, colnumber, outv);
             gsl_vector_memcpy(outv, inv);
@@ -433,13 +437,13 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     return out;
 }
 
-static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
-    Nullcheck_mpd(inset, ep, NULL);
+static void apop_estimate_IV(apop_data *inset, apop_model *ep){
+    Nullcheck_mpd(inset, ep, );
     apop_lm_settings   *olp =  apop_settings_get_group(ep, apop_lm);
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) olp = Apop_model_add_group(ep, apop_lm);
     if (!olp->instruments || !(olp->instruments->matrix || olp->instruments->vector)) 
-        return apop_estimate(inset, apop_ols);
+        apop_ols.estimate(inset, ep);
     ep->data = inset;
     if (ep->parameters) apop_data_free(ep->parameters);
     ep->parameters = apop_data_alloc(inset->matrix->size2);
@@ -506,9 +510,8 @@ static apop_model * apop_estimate_IV(apop_data *inset, apop_model *ep){
     apop_data_free(zpy);
 
     if (!olp->destroy_data) apop_data_free(set);
-    return ep;
 }
 
-apop_model apop_iv = {.name="instrumental variables", .vbase = -1, .dsize=-1,
+apop_model apop_iv = {.name="instrumental variables", .vsize = -1, .dsize=-1,
     .estimate =apop_estimate_IV, .prep=ols_prep,
     .log_likelihood = ols_log_likelihood, .print=ols_print};

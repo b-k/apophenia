@@ -23,7 +23,7 @@ static void getminmax(apop_data *d, double *min, double *max){
                     vsize ? gsl_vector_max(d->vector) : GSL_NEGINF);
 }
 
-static double unif_ll(apop_data *d, apop_model *m){
+static long double unif_ll(apop_data *d, apop_model *m){
     Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
     double min, max;
@@ -33,7 +33,7 @@ static double unif_ll(apop_data *d, apop_model *m){
     return GSL_NEGINF;
 }
 
-static double unif_p(apop_data *d, apop_model *m){
+static long double unif_p(apop_data *d, apop_model *m){
     Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
     double min, max;
@@ -44,16 +44,15 @@ static double unif_p(apop_data *d, apop_model *m){
 }
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * uniform_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_d(data, NULL);
+static void uniform_estimate(apop_data * data,  apop_model *est){
+    Nullcheck_d(data, );
     apop_name_add(est->parameters->names, "min", 'r');
     apop_name_add(est->parameters->names, "max", 'r');
     getminmax(data, est->parameters->vector->data+0, est->parameters->vector->data+1);
     apop_data_add_named_elmt(est->info, "log likelihood", unif_ll(data, est));
-    return est;
 }
 
-static double unif_cdf(apop_data *d, apop_model *m){
+static long double unif_cdf(apop_data *d, apop_model *m){
     Nullcheck_mpd(d, m, GSL_NAN);
     Get_vmsizes(d) //tsize
     double min = m->parameters->vector->data[0];
@@ -90,11 +89,11 @@ fully neutral prior.
 \adoc    settings None. 
           */
 
-static apop_model * improper_uniform_estimate(apop_data * data,  apop_model *m){ return m; }
+static void improper_uniform_estimate(apop_data * data,  apop_model *m){ }
 
-static double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
-static double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
-static double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
+static long double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
+static long double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
+static long double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
 static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     Apop_stopif(1, *out=GSL_NAN, 0, "It doesn't make sense to make random draws from an improper Uniform.");

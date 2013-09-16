@@ -33,7 +33,7 @@ static double apply_for_gamma(double x, void *abin) {
     return x ? ((ab->a-1)*log(x) - x/ab->b - ab->ln_ga_plus_a_ln_b) : 0; 
 }
 
-static double gamma_log_likelihood(apop_data *d, apop_model *p){
+static long double gamma_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN) 
     Get_vmsizes(d)
     abstruct ab = {.a = gsl_vector_get(p->parameters->vector, 0),
@@ -71,7 +71,7 @@ static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
 }
 
-static double gamma_cdf(apop_data *d, apop_model *params){
+static long double gamma_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     double val = apop_data_get(d, 0, vsize ? -1 : 0);
@@ -80,6 +80,11 @@ static double gamma_cdf(apop_data *d, apop_model *params){
     return gsl_cdf_gamma_P(val, alpha, beta);
 }
 
+static void gamma_prep(apop_data *data, apop_model *params){
+    apop_score_vtable_add(gamma_dlog_likelihood, apop_gamma);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_gamma = {"Gamma distribution", 2,0,0, .dsize=1, 
-      .log_likelihood = gamma_log_likelihood, .score = gamma_dlog_likelihood, 
+      .log_likelihood = gamma_log_likelihood, .prep = gamma_prep, 
       .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};

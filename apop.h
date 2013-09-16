@@ -2,8 +2,8 @@
 #include <apophenia/asst.h>
 #include <apophenia/types.h>
 #include <apophenia/stats.h>
+#include <apophenia/vtables.h>
 #include <apophenia/settings.h>
-#include <apophenia/deprecated.h>
 
 //Part of the intent of a convenience header like this is that you
 //don't have to remember what else you're including. So here are 

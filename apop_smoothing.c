@@ -9,8 +9,8 @@
  \param bandwidth The number of elements to be smoothed. 
  */
 gsl_vector *apop_vector_moving_average(gsl_vector *v, size_t bandwidth){
-    apop_assert_c(v,  NULL, 0, "You asked me to smooth a NULL vector; returning NULL.\n");
-    apop_assert_s(bandwidth, "Bandwidth must be >=1.\n");
+    Apop_stopif(!v, return NULL, 0, "You asked me to smooth a NULL vector; returning NULL.\n");
+    Apop_stopif(!bandwidth, return apop_vector_copy(v), 0, "Bandwidth must be >=1. Returning a copy of original vector with no smoothing.");
     int halfspan = bandwidth/2;
     gsl_vector *vout = gsl_vector_calloc(v->size - halfspan*2);
     for(size_t i=0; i < vout->size; i ++){

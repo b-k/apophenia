@@ -133,7 +133,7 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     return out;
 APOP_VAR_ENDHEAD
     apop_data *out = apop_data_alloc();
-    sprintf(out->names->title, "F test");
+    asprintf(&out->names->title, "F test");
     size_t contrast_ct = contrast->vector->size;
     Apop_stopif(contrast->matrix->size1 != contrast_ct,  out->error='d'; return out,
             0, "I counted %zu contrasts by the size of either contrast->vector or "
@@ -195,8 +195,8 @@ APOP_VAR_ENDHEAD
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
-    APOP_ROW(d, row, vr);
-    APOP_COL(d, col, vc);
+    Apop_matrix_row(d->matrix, row, vr);
+    Apop_matrix_col(d->matrix, col, vc);
     double rowexp  = apop_vector_sum(vr)/n;
     double colexp  = apop_vector_sum(vc)/n;
     double observed = apop_data_get(d, row, col);
@@ -211,12 +211,12 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
  \ingroup asst_tests
  */
 apop_data * apop_test_anova_independence(apop_data *d){
-    apop_assert_c(d && d->matrix, NULL, 0, "You sent me data with no matrix element. Returning NULL.");
+    Apop_stopif(!d || !d->matrix, return NULL, 0, "You sent me data with no matrix element. Returning NULL.");
     double total = 0;
     //You can have a one-column or one-row matrix if you want; else df = (rows-1)*(cols-1)
     double df = d->matrix->size1==1 ? d->matrix->size2-1 : d->matrix->size2 == 1 ? d->matrix->size1 
                               : (d->matrix->size1 - 1)* (d->matrix->size2 - 1);
-    apop_assert_c(df, NULL, 0, "You sent a degenerate matrix. Returning NULL.");
+    Apop_stopif(!df, return NULL, 0, "You sent a degenerate matrix. Returning NULL.");
     int n = apop_matrix_sum(d->matrix);
     for (size_t row=0; row <d->matrix->size1; row++)
         for (size_t col=0; col <d->matrix->size2; col++)
@@ -232,8 +232,7 @@ apop_data * apop_test_anova_independence(apop_data *d){
 
 static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
     //ANOVA has always just been a process of filling in a form, and
-    //that's what this function does. I use apop_data_get instead of
-    //apop_data_get_tt for efficiency reasons.
+    //that's what this function does.
     apop_data *out = apop_data_calloc(3, 6);
     apop_name_add(out->names, "sum of squares", 'c');
     apop_name_add(out->names, "df", 'c');
@@ -247,7 +246,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
  
     //total sum of squares:
     apop_data* tss = apop_query_to_data("select var_pop(%s), count(*) from %s", data, table);
-    apop_assert(tss, "Query 'select var_pop(%s), count(*) from %s' returned NULL. Does that look right to you?", data, table);
+    Apop_stopif(!tss, apop_return_data_error('q'), 0, "Query 'select var_pop(%s), count(*) from %s' returned NULL. Does that look right to you?", data, table);
     apop_data_set(out, 2, 0, apop_data_get(tss, 0, 0)*apop_data_get(tss, 0, 1)); //total sum of squares
     double total_df = apop_data_get(tss, 0, 1);
     apop_data_set(out, 2, 1, apop_data_get(tss, 0, 1)); //total df.
@@ -296,24 +295,20 @@ APOP_VAR_HEAD apop_data* apop_anova(char *table, char *data, char *grouping1, ch
     char *apop_varad_var(grouping2, NULL)
 APOP_VAR_ENDHEAD
     apop_data *first = apop_anova_one_way(table, data, grouping1);
-    if (!grouping2)
-        return first;
+    Apop_stopif(first->error, return first, 0, "Error (%c) running one-way ANOVA.", first->error);
+    if (!grouping2) return first;
     apop_data *second = apop_anova_one_way(table, data, grouping2);
     char *joined = NULL;
     asprintf(&joined, "%s, %s", grouping1, grouping2);
     apop_data *interaction = apop_anova_one_way(table, data, joined);
-    apop_data *out         = apop_data_calloc(0, 5, 6);
+    apop_data *out = apop_data_calloc(5, 6);
     apop_name_stack(out->names, first->names, 'c');
-    apop_name_add(out->names, first->names->row[0], 'r');
-    apop_name_add(out->names, second->names->row[0], 'r');
-    apop_name_add(out->names, "interaction", 'r');
-    apop_name_add(out->names, "residual", 'r');
-    apop_name_add(out->names, "total", 'r');
-
-    APOP_ROW(first, 0, firstrow);
-    APOP_ROW(second, 0, secondrow);
-    APOP_ROW(interaction, 0, interrow);
-    APOP_ROW(first, 2, totalrow);
+    apop_data_add_names(out, 'r', first->names->row[0], second->names->row[0],
+                                  "interaction", "residual", "total");
+    Apop_matrix_row(first->matrix, 0, firstrow);
+    Apop_matrix_row(second->matrix, 0, secondrow);
+    Apop_matrix_row(interaction->matrix, 0, interrow);
+    Apop_matrix_row(first->matrix, 2, totalrow);
     gsl_matrix_set_row(out->matrix, 0, firstrow);
     gsl_matrix_set_row(out->matrix, 1, secondrow);
     gsl_matrix_set_row(out->matrix, 2, interrow);
@@ -420,9 +415,9 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     double apop_varad_var(p2, 0);
     int is_chi = strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
                      || strcasecmp(distribution, "chisq");
-     apop_assert(strcasecmp(distribution, "f") || p1, "I need both a p1 and p2 parameter specifying the degrees of freedom.")
-     apop_assert(strcasecmp(distribution, "t") || strcasecmp(distribution, "f") || is_chi
-             || p1, "I need a p1 parameter specifying the degrees of freedom.")
+     Apop_stopif(!strcasecmp(distribution, "f") && (!p1 || !p2), return NAN, 0, "I need both a p1 and p2 parameter specifying the degrees of freedom.")
+     Apop_stopif((!strcasecmp(distribution, "t") || !strcasecmp(distribution, "f") || is_chi)
+             && !p1, return NAN, 0, "I need a p1 parameter specifying the degrees of freedom.")
      if (!p2 && (!distribution || !strcasecmp(distribution, "normal") || !strcasecmp(distribution, "gaussian") ))
          p2 = 1;
      if (!p2 && p1 >= 0 && !strcasecmp(distribution, "uniform"))

@@ -17,9 +17,9 @@ static double bernie_ll(double x, void * pin){
     return x ? log(*p) : log(1-*p); 
 }
 
-static double bernoulli_log_likelihood(apop_data *d, apop_model *params){
+static long double bernoulli_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
-    double p = apop_data_get(params->parameters,0,-1);
+    double p = apop_data_get(params->parameters, 0, -1);
 	return apop_map_sum(d, .fn_dp = bernie_ll, .param=&p);
 }
 
@@ -29,8 +29,8 @@ static double nonzero (double in) { return in !=0; }
 <tt>\<Covariance\></tt> page has the variance of \f$p\f$ in the (0,0)th element of the matrix.
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */
-static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est, NULL); Get_vmsizes(data); //tsize;
+static void bernoulli_estimate(apop_data * data,  apop_model *est){
+    Nullcheck_mpd(data, est, ); Get_vmsizes(data); //tsize;
     double n = tsize;
     double p = apop_map_sum(data, nonzero)/n;
     apop_name_add(est->parameters->names, "p", 'r');
@@ -38,7 +38,6 @@ static apop_model * bernoulli_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->info, "log likelihood", bernoulli_log_likelihood(data, est));
     apop_data *cov = apop_data_add_page(est->parameters, apop_data_alloc(1,1), "<Covariance>");
     apop_data_set(cov, 0,0, p*(1-p));
-	return est;
 }
 
 static double bernoulli_constraint(apop_data *data, apop_model *inmodel){
@@ -53,7 +52,7 @@ static void bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
 }
 
-static double bernoulli_cdf(apop_data *d, apop_model *params){
+static long double bernoulli_cdf(apop_data *d, apop_model *params){
 //One of those functions that just fills out the form.
 //CDF to zero = 1-p
 //CDF to one = 1
@@ -66,9 +65,8 @@ static double bernoulli_cdf(apop_data *d, apop_model *params){
                       : 1;
 }
 
-static void bernie_print(apop_model *m){
-    fprintf(apop_opts.output_pipe,
-            "Bernoulli distribution with p = %g.\n", apop_data_get(m->parameters,0,-1));
+static void bernie_print(apop_model *m, FILE *out){
+    fprintf(out, "Bernoulli distribution with p = %g.\n", apop_data_get(m->parameters,0,-1));
 }
 
 /* \adoc Settings None. */

@@ -3240,8 +3240,7 @@ void loess_free_mem(struct loess_struct *lo) {
     free(lo->kd_tree.vval);
 }
 
-void loess_summary(struct loess_struct lo) {
-    FILE *ap =apop_opts.output_pipe;
+void loess_summary(struct loess_struct lo, FILE *ap) {
     fprintf(ap, "Number of Observations: %ld\n", lo.in.n);
     fprintf(ap, "Equivalent Number of Parameters: %.1f\n", lo.out.enp);
     if(!strcmp(lo.model.family, "gaussian"))
@@ -3612,15 +3611,14 @@ static double onerow(gsl_vector *v, void *sd){
 }
 
 //Assumes one gaussian, unweighted.
-static double loess_ll(apop_data *d, apop_model *m){
+static long double loess_ll(apop_data *d, apop_model *m){
     apop_data *exp = apop_data_get_page(d, "<Predicted>");
     Apop_col_t(exp, "residual", residuals);
     double sd = sqrt(apop_vector_var(residuals));
     return apop_map_sum(exp, .param=&sd, .part='r', .fn_vp= onerow);
 }
 
-static apop_model *apop_loess_est(apop_data *d, apop_model *m){
-  apop_model *out = apop_model_copy(apop_loess);
+static void apop_loess_est(apop_data *d, apop_model *out){
     if (!Apop_settings_get_group(out, apop_loess))
         Apop_model_add_group(out, apop_loess, .data=d);
     out->data = d;
@@ -3630,7 +3628,7 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
     //Also, it wouldn't be 14 lines.
     apop_data *expect = apop_data_add_page(out->info, apop_data_alloc(d->matrix->size1, 3), "<Predicted>");
     if (!out->info) out->info = expect;
-    apop_name_add(expect->names, (out->data->names->colct ? out->data->names->column[0] : "Expected"), 'c');
+    apop_name_add(expect->names, (out->data->names->colct ? out->data->names->col[0] : "Expected"), 'c');
     apop_name_add(expect->names, "Predicted", 'c');
     apop_name_add(expect->names, "Residual", 'c');
     gsl_vector *v = gsl_vector_alloc(d->matrix->size1);
@@ -3646,13 +3644,16 @@ static apop_model *apop_loess_est(apop_data *d, apop_model *m){
     gsl_vector_memcpy(resid, v);
     v->data = holding;
     gsl_vector_free(v);
-
-    return out;
 }
 
-static void apop_loess_print(apop_model *in){
-    loess_summary(Apop_settings_get(in, apop_loess, lo_s));
+static void apop_loess_print(apop_model *in, FILE *out){
+    loess_summary(Apop_settings_get(in, apop_loess, lo_s), out);
 }
 
-apop_model apop_loess = {.name="Loess smoothing", .vbase = -1, .dsize=1, .estimate =apop_loess_est, 
-    .print=apop_loess_print, .log_likelihood = loess_ll, .predict = loess_predict};
+static void loess_prep(apop_data *data, apop_model *params){
+    apop_predict_vtable_add(loess_predict, apop_loess);
+    apop_model_clear(data, params);
+}
+
+apop_model apop_loess = {.name="Loess smoothing", .vsize = -1, .dsize=1, .estimate =apop_loess_est, 
+    .print=apop_loess_print, .log_likelihood = loess_ll, .prep = loess_prep};

@@ -13,11 +13,12 @@ may also find \ref apop_beta_from_mean_var to be useful.
 
 #include "apop_internal.h"
 
-static double beta_log_likelihood(apop_data *d, apop_model *p);
+static long double beta_log_likelihood(apop_data *d, apop_model *p);
 
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * beta_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est, NULL);
+static void beta_estimate(apop_data * data,  apop_model *est){
+    Nullcheck_mpd(data, est, );
+    apop_prep(data, est);
     Get_vmsizes(data) //vsize, msize1,...
     double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
     if (vsize){
@@ -35,7 +36,6 @@ static apop_model * beta_estimate(apop_data * data,  apop_model *est){
 	gsl_vector_set(est->parameters->vector, 1, beta);
     apop_data_add_named_elmt(est->info, "log likelihood", beta_log_likelihood(data, est));
     //apop_numerical_covariance_matrix(apop_beta, est, data);
-	return est;
 }
 
 typedef struct{
@@ -52,7 +52,7 @@ static double betamap(double x, void *abin) {
     ab_type ab = { .alpha = apop_data_get(p->parameters,0,-1), \
                    .beta  = apop_data_get(p->parameters,1,-1) };
 
-static double beta_log_likelihood(apop_data *d, apop_model *p){
+static long double beta_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN); 
     Get_vmsizes(d) //tsize
     Get_ab(p) //ab
@@ -78,7 +78,7 @@ static double beta_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
 
-static double beta_cdf(apop_data *d, apop_model *params){
+static long double beta_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     Get_ab(params)
@@ -94,6 +94,11 @@ static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
     } while (*out <= 0 || *out >= 1);
 }
 
+static void beta_prep(apop_data *data, apop_model *params){
+    apop_score_vtable_add(beta_dlog_likelihood, apop_beta);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_beta = {"Beta distribution", 2,0,0, .dsize=1, .estimate = beta_estimate, 
-    .log_likelihood = beta_log_likelihood, .score = beta_dlog_likelihood, 
+    .log_likelihood = beta_log_likelihood, .prep = beta_prep, 
     .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf};

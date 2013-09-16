@@ -121,13 +121,13 @@ Apop_settings_init(apop_fix_params,
 Apop_settings_copy(apop_fix_params, )
 Apop_settings_free(apop_fix_params, )
 
-static double fix_params_ll(apop_data *d, apop_model *fixed_model){
+static long double fix_params_ll(apop_data *d, apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
     return apop_log_likelihood(d, base_model);
 }
 
-static double fix_params_p(apop_data *d, apop_model *fixed_model){
+static long double fix_params_p(apop_data *d, apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);
     return apop_p(d, base_model);
@@ -148,24 +148,23 @@ static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
     base_model->draw(out, r, base_model);
 }
 
-static apop_model *fixed_est(apop_data * data, apop_model *params){
-    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
+static void fixed_est(apop_data * data, apop_model *params){
     if (!data) data = params->data;
-    apop_model *e = apop_maximum_likelihood(data, params);
-    unpack(base_model->parameters, e);
-    return e;
+    apop_maximum_likelihood(data, params);
+    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
+    unpack(base_model->parameters, params);
 }
 
-static void fixed_param_show(apop_model *m){
+static void fixed_param_show(apop_model *m, FILE *out){
     apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
-    printf("The fill-in table:\n");
-    apop_data_show(mset->predict);
+    fprintf(out, "The fill-in table:\n");
+    apop_data_print(mset->predict, .output_pipe=out);
     if (!m->parameters) printf("This copy of the model has not yet been estimated.\n");
     else {
-        printf("The base model, after unpacking:\n");
+        fprintf(out, "The base model, after unpacking:\n");
         unpack(mset->base_model->parameters, m);
     }
-        apop_model_print(mset->base_model);
+        apop_model_print(mset->base_model, out);
 }
 
 static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = fix_params_p, 
@@ -226,20 +225,24 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     if (Apop_settings_get_group(model_in, apop_mle))
         apop_settings_copy_group(model_out, model_in, "apop_mle");
     else Apop_model_add_group(model_out, apop_mle, .method=APOP_CG_PR,
-                                     .want_cov='n', .step_size=1, .tolerance=0.2);
+                                     .step_size=1, .tolerance=0.2);
 
     #define cut_if_missing(method) if (!model_in->method) model_out->method = NULL;
     cut_if_missing(p);
     cut_if_missing(draw);
-    cut_if_missing(score);
     cut_if_missing(constraint);
     cut_if_missing(log_likelihood);
-    model_out->vbase = predict_tab->matrix->size1;
+    model_out->vsize = predict_tab->matrix->size1;
     model_out->dsize = model_in->dsize;
     snprintf(model_out->name, 100, "%s, with some params fixed", model_in->name);
     return model_out;
 }
 
+/** The \ref apop_model_fix_params function produces a model that has only the non-fixed
+  parameters of the model. After estimation of the fixed-parameter model, this function
+  fills the \c parameters element of the base model and returns a pointer to the
+  base model.
+*/
 apop_model * apop_model_fix_params_get_base(apop_model *fixed_model){
     apop_model *base_model = Apop_settings_get(fixed_model, apop_fix_params, base_model);
     unpack(base_model->parameters, fixed_model);

@@ -4,12 +4,33 @@
 !!Big.
 ]
 
+	September 2013
+**change vbase, m1base, m2base ==> vsize, msize1, msize2
+**Estimate returns void (was apop_model*)
+--vtable mechanism improvements
+**Remove score, predict, and parameter_model from the apop_model object; use the vtable mechanism.
+**Upgrade model p, ll, cdf to return long double (was double)
+**consolidate vector_var and vector_weighted_var. same with cov, mean, weighted_skew, and weighted_pop. Users just have to replace apop_vector_weighted_var with apop_vector_var.
+**removed deprecated.h entirely.
+--apop_data_add_named_elmts puts new data in the vector, not the matrix, because it is intended for a list of scalars (==a vector). If you use apop_data_get(infodata, .rowname="statistic name") then you'll be able to retrieve the element either way.
+**removed apop_line_to_data and apop_line_to_matrix. Use apop_data_fill and apop_data_falloc.
+
 	August 2013
 --apop_map(_sum) properly threads data-row mappings. .inplace='v' to return NULL.
+**Remove apop_settings_alloc, apop_settings_group_alloc
+**Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
+**Apop_settings_set sets model->error='s' on error, instead of returning.
+**Add a .want_path='y' setting to your apop_mle_settings group, and I'll put a list of the points tried by the optimizer in an apop_data set named path (in the settings group); see documentation for details. Remove the former trace_path mechanism.
+**removed apop_(vector|matrix)_increment. Use, e.g., *gsl_vector_ptr(v, 7) += 3; or (*gsl_vector_ptr(v, 7))++.
+**Some mu and sigmas => μ and σ
+**Removed apop_settings_alloc, apop_settings_group_alloc
+**Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
 
 	June 2013
 --replaced makefile in base directory with ./configure.
 --version number now equals build date.
+**name->title is a ptr; name->column => name->col
+**removed apop_strip_dots; it's up to the user to give reasonable names for the db.
 
 	May 2013
 --jacobian transformations

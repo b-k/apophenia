@@ -117,7 +117,7 @@ void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
         double chosen_model;
         apop_draw(&chosen_model, ms->rng, odds);
         apop_data *pick = outsets[(int)chosen_model]; //alias
-        apop_vector_increment(&weightings, (int)chosen_model);
+        (*gsl_vector_ptr(&weightings, (int)chosen_model))++;
         if (!pick) outsets[(int)chosen_model] = apop_data_copy(onepoint);
         else {
             if (pick->vector) apop_vector_realloc(pick->vector, pick->vector->size+1);
@@ -132,9 +132,9 @@ void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
     apop_model_free(odds);
 }
 
-static apop_model *mixture_estimate(apop_data *d, apop_model *m){
-    apop_model *mle = apop_maximum_likelihood(d, m);
-    Apop_stopif(mle->error, return mle, 0, "Trouble estimating the initial MLEs.");
+static void mixture_estimate(apop_data *d, apop_model *m){
+    apop_maximum_likelihood(d, m);
+    Apop_stopif(m->error, return, 0, "Trouble estimating the initial MLEs.");
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
 
     apop_data **datasets = calloc(ms->model_count, sizeof(apop_data*));
@@ -149,7 +149,6 @@ static apop_model *mixture_estimate(apop_data *d, apop_model *m){
         for (int i=0; i< ms->model_count; i++)
             apop_data_free(datasets[i]);
     }
-    return m;
 }
 
 static void mixture_prep(apop_data * data, apop_model *model){
@@ -167,6 +166,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
         apop_vector_stack(model->parameters->vector, v, .inplace='y');
         gsl_vector_free(v);
     }
+    if (!model->dsize) model->dsize = (*ms->model_list)->dsize;
 }
 
 void unpack(apop_model *min){
@@ -194,7 +194,7 @@ void unpack(apop_model *min){
     }
 
 
-static double mixture_log_likelihood(apop_data *d, apop_model *model_in){
+static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     Apop_stopif(!ms, model_in->error='p'; return GSL_NAN, 0, "No apop_mixture_settings group. "
                                               "Did you estimate this with apop_model_mixture?");
@@ -241,7 +241,7 @@ static double weights_over_zero(apop_data *data, apop_model *m){
     return apop_linear_constraint(&v);
 }
 
-static double mixture_cdf(apop_data *d, apop_model *model_in){
+static long double mixture_cdf(apop_data *d, apop_model *model_in){
     Nullcheck_m(model_in, GSL_NAN)
     Nullcheck_d(d, GSL_NAN)
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
@@ -250,18 +250,18 @@ static double mixture_cdf(apop_data *d, apop_model *model_in){
     return total;
 }
 
-void mixture_show(apop_model *m){
+void mixture_show(apop_model *m, FILE *out){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
     if (m->parameters){
         gsl_vector weightings = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
 
-        printf("Mixture of %i models, with weights: ", ms->model_count);
-        apop_vector_show(&weightings);
+        fprintf(out, "Mixture of %i models, with weights: ", ms->model_count);
+        apop_vector_print(&weightings, .output_pipe=out);
     } else
-        printf("Mixture of %i models, with unspecified weights\n", ms->model_count);
+        fprintf(out, "Mixture of %i models, with unspecified weights\n", ms->model_count);
 
     for (int i=0; i< ms->model_count; i++)
-        apop_model_show(ms->model_list[i]);
+        apop_model_print(ms->model_list[i], out);
 }
 
 //score

@@ -1,10 +1,14 @@
 /** \file apop_stats.c	Basic moments and some distributions. */
-/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_eigen.h>
 
+#define Check_vw    \
+    Apop_stopif(!v, return GSL_NAN, 0, "data vector is NULL. Returning NaN.\n");            \
+    Apop_stopif(!v->size, return GSL_NAN, 0, "data vector has size 0. Returning NaN.\n");   \
+    Apop_stopif(weights && weights->size != v->size, return GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, weights->size);
 
 /** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
 
@@ -54,15 +58,6 @@ long double apop_vector_sum(const gsl_vector *in){
 \ingroup vector_moments
 */
 
-/** \def apop_vector_var(in)
- Returns the variance of the data in the given vector.
- 
-  This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
-
-  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
-\ingroup vector_moments
-*/
-
 /** \def apop_var(in)
   An alias for \ref apop_vector_var.
 Returns the variance of the data in the given vector.
@@ -74,45 +69,6 @@ Returns the variance of the data in the given vector.
 */
 double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
-
-/** Returns the population skew \f$(\sum_i (x_i - \mu)^3/n))\f$ of the data in the given vector.
- 
-  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
-\ingroup vector_moments
-*/
-double apop_vector_skew_pop(const gsl_vector *in){
-  //This code is cut/pasted/modified from the GSL. 
-  //I reimplement the skew calculation here without the division by var^3/2 that the GSL does. 
-
-    size_t n = in->size;
-    long double avg = 0;
-    long double mean = apop_vector_mean(in);
-    for (size_t i = 0; i < n; i++) {
-        const long double x = gsl_vector_get(in, i) - mean; 
-        avg += (x * x * x  - avg)/(i + 1);
-    } 
-    return avg;
-}
-
-/** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector.
- 
-  Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
-\ingroup vector_moments
-*/
-double apop_vector_kurtosis_pop(const gsl_vector *in){
-  //This code is cut/pasted/modified from the GSL. 
-  //I reimplement the kurtosis calculation here without the division by var^2 that the GSL does. 
-
-    size_t n = in->size;
-    long double avg  = 0;
-    long double mean = apop_vector_mean(in);
-    for (size_t i = 0; i < n; i++) {
-        const long double x = gsl_vector_get(in, i) - mean; 
-        avg += (x * x * x * x - avg)/(i + 1);
-    } 
-    return avg;
-}
-
 
 /** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given
 vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.
@@ -128,6 +84,83 @@ double apop_vector_kurtosis(const gsl_vector *in){
     return  coeff0 *(coeff1 * apop_vector_kurtosis_pop(in) - coeff2 * gsl_pow_2(apop_vector_var(in)*(n-1.)/n));
 }
 
+static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
+    long double wsum = 0, sumcu = 0, vv, ww, mu;
+    //Using the E(x - \bar x)^3 form, which is lazy.
+    mu  = apop_vector_mean(v, w);
+    for (size_t i=0; i< w->size; i++){
+        vv    = gsl_vector_get(v,i);
+        ww    = gsl_vector_get(w,i);
+        sumcu+= ww * gsl_pow_int(vv - mu, exponent); 
+        wsum += ww; 
+    }
+    double len = wsum < 1.1 ? w->size : wsum;
+    return sumcu/len;
+}
+
+/** Returns the population skew \f$(\sum_i (x_i - \mu)^3/n))\f$ of the data in the given vector. Observations may be weighted.
+
+\param v       The data vector
+\param weights The weight vector. Default: equal weights for all observations.
+\return        The weighted skew. No sample adjustment given weights.
+ 
+\li  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
+
+\li Apophenia tries to be smart about reading the weights. If weights
+sum to one, then the system uses \c w->size as the number of elements,
+and returns the usual sum over \f$n-1\f$. If weights > 1, then the
+system uses the total weights as \f$n\f$. Thus, you can use the weights
+as standard weightings or to represent elements that appear repeatedly.
+\ingroup vector_moments
+*/
+APOP_VAR_HEAD double apop_vector_skew_pop(gsl_vector const *v, gsl_vector const *weights){
+    gsl_vector const * apop_varad_var(v, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    Check_vw
+APOP_VAR_ENDHEAD
+    if (weights) return wskewkurt(v, weights, 3, "apop_vector_weighted_skew");
+
+    //This code is cut/pasted/modified from the GSL. 
+    //I reimplement the skew calculation here without the division by var^3/2 that the GSL does. 
+    size_t n = v->size;
+    long double avg = 0;
+    long double mean = apop_vector_mean(v);
+    for (size_t i = 0; i < n; i++) {
+        const long double x = gsl_vector_get(v, i) - mean; 
+        avg += (gsl_pow_3(x) - avg)/(i + 1);
+    } 
+    return avg;
+}
+
+/** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector, with an optional weighting.
+
+\param v The data vector
+\param weights The weight vector. If NULL, assume equal weights.
+\return The weighted kurtosis. No sample adjustment given weights.
+ 
+\li Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
+\li This function uses the \ref designated syntax for inputs.
+\ingroup vector_moments
+*/
+APOP_VAR_HEAD double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights){
+    gsl_vector const * apop_varad_var(v, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    Check_vw
+APOP_VAR_ENDHEAD
+    if (weights) return wskewkurt(v, weights, 4, "apop_vector_weighted_kurtosis");
+
+    //This code is cut/pasted/modified from the GSL. 
+    //I reimplement the kurtosis calculation here without the division by var^2 that the GSL does. 
+    size_t n = v->size;
+    long double avg  = 0;
+    long double mean = apop_vector_mean(v);
+    for (size_t i = 0; i < n; i++) {
+        const long double x = gsl_vector_get(v, i) - mean; 
+        avg += (gsl_pow_4(x) - avg)/(i + 1);
+    } 
+    return avg;
+}
+
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
@@ -135,12 +168,6 @@ double apop_vector_kurtosis(const gsl_vector *in){
 */
 double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
-
-/** Returns the covariance of two vectors
-\ingroup vector_moments
-*/
-double apop_vector_cov(const gsl_vector *ina, const gsl_vector *inb){
-	return gsl_stats_covariance(ina->data,ina->stride,inb->data,inb->stride,inb->size); }
 
 /** Returns the correlation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
@@ -193,34 +220,32 @@ APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vecto
     const char apop_varad_var(metric, 'e');
     const double apop_varad_var(norm, 2);
 APOP_VAR_ENDHEAD
-    Apop_assert(ina->size == inb->size, "I need equal-sized vectors, but "
-                "you sent a vector of size %zu and a vector of size %zu. ", ina->size, inb->size);
-    double  dist    = 0;
-    size_t  i;
+    Apop_stopif(ina->size != inb->size, return GSL_NAN, 0, "I need equal-sized vectors, but "
+                "you sent a vector of size %zu and a vector of size %zu. Returning NaN.", ina->size, inb->size);
+    double dist = 0;
     if (metric == 'e' || metric == 'E'){
-        for (i=0; i< ina->size; i++){
-            dist    += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
-        }
+        for (size_t i=0; i< ina->size; i++)
+            dist += gsl_pow_2(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
         return sqrt(dist); 
     }
     if (metric == 'm' || metric == 'M'){ //redundant with vector_grid_distance, below.
-        for (i=0; i< ina->size; i++) 
-            dist    += fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
+        for (size_t i=0; i< ina->size; i++) 
+            dist += fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i));
         return dist; 
     }
     if (metric == 'd' || metric == 'D'){
-        for (i=0; i< ina->size; i++) 
+        for (size_t i=0; i< ina->size; i++) 
             if (gsl_vector_get(ina, i) != gsl_vector_get(inb, i))
                 return 1;
         return 0;
     }
     if (metric == 's' || metric == 'S'){
-        for (i=0; i< ina->size; i++) 
+        for (size_t i=0; i< ina->size; i++) 
             dist = GSL_MAX(dist, fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)));
         return dist;
     }
     if (metric == 'l' || metric == 'L'){
-        for (i=0; i< ina->size; i++)
+        for (size_t i=0; i< ina->size; i++)
             dist += pow(fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)), norm);
         return pow(dist, 1./norm); 
     }
@@ -437,11 +462,11 @@ apop_data * apop_data_summarize(apop_data *indata){
 	for (size_t i=0; i< indata->matrix->size2; i++){
         Apop_matrix_col(indata->matrix, i, v);
         if (!indata->weights){
-            mean	= apop_vector_mean(v);
-            var 	= apop_vector_var_m(v,mean);
+            mean = apop_vector_mean(v);
+            var  = apop_vector_var_m(v, mean);
         } else {
-            mean	= apop_vector_weighted_mean(v,indata->weights);
-            var 	= apop_vector_weighted_var(v,indata->weights);
+            mean = apop_vector_mean(v, indata->weights);
+            var  = apop_vector_var(v, indata->weights);
         } 
         double *pctiles = apop_vector_percentiles(v);
 		gsl_matrix_set(out->matrix, i, 0, mean);
@@ -455,122 +480,97 @@ apop_data * apop_data_summarize(apop_data *indata){
 	return out;
 }
 
-/** Find the weighted mean. 
+/** Find the mean, weighted or unweighted. 
 
-\param  v   The data vector
-\param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted mean */
-double apop_vector_weighted_mean(const gsl_vector *v,const  gsl_vector *w){
-    long double   sum = 0, wsum = 0;
-    if (!w) return apop_vector_mean(v);
-    Apop_assert_c(v,  0, 1, "data vector is NULL. Returning zero.");
-    Apop_assert_c(v->size,  0, 1, "data vector has size 0. Returning zero.");
-    Apop_assert_c(w->size == v->size,  0, 0, "data vector has size %zu; weighting vector has size %zu. Returning zero.", v->size, w->size);
-    for (size_t i=0; i< w->size; i++){
-        sum  += gsl_vector_get(w, i) * gsl_vector_get(v,i); 
-        wsum += gsl_vector_get(w, i); 
+\param v        The data vector
+\param weights  The weight vector. Default: assume equal weights.
+\return         The weighted mean 
+\li This function uses the \ref designated syntax for inputs.
+*/
+APOP_VAR_HEAD double apop_vector_mean(gsl_vector const *v, gsl_vector const *weights){
+    gsl_vector const * apop_varad_var(v, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    Check_vw
+APOP_VAR_END_HEAD
+    if (!weights) return gsl_stats_mean(v->data, v->stride, v->size);
+    long double sum = 0, wsum = 0;
+    for (size_t i=0; i< weights->size; i++){
+        sum  += gsl_vector_get(weights, i) * gsl_vector_get(v,i); 
+        wsum += gsl_vector_get(weights, i); 
     }
     return sum/wsum;
 }
 
-/** Find the sample variance of a weighted vector.
+/** Find the sample variance of a vector, weighted or unweighted.
 
-Note: Apophenia tries to be smart about reading the weights. If weights
+\li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
+
+\li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
+
+\param v       The data vector
+\param weights The weight vector. If NULL, assume equal weights.
+\return        The weighted sample variance.  
+
+\li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
 
-\param  v   The data vector
-\param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample variance.  */
-double apop_vector_weighted_var(const gsl_vector *v, const gsl_vector *w){
-    if (!w) return apop_vector_var(v);
-    long double sum = 0, wsum = 0, sumsq = 0, vv, ww;
-    apop_assert_c(v,  0, 1, "data vector is NULL. Returning zero.\n");
-    apop_assert_c(v->size, 0, 1, "data vector has size 0. Returning zero.\n");
-    apop_assert_c(w->size == v->size, GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, w->size);
+\li This function uses the \ref designated syntax for inputs.
+*/
+APOP_VAR_HEAD double apop_vector_var(gsl_vector const *v, gsl_vector const *weights){
+    gsl_vector const * apop_varad_var(v, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    Check_vw
+APOP_VAR_END_HEAD
+    if (!weights) return gsl_stats_variance(v->data, v->stride, v->size);
     //Using the E(x^2) - E^2(x) form.
-    for (size_t i=0; i< w->size; i++){
-        vv    = gsl_vector_get(v,i);
-        ww    = gsl_vector_get(w,i);
-        sum  += ww * vv;
-        sumsq+= ww * gsl_pow_2(vv); 
-        wsum += ww; 
+    long double sum = 0, wsum = 0, sumsq = 0, vv, ww;
+    for (size_t i=0; i< weights->size; i++){
+        vv = gsl_vector_get(v, i);
+        ww = gsl_vector_get(weights, i);
+        sum   += ww * vv;
+        sumsq += ww * gsl_pow_2(vv); 
+        wsum  += ww; 
     }
-    double len = (wsum < 1.1 ? w->size : wsum);
+    double len = (wsum < 1.1 ? weights->size : wsum);
     return (sumsq/len - gsl_pow_2(sum/len)) * len/(len -1.);
 }
 
-static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int exponent, const char *fn_name){
-    long double   wsum = 0, sumcu = 0, vv, ww, mu;
-    Apop_stopif(!v, return GSL_NAN, 1, "%s: data vector is NULL. Returning NaN.", fn_name);
-    Apop_stopif(!v->size, return GSL_NAN, 1,"%s: data vector has size 0. Returning NaN.", fn_name);
-    Apop_stopif(w->size != v->size, return GSL_NAN, 1,"%s: data vector has size %zu; weighting vector has size %zu. Returning NaN.", fn_name, v->size, w->size);
-    //Using the E(x - \bar x)^3 form, which is lazy.
-    mu  = apop_vector_weighted_mean(v, w);
-    for (size_t i=0; i< w->size; i++){
-        vv    = gsl_vector_get(v,i);
-        ww    = gsl_vector_get(w,i);
-        sumcu+= ww * gsl_pow_int(vv - mu, exponent); 
-        wsum += ww; 
-    }
-    double len = wsum < 1.1 ? w->size : wsum;
-    return sumcu/len;
-}
-
-/** Find the population skew of a weighted vector.
-
-Note: Apophenia tries to be smart about reading the weights. If weights
-sum to one, then the system uses \c w->size as the number of elements,
-and returns the usual sum over \f$n-1\f$. If weights > 1, then the
-system uses the total weights as \f$n\f$. Thus, you can use the weights
-as standard weightings or to represent elements that appear repeatedly.
-
-\param  v   The data vector
-\param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted skew. No sample adjustment given weights.
-\todo   \c apop_vector_weighted_skew and \c apop_vector_weighted_kurtosis are lazily written.
-*/
-double apop_vector_weighted_skew(const gsl_vector *v, const gsl_vector *w){
-    return wskewkurt(v,w,3, "apop_vector_weighted_skew");
-}
-
-/** Find the population kurtosis of a weighted vector.
-
-\param  v   The data vector
-\param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted kurtosis. No sample adjustment given weights.
-*/
-double apop_vector_weighted_kurtosis(const gsl_vector *v, const gsl_vector *w){
-    return wskewkurt(v,w,4, "apop_vector_weighted_kurtosis");
-}
-
-/** Find the sample covariance of a pair of weighted vectors. This only
+/** Find the sample covariance of a pair of vectors, with an optional weighting. This only
 makes sense if the weightings are identical, so the function takes only one weighting vector for both.
 
-\param  v1, v2   The data vectors
-\param  w   the weight vector. If NULL, assume equal weights.
-\return     The weighted sample covariance
+\param  v1, v2  The data vectors
+\param  weights The weight vector. Default: equal weights for all elements.
+\return The sample covariance
+\li This function uses the \ref designated syntax for inputs.
 */
-double apop_vector_weighted_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *w){
-    if (!w) return apop_vector_cov(v1,v2);
+APOP_VAR_HEAD double apop_vector_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *weights){
+    gsl_vector const * apop_varad_var(v1, NULL);
+    gsl_vector const * apop_varad_var(v2, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    Apop_stopif(!v1, return GSL_NAN, 0, "first data vector is NULL. Returning NaN.");
+    Apop_stopif(!v2, return GSL_NAN, 0, "second data vector is NULL. Returning NaN.");
+    Apop_stopif(!v1->size, return GSL_NAN, 0, "first data vector has size 0. Returning NaN.");
+    Apop_stopif(!v2->size, return GSL_NAN, 0, "second data vector has size 0. Returning NaN.");
+    Apop_stopif(v1->size!= v2->size, return GSL_NAN, 0, "data vectors have sizes %zu and %zu. Returning NaN.", v1->size, v2->size);
+    Apop_stopif(weights && ((weights->size != v1->size) || (weights->size != v2->size)), return GSL_NAN, 0, "data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning NaN.", v1->size, v2->size, weights->size);
+
+APOP_VAR_ENDHEAD
+    if (!weights) return gsl_stats_covariance(v1->data, v1->stride, v2->data, v2->stride, v2->size);
     long double sum1 = 0, sum2 = 0, wsum = 0, sumsq = 0, vv1, vv2, ww;
-    Apop_assert_c(v1,  0, 1, "first data vector is NULL. Returning zero.");
-    Apop_assert_c(v2,  0, 1, "second data vector is NULL. Returning zero.");
-    Apop_assert_c(v1->size,  0, 1, "apop_vector_weighted_variance: data vector has size 0. Returning zero.");
-    Apop_assert_c((w->size == v1->size) && (w->size == v2->size), GSL_NAN, 0, "apop_vector_weighted_variance: data vectors have sizes %zu and %zu; weighting vector has size %zu. Returning NaN.", v1->size, v2->size, w->size);
     //Using the E(x^2) - E^2(x) form.
-    for (size_t i=0; i< w->size; i++){
+    for (size_t i=0; i< weights->size; i++){
         vv1   = gsl_vector_get(v1,i);
         vv2   = gsl_vector_get(v2,i);
-        ww    = gsl_vector_get(w,i);
+        ww    = gsl_vector_get(weights,i);
         sum1 += ww * vv1;
         sum2 += ww * vv2;
         sumsq+= ww * vv1 * vv2;
         wsum += ww; 
     }
-    double len = (wsum < 1.1 ? w->size : wsum);
+    double len = (wsum < 1.1 ? weights->size : wsum);
     return (sumsq/len  - sum1*sum2/gsl_pow_2(len)) *(len/(len-1));
 }
 
@@ -592,7 +592,7 @@ apop_data *apop_data_covariance(const apop_data *in){
         for (size_t j=i; j < in->matrix->size2; j++){
             Apop_col(in, i, v1);
             Apop_col(in, j, v2);
-            double var = apop_vector_weighted_cov(v1, v2, in->weights);
+            double var = apop_vector_cov(v1, v2, in->weights);
             gsl_matrix_set(out->matrix, i,j, var);
             if (i!=j) gsl_matrix_set(out->matrix, j,i, var);
         }
@@ -612,10 +612,10 @@ apop_data *apop_data_covariance(const apop_data *in){
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
     for(size_t i=0; i< in->matrix->size2; i++){
-        Apop_col(in, i, cvin);
-        Apop_col(out, i, cvout);
-        Apop_row(out, i, rvout);
-        double std_dev = sqrt(apop_vector_weighted_var(cvin, in->weights));
+        Apop_matrix_col(in->matrix, i, cvin);
+        Apop_matrix_col(out->matrix, i, cvout);
+        Apop_matrix_row(out->matrix, i, rvout);
+        double std_dev = sqrt(apop_vector_var(cvin, in->weights));
         gsl_vector_scale(cvout, 1.0/std_dev);
         gsl_vector_scale(rvout, 1.0/std_dev);
     }

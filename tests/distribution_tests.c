@@ -10,7 +10,6 @@
 #define Print_dot if(verbose){printf(".");fflush(NULL);}
 
 int verbose = 1;
-double nan_map(double in){return gsl_isnan(in);}
 
 int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *true_params){
     double *starting_pt;
@@ -23,8 +22,7 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
         .method       = method, .verbose   =0,
         .step_size    = 1e-1,
         .tolerance    = 1e-4,   .k         = 1.8,
-        .t_initial    = 1,      .t_min     = .5,
-        .use_score    = 1
+        .t_initial    = 1,      .t_min     = .5
         );
     Apop_model_add_group(dist, apop_parts_wanted);
 
@@ -32,8 +30,8 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
        !strcmp(dist->name, "Beta distribution") )
        && method==APOP_RF_HYBRID)
         return 0;
-    apop_model *e    = apop_estimate(data,*dist);
-    Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
+    apop_model *e = apop_estimate(data, *dist);
+    Diff(0.0, apop_vector_distance(apop_data_pack(true_params), apop_data_pack(e->parameters)), 1e-1); 
     if (!strcmp(dist->name, "Poisson distribution")) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
     Print_dot
     e = apop_estimate_restart(e);
@@ -62,36 +60,23 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
 void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_params){
     long int runsize = 1e5;
     //generate.
-    apop_data *data = apop_data_calloc(runsize,model->dsize);
+    apop_data *data = apop_data_calloc(runsize, model->dsize);
     if (!strcmp(model->name, "Wishart distribution")){
         data = apop_data_calloc(runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
         for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
+            Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
-        }
-    } else if (!strcmp(model->name, "Binomial distribution") || !strcmp(model->name, "Multinomial distribution")){
-        int n = gsl_rng_uniform(r)* 1e5;
-        data = apop_data_calloc(runsize,true_params->parameters->vector->size);
-        for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
-            if (!strcmp(model->name, "Binomial distribution")){
-                true_params->draw(gsl_vector_ptr(v, 1), r, true_params);
-                v->data[0] = n - v->data[1];
-            }
-            true_params->draw(gsl_vector_ptr(v, 0), r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
+            assert(!isnan(apop_sum(v)));
         }
     } else {
-        data = apop_data_calloc(runsize,model->dsize);
         for (size_t i=0; i< runsize; i++){
-            Apop_row(data, i, v)
+            Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
+            assert(!isnan(apop_sum(v)));
         }
     }
-    if (model->estimate) estimate_model(data, model,-3, true_params->parameters);
+    if (model->estimate) estimate_model(data, model, -3, true_params->parameters);
     else { //try all the MLEs.
         estimate_model(data, model,APOP_SIMPLEX_NM, true_params->parameters);
         estimate_model(data, model,APOP_CG_PR, true_params->parameters);
@@ -111,8 +96,8 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
         Apop_row(draws, i, onerow);
-        apop_draw(onerow->data, r, m);
-        Apop_data_row(draws, i, one_data_pt);
+        apop_draw(onerow->matrix->data, r, m);
+        Apop_row(draws, i, one_data_pt);
         apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
     }
 }
@@ -146,38 +131,38 @@ void test_distributions(gsl_rng *r){
 
     for (int i=0; strcmp(dist[i].name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
-        true_params   = apop_model_copy(dist[i]);
-        true_params->parameters = apop_line_to_data(true_parameter_v, dist[i].vbase==1 ? 1 : 2,0,0);
+        true_params = apop_model_copy(dist[i]);
+        true_params->parameters = apop_data_fill_base(apop_data_alloc(dist[i].vsize==1 ? 1 : 2), true_parameter_v);
         if (!strcmp(dist[i].name, "Dirichlet distribution"))
             dist[i].dsize=2;
         if (!strcmp(dist[i].name, "Beta distribution"))
-            true_params->parameters = apop_line_to_data((double[]){.5, .2} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2), .5, .2);
         if (!strcmp(dist[i].name, "Bernoulli distribution"))
-            true_params->parameters = apop_line_to_data((double[]){.1} , 1,0,0);
+            true_params->parameters = apop_data_falloc((1), .1);
         if (!strcmp(dist[i].name, "Binomial distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .2} , 2,0,0);
-            dist[i].dsize=15;
+            true_params->parameters = apop_data_falloc((2), 15, .2);
+            dist[i].dsize=2;
         }
         if (!strcmp(dist[i].name, "Multivariate normal distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .5, .2,
-                                                                    3, .2, .5} , 2,2,2);
+            true_params->parameters = apop_data_falloc((2, 2, 2), 15, .5, .2,
+                                                                   3, .2, .5);
             dist[i].dsize=2;
         }
         if (!strcmp(dist[i].name, "Multinomial distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .5, .2, .1} , 4,0,0);
-            dist[i].dsize=15;
+            true_params->parameters = apop_data_falloc((4), 15, .5, .2, .1);
+            dist[i].dsize=4;
         }
         if (apop_regex(dist[i].name, "gamma distribution"))
-            true_params->parameters = apop_line_to_data((double[]){1.5, 2.5} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2), 1.5, 2.5);
         if (!strcmp(dist[i].name, "Chi squared distribution"))
-            true_params->parameters = apop_line_to_data((double[]){996} , 1,0,0);
+            true_params->parameters = apop_data_falloc((1), 996);
         if (!strcmp(dist[i].name, "F distribution"))
-            true_params->parameters = apop_line_to_data((double[]){996, 996} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2),996, 996);
         if (!strcmp(dist[i].name, "t distribution"))
-            true_params->parameters = apop_line_to_data((double[]){1, 3, 996} , 3,0,0);
+            true_params->parameters = apop_data_falloc((3), 1, 3, 996);
         if (!strcmp(dist[i].name, "Wishart distribution")){
-            true_params->parameters = apop_line_to_data((double[]){996, .2, .1,
-                                                                     0, .1, .2}, 2,2,2);
+            true_params->parameters = apop_data_falloc((2, 2, 2), 996, .2, .1,
+                                                                    0, .1, .2);
             apop_vector_realloc(true_params->parameters->vector, 1);
         }
         test_one_distribution(r, dist+i, true_params);
@@ -191,7 +176,7 @@ int main(int argc, char **argv){
     apop_opts.thread_count = 2;
     char c, opts[] = "sqt:";
     if (argc==1)
-        printf("Distribution tests. Each dot is an optimization run, including some methods known to be inefficient.\nFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
+        printf("\tDistribution tests. Each dot is an optimization run, including some methods known to be inefficient.\n\tFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 'q')      verbose  --;
         else if (c == 't') apop_opts.thread_count  = atoi(optarg);

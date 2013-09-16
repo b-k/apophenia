@@ -18,7 +18,7 @@ static double apply_me(double x, void *in){
     return x==0 ? 0 : *ln_l *x - gsl_sf_lngamma(x+1);
 }
 
-static double poisson_log_likelihood(apop_data *d, apop_model * p){
+static long double poisson_log_likelihood(apop_data *d, apop_model * p){
     Nullcheck_mpd(d, p, GSL_NAN)
     Get_vmsizes(d) //tsize
     double lambda = apop_data_get(p->parameters);
@@ -39,8 +39,9 @@ static double data_mean(apop_data *d){
 Unless you decline it by adding the \ref apop_parts_wanted_settings group, I will also give you the variance of the parameter, via bootstrap, stored in a page named <tt>\<Covariance\></tt>.
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
-    Nullcheck_mpd(data, est, NULL);
+static void poisson_estimate(apop_data * data,  apop_model *est){
+    Nullcheck_mpd(data, est, );
+    apop_prep(data, est);
     double mean = data_mean(data);
 	apop_data_set(est->parameters, .val=mean);
     apop_data_add_names(est->parameters, 'r', "λ");
@@ -56,7 +57,6 @@ static apop_model * poisson_estimate(apop_data * data,  apop_model *est){
         if (!p) Apop_settings_rm_group(est, apop_parts_wanted);
         else p->covariance='y';
     }
-	return est;
 }
 
 static double positive_beta_constraint(apop_data *returned_beta, apop_model *v){
@@ -84,7 +84,12 @@ static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
             *(p->parameters->vector ? p->parameters->vector->data: p->parameters->matrix->data));
 }
 
+static void poisson_prep(apop_data *data, apop_model *params){
+    apop_score_vtable_add(poisson_dlog_likelihood, apop_poisson);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_poisson = {"Poisson distribution", 1, 0, 0, .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
-     .score = poisson_dlog_likelihood, .constraint = positive_beta_constraint, 
+     .prep = poisson_prep, .constraint = positive_beta_constraint, 
      .draw = poisson_rng};

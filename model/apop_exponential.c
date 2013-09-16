@@ -27,32 +27,13 @@ static double beta_greater_than_x_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin = 1e-3);
 }
 
-static double exponential_log_likelihood(apop_data *d, apop_model *p){
+static long double exponential_log_likelihood(apop_data *d, apop_model *p){
     Nullcheck_mpd(d, p, GSL_NAN);
     Get_vmsizes(d) //tsize
     double mu = gsl_vector_get(p->parameters->vector, 0);
     double llikelihood = -((d->matrix ? apop_matrix_sum(d->matrix):0) + (d->vector ? apop_sum(d->vector) : 0))/ mu;
 	llikelihood	-= tsize * log(mu);
 	return llikelihood;
-}
-
-/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
-static apop_model * exponential_estimate(apop_data * data,  apop_model *est){
-    apop_name_add(est->parameters->names, "mu", 'r');
-    Get_vmsizes(data); //msize1, msize2, vsize, tsize
-    double mu =  (vsize ? vsize * apop_vector_mean(data->vector):0
-                + msize1 ? msize1*msize2 * apop_matrix_mean(data->matrix):0)/tsize;
-	gsl_vector_set(est->parameters->vector, 0, mu);
-    apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
-	return est;
-}
-
-static double expo_cdf(apop_data *d, apop_model *params){
-    Nullcheck_mpd(d, params, GSL_NAN);
-    Get_vmsizes(d)  //vsize
-    double val = apop_data_get(d, 0, vsize ? -1 : 0);
-    double lambda = gsl_vector_get(params->parameters->vector, 0);
-    return gsl_cdf_exponential_P(val, lambda);
 }
 
 static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *p){
@@ -65,12 +46,36 @@ static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 
+/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
+static void exponential_estimate(apop_data * data,  apop_model *est){
+    apop_score_vtable_add(exponential_dlog_likelihood, apop_exponential);
+    apop_name_add(est->parameters->names, "μ", 'r');
+    Get_vmsizes(data); //msize1, msize2, vsize, tsize
+    double mu =  (vsize ? vsize * apop_vector_mean(data->vector):0
+                + msize1 ? msize1*msize2 * apop_matrix_mean(data->matrix):0)/tsize;
+	gsl_vector_set(est->parameters->vector, 0, mu);
+    apop_data_add_named_elmt(est->info, "log likelihood", exponential_log_likelihood(data, est));
+}
+
+static long double expo_cdf(apop_data *d, apop_model *params){
+    Nullcheck_mpd(d, params, GSL_NAN);
+    Get_vmsizes(d)  //vsize
+    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double lambda = gsl_vector_get(params->parameters->vector, 0);
+    return gsl_cdf_exponential_P(val, lambda);
+}
+
 /* \adoc RNG Just a wrapper for \c gsl_ran_exponential.  */
 static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
 }
 
+static void exponential_prep(apop_data *data, apop_model *params){
+    apop_score_vtable_add(exponential_dlog_likelihood, apop_exponential);
+    apop_model_clear(data, params);
+}
+
 apop_model apop_exponential = {"Exponential distribution", 1,0,0,.dsize=1,
 	 .estimate = exponential_estimate, .log_likelihood = exponential_log_likelihood, 
-     .score = exponential_dlog_likelihood, .constraint = beta_greater_than_x_constraint, 
+     .prep = exponential_prep, .constraint = beta_greater_than_x_constraint, 
      .draw = exponential_rng, .cdf = expo_cdf};
