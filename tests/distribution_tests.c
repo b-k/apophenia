@@ -10,7 +10,6 @@
 #define Print_dot if(verbose){printf(".");fflush(NULL);}
 
 int verbose = 1;
-double nan_map(double in){return gsl_isnan(in);}
 
 int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *true_params){
     double *starting_pt;
@@ -31,8 +30,8 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
        !strcmp(dist->name, "Beta distribution") )
        && method==APOP_RF_HYBRID)
         return 0;
-    apop_model *e    = apop_estimate(data,*dist);
-    Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
+    apop_model *e = apop_estimate(data, *dist);
+    Diff(0.0, apop_vector_distance(apop_data_pack(true_params), apop_data_pack(e->parameters)), 1e-1); 
     if (!strcmp(dist->name, "Poisson distribution")) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
     Print_dot
     e = apop_estimate_restart(e);
@@ -61,36 +60,23 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
 void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_params){
     long int runsize = 1e5;
     //generate.
-    apop_data *data = apop_data_calloc(runsize,model->dsize);
+    apop_data *data = apop_data_calloc(runsize, model->dsize);
     if (!strcmp(model->name, "Wishart distribution")){
         data = apop_data_calloc(runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
         for (size_t i=0; i< runsize; i++){
             Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
-        }
-    } else if (!strcmp(model->name, "Binomial distribution") || !strcmp(model->name, "Multinomial distribution")){
-        int n = gsl_rng_uniform(r)* 1e5;
-        data = apop_data_calloc(runsize,true_params->parameters->vector->size);
-        for (size_t i=0; i< runsize; i++){
-            Apop_matrix_row(data->matrix, i, v)
-            if (!strcmp(model->name, "Binomial distribution")){
-                true_params->draw(gsl_vector_ptr(v, 1), r, true_params);
-                v->data[0] = n - v->data[1];
-            }
-            true_params->draw(gsl_vector_ptr(v, 0), r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
+            assert(!isnan(apop_sum(v)));
         }
     } else {
-        data = apop_data_calloc(runsize,model->dsize);
         for (size_t i=0; i< runsize; i++){
             Apop_matrix_row(data->matrix, i, v)
             true_params->draw(v->data, r, true_params);
-            assert(!apop_vector_map_sum(v, nan_map));
+            assert(!isnan(apop_sum(v)));
         }
     }
-    if (model->estimate) estimate_model(data, model,-3, true_params->parameters);
+    if (model->estimate) estimate_model(data, model, -3, true_params->parameters);
     else { //try all the MLEs.
         estimate_model(data, model,APOP_SIMPLEX_NM, true_params->parameters);
         estimate_model(data, model,APOP_CG_PR, true_params->parameters);
@@ -150,21 +136,21 @@ void test_distributions(gsl_rng *r){
         if (!strcmp(dist[i].name, "Dirichlet distribution"))
             dist[i].dsize=2;
         if (!strcmp(dist[i].name, "Beta distribution"))
-            true_params->parameters = apop_line_to_data((double[]){.5, .2} , 2,0,0);
+            true_params->parameters = apop_data_falloc((2), .5, .2);
         if (!strcmp(dist[i].name, "Bernoulli distribution"))
-            true_params->parameters = apop_line_to_data((double[]){.1} , 1,0,0);
+            true_params->parameters = apop_data_falloc((1), .1);
         if (!strcmp(dist[i].name, "Binomial distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .2} , 2,0,0);
-            dist[i].dsize=15;
+            true_params->parameters = apop_data_falloc((2), 15, .2);
+            dist[i].dsize=2;
         }
         if (!strcmp(dist[i].name, "Multivariate normal distribution")){
-            true_params->parameters = apop_line_to_data((double[]){15, .5, .2,
-                                                                    3, .2, .5} , 2,2,2);
+            true_params->parameters = apop_data_falloc((2, 2, 2), 15, .5, .2,
+                                                                   3, .2, .5);
             dist[i].dsize=2;
         }
         if (!strcmp(dist[i].name, "Multinomial distribution")){
             true_params->parameters = apop_line_to_data((double[]){15, .5, .2, .1} , 4,0,0);
-            dist[i].dsize=15;
+            dist[i].dsize=4;
         }
         if (apop_regex(dist[i].name, "gamma distribution"))
             true_params->parameters = apop_line_to_data((double[]){1.5, 2.5} , 2,0,0);

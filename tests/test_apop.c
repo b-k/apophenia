@@ -1464,8 +1464,8 @@ void test_ols_offset(gsl_rng *r){
     Apop_col(cp, 1, off);
     gsl_vector_add_constant(off, 20);
     apop_model *way_off = apop_estimate(cp, apop_ols);
-    Apop_col(zero_off->info, 0, zinfo);
-    Apop_col(way_off->info, 0, winfo);
+    Apop_col(zero_off->info, -1, zinfo);
+    Apop_col(way_off->info, -1, winfo);
     assert(apop_vector_distance(zinfo, winfo) < 1e-4);
     gsl_vector *zcov = apop_data_pack(apop_data_get_page(zero_off->parameters, "<covariance>"), .use_info_pages='y');
     gsl_vector *wcov = apop_data_pack(apop_data_get_page( way_off->parameters, "<covariance>"), .use_info_pages='y');

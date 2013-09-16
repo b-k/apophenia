@@ -117,7 +117,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     if (est->parameters->vector->size == 2) {
         *out = gsl_ran_binomial_knuth(r, 1-gsl_vector_get(est->parameters->vector, 1), N);
         out[1] = N-*out;
-        return;
+        goto done;
     }
     //else, multinomial
     //cut/pasted/modded from the GSL. Copyright them.
@@ -132,6 +132,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
         sum_p += p[i];
         sum_n += out[i];
     }
+    done:
     p[0] = N;
 }
 
@@ -157,14 +158,14 @@ static void multinomial_estimate(apop_data * data,  apop_model *est){
     gsl_vector *v = est->parameters->vector;
     int n = apop_sum(v)/data->matrix->size1; //size of one row
     apop_vector_normalize(v);
-    gsl_vector_set(v, 0, n);
     apop_name_add(est->parameters->names, "n", 'r');
+    apop_data_set(est->parameters, .val=n); //zeroth item is now n, not p_0
     char name[100];
-    for(int i=1; i < v->size; i ++){
+    for(int i=1; i < v->size; i++){
         sprintf(name, "p%i", i);
         apop_name_add(est->parameters->names, name, 'r');
     }
-    est->dsize = data->matrix->size1;
+    est->dsize = n;
     make_covar(est);
     apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
 }
@@ -189,21 +190,21 @@ apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n))
 \endcode
 And now the parameter vector is a proper list of probabilities.
 
-\li Because an observation is typically a single row, the value of \f$N\f$ is set to equal the length of
-the first row (counting both vector and matrix elements, as appropriate). Thus, if your
-data is entirely in the vector or a one-column matrix, then the \f$p\f$s are estimated
-using all data, but \f$N=1\f$. The covariances are calculated accordingly, and a random
-draw would return a single bin. 
+\li Because an observation is a single row, the number of bins, \f$k\f$ is set to equal
+the length of the first row (counting both vector and matrix elements, as appropriate).
+The covariance matrix will be \f$k \times k\f$.
+
+\li Each row should sum to \f$N\f$, the number of draws. The estimation routine doesn't check this, but instead uses the average sum across all rows.
 
 \adoc    Estimate_results  Parameters are estimated. Covariance matrix is filled.   
-\adoc    RNG Returns a single vector of length \f$k\f$, the result of an imaginary tossing of \f$N\f$ balls into \f$k\f$ urns, with the
-            given probabilities.
+\adoc    RNG Returns a single vector of length \f$k\f$, the result of an imaginary tossing 
+        of \f$N\f$ balls into \f$k\f$ urns, with the given probabilities.
             */
 
-apop_model apop_multinomial = {"Multinomial distribution", -1,0,0, .dsize=-1,
+apop_model apop_multinomial = {"Multinomial distribution", -1, .dsize=-1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show};
 
-apop_model apop_binomial = {"Binomial distribution", 2,0,0, .dsize=1,
+apop_model apop_binomial = {"Binomial distribution", 2, .dsize=1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show, .cdf= binomial_cdf};

@@ -1914,7 +1914,7 @@ apop_data *apop_test_fisher_exact(apop_data *intab){
        &workspace,
        &mult);
     free(intified);
-    apop_data *out = apop_data_alloc(2,1);
+    apop_data *out = apop_data_alloc();
     asprintf(&out->names->title, "Fisher Exact test");
     apop_data_add_named_elmt(out, "probability of table", prt);
     apop_data_add_named_elmt(out, "p value", pre);

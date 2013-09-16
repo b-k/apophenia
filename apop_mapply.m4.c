@@ -79,19 +79,6 @@ apop_map(your_data, .fn_dp=cutoff, .param=&param, .inplace='y');
 'c'==Apply a function \c gsl_vector \f$\to\f$ \c double to each column of the  matrix<br>
 Default is 'a', but notice that I'll ignore a \c NULL vector or matrix, so if your data set has only a vector (for example), that's what I'll use.
 
-\li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
-\ref Apop_row to get each row in turn, and send it to the function. The first
-implication is that your function should be expecting a \ref apop_data set with
-exactly one row in it. The second is that \c part is ignored: it only makes sense to go
-row-by-row. If you set \c inplace='y', then you will be modifying your input data set, row by row;
-if you set \c inplace='n', then I will return an \ref apop_data set whose \c vector
-element is as long as your data set (i.e., as long as the longest of your text, vector,
-or matrix parts).
-
-\li If you set <tt>apop_opts.thread_count</tt> to a value greater than one, I will split the data set into as many chunks as you specify, and process them simultaneously. You need to watch out for the usual hang-ups about multithreaded programming, but if your data is iid, and each row's processing is independent of the others, you should have no problems. Bear in mind that generating threads takes some small overhead, so simple cases like adding a few hundred numbers will actually be slower when threading.
-
-\param inplace  If zero, generate a new \ref apop_data set for output, which will contain the mapped values (and the names from the original set). If one, modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost. (Default = 0)
-
 \param all_pages If \c 'y', then I follow the \c more pointer to subsequent pages, else I
 handle only the first page of data. [I abuse this for an internal semaphore, by the way, so your input must always be nonnegative and  less than 1,000. Of course, 'y' and 'n' fit these rules fine.]
 Default: \c 'n'. 
@@ -103,6 +90,19 @@ modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and
 double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you
 are writing in place and there is already a vector there, then the original vector is
 lost. If 'v' (as in void), return \c NULL.  (Default = 'n')
+
+\li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
+\ref Apop_row to get each row in turn, and send it to the function. The first
+implication is that your function should be expecting a \ref apop_data set with
+exactly one row in it. The second is that \c part is ignored: it only makes sense to go
+row-by-row. 
+
+\li If you set \c inplace='y', then you will be modifying your input data set, row by row;
+if you set \c inplace='n', then I will return an \ref apop_data set whose \c vector
+element is as long as your data set (i.e., as long as the longest of your text, vector,
+or matrix parts).
+
+\li If you set <tt>apop_opts.thread_count</tt> to a value greater than one, I will split the data set into as many chunks as you specify, and process them simultaneously. You need to watch out for the usual hang-ups about multithreaded programming, but if your data is iid, and each row's processing is independent of the others, you should have no problems. Bear in mind that generating threads takes some small overhead, so simple cases like adding a few hundred numbers will actually be slower when threading.
 
 \exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
 
@@ -125,7 +125,8 @@ APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_ri * apop_varad_var(fn_ri, NULL)
     int apop_varad_var(inplace, 'n')
     void * apop_varad_var(param, NULL)
-    char apop_varad_var(part, 'a')
+    int by_vectors = fn_v || fn_vp || fn_vpi || fn_vi;
+    char apop_varad_var(part, by_vectors ? 'r' : 'a')
     int apop_varad_var(all_pages, 'n')
 APOP_VAR_ENDHEAD
     int use_param = (fn_vp || fn_dp || fn_rp || fn_vpi || fn_rpi || fn_dpi);
@@ -148,8 +149,11 @@ APOP_VAR_ENDHEAD
                      : part == 'v' || (in->vector && ! in->matrix) ? apop_data_alloc(vsize)
                      : part == 'm' ? apop_data_alloc(msize1, msize2)
                      : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
-                     : part == 'r' ? apop_data_alloc(msize1)
+                     : part == 'r' ? apop_data_alloc(maxsize)
                      : part == 'c' ?  apop_data_alloc(msize2) : NULL;
+    Apop_stopif(inplace=='y' && !in->vector, in->vector=gsl_vector_alloc(maxsize), 2, 
+                            "No vector in your input data set for me to write outputs to; "
+                            "allocating one for you of size %zu", maxsize);
     if (in->names && out){
         if (part == 'v'  || (in->vector && ! in->matrix)) {
              apop_name_stack(out->names, in->names, 'v');
@@ -168,7 +172,6 @@ APOP_VAR_ENDHEAD
             apop_name_stack(in->names, out->names, 'r', 'c');
     }
 
-    //Call mapply_core.
     if (by_apop_rows) mapply_core(in, NULL, NULL, fn, out ? out->vector : NULL, use_index, use_param, param, 'r', by_apop_rows);
     else {
         if (in->vector && (part == 'v' || part=='a'))
@@ -190,7 +193,7 @@ APOP_VAR_ENDHEAD
         if (part == 'r' || part == 'c'){
             Apop_stopif(!in->matrix, if (!out) out=apop_data_alloc(); out->error='p'; return out,
                            0, "You asked for me to operate on the %cs of the matrix, but the matrix is NULL.", part);
-            mapply_core(NULL, in->matrix, NULL, fn, out->vector, use_index, use_param, param, part, by_apop_rows);
+            mapply_core(NULL, in->matrix, NULL, fn, out ? out->vector : NULL, use_index, use_param, param, part, by_apop_rows);
         }
     }
     if ((all_pages=='y' || all_pages=='Y') && in->more){
@@ -226,7 +229,7 @@ static void *rowloop(void *t){
         val = 
         tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
                       : (tc->use_index ? fn_ri(onerow, i) : rtod(onerow) );
-        if(tc->v) gsl_vector_set(tc->v, i, val);
+        if (tc->v) gsl_vector_set(tc->v, i, val);
     }
     return NULL;
 }
@@ -244,7 +247,7 @@ static void *forloop(void *t){
         val     = 
         tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : fn_vp(&view, tc->param) )
                       : (tc->use_index ? fn_vi(&view, i) : vtod(&view) );
-        gsl_vector_set(tc->v, i, val);
+        if (tc->v) gsl_vector_set(tc->v, i, val);
     }
     return NULL;
 }
@@ -278,7 +281,7 @@ static void *vectorloop(void *t){
                                      fn_dp(inval, tc->param))
                      : (tc->use_index ? fn_di(inval, i) : 
                                      dtod(inval));
-        gsl_vector_set(tc->v, i, outval);
+        if (tc->v) gsl_vector_set(tc->v, i, outval);
     }
     return NULL;
 }

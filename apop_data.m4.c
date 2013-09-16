@@ -770,8 +770,9 @@ The \c _ptr functions return a pointer to the given cell. Those functions follow
 static double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
     Apop_stopif(rownum == -2, return NULL, 0,"Couldn't find '%s' amongst the row names.", row);
-    return (col >= 0) ? gsl_matrix_ptr(in->matrix, rownum, col)
-                      : gsl_vector_ptr(in->vector, rownum);
+    return (col==-1 || (col == 0 && !in->matrix && in->vector)) 
+                ? gsl_vector_ptr(in->vector, rownum)
+                : gsl_matrix_ptr(in->matrix, rownum, col);
 }
 
 static double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
@@ -840,19 +841,21 @@ APOP_VAR_ENDHEAD
 
 static double apop_data_get_ti(const apop_data *in, const char* row, const int col){
     int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(rownum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
-    if (col >= 0){
-        Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, col);
-        return gsl_matrix_get(in->matrix, rownum, col);
-    } else {
-        Apop_assert_nan(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
+    Apop_stopif(rownum == -2, return GSL_NAN, 0, "Couldn't find '%s' amongst the row names.", row);
+    if (col==-1 || (col == 0 && !in->matrix && in->vector)){
+        Apop_stopif(!in->vector, return NAN, 0, "You asked me to get the %ith element of "
+                                                "a NULL vector. Returning NaN.", rownum);
         return gsl_vector_get(in->vector, rownum);
+    } else {
+        Apop_stopif(!in->matrix, return NAN, 0, "You asked me to get the (%i, %i) element of a "
+                                 "NULL matrix. Returning NaN.", rownum, col);
+        return gsl_matrix_get(in->matrix, rownum, col);
     }
 }
 
 static double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
     int colnum = apop_name_find(in->names, col, 'c');
-    Apop_stopif(colnum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
+    Apop_stopif(colnum == -2, return GSL_NAN, 0, "Couldn't find '%s' amongst the column names.", col);
     if (colnum >= 0){
         Apop_assert_nan(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
         return gsl_matrix_get(in->matrix, row, colnum);
@@ -938,8 +941,9 @@ static int apop_data_set_ti(apop_data *in, const char* row, const int col, const
     Set_gsl_handler
     int rownum =  apop_name_find(in->names, row, 'r');
     Apop_stopif(rownum == -2, return -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
-    if (col >= 0) gsl_matrix_set(in->matrix, rownum, col, data);
-    else          gsl_vector_set(in->vector, rownum, data);
+    if (col==-1 || (col == 0 && !in->matrix && in->vector))
+                gsl_vector_set(in->vector, rownum, data);
+    else        gsl_matrix_set(in->matrix, rownum, col, data);
     Unset_gsl_handler
     return error_for_set;
 }
@@ -1101,13 +1105,12 @@ allocation via \ref apop_data_alloc <tt>( )</tt> ).
 \param name The name to add
 \param val  the value to add to the set.
 
-\li I use the position of the name to know where to put the value. If
+\li I use the position of the last non-empty row name to know where to put the value. If
 there are two names in the data set, then I will put the new name in
-the third name slot and the data in the third slot in the zeroth column of the matrix. If
+the third name slot and the data in the third slot in the vector. If
 you use this function from start to finish in building your list, then you'll be fine.
-\li If the matrix is too short (or \c NULL), I will call \ref apop_matrix_realloc internally to make space.
-\li The list is in the zeroth column of the matrix, because that fits well with the
-defaults for \ref apop_data_get. An example:
+\li If the vector is too short (or \c NULL), I will call \ref apop_vector_realloc internally to make space.
+\li This fits well with the defaults for \ref apop_data_get. An example:
 
 \code
 apop_data *list = apop_data_alloc();
@@ -1118,13 +1121,13 @@ double height = apop_data_get(list, .rowname="height");
 \endcode
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
-    Apop_assert_n(d, "You sent me a NULL apop_data set. Maybe allocate with apop_data_alloc() to start.");
+    Apop_stopif(!d, return, 0, "You sent me a NULL apop_data set. "
+                               "Maybe allocate with apop_data_alloc() to start.");
     apop_name_add(d->names, name, 'r');
-    if (!d->matrix)
-        d->matrix = gsl_matrix_alloc(1, 1);
-    if (d->matrix->size1 < d->names->rowct)
-        apop_matrix_realloc(d->matrix, d->names->rowct, d->matrix->size2);
-    gsl_matrix_set(d->matrix, d->names->rowct-1, 0, val);
+    if (!d->vector) d->vector = gsl_vector_alloc(1);
+    if (d->vector->size < d->names->rowct)
+        apop_vector_realloc(d->vector, d->names->rowct);
+    gsl_vector_set(d->vector, d->names->rowct-1, val);
 }
 
 //See apop_data_add_names in types.h.
