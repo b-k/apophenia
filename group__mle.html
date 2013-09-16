@@ -80,14 +80,14 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The simplest use of this function is to restart a model at the latest parameter estimates.</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, model_using_an_MLE_search);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, model_using_an_MLE_search);
 <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++)
     m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
 </pre></div><p>By adding a line to reduce the tolerance each round [e.g., <code>Apop_settings_set(m, apop_mle, tolerance, pow(10,-i))</code>], you can start broad and hone in on a precise optimum.</p>
 <p>You may have a new estimation method, such as first doing a coarse simulated annealing search, then a fine conjugate gradient search. When reading this example, recall that the form for adding a new settings group differs from the form for modifying existing settings: </p>
 <div class="fragment"><pre class="fragment">Apop_model_add_settings(your_base_model, apop_mle, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a>);
-<a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, your_base_model);
+<a class="code" href="structapop__model.html">apop_model</a> *m = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, your_base_model);
 <a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(m, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223">APOP_CG_PR</a>);
 m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>(m);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(m);
@@ -134,7 +134,7 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 <div class="memdoc">
 <p>The maximum likelihood calculations.</p>
 <ul>
-<li>I assume that <code>apop_prep</code> has been called on your model. The easiest way to guarantee this is to use <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, which calls this function if the input model has no <code>estimate</code> method.</li>
+<li>I assume that <code>apop_prep</code> has been called on your model. The easiest way to guarantee this is to use <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, which calls this function if the input model has no <code>estimate</code> method.</li>
 </ul>
 <ul>
 <li>All of the settings are specified by adding a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> struct to your model, so see the many notes there. Notably, the default method is the Fletcher-Reeves conjugate gradient method, and if your model does not have a dlog likelihood function, then a numeric gradient will be calculated via <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>. Add a <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> group to your model for other methods, including the Nelder-Mead simplex and simulated annealing.</li>
@@ -148,7 +148,7 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>None, but the input model is modified to include the parameter estimates, &amp;c.</dd></dl>
 <ul>
-<li>There is auxiliary info in the <code>-&gt;info</code> element of the post-estimation struct. Get elements via, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, <a class="code" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>);
+<li>There is auxiliary info in the <code>-&gt;info</code> element of the post-estimation struct. Get elements via, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, <a class="code" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>);
 <span class="keywordtype">int</span> status = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(est-&gt;<a class="code" href="structapop__model.html#aeba2b05a99d67db4ba658115ee5f9780">info</a>, .rowname=<span class="stringliteral">&quot;status&quot;</span>);
 <span class="keywordflow">if</span> (status)
     <span class="comment">//trouble</span>
@@ -164,4 +164,4 @@ m = <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">ap
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>

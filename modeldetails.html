@@ -40,19 +40,19 @@ urchinTracker();
 </ul>
 <h2><a class="anchor" id="write_likelihoods"></a>
 A walkthrough</h2>
-<p>Users are encouraged to always use models via the helper functions, like <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>. The helper functions do some boilerplate error checking, and are where the defaults are called: if your model has a <code>log_likelihood</code> method but no <code>p</code> method, then <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> will use exp(<code>log_likelihood</code>). If you don't give an <code>estimate</code> method, then <code>apop_estimate</code> will call <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>.</p>
+<p>Users are encouraged to always use models via the helper functions, like <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>. The helper functions do some boilerplate error checking, and are where the defaults are called: if your model has a <code>log_likelihood</code> method but no <code>p</code> method, then <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> will use exp(<code>log_likelihood</code>). If you don't give an <code>estimate</code> method, then <code>apop_estimate</code> will call <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>.</p>
 <p>So the game in writing a new model is to write just enough internal methods to give the helper functions what they need. In the not-uncommon best case, all you need to do is write a log likelihood function.</p>
 <p>Here is how one would set up a model that could be estimated using maximum likelihood:</p>
 <ul>
 <li>Write a likelihood function. Its header will look like this:</li>
 </ul>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">long</span> <span class="keywordtype">double</span> apop_new_log_likelihood(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *m);
+<div class="fragment"><pre class="fragment"><span class="keywordtype">long</span> <span class="keywordtype">double</span> new_log_likelihood(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *m);
 </pre></div><p>where <code>data</code> is the input data, and <code>m</code> is the parametrized model (i.e. your model with a <code>parameters</code> element set by the caller). This function will return the value of the log likelihood function at the given parameters.</p>
 <ul>
-<li>Is this a constrained optimization? See the outline page under maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_109.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed. </li>
+<li>Is this a constrained optimization? See the outline page under maximum likelihood methods <img class="formulaInl" alt="$->$" src="form_111.png"/> Setting constraints on how to set them. Otherwise, no constraints will be assumed. </li>
 <li>Write the object:</li>
 </ul>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> your_new_model = {<span class="stringliteral">&quot;The Me distribution&quot;</span>, 
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *your_new_model = &amp;(<a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>){<span class="stringliteral">&quot;The Me distribution&quot;</span>, 
             .vsize=n0, .msize1=n1, .msize2=n2, .dbase=nd,
             .log_likelihood = new_log_likelihood };
 </pre></div><ul>
@@ -63,7 +63,7 @@ A walkthrough</h2>
 <li>If there are constraints, add an element for those too.</li>
 </ul>
 <p>You already have enough that something like this will work: </p>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *estimated = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(your_data, your_new_model);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *estimated = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, your_new_model);
 </pre></div><p>Once that baseline works, you can fill in other elements of the <a class="el" href="structapop__model.html">apop_model</a> as needed.</p>
 <p>For example, if you are using a maximum likelihood method to estimate parameters, you can get much faster estimates and better covariance estimates by specifying the dlog likelihood function (aka the score):</p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> apop_new_dlog_likelihood(<a class="code" href="structapop__data.html">apop_data</a> *d, gsl_vector *gradient, <a class="code" href="structapop__model.html">apop_model</a> *m){
@@ -78,7 +78,7 @@ A walkthrough</h2>
 Writing new settings groups</h2>
 <p>Your model may need additional settings or auxiliary information to function, which would require associating a model-specific struct with the model.</p>
 <p>Before getting into the detail of how to make model-specific groups of settings work, note that there's a lightweight method of storing sundry settings, so in many cases you can bypass all of the following.</p>
-<p>The <a class="el" href="structapop__model.html">apop_model</a> structure has a <code>void</code> pointer named <code>more</code> which you can use to point to a model-specific struct. If <code>more_size</code> is larger than zero (i.e. you set it to <code>your_model.more_size=sizeof(your_struct)</code>), then it will be copied via <code>memcpy</code> by <a class="el" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>, and freed by <a class="el" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free</a>. Apophenia's estimation routines will never impinge on this item, so do what you wish with it.</p>
+<p>The <a class="el" href="structapop__model.html">apop_model</a> structure has a <code>void</code> pointer named <code>more</code> which you can use to point to a model-specific struct. If <code>more_size</code> is larger than zero (i.e. you set it to <code>your_model.more_size=sizeof(your_struct)</code>), then it will be copied via <code>memcpy</code> by <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>, and freed by <a class="el" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free</a>. Apophenia's estimation routines will never impinge on this item, so do what you wish with it.</p>
 <p>The remainder of this section describes the information you'll have to provide to make use of the conveniences described to this point: initialization of defaults, smarter copying and freeing, and adding to an arbitrarily long list of settings groups attached to a model. You will need four items: the structure itself, plus init, copy, and free functions. This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java, but it's really a list of arbitrarily-typed elements, which makes this feel more like LISP. [And being a reimplementation of an existing feature of LISP, this section will be macro-heavy.]</p>
 <ul>
 <li>The settings struct will likely go into a header file, so here is a sample header for a new settings group named <code>ysg_settings</code>, with a dataset, its two sizes, and an owner-of-data marker. <code>ysg</code> stands for Your Settings Group; replace that substring with your preferred name in every instance to follow.</li>
@@ -109,7 +109,7 @@ Writing new settings groups</h2>
 )
 </pre></div><p>Now, <code>Apop_settings_add(a_model, ysg, .size1=100)</code> would set up a group with a 100-by-10 data set, and set the owner bit to one.</p>
 <ul>
-<li>Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to <a class="el" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. We have to be careful to prevent double-freeing later.</li>
+<li>Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. We have to be careful to prevent double-freeing later.</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="comment">//alternative one: mark that the copy doesn&#39;t own the data.</span>
 <span class="comment">//From the defaults, out-&gt;dataset is a copy of the in-&gt;dataset pointer.</span>
@@ -134,12 +134,12 @@ Registering new methods in vtables</h2>
 <p>For any given function (e.g., entropy, the dlog likelihood, Bayesian updating), there is probably a special case for well-known models like the Normal distribution. Rather than any procedure that could have a special-case calculation to the <code><a class="el" href="structapop__model.html">apop_model</a></code> struct, functions may maintain a registry of models and associated special-case procedures.</p>
 <p>This section will discuss how to add a function to an existing vtable. Generating a new vtable is not difficult, but is still in beta and may be revised in the future.</p>
 <ul>
-<li>See <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, <a class="el" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, and <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> for examples and procedure-specific details. </li>
+<li>See <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, <a class="el" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>, and <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> for examples and procedure-specific details. </li>
 <li>Write a function following the given type definition. </li>
 <li>Use the associated <code>_vtable_add</code> function to add the function and associate it with the given model. For example, to add a Beta-binomial routine named <code>betabinom</code> to the registry of Bayesian updating routines, use <code>apop_update_vtable_add(betabinom, apop_beta, apop_binomial)</code>. </li>
 <li>Lookups happen based on a hash that takes into account the elements of the model that will be used in the calculation. For example, the <code>apop_update_hash</code> takes in two models and calculates the hash based on the address of the prior's <code>draw</code> method and the likelihood's <code>log_likelihood</code> or <code>p</code> method. Thus, a vtable lookup for new models that re-use the same methods (at the same addresses in memory) will still find the same special-case function. </li>
 <li>If you need to deregister the function, use the associated deregister function, e.g. <code>apop_update_vtable_drop(apop_beta, apop_binomial)</code>. You can guarantee that a method will not be re-added by following up the <code>_drop</code> with, e.g., <code>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</code>. </li>
-<li>Calls to <code>..._vtable_add</code> are typically placed in the <code>prep</code> method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>.</li>
+<li>Calls to <code>..._vtable_add</code> are typically placed in the <code>prep</code> method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>.</li>
 </ul>
 <h2><a class="anchor" id="modeldataparts"></a>
 The data elements</h2>
@@ -147,7 +147,7 @@ The data elements</h2>
 <h3><a class="anchor" id="datasubsec"></a>
 data</h3>
 <ul>
-<li>Each row should be a single observation. For example, <a class="el" href="stats_8h.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a> depends on each row being an iid observation to function correctly. Calculating the Bayesian Information Criterion (BIC) requires knowing the number of observations in the data, and assumes that row count==observation count. For complex data, the <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> and <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> functions can help with this.</li>
+<li>Each row should be a single observation. For example, <a class="el" href="stats_8h.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a> depends on each row being an iid observation to function correctly. Calculating the Bayesian Information Criterion (BIC) requires knowing the number of observations in the data, and assumes that row count==observation count. For complex data, the <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> and <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> functions can help with this.</li>
 </ul>
 <ul>
 <li>Some functions (bootstrap again, or many uses of <a class="el" href="stats_8h.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>) use <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a> to use your model's RNG (or a default) to draw a value, write it to the matrix element of the data set, and then move on to an estimation or other step. In this case, the data sent in will be entirely in the <code>-&gt;matrix</code> element of the <a class="el" href="gentle.html#apop_data">apop_data</a> set sent to model methods. Your <code>likelihood</code>, <code>p</code>, <code>cdf</code>, and <code>estimate</code> routines must accept data as a single row of the matrix of the <a class="el" href="gentle.html#apop_data">apop_data</a> set for such functions to work.</li>
@@ -194,7 +194,7 @@ Methods</h2>
 p, log_likelihood</h3>
 <ul>
 <li>The inputs are an <a class="el" href="gentle.html#apop_data">apop_data</a> set and an <a class="el" href="structapop__model.html">apop_model</a>, which should include a filled <code>-&gt;parameters</code> element. </li>
-<li>We assume that the parameters have been set, by users via <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or by <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not <code>NULL</code> and set the model's <code>error</code> element to <code>'p'</code> if they are. </li>
+<li>We assume that the parameters have been set, by users via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or by <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not <code>NULL</code> and set the model's <code>error</code> element to <code>'p'</code> if they are. </li>
 <li>Return <code>NAN</code> on errors. If an error in the input model is found, the function may set the input model's <code>error</code> element to an appropriate <code>char</code> value. </li>
 <li>If observations are assumed to be iid, you can probably use <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> to write the core of the log likelihood function. </li>
 <li>You need only write one of the <code>p</code> or <code>log_likelihood</code> functions. It must be the case that <code>log(p(d, m))</code> equals <code>log_likelihood(d, m)</code> for all <code>d</code> and <code>m</code>.</li>
@@ -216,43 +216,36 @@ prep</h3>
 estimate</h3>
 <ul>
 <li>Assume that the prep routine has already been run. Notably, this means that parameters have been allocated. </li>
-<li>The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, which makes a copy of its input model, preps it, and then calls the <code>estimate</code> function with the prepeped copy. </li>
+<li>The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, which makes a copy of its input model, preps it, and then calls the <code>estimate</code> function with the prepeped copy. </li>
 <li>The function shall set the <code>parameters</code> of the input model. For consistency with other models, the estimate should be the maximum likelihood estimate, unless otherwise documented. </li>
 <li>Additional settings may be set. </li>
 <li>The model's <code>&lt;Info&gt;</code> page may be filled with data. For scalars like log likelihood and AIC, use <a class="el" href="types_8h.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>. </li>
 <li>Data should not be modified by the <code>estimate</code> routine; any changes to the data made by <code>estimate</code> must be documented. </li>
-<li>The default called by <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> is <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>.</li>
+<li>The default called by <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> is <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>.</li>
 </ul>
 <h3><a class="anchor" id="drawsubsection"></a>
 draw</h3>
 <ul>
-<li>Assume that model <code>paramters</code> are set, via <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>. The author of the draw method should check that <code>parameters</code> are not <code>NULL</code> and fill the output with NaNs if necessary parameters are not set. </li>
+<li>Assume that model <code>paramters</code> are set, via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>. The author of the draw method should check that <code>parameters</code> are not <code>NULL</code> and fill the output with NaNs if necessary parameters are not set. </li>
 <li>User inputs a pointer to <code>double</code> of length <code>dsize</code>; user is expected to make sure that there is adequate space. User also inputs a <code>gsl_rng</code>, already allocated (probably via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). </li>
 <li>The function shall fill the space pointed to by the input pointer with a random draw from the data space, where the likelihood of any given observation is proportional to its likelihood as given by the <code>p</code> method. Data shall be reduced to a single vector via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> if it is not already a single vector.</li>
 </ul>
 <h3><a class="anchor" id="cdfsubsection"></a>
 cdf</h3>
 <ul>
-<li>Assume that <code>paramters</code> are set, via <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>. The author of the CDF method should check that <code>parameters</code> are not <code>NULL</code> and return NaN if necessary parameters are not set. </li>
+<li>Assume that <code>paramters</code> are set, via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>. The author of the CDF method should check that <code>parameters</code> are not <code>NULL</code> and return NaN if necessary parameters are not set. </li>
 <li>The CDF method must accept data as a single row of data in the <code>matrix</code> of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set (as per a draw produced using the <code>draw</code> method). May accept other formats. </li>
-<li>Returns the percentage of the likelihood function <img class="formulaInl" alt="$\leq$" src="form_37.png"/> the first row of the input data. The definition of <img class="formulaInl" alt="$\leq$" src="form_37.png"/> is chosen by the model author. </li>
+<li>Returns the percentage of the likelihood function <img class="formulaInl" alt="$\leq$" src="form_39.png"/> the first row of the input data. The definition of <img class="formulaInl" alt="$\leq$" src="form_39.png"/> is chosen by the model author. </li>
 <li>If one is not already present, an <code><a class="el" href="structapop__cdf__settings.html">apop_cdf_settings</a></code> group may be added to the model. See the <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a> function for details of its use.</li>
 </ul>
 <h3><a class="anchor" id="constraintsubsection"></a>
 constraint</h3>
 <ul>
-<li>Assume that <code>parameters</code> are set, via <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>, <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or the internals of an MLE search. The author of the constraint method should check that <code>parameters</code> are not <code>NULL</code> and return NaN if necessary parameters are not set. </li>
+<li>Assume that <code>parameters</code> are set, via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or the internals of an MLE search. The author of the constraint method should check that <code>parameters</code> are not <code>NULL</code> and return NaN if necessary parameters are not set. </li>
 <li>See <a class="el" href="stats_8h.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a> for a useful basis and/or example. Many constraints can be written as wrappers for this function. </li>
 <li>If the constraint is met, then return zero. </li>
-<li>If the constraint fails, then (1) move the <code>parameters</code> in the input model to a constraint-satisfying value, and (2) return the distance between the input parameters and what you've moved the parameters to. The choice of within-bounds parameters and distance function is left to the author of the constraint function.</li>
-</ul>
-<h3><a class="anchor" id="printsubsection"></a>
-print</h3>
-<p>For human-friendly display of model results. Because this is intended for human consumption, there are no format requirements.</p>
-<ul>
-<li>Called via <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>, which takes in a (probably estimated) model and a file handle. If <code>NULL</code>, assume <code>stdout</code>, but this allows users to write model output to <code>stderr</code>, a file, or a pipe. </li>
-<li>All output should <code>fprintf</code> to the input <code>FILE*</code> handle. Apophenia's output routines also accept a file handle; e.g., if the file handle is named <code>out</code>, then if the <code>thismodel</code> print method uses <code>apop_data_print</code> to print the parameters, it must do so via a form like <code>apop_data_print(thismodel-&gt;parameters, .output_pipe=ap)</code>. </li>
+<li>If the constraint fails, then (1) move the <code>parameters</code> in the input model to a constraint-satisfying value, and (2) return the distance between the input parameters and what you've moved the parameters to. The choice of within-bounds parameters and distance function is left to the author of the constraint function. </li>
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>

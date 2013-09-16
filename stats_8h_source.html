@@ -330,12 +330,12 @@ urchinTracker();
 <a name="l00303"></a>00303 
 <a name="l00304"></a>00304 
 <a name="l00305"></a>00305 <span class="comment">//Bootstrapping &amp; RNG</span>
-<a name="l00306"></a>00306 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a00aea2894284560e88b5fcce9f100242">apop_jackknife_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> model);
+<a name="l00306"></a>00306 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a634432014188489d758d7c1acfc9a0a5">apop_jackknife_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model);
 <a name="l00307"></a>00307 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00308"></a>00308 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
+<a name="l00308"></a>00308 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
 <a name="l00309"></a>00309 <span class="preprocessor">#else</span>
-<a name="l00310"></a>00310 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
-<a name="l00311"></a>00311  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#aed343e0e790bd7e1fd1e455d23e394b2">apop_bootstrap_cov</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <a class="code" href="structapop__model.html">apop_model</a> model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
+<a name="l00310"></a>00310 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
+<a name="l00311"></a>00311  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <a class="code" href="structapop__model.html">apop_model</a> *model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
 <a name="l00312"></a>00312 <span class="preprocessor">#define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)</span>
 <a name="l00313"></a>00313 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00314"></a>00314 <span class="preprocessor"></span>
@@ -395,8 +395,8 @@ urchinTracker();
 <a name="l00368"></a>00368 <span class="preprocessor"></span>
 <a name="l00369"></a>00369 
 <a name="l00370"></a>00370 <span class="comment">//in apop_model_fix_params.c</span>
-<a name="l00371"></a>00371 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
-<a name="l00372"></a>00372 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#af676505faea1c7e30ffbd8690a092ed8">apop_model_fix_params_get_base</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
+<a name="l00371"></a>00371 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
+<a name="l00372"></a>00372 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="apop__fix__params_8c.html#ae70ae98621cd8ee628d1a5d9c8e82111">apop_model_fix_params_get_base</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
 <a name="l00373"></a>00373 
 <a name="l00374"></a>00374 <span class="preprocessor">#ifdef    __cplusplus</span>
 <a name="l00375"></a>00375 <span class="preprocessor"></span>}
@@ -405,4 +405,4 @@ urchinTracker();
 <a name="l00378"></a>00378 <span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>

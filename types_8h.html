@@ -143,9 +143,9 @@ gsl_vector * <b>apop_vector_fill_base</b> (gsl_vector *in, double[])
 <li>void <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me, FILE *out)
 <li><a class="anchor" id="a4fa08e29db38e8dcc111899c942022d9"></a><!-- doxytag: member="types.h::apop_model_show" ref="a4fa08e29db38e8dcc111899c942022d9" args="(apop_model *print_me)" -->
 void <b>apop_model_show</b> (<a class="el" href="structapop__model.html">apop_model</a> *print_me)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a> (<a class="el" href="structapop__model.html">apop_model</a> in)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a> (<a class="el" href="structapop__model.html">apop_model</a> *in)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> m)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>void <a class="el" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, gsl_vector *out, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>double <a class="el" href="group__models.html#ga5e160c8d0a0ee660c89fb3f6de2af89c">apop_log_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>double <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
@@ -155,8 +155,8 @@ void <b>apop_model_show</b> (<a class="el" href="structapop__model.html">apop_mo
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="types_8h.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
-<li><a class="anchor" id="af4c012bdc699245953babfdf92973826"></a><!-- doxytag: member="types.h::apop_model_set_parameters_base" ref="af4c012bdc699245953babfdf92973826" args="(apop_model in, double ap[])" -->
-<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_set_parameters_base</b> (<a class="el" href="structapop__model.html">apop_model</a> in, double ap[])
+<li><a class="anchor" id="a0b818ff6672229f10c3e559ba9cffb65"></a><!-- doxytag: member="types.h::apop_model_set_parameters_base" ref="a0b818ff6672229f10c3e559ba9cffb65" args="(apop_model *in, double ap[])" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_set_parameters_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *in, double ap[])
 <li><a class="anchor" id="a5f10c642ac9a8c9342da4530de1a4e95"></a><!-- doxytag: member="types.h::apop_model_mixture_base" ref="a5f10c642ac9a8c9342da4530de1a4e95" args="(apop_model **inlist)" -->
 <a class="el" href="structapop__model.html">apop_model</a> * <b>apop_model_mixture_base</b> (<a class="el" href="structapop__model.html">apop_model</a> **inlist)
 <li><a class="anchor" id="a4c5afbd3068134ca9b20997e132d132f"></a><!-- doxytag: member="types.h::apop_model_stack_base" ref="a4c5afbd3068134ca9b20997e132d132f" args="(apop_model *mlist[])" -->
@@ -198,70 +198,70 @@ void <b>apop_data_print</b> (const <a class="el" href="structapop__data.html">ap
 Variables</h2>
 <ul>
 <li><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>
-<li><a class="anchor" id="a6935c4bb039f97e52e04bcca5dd33828"></a><!-- doxytag: member="types.h::apop_beta" ref="a6935c4bb039f97e52e04bcca5dd33828" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_beta</b>
-<li><a class="anchor" id="acf02c42f90ef9c5a8bf5efca8b959f19"></a><!-- doxytag: member="types.h::apop_bernoulli" ref="acf02c42f90ef9c5a8bf5efca8b959f19" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_bernoulli</b>
-<li><a class="anchor" id="acfbda1a21f138b3a1fc9a02cb419be0d"></a><!-- doxytag: member="types.h::apop_binomial" ref="acfbda1a21f138b3a1fc9a02cb419be0d" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_binomial</b>
-<li><a class="anchor" id="aa746fef1b8c83fc40e576dadd2b6517b"></a><!-- doxytag: member="types.h::apop_chi_squared" ref="aa746fef1b8c83fc40e576dadd2b6517b" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_chi_squared</b>
-<li><a class="anchor" id="a043fe03908df14d82dce4b23fa4e815a"></a><!-- doxytag: member="types.h::apop_dirichlet" ref="a043fe03908df14d82dce4b23fa4e815a" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_dirichlet</b>
-<li><a class="anchor" id="a1424d1e4a3c56bd302f68d8104a4390d"></a><!-- doxytag: member="types.h::apop_exponential" ref="a1424d1e4a3c56bd302f68d8104a4390d" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_exponential</b>
-<li><a class="anchor" id="a9e86d75842bf5aabaf5d1bff148f5918"></a><!-- doxytag: member="types.h::apop_f_distribution" ref="a9e86d75842bf5aabaf5d1bff148f5918" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_f_distribution</b>
-<li><a class="anchor" id="a29fbdc31683788485459763bed3a766d"></a><!-- doxytag: member="types.h::apop_gamma" ref="a29fbdc31683788485459763bed3a766d" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_gamma</b>
-<li><a class="anchor" id="aeba1e70a8f84144d715896f196819615"></a><!-- doxytag: member="types.h::apop_improper_uniform" ref="aeba1e70a8f84144d715896f196819615" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_improper_uniform</b>
-<li><a class="anchor" id="ae153c802eac68c7ae9947cc21a13ecec"></a><!-- doxytag: member="types.h::apop_iv" ref="ae153c802eac68c7ae9947cc21a13ecec" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_iv</b>
-<li><a class="anchor" id="a7939ff15b433e3d01ba4fdbff6f075a6"></a><!-- doxytag: member="types.h::apop_kernel_density" ref="a7939ff15b433e3d01ba4fdbff6f075a6" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_kernel_density</b>
-<li><a class="anchor" id="a25a759c59b8db69432992b772a626430"></a><!-- doxytag: member="types.h::apop_loess" ref="a25a759c59b8db69432992b772a626430" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_loess</b>
-<li><a class="anchor" id="afa18434a7a42017a0a6b2e6ec53177ed"></a><!-- doxytag: member="types.h::apop_logit" ref="afa18434a7a42017a0a6b2e6ec53177ed" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_logit</b>
-<li><a class="anchor" id="aa0105d7ec4cc71b1296741cb18f36461"></a><!-- doxytag: member="types.h::apop_lognormal" ref="aa0105d7ec4cc71b1296741cb18f36461" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_lognormal</b>
-<li><a class="anchor" id="abe6160b1267ed2300409579604b2a942"></a><!-- doxytag: member="types.h::apop_multinomial" ref="abe6160b1267ed2300409579604b2a942" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_multinomial</b>
-<li><a class="anchor" id="a7a58f1e9c305ccf3bd5005fd8e5a29ab"></a><!-- doxytag: member="types.h::apop_multivariate_normal" ref="a7a58f1e9c305ccf3bd5005fd8e5a29ab" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_multivariate_normal</b>
-<li><a class="anchor" id="add47232b5e71b44138569ac7b590d766"></a><!-- doxytag: member="types.h::apop_normal" ref="add47232b5e71b44138569ac7b590d766" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_normal</b>
-<li><a class="anchor" id="ae85806d496571cecf2eecfaaa2c22cdd"></a><!-- doxytag: member="types.h::apop_ols" ref="ae85806d496571cecf2eecfaaa2c22cdd" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_ols</b>
-<li><a class="anchor" id="af94b0b32a24aa6a3acb4fc4447ea5914"></a><!-- doxytag: member="types.h::apop_pmf" ref="af94b0b32a24aa6a3acb4fc4447ea5914" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_pmf</b>
-<li><a class="anchor" id="af31168dd505017ae273d773d2fdebbca"></a><!-- doxytag: member="types.h::apop_poisson" ref="af31168dd505017ae273d773d2fdebbca" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_poisson</b>
-<li><a class="anchor" id="aa63d7c4b441250bc7f2d675a251ce279"></a><!-- doxytag: member="types.h::apop_probit" ref="aa63d7c4b441250bc7f2d675a251ce279" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_probit</b>
-<li><a class="anchor" id="af07580a49421d735403eda5d2046a809"></a><!-- doxytag: member="types.h::apop_t_distribution" ref="af07580a49421d735403eda5d2046a809" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_t_distribution</b>
-<li><a class="anchor" id="ade0939f1e8544338d59f8a788b60c81f"></a><!-- doxytag: member="types.h::apop_uniform" ref="ade0939f1e8544338d59f8a788b60c81f" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_uniform</b>
-<li><a class="anchor" id="a7508480c00a276a233a2f587bf61256d"></a><!-- doxytag: member="types.h::apop_wishart" ref="a7508480c00a276a233a2f587bf61256d" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_wishart</b>
-<li><a class="anchor" id="aa0efc71c25992de485af7e8a39891774"></a><!-- doxytag: member="types.h::apop_wls" ref="aa0efc71c25992de485af7e8a39891774" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_wls</b>
-<li><a class="anchor" id="aaef1d266c391b7ec69515ae06c47496a"></a><!-- doxytag: member="types.h::apop_yule" ref="aaef1d266c391b7ec69515ae06c47496a" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_yule</b>
-<li><a class="anchor" id="a25244d70952aed1caca47f54de710fb0"></a><!-- doxytag: member="types.h::apop_zipf" ref="a25244d70952aed1caca47f54de710fb0" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_zipf</b>
-<li><a class="anchor" id="a0cf14417e36148b508c6ce454bb44160"></a><!-- doxytag: member="types.h::apop_coordinate_transform" ref="a0cf14417e36148b508c6ce454bb44160" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_coordinate_transform</b>
-<li><a class="anchor" id="ab2615972a4d347e72420c0e7075402e4"></a><!-- doxytag: member="types.h::apop_composition" ref="ab2615972a4d347e72420c0e7075402e4" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_composition</b>
-<li><a class="anchor" id="af09ab249da1b4ee6c237c79a3bdd1ab7"></a><!-- doxytag: member="types.h::apop_dconstrain" ref="af09ab249da1b4ee6c237c79a3bdd1ab7" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_dconstrain</b>
-<li><a class="anchor" id="a512735ec39d262f944977c40e35a8b00"></a><!-- doxytag: member="types.h::apop_mixture" ref="a512735ec39d262f944977c40e35a8b00" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_mixture</b>
-<li><a class="anchor" id="ae2e7beada1c7e620f3cb14f0eee9f311"></a><!-- doxytag: member="types.h::apop_stack" ref="ae2e7beada1c7e620f3cb14f0eee9f311" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> <b>apop_stack</b>
+<li><a class="anchor" id="ae6cabd19bb6fe21b69caacb6e7c049cd"></a><!-- doxytag: member="types.h::apop_beta" ref="ae6cabd19bb6fe21b69caacb6e7c049cd" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_beta</b>
+<li><a class="anchor" id="a0b078785923b7ebf991959e5fa48630e"></a><!-- doxytag: member="types.h::apop_bernoulli" ref="a0b078785923b7ebf991959e5fa48630e" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_bernoulli</b>
+<li><a class="anchor" id="a59528acef7371d496b3d53f8f1972222"></a><!-- doxytag: member="types.h::apop_binomial" ref="a59528acef7371d496b3d53f8f1972222" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_binomial</b>
+<li><a class="anchor" id="a289aee941407e021f68214687d656056"></a><!-- doxytag: member="types.h::apop_chi_squared" ref="a289aee941407e021f68214687d656056" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_chi_squared</b>
+<li><a class="anchor" id="a0ac4c68d07c52e2133bea97033efb9b2"></a><!-- doxytag: member="types.h::apop_dirichlet" ref="a0ac4c68d07c52e2133bea97033efb9b2" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_dirichlet</b>
+<li><a class="anchor" id="a5da48b7a513b0edffc1039b793d2bf1e"></a><!-- doxytag: member="types.h::apop_exponential" ref="a5da48b7a513b0edffc1039b793d2bf1e" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_exponential</b>
+<li><a class="anchor" id="a5a879b97021e4187cf93d1319900e11c"></a><!-- doxytag: member="types.h::apop_f_distribution" ref="a5a879b97021e4187cf93d1319900e11c" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_f_distribution</b>
+<li><a class="anchor" id="a343bdd2f8ac26b9dfc3aab70371dc1a5"></a><!-- doxytag: member="types.h::apop_gamma" ref="a343bdd2f8ac26b9dfc3aab70371dc1a5" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_gamma</b>
+<li><a class="anchor" id="ad427ffccf160021bc1ce64ddcd792d9e"></a><!-- doxytag: member="types.h::apop_improper_uniform" ref="ad427ffccf160021bc1ce64ddcd792d9e" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_improper_uniform</b>
+<li><a class="anchor" id="a126c685e799d0eec806c5819f91845cc"></a><!-- doxytag: member="types.h::apop_iv" ref="a126c685e799d0eec806c5819f91845cc" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_iv</b>
+<li><a class="anchor" id="a4b6cd49361e8635fd5e3e3312e8040ed"></a><!-- doxytag: member="types.h::apop_kernel_density" ref="a4b6cd49361e8635fd5e3e3312e8040ed" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_kernel_density</b>
+<li><a class="anchor" id="a9457bd24a17a8705f4ee1c8fe7807dd9"></a><!-- doxytag: member="types.h::apop_loess" ref="a9457bd24a17a8705f4ee1c8fe7807dd9" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_loess</b>
+<li><a class="anchor" id="ab3e8bb3aac8ce211c9ebcb7e2ef06241"></a><!-- doxytag: member="types.h::apop_logit" ref="ab3e8bb3aac8ce211c9ebcb7e2ef06241" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_logit</b>
+<li><a class="anchor" id="acc72d4e9d073dd029032675fd7c7feb1"></a><!-- doxytag: member="types.h::apop_lognormal" ref="acc72d4e9d073dd029032675fd7c7feb1" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_lognormal</b>
+<li><a class="anchor" id="a2bc96895b91ff00eda42b36b31fe0df1"></a><!-- doxytag: member="types.h::apop_multinomial" ref="a2bc96895b91ff00eda42b36b31fe0df1" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_multinomial</b>
+<li><a class="anchor" id="a6133f5f2ed5172c4a98e51bd17a18b23"></a><!-- doxytag: member="types.h::apop_multivariate_normal" ref="a6133f5f2ed5172c4a98e51bd17a18b23" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_multivariate_normal</b>
+<li><a class="anchor" id="a74c3f0a4c9263e1f5e17c9ef873c8f02"></a><!-- doxytag: member="types.h::apop_normal" ref="a74c3f0a4c9263e1f5e17c9ef873c8f02" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_normal</b>
+<li><a class="anchor" id="a7a3d6eb287feb7e22399fcfcf5d30d0d"></a><!-- doxytag: member="types.h::apop_ols" ref="a7a3d6eb287feb7e22399fcfcf5d30d0d" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_ols</b>
+<li><a class="anchor" id="a3f90682cc2ba9b6f0f36b3ad4066b7c4"></a><!-- doxytag: member="types.h::apop_pmf" ref="a3f90682cc2ba9b6f0f36b3ad4066b7c4" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_pmf</b>
+<li><a class="anchor" id="a695d628d5c038a6ba9f9b983c483c535"></a><!-- doxytag: member="types.h::apop_poisson" ref="a695d628d5c038a6ba9f9b983c483c535" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_poisson</b>
+<li><a class="anchor" id="a0a2fe38172bbc4a70cbfd2077eb22dc4"></a><!-- doxytag: member="types.h::apop_probit" ref="a0a2fe38172bbc4a70cbfd2077eb22dc4" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_probit</b>
+<li><a class="anchor" id="a04c08bcad3e882d38e92ad77f9296f43"></a><!-- doxytag: member="types.h::apop_t_distribution" ref="a04c08bcad3e882d38e92ad77f9296f43" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_t_distribution</b>
+<li><a class="anchor" id="a6043cdfc7c38877cd1c1c9a46ae1b231"></a><!-- doxytag: member="types.h::apop_uniform" ref="a6043cdfc7c38877cd1c1c9a46ae1b231" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_uniform</b>
+<li><a class="anchor" id="ae557aac3841d227b15beceb36e88b1aa"></a><!-- doxytag: member="types.h::apop_wishart" ref="ae557aac3841d227b15beceb36e88b1aa" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_wishart</b>
+<li><a class="anchor" id="a17169ed9be0b026a496b8d16a11c87ea"></a><!-- doxytag: member="types.h::apop_wls" ref="a17169ed9be0b026a496b8d16a11c87ea" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_wls</b>
+<li><a class="anchor" id="af67e6b37ea29a900a26a2c382d1f965b"></a><!-- doxytag: member="types.h::apop_yule" ref="af67e6b37ea29a900a26a2c382d1f965b" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_yule</b>
+<li><a class="anchor" id="af238f568423aedb7e775a6ac259e820f"></a><!-- doxytag: member="types.h::apop_zipf" ref="af238f568423aedb7e775a6ac259e820f" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_zipf</b>
+<li><a class="anchor" id="aeab707dc9e20143e26f6a89d0677af8f"></a><!-- doxytag: member="types.h::apop_coordinate_transform" ref="aeab707dc9e20143e26f6a89d0677af8f" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_coordinate_transform</b>
+<li><a class="anchor" id="a618d4cbbb5b910f361766ecc99a0ffa0"></a><!-- doxytag: member="types.h::apop_composition" ref="a618d4cbbb5b910f361766ecc99a0ffa0" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_composition</b>
+<li><a class="anchor" id="ae8babcd9877d0f4991ee2aca9316ca6e"></a><!-- doxytag: member="types.h::apop_dconstrain" ref="ae8babcd9877d0f4991ee2aca9316ca6e" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_dconstrain</b>
+<li><a class="anchor" id="ad86a3bbaf8312a5c8aa3e1c4dcc53d0d"></a><!-- doxytag: member="types.h::apop_mixture" ref="ad86a3bbaf8312a5c8aa3e1c4dcc53d0d" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_mixture</b>
+<li><a class="anchor" id="aedb1edfba761f1c84ef9d449d5a10fbf"></a><!-- doxytag: member="types.h::apop_stack" ref="aedb1edfba761f1c84ef9d449d5a10fbf" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> * <b>apop_stack</b>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"></div><hr/><h2>Define Documentation</h2>
@@ -620,17 +620,17 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
 <p>Generate a model consisting of several models bound together. The output <a class="el" href="structapop__model.html">apop_model</a> is a copy of <a class="el" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>; see that model's documentation for details.</p>
 <p>Sample use:</p>
 <div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
-    <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(m1);
-    <a class="code" href="structapop__model.html">apop_model</a> *m3 = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(m1);
+    <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
+    <a class="code" href="structapop__model.html">apop_model</a> *m3 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
     <a class="code" href="structapop__model.html">apop_model</a> *two_independent_normals = <a class="code" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(n1, n2);
     <a class="code" href="structapop__model.html">apop_model</a> *three_independent_normals = <a class="code" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(n1, n2, n3);
 
     <span class="comment">//But you don&#39;t have to parameterize ahead of time. E.g.</span>
     <a class="code" href="structapop__model.html">apop_model</a> *two_n = <a class="code" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(
-                    <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>),
-                    <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>)
+                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>),
+                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>)
                     );
-    <a class="code" href="structapop__model.html">apop_model</a> *estimated_norms = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(indata, two_n);
+    <a class="code" href="structapop__model.html">apop_model</a> *estimated_norms = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(indata, two_n);
 </pre></div><ul>
 <li>If you input only one model, return a copy of that model; print a warning iff <code>apop_opts.verbose &gt;= 1</code>. <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -2456,4 +2456,4 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>

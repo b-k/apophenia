@@ -35,7 +35,7 @@ urchinTracker();
 <div class="fragment"><pre class="fragment">from apop <span class="keyword">import</span> *
 <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="stringliteral">&quot;d&quot;</span>, 0, 1, <span class="keywordtype">None</span>)
 data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>)
-est  = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, avar.apop_ols)
+est  = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, avar.apop_ols)
 <span class="keywordflow">print</span> est
 
 <span class="comment">#And one last example of using a method of the apop_data object:</span>
@@ -113,7 +113,7 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
     <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
 
     <span class="comment">//Run OLS, display results on terminal</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, apop_OLS);
+    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
     apop_model_show(est);
 
     <span class="comment">//Prep the file with a header, then call the function.</span>
@@ -184,7 +184,7 @@ gsl_rng *r;
     }
     print_table_list(argv[1]);
 }
-</pre></div><p>Finally, a demonstration of fixing parameters to create a marginal distribution, via <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> </p>
+</pre></div><p>Finally, a demonstration of fixing parameters to create a marginal distribution, via <a class="el" href="transform_2apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
@@ -195,15 +195,15 @@ gsl_rng *r;
     <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
     <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(params, 8,  1, 0.5,
                            2,  0.5, 1);
-    <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga14f2bd54421fd6629baccb8a41ecd304">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
+    <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
     pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
     pvm-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 2;
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(pvm, ct, r);
 
     <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span>
     gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);
-    <a class="code" href="structapop__model.html">apop_model</a> *mep1 = <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
-    <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(d, *mep1);
+    <a class="code" href="structapop__model.html">apop_model</a> *mep1 = <a class="code" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
+    <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, mep1);
     
     <span class="comment">//compare results, via assert for the test suite, or on-screen for human use.</span>
 <span class="preprocessor">#ifdef Testing</span>
@@ -217,4 +217,4 @@ gsl_rng *r;
 <span class="preprocessor"></span>}
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>

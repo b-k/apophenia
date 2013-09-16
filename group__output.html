@@ -130,22 +130,45 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Print the results of an estimation. If your model has a <code>print</code> method, then I'll use that, else I'll use a default setup.</p>
-<p>Your <code>print</code> method can use both by masking itself for a second: </p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> print_method(<a class="code" href="structapop__model.html">apop_model</a> *in){
-  <span class="keywordtype">void</span> *temp = in-&gt;print;
-  in-&gt;print = NULL;
-  apop_model_show(in);
-  in-&gt;print = temp;
+<p>Print the results of an estimation for a human to look over.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">print_me</td><td>The model whose information should be displayed </td></tr>
+    <tr><td class="paramname">ap</td><td>The output stream. If <code>NULL</code>, use <code>stdout</code>. If you'd like something else, use <code>fopen</code>. E.g.: <div class="fragment"><pre class="fragment">FILE *out =fopen(<span class="stringliteral">&quot;outfile.txt&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>); <span class="comment">//or &quot;a&quot; to append.</span>
+<a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(the_model, out);
+fclose(out);  <span class="comment">//optional in most cases.</span>
+</pre></div></td></tr>
+  </table>
+  </dd>
+</dl>
+<ul>
+<li>The default prints the name, parameters, info, &amp;c. but I check a vtable for alternate methods you define; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> void (*apop_model_print_type)(<a class="code" href="structapop__model.html">apop_model</a> *params, FILE *out);
+<span class="preprocessor">#define apop_model_print_hash(m1) ((m1)-&gt;log_likelihood ? (size_t)(m1)-&gt;log_likelihood : \</span>
+<span class="preprocessor">            (m1)-&gt;p ? (size_t)(m1)-&gt;p*33 : \</span>
+<span class="preprocessor">            (m1)-&gt;estimate ? (size_t)(m1)-&gt;estimate*33*33 : \</span>
+<span class="preprocessor">            (m1)-&gt;draw ? (size_t)(m1)-&gt;draw*33*27  : \</span>
+<span class="preprocessor">            (m1)-&gt;cdf ? (size_t)(m1)-&gt;cdf*27*27 : 27)</span>
+</pre></div><ul>
+<li>All output should <code>fprintf</code> to the input <code>FILE*</code> handle. Apophenia's output routines also accept a file handle; e.g., if the file handle is named <code>out</code>, then if the <code>thismodel</code> print method uses <code>apop_data_print</code> to print the parameters, it must do so via a form like <code>apop_data_print(thismodel-&gt;parameters, .output_pipe=ap)</code>.</li>
+</ul>
+<ul>
+<li>Your <code>print</code> method can use both by masking itself for a second: <div class="fragment"><pre class="fragment"><span class="keywordtype">void</span> print_method(<a class="code" href="structapop__model.html">apop_model</a> *in, FILE* ap){
+  <span class="keywordtype">void</span> *temp = in-&gt;<a class="code" href="structapop__model.html#a18a9f6d5a1092f22b221d315a0771069">estimate</a>;
+  in-&gt;<a class="code" href="structapop__model.html#a18a9f6d5a1092f22b221d315a0771069">estimate</a> = NULL;
+  <a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(in, ap);
+  in-&gt;<a class="code" href="structapop__model.html#a18a9f6d5a1092f22b221d315a0771069">estimate</a> = temp;
 
   printf(<span class="stringliteral">&quot;Additional info:\n&quot;</span>);
   ...
 }
-</pre></div><p>I always print to the file/pipe connected to <code>apop_opts.output_pipe</code>. The default is <code>stdout</code>, but if you'd like something else, use fopen. E.g.: </p>
-<div class="fragment"><pre class="fragment">FILE *out =fopen(<span class="stringliteral">&quot;outfile.txt&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>); <span class="comment">//or &quot;a&quot; to append.</span>
-<a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(the_model, out);
-fclose(out);<span class="comment">//optional in most cases.</span>
-</pre></div> 
+</pre></div></li>
+</ul>
+<ul>
+<li>Print methods are intended for human consumption and are subject to change. </li>
+</ul>
+
 </div>
 </div>
 <a class="anchor" id="ga3928a05b001f61d6dac3911f359224c9"></a><!-- doxytag: member="apop_output.c::apop_plot_histogram" ref="ga3928a05b001f61d6dac3911f359224c9" args="(gsl_vector *data, size_t bin_count, char *with, Output_declares)" -->
@@ -192,7 +215,7 @@ fclose(out);<span class="comment">//optional in most cases.</span>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
     <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
   </table>
   </dd>
@@ -302,7 +325,7 @@ A lattice showing three variables graphed against each other.</div></div>
     <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
 
     <span class="comment">//Run OLS, display results on terminal</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga0a3be4075a89f7119be95a4718e01ade">apop_estimate</a>(data, apop_OLS);
+    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
     apop_model_show(est);
 
     <span class="comment">//Prep the file with a header, then call the function.</span>
@@ -320,4 +343,4 @@ A lattice showing three variables graphed against each other.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 16 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>
