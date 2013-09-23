@@ -189,13 +189,15 @@ static int are_equal(apop_data *left, apop_data *right){
 
      */
     if (left->vector){
-        if (left->vector->data[0] != right->vector->data[0] 
-             && !(gsl_isnan(left->vector->data[0]) && gsl_isnan(right->vector->data[0]))) 
+        if (!right->vector ||
+              (*left->vector->data != *right->vector->data 
+               && !(gsl_isnan(*left->vector->data) && gsl_isnan(*right->vector->data))))
             return 0;
     } else if (right->vector) return 0;
 
     if (left->matrix){
-        if (left->matrix->size2 != right->matrix->size2) return 0;
+        if (!right->matrix ||
+              left->matrix->size2 != right->matrix->size2) return 0;
         for (int i=0; i< left->matrix->size2; i++){
             double L = apop_data_get(left, 0, i);
             double R = apop_data_get(right, 0, i);
