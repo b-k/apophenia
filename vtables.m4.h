@@ -1,3 +1,6 @@
+#ifndef VTABLES_H
+#define VTABLES_H
+
 /*
 This declares the vtable macros for each procedure that uses the mechanism.
 
@@ -52,3 +55,5 @@ make_vtab_fns(apop_parameter_model)
 typedef apop_data * (*apop_predict_type)(apop_data *d, apop_model *params);
 #define apop_predict_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)
 make_vtab_fns(apop_predict)
+
+#endif
