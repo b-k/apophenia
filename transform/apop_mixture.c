@@ -62,6 +62,7 @@ There are pack/unpack functions that run as needed. Given the estimated mixture 
 
 #include "apop_internal.h"
 #include "types.h"
+void mixture_show(apop_model *m, FILE *out);
 
 typedef struct {
     apop_model **model_list;
@@ -152,6 +153,7 @@ static void mixture_estimate(apop_data *d, apop_model *m){
 }
 
 static void mixture_prep(apop_data * data, apop_model *model){
+    apop_model_print_vtable_add(mixture_show, apop_mixture);
     apop_mixture_settings *ms = Apop_settings_get_group(model, apop_mixture);
     model->parameters=apop_data_alloc(ms->model_count);
 
@@ -268,5 +270,5 @@ void mixture_show(apop_model *m, FILE *out){
 //predict
 
 apop_model *apop_mixture=&(apop_model){"Mixture of models", .prep=mixture_prep, 
-    .estimate=mixture_estimate, .constraint=weights_over_zero, .print=mixture_show,
+    .estimate=mixture_estimate, .constraint=weights_over_zero,
     .log_likelihood=mixture_log_likelihood, .cdf=mixture_cdf, .draw=mixture_draw };

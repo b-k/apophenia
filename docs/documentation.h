@@ -1222,7 +1222,7 @@ the \c estimate function will estimate the parameters of your model. Just prep t
 \code
     apop_data *data = apop_query_to_data("select outcome, in1, in2, in3 from dataset");
     apop_model *the_estimate = apop_estimate(data, apop_probit);
-    apop_model_print(the_estimate);
+    apop_model_print(the_estimate, NULL);
 \endcode
 
 Along the way to estimating the parameters, most models also find covariance estimates for
@@ -2591,7 +2591,7 @@ Here is how one would set up a model that could be estimated using maximum likel
 \li Write a likelihood function. Its header will look like this:
 
 \code
-long double apop_new_log_likelihood(apop_data *data, apop_model *m);
+long double new_log_likelihood(apop_data *data, apop_model *m);
 \endcode
 
 where \c data is the input data, and \c
@@ -2753,7 +2753,7 @@ functions may maintain a registry of models and associated special-case procedur
 
 This section will discuss how to add a function to an existing vtable. Generating a new vtable is not difficult, but is still in beta and may be revised in the future.
 
-\li See \ref apop_update, \ref apop_score, \ref apop_predict, and \ref
+\li See \ref apop_update, \ref apop_score, \ref apop_predict, \ref apop_model_print, and \ref
 apop_parameter_model for examples and procedure-specific details.
 \li Write a function following the given type definition.
 \li Use the associated <tt>_vtable_add</tt> function to add the function and associate it
@@ -2899,16 +2899,4 @@ a vtable (see above), the registration shall happen here. Registration may also 
 \li If the constraint fails, then (1) move the \c parameters in the input model to a
 constraint-satisfying value, and (2) return the distance between the input parameters and
 what you've moved the parameters to. The choice of within-bounds parameters and distance function is left to the author of the constraint function.
-
-\subsection printsubsection print
-
-For human-friendly display of model results. Because this is intended for human consumption, there are no format requirements.
-
-\li Called via \ref apop_model_print, which takes in a (probably estimated) model and a file
-  handle. If \c NULL, assume \c stdout, but this allows users to write model output to \c stderr, a file, or a pipe.
-\li All output should \c fprintf to the input \c FILE* handle. 
-  Apophenia's output routines also accept a file handle; e.g., if the file handle is
-  named \c out, then if the \c thismodel print method uses \c apop_data_print to
-  print the parameters, it must do so via a form like <tt>apop_data_print(thismodel->parameters,
-  .output_pipe=ap)</tt>.
 */

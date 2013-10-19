@@ -56,4 +56,13 @@ typedef apop_data * (*apop_predict_type)(apop_data *d, apop_model *params);
 #define apop_predict_hash(m1) ((size_t)((m1)->log_likelihood ? (m1)->log_likelihood : (m1)->p)*33 + (m1)->estimate ? (size_t)(m1)->estimate: 27)
 make_vtab_fns(apop_predict)
 
+typedef void (*apop_model_print_type)(apop_model *params, FILE *out);
+#define apop_model_print_hash(m1) ((m1)->log_likelihood ? (size_t)(m1)->log_likelihood : \
+            (m1)->p ? (size_t)(m1)->p*33 : \
+            (m1)->estimate ? (size_t)(m1)->estimate*33*33 : \
+            (m1)->draw ? (size_t)(m1)->draw*33*27  : \
+            (m1)->cdf ? (size_t)(m1)->cdf*27*27  \
+            : 27)
+make_vtab_fns(apop_model_print)
+
 #endif

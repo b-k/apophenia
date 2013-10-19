@@ -170,6 +170,11 @@ static void multinomial_estimate(apop_data * data,  apop_model *est){
     apop_data_add_named_elmt(est->info, "log likelihood", multinomial_log_likelihood(data, est));
 }
 
+static void multinom_prep(apop_data *data, apop_model *params){
+    apop_model_print_vtable_add(multinomial_show, params);
+    apop_model_clear(data, params);
+}
+
 /* \adoc    Input_format Each row of the matrix is one observation: a set of draws from a single bin.
   The number of draws of type zero are in column zero, the number of draws of type one in column one, et cetera.
 
@@ -203,8 +208,8 @@ The covariance matrix will be \f$k \times k\f$.
 
 apop_model *apop_multinomial = &(apop_model){"Multinomial distribution", -1, .dsize=-1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
-   .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show};
+   .constraint = multinomial_constraint, .draw = multinomial_rng, .prep=multinom_prep};
 
 apop_model *apop_binomial = &(apop_model){"Binomial distribution", 2, .dsize=1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
-   .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show, .cdf= binomial_cdf};
+   .constraint = multinomial_constraint, .draw = multinomial_rng, .prep=multinom_prep, .cdf= binomial_cdf};

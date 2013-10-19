@@ -17,12 +17,12 @@ extern "C" {
 \ingroup names
 */
 typedef struct{
+    char *title;
 	char * vector;
 	char ** col;
 	char ** row;
 	char ** text;
 	int colct, rowct, textct;
-    char *title;
 } apop_name;
 
 /** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
@@ -67,9 +67,8 @@ struct apop_model{
                     anything more complex, allocate the parameter set in the prep
                     method. \c dsize is for the canonical form, and is
                     the size of the data the RNG will return. */
-    apop_settings_type *settings;
-    apop_data *parameters; /**< The coefficients or parameters estimated by the model. */
     apop_data *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
+    apop_data *parameters; /**< The coefficients or parameters estimated by the model. */
     apop_data *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
                         covariance matrix, confidence intervals, expected score. See your
                         specific model's documentation for what it puts here.
@@ -86,7 +85,7 @@ struct apop_model{
     void (*draw)(double *out, gsl_rng* r, apop_model *params);
                 /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
-    void (*print)(apop_model *params, FILE *out);
+    apop_settings_type *settings;
     void *more; /**< This element is copied and freed as necessary by Apophenia's
                      model-handling functions, but is otherwise untouched. Put whatever
                      information you want here. */

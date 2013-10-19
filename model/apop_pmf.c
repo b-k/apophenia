@@ -250,14 +250,15 @@ static long double pmf_p(apop_data *d, apop_model *m){
 static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
 static void pmf_prep(apop_data * data, apop_model *model){
+    apop_model_print_vtable_add(pmf_print, apop_pmf);
     Get_vmsizes(data) //msize2, firstcol
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
     if (Apop_settings_get_group(model, apop_pmf) && Apop_settings_get(model, apop_pmf, draw_index)=='y' && !width) model->dsize=0;
     apop_model_clear(data, model);
 }
 
-apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p, 
-                        .print=pmf_print, .prep=pmf_prep};
+apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimate = estim, 
+                .draw = draw, .p=pmf_p, .prep=pmf_prep};
 
 
 /** Say that you have added a long list of observations to a single \ref apop_data set,

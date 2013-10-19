@@ -6,6 +6,7 @@
 Copyright (c) 2007, 2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
+static apop_model *fixed_param_model;
 
 //The model keeps a table of what the blanks should be filled in with.
 //This first section does the work for that part.
@@ -163,12 +164,17 @@ static void fixed_param_show(apop_model *m, FILE *out){
         fprintf(out, "The base model, after unpacking:\n");
         unpack(mset->base_model->parameters, m);
     }
-        apop_model_print(mset->base_model, out);
+    apop_model_print(mset->base_model, out);
+}
+
+static void fixed_param_prep(apop_data *data, apop_model *params){
+    apop_model_print_vtable_add(fixed_param_show, fixed_param_model);
+    apop_model_clear(data, params);
 }
 
 static apop_model *fixed_param_model = &(apop_model){"Fill me", .estimate=fixed_est, .p = fix_params_p, 
             .log_likelihood=fix_params_ll, .constraint= fix_params_constraint, 
-            .draw=fix_params_draw, .print=fixed_param_show};
+            .draw=fix_params_draw, .prep=fixed_param_prep};
 
 /** Produce a model based on another model, but with some of the parameters fixed at a given value. 
   

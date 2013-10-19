@@ -3652,8 +3652,9 @@ static void apop_loess_print(apop_model *in, FILE *out){
 
 static void loess_prep(apop_data *data, apop_model *params){
     apop_predict_vtable_add(loess_predict, apop_loess);
+    apop_model_print_vtable_add(apop_loess_print, apop_loess);
     apop_model_clear(data, params);
 }
 
-apop_model *apop_loess = &(apop_model){.name="Loess smoothing", .vsize = -1, .dsize=1, .estimate =apop_loess_est, 
-    .print=apop_loess_print, .log_likelihood = loess_ll, .prep = loess_prep};
+apop_model *apop_loess = &(apop_model){.name="Loess smoothing", .vsize = -1, .dsize=1, 
+        .estimate =apop_loess_est, .log_likelihood = loess_ll, .prep = loess_prep};

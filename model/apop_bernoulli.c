@@ -69,7 +69,12 @@ static void bernie_print(apop_model *m, FILE *out){
     fprintf(out, "Bernoulli distribution with p = %g.\n", apop_data_get(m->parameters,0,-1));
 }
 
+static void bernie_prep(apop_data *data, apop_model *params){
+    apop_model_print_vtable_add(bernie_print, apop_bernoulli);
+    apop_model_clear(data, params);
+}
+
 /* \adoc Settings None. */
-apop_model *apop_bernoulli = &(apop_model){"Bernoulli distribution", 1,0,0, .dsize=1,
+apop_model *apop_bernoulli = &(apop_model){"Bernoulli distribution", 1, .dsize=1, .prep=bernie_prep,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
-   .constraint =  bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng, .print=bernie_print};
+   .constraint = bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng};

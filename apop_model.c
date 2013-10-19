@@ -74,34 +74,56 @@ void apop_model_free (apop_model * free_me){
 	free(free_me);
 }
 
-/** Print the results of an estimation. If your model has a \c print
- method, then I'll use that, else I'll use a default setup.
+/** Print the results of an estimation for a human to look over.
 
- Your \c print method can use both by masking itself for a second:
+\param print_me The model whose information should be displayed
+\param ap  The output stream. If \c NULL, use \c stdout. If you'd like something else, use \c fopen. E.g.:
+\code
+FILE *out =fopen("outfile.txt", "w"); //or "a" to append.
+apop_model_print(the_model, out);
+fclose(out);  //optional in most cases.
+\endcode
+
+\li The default prints the name, parameters, info, &c. but I check a vtable for
+alternate methods you define; see \ref vtables for details. The typedef new functions
+must conform to and the hash used for lookups are:
+
+\code
+typedef void (*apop_model_print_type)(apop_model *params, FILE *out);
+#define apop_model_print_hash(m1) ((m1)->log_likelihood ? (size_t)(m1)->log_likelihood : \
+            (m1)->p ? (size_t)(m1)->p*33 : \
+            (m1)->estimate ? (size_t)(m1)->estimate*33*33 : \
+            (m1)->draw ? (size_t)(m1)->draw*33*27  : \
+            (m1)->cdf ? (size_t)(m1)->cdf*27*27 : 27)
+\endcode
+
+\li All output should \c fprintf to the input \c FILE* handle. 
+  Apophenia's output routines also accept a file handle; e.g., if the file handle is
+  named \c out, then if the \c thismodel print method uses \c apop_data_print to
+  print the parameters, it must do so via a form like <tt>apop_data_print(thismodel->parameters,
+  .output_pipe=ap)</tt>.
+
+\li Your \c print method can use both by masking itself for a second:
  \code
-void print_method(apop_model *in){
-  void *temp = in->print;
-  in->print = NULL;
-  apop_model_show(in);
-  in->print = temp;
+void print_method(apop_model *in, FILE* ap){
+  void *temp = in->estimate;
+  in->estimate = NULL;
+  apop_model_print(in, ap);
+  in->estimate = temp;
 
   printf("Additional info:\n");
   ...
 }
  \endcode
 
-I always print to the file/pipe connected to \c apop_opts.output_pipe. The default is
-\c stdout, but if you'd like something else, use fopen. E.g.:
- \code
-FILE *out =fopen("outfile.txt", "w"); //or "a" to append.
-apop_model_print(the_model, out);
-fclose(out);//optional in most cases.
- \endcode
+\li Print methods are intended for human consumption and are subject to change.
+
 \ingroup output */
 void apop_model_print (apop_model * print_me, FILE *ap){
     if (!ap) ap = stdout;
-    if (print_me->print){
-        print_me->print(print_me, ap);
+    apop_model_print_type mpf = apop_model_print_vtable_get(print_me);
+    if (mpf){
+        mpf(print_me, ap);
         return;
     }
     if (strlen(print_me->name)) fprintf (ap, "%s", print_me->name);
@@ -128,6 +150,7 @@ void apop_model_show (apop_model * print_me){
 \ingroup models
 */
 apop_model * apop_model_copy(apop_model *in){
+    Apop_stopif(!in, return NULL, 1, "Copying a NULL input; returning NULL.");
     apop_model * out = malloc(sizeof(apop_model));
     Apop_stopif(!out, return NULL, 0, "Serious allocation error; returning NULL.");
     memcpy(out, in, sizeof(apop_model));
