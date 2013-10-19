@@ -52,6 +52,6 @@ static void dirichlet_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_dirichlet = {"Dirichlet distribution", -1,0,0, .dsize=-1,
+apop_model *apop_dirichlet = &(apop_model){"Dirichlet distribution", -1,0,0, .dsize=-1,
     .log_likelihood = dirichlet_log_likelihood, .prep = dirichlet_prep,
     .constraint = dirichlet_constraint, .draw = dirichlet_rng};

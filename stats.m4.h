@@ -167,8 +167,8 @@ void apop_estimate_parameter_tests (apop_model *est);
 
 
 //Bootstrapping & RNG
-apop_data * apop_jackknife_cov(apop_data *data, apop_model model);
-Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) )
+apop_data * apop_jackknife_cov(apop_data *data, apop_model *model);
+Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) )
 gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 

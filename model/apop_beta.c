@@ -99,6 +99,6 @@ static void beta_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_beta = {"Beta distribution", 2,0,0, .dsize=1, .estimate = beta_estimate, 
+apop_model *apop_beta = &(apop_model){"Beta distribution", 2,0,0, .dsize=1, .estimate = beta_estimate, 
     .log_likelihood = beta_log_likelihood, .prep = beta_prep, 
     .constraint = beta_constraint, .draw = beta_rng, .cdf = beta_cdf};

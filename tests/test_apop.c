@@ -208,7 +208,7 @@ void test_score(){
     int len = 1e5;
     gsl_rng *r = apop_rng_alloc(123);
     apop_data *data = apop_data_alloc(len,1);
-    apop_model  *source   = apop_model_set_parameters(apop_normal, 
+    apop_model *source = apop_model_set_parameters(apop_normal, 
                                 gsl_ran_flat(r, -5, 5), gsl_ran_flat(r, .01, 5));
     for (size_t j=0; j< len; j++)
         apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
@@ -594,7 +594,7 @@ void test_inversion(gsl_rng *r){
     fourp->parameters = four;
     for(int i=0; i<INVERTSIZE; i++)
         for(int j=0; j<INVERTSIZE; j++)
-            apop_zipf.draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
+            apop_zipf->draw(gsl_matrix_ptr(invme, i,j),r,  fourp);
     apop_det_and_inv(invme, &inved, 0, 1);
     apop_det_and_inv(inved, &inved_back, 0, 1);
     apop_model_free(fourp);
@@ -714,14 +714,14 @@ void test_model_fix_parameters(gsl_rng *r){
     size_t ct = 1000;
     apop_data *d = apop_data_alloc(0,ct,2);
     double draw[2];
-    apop_multivariate_normal.vsize =
-    apop_multivariate_normal.msize1 =
-    apop_multivariate_normal.msize2 = 2;
+    apop_multivariate_normal->vsize =
+    apop_multivariate_normal->msize1 =
+    apop_multivariate_normal->msize2 = 2;
     apop_model *pp = apop_model_set_parameters(apop_multivariate_normal,
                                         8, 1, 0.5,
                                         2, 0.5, 1);
     for(int i=0; i< ct; i++){
-        apop_multivariate_normal.draw(draw, r, pp);
+        apop_multivariate_normal->draw(draw, r, pp);
         apop_data_set(d, i, 0, draw[0]);
         apop_data_set(d, i, 1, draw[1]);
     }
@@ -730,7 +730,7 @@ void test_model_fix_parameters(gsl_rng *r){
     gsl_matrix_set_all(pp->parameters->matrix, GSL_NAN);
     apop_model *mep1  = apop_model_fix_params(pp);
     Apop_settings_add(mep1, apop_mle, starting_pt, ((double[]){1.5, .25, .25, 1.5}));
-    apop_model *e1 = apop_estimate(d, *mep1);
+    apop_model *e1 = apop_estimate(d, mep1);
     gsl_vector_sub(e1->parameters->vector, pcopy->vector);
     assert(apop_vector_sum(e1->parameters->vector) < 1e-1);
     apop_model_free(e1);
@@ -743,7 +743,7 @@ void test_model_fix_parameters(gsl_rng *r){
     Apop_settings_add(mep2, apop_mle, starting_pt, start2);
     Apop_settings_add(mep2, apop_mle, method, APOP_CG_PR);
 
-    apop_model *e2 = apop_estimate(d, *mep2);
+    apop_model *e2 = apop_estimate(d, mep2);
     apop_model_free(mep2);
     gsl_matrix_sub(e2->parameters->matrix, pcopy->matrix);
     assert(apop_matrix_sum(e2->parameters->matrix) < 1e-2);
@@ -792,7 +792,7 @@ static void broken_est(apop_data *d, apop_model *m){
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
         return;
     }
-    apop_normal.estimate(d, m);
+    apop_normal->estimate(d, m);
 }
 
 static void super_broken_est(apop_data *d, apop_model *m){
@@ -801,7 +801,7 @@ static void super_broken_est(apop_data *d, apop_model *m){
         gsl_vector_set_all(m->parameters->vector, GSL_NAN);
         return;
     }
-    apop_normal.estimate(d, m);
+    apop_normal->estimate(d, m);
 }
 
 void test_jackknife(gsl_rng *r){
@@ -811,22 +811,22 @@ void test_jackknife(gsl_rng *r){
     apop_data *d = apop_data_alloc(0, len, 1);
     apop_data *p = apop_data_alloc();
     p->vector = apop_array_to_vector(pv, 2);
-    apop_model*pp = apop_model_copy(*m);
+    apop_model*pp = apop_model_copy(m);
     pp->parameters = p;
     for (size_t i =0; i< len; i++)
         m->draw(apop_data_ptr(d, i, 0), r, pp); 
-    apop_data *out = apop_jackknife_cov(d, *m);
+    apop_data *out = apop_jackknife_cov(d, m);
     //Notice that the jackknife just ain't a great estimator here.
 assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2 
             && fabs(apop_data_get(out, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2*100);
-    apop_data *out2 = apop_bootstrap_cov(d, *m, .keep_boots='y');
+    apop_data *out2 = apop_bootstrap_cov(d, m, .keep_boots='y');
     assert (fabs(apop_data_get(out2) - gsl_pow_2(pv[1])/len) < tol2
                 && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2);
     apop_data_free(out2);
 
     //bootstrap should recover gracefully from a small number of NaNs...
     m->estimate = broken_est;
-    out2 = apop_bootstrap_cov(d, *m, .ignore_nans='y');
+    out2 = apop_bootstrap_cov(d, m, .ignore_nans='y');
     assert (fabs(apop_data_get(out2) - gsl_pow_2(pv[1])/len) < tol2
                 && fabs(apop_data_get(out2, 1,1) - gsl_pow_2(pv[1])/(2*len)) < tol2);
 
@@ -835,7 +835,7 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
     int vvv= apop_opts.verbose;
     apop_opts.verbose = -1;
     m->estimate= super_broken_est;
-    apop_data *out3 = apop_bootstrap_cov(d, *m, .ignore_nans='y');
+    apop_data *out3 = apop_bootstrap_cov(d, m, .ignore_nans='y');
     assert(out3->error);
     apop_opts.verbose = vvv;
 
@@ -849,12 +849,12 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
 //In my inattention, I wrote two jackknife tests. So you get double the checks.
 int test_jack(gsl_rng *r){
   int i, draws     = 1000;
-  apop_data *d  =apop_data_alloc(draws, 1);
-  apop_model  m   = apop_normal;
-  double      pv[] = {1., 3.};
-    m.parameters = apop_data_fill_base(apop_data_alloc(2), pv);
+  apop_data *d = apop_data_alloc(draws, 1);
+  apop_model *m = apop_normal;
+  double pv[] = {1., 3.};
+    m->parameters = apop_data_fill_base(apop_data_alloc(2), pv);
     for (i =0; i< draws; i++)
-        m.draw(apop_data_ptr(d, i, 0), r, &m); 
+        m->draw(apop_data_ptr(d, i, 0), r, m); 
     apop_data *out = apop_jackknife_cov(d, m);
     double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
                 + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
@@ -889,7 +889,7 @@ void test_lognormal(gsl_rng *r){
 
     apop_model *for_mle= apop_model_copy(apop_lognormal);
     for_mle->estimate=NULL;
-    apop_model *out2 = apop_estimate(data, *for_mle);
+    apop_model *out2 = apop_estimate(data, for_mle);
     apop_model_free(for_mle);
     muhat = apop_data_get(out2->parameters, 0,-1);
     sigmahat = apop_data_get(out2->parameters, 1,-1);
@@ -1132,7 +1132,7 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
                 apop_data_set(data, i, j, (gsl_rng_uniform(r)-0.5) *2);
             Apop_matrix_row(data->matrix, i, asample);
             gsl_blas_ddot(asample, true_params, &val);
-            if (method == &apop_probit)
+            if (method == apop_probit)
                 apop_data_set(data, i, 0, (gsl_ran_gaussian(r, 1) > -val));
             else   //Logit:   p(act) = e(xb) / (1+e(xb));
                 apop_data_set(data, i, 0, gsl_rng_uniform(r) < exp(val)/(1+exp(val)));
@@ -1173,9 +1173,9 @@ void test_probit_and_logit(gsl_rng *r){
         gsl_vector_set(true_params, j, (gsl_rng_uniform(r)-0.5)*2);
 
     //Logit
-    apop_data* data = generate_probit_logit_sample(true_params, r, &apop_logit);
-    Apop_model_add_group(&apop_logit, apop_mle, .tolerance=1e-5);
-    Apop_model_add_group(&apop_logit, apop_parts_wanted);
+    apop_data* data = generate_probit_logit_sample(true_params, r, apop_logit);
+    Apop_model_add_group(apop_logit, apop_mle, .tolerance=1e-5);
+    Apop_model_add_group(apop_logit, apop_parts_wanted);
     apop_model *m = apop_estimate(data, apop_logit);
     APOP_COL(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
@@ -1183,9 +1183,9 @@ void test_probit_and_logit(gsl_rng *r){
     apop_model_free(m);
 
     //Probit
-    apop_data* data2 = generate_probit_logit_sample(true_params, r, &apop_probit);
-    Apop_model_add_group(&apop_probit, apop_mle);
-    Apop_model_add_group(&apop_logit, apop_parts_wanted);
+    apop_data* data2 = generate_probit_logit_sample(true_params, r, apop_probit);
+    Apop_model_add_group(apop_probit, apop_mle);
+    Apop_model_add_group(apop_logit, apop_parts_wanted);
     m = apop_estimate(data2, apop_probit);
     APOP_COL(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
@@ -1328,7 +1328,7 @@ void test_pmf(){
     apop_model *mc = apop_model_copy(apop_pmf);
     Apop_model_add_group(mc, apop_pmf, .draw_index= 'y');
     mc->dsize=0;
-    apop_model *m = apop_estimate(d, *mc);
+    apop_model *m = apop_estimate(d, mc);
     gsl_vector *v = gsl_vector_calloc(d->weights->size);
     for (size_t i=0; i< 1e5; i++){
         double out;
@@ -1367,7 +1367,7 @@ void test_arms(gsl_rng *r){
     Diff(back_outb->parameters->vector->data[0] , 0.4, 1e-2)
     Diff(back_outb->parameters->vector->data[1] , 0.43, 1e-2)
     apop_opts.verbose --;
-    apop_model *test_copying = apop_model_copy(*back_outb);
+    apop_model *test_copying = apop_model_copy(back_outb);
     apop_model_free(ncut);
     apop_model_free(back_out);
     apop_model_free(back_outb);
@@ -1437,7 +1437,7 @@ void test_pmf_compress(gsl_rng *r){
     }
 }
 
-void test_weighted_regression(apop_data *d,apop_model *e){
+void test_weighted_regression(apop_data *d, apop_model *e){
     //pretty rudimentary: set all weights to equal and see if we get the same result.
     apop_data *cp = apop_data_copy(d);
     cp->weights = gsl_vector_alloc(d->matrix->size1);
@@ -1505,7 +1505,7 @@ int main(int argc, char **argv){
     apop_data *d = apop_text_to_data("test_data2",0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
     Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
-    apop_model *e  = apop_estimate(d, *an_ols_model);
+    apop_model *e  = apop_estimate(d, an_ols_model);
 
     do_test("db_to_text", db_to_text());
     do_test("rownames", test_rownames());

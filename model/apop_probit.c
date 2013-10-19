@@ -44,7 +44,7 @@ static void probit_prep(apop_data *d, apop_model *m){
     apop_data *factor_list = get_category_table(d);
     apop_score_vtable_add(probit_dlog_likelihood, apop_probit);
     //apop_score_vtable_add(logit_dlog_likelihood, apop_logit);
-    apop_ols.prep(d, m);//also runs the default apop_model_clear.
+    apop_ols->prep(d, m);//also runs the default apop_model_clear.
     int count = factor_list->textsize[0];
     m->parameters = apop_data_alloc(d->matrix->size2, count-1);
     apop_name_stack(m->parameters->names, d->names, 'r', 'c');
@@ -154,7 +154,7 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
 	apop_data_free(betadotx);
 }
 
-apop_model apop_probit = {"Probit", .log_likelihood = multiprobit_log_likelihood,
+apop_model *apop_probit = &(apop_model){"Probit", .log_likelihood = multiprobit_log_likelihood,
     .dsize=-1, .prep = probit_prep};
 
 
@@ -376,6 +376,6 @@ Here is an artifical example:
 
 \include fake_logit.c
 */
-apop_model apop_logit = {.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
+apop_model *apop_logit = &(apop_model){.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
 /*.score = logit_dlog_likelihood,*/ .prep = logit_prep, .draw=logit_rng
 };

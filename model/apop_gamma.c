@@ -85,6 +85,6 @@ static void gamma_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_gamma = {"Gamma distribution", 2,0,0, .dsize=1, 
+apop_model *apop_gamma = &(apop_model){"Gamma distribution", 2,0,0, .dsize=1, 
       .log_likelihood = gamma_log_likelihood, .prep = gamma_prep, 
       .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};

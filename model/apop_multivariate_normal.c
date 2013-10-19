@@ -94,6 +94,6 @@ static long double mvn_constraint(apop_data *d, apop_model *m){
     return apop_matrix_to_positive_semidefinite(m->parameters->matrix);
 }
 
-apop_model apop_multivariate_normal= {"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
+apop_model *apop_multivariate_normal= &(apop_model){"Multivariate normal distribution", -1,-1,-1, .dsize=-2,
      .estimate = multivariate_normal_estimate, .log_likelihood = apop_multinormal_ll, 
      .draw = mvnrng, .prep=mvn_prep, .constraint = mvn_constraint};

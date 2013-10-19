@@ -102,7 +102,7 @@ static long double composed_constraint(apop_data *data, apop_model *m){
 }
 
 
-apop_model apop_composition = {"Data-composed model", .prep=compose_prep, .log_likelihood=compose_ll, .constraint=composed_constraint};
+apop_model *apop_composition = &(apop_model){"Data-composed model", .prep=compose_prep, .log_likelihood=compose_ll, .constraint=composed_constraint};
 
 
 /** \def apop_model_dcompose

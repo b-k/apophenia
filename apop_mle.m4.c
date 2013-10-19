@@ -156,7 +156,7 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
-    apop_score_type ms = apop_score_vtable_get(*mm);
+    apop_score_type ms = apop_score_vtable_get(mm);
     if (ms){
         if (!v || v->size != mm->parameters->vector->size){
             if (v) gsl_vector_free(v);
@@ -171,7 +171,7 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
         return out;
 }
 
-apop_model apop_model_for_infomatrix = {"Ad hoc model for working out the information matrix.", 
+apop_model *apop_model_for_infomatrix = &(apop_model){"Ad hoc model for working out the information matrix.", 
                                                 .log_likelihood = apop_fn_for_infomatrix};
 
 /** Numerically estimate the matrix of second derivatives of the
@@ -343,7 +343,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
             apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
-    apop_score_type ms = apop_score_vtable_get(*(i->model));
+    apop_score_type ms = apop_score_vtable_get(i->model);
     if (ms) ms(i->data, g, i->model);
     else {
         apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
@@ -602,7 +602,7 @@ else
 void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
-    apop_score_type ms = apop_score_vtable_get(*dist);
+    apop_score_type ms = apop_score_vtable_get(dist);
     if (mp->method == APOP_UNKNOWN_ML)
         mp->method = ms ? APOP_CG_FR : APOP_SIMPLEX_NM;
 
@@ -674,7 +674,7 @@ APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *cop
     double apop_varad_var(boundary, 1e8);
 APOP_VAR_ENDHEAD
     gsl_vector *v = NULL;
-    if (!copy) copy = apop_model_copy(*e);
+    if (!copy) copy = apop_model_copy(e);
     apop_mle_settings* prm0 = apop_settings_get_group(e, apop_mle);
     apop_mle_settings* prm = apop_settings_get_group(copy, apop_mle);
             //copy off the old params; modify the starting pt, method, and scale
@@ -701,7 +701,7 @@ APOP_VAR_ENDHEAD
                    " returning your original model without restarting.", boundary);
     gsl_vector_free(v);
         
-    apop_model *newcopy = apop_estimate(e->data, *copy);
+    apop_model *newcopy = apop_estimate(e->data, copy);
     apop_model_free(copy);
     //Now check whether the new output is better than the old
     if (apop_vector_bounded(newcopy->parameters->vector, boundary) 

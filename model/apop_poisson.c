@@ -52,7 +52,7 @@ static void poisson_estimate(apop_data * data,  apop_model *est){
         if (!p) Apop_model_add_group(est, apop_parts_wanted);
         else p->covariance='n';
 
-        apop_data_add_page(est->parameters, apop_bootstrap_cov(data, *est), "<Covariance>");
+        apop_data_add_page(est->parameters, apop_bootstrap_cov(data, est), "<Covariance>");
 
         if (!p) Apop_settings_rm_group(est, apop_parts_wanted);
         else p->covariance='y';
@@ -89,7 +89,7 @@ static void poisson_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_poisson = {"Poisson distribution", 1, 0, 0, .dsize=1,
+apop_model *apop_poisson = &(apop_model){"Poisson distribution", 1, 0, 0, .dsize=1,
      .estimate = poisson_estimate, .log_likelihood = poisson_log_likelihood, 
      .prep = poisson_prep, .constraint = positive_beta_constraint, 
      .draw = poisson_rng};

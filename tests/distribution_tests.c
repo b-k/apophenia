@@ -30,7 +30,7 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
        !strcmp(dist->name, "Beta distribution") )
        && method==APOP_RF_HYBRID)
         return 0;
-    apop_model *e = apop_estimate(data, *dist);
+    apop_model *e = apop_estimate(data, dist);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params), apop_data_pack(e->parameters)), 1e-1); 
     if (!strcmp(dist->name, "Poisson distribution")) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
     Print_dot
@@ -46,11 +46,11 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
             return 0;
         }
 
-    apop_model *dc  = apop_model_copy(*dist);
+    apop_model *dc = apop_model_copy(dist);
     Apop_settings_add(dc, apop_mle, tolerance, 1e-4);
     Apop_settings_add(dc, apop_mle, dim_cycle_tolerance, fabs(apop_log_likelihood(data, e))/200.); //within .5%.
     Print_dot
-    apop_model *dce = apop_estimate(data,*dc);
+    apop_model *dce = apop_estimate(data, dc);
     Print_dot
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(dce->parameters)), 1e-2); 
     return 0;
@@ -107,7 +107,7 @@ double true_parameter_v[] = {1.82,2.1};
 void test_distributions(gsl_rng *r){
   if (verbose) printf("\n");
   apop_model* true_params;
-  apop_model null_model = {"the null model"};
+  apop_model *null_model = &(apop_model){"the null model"};
   apop_model *bernie_no_est = apop_model_copy(apop_bernoulli);
   bernie_no_est->estimate=NULL;
   apop_model *exp_no_est = apop_model_copy(apop_exponential);
@@ -116,56 +116,56 @@ void test_distributions(gsl_rng *r){
   fish_no_est->estimate=NULL;
   apop_model *beta_no_est = apop_model_copy(apop_beta);
   beta_no_est->estimate=NULL;
-  apop_model dist[] = {
-                apop_bernoulli, *bernie_no_est, apop_beta, 
-                *beta_no_est,
+  apop_model *dist[] = {
+                apop_bernoulli, bernie_no_est, apop_beta, 
+                beta_no_est,
                 apop_binomial, /*apop_chi_squared,*/
-                apop_dirichlet, apop_exponential, *exp_no_est,
+                apop_dirichlet, apop_exponential, exp_no_est,
                 /*apop_f_distribution,*/
                 apop_gamma, 
                 apop_lognormal, apop_multinomial, apop_multivariate_normal,
-                apop_normal, apop_poisson, *fish_no_est,
+                apop_normal, apop_poisson, fish_no_est,
                 /*apop_t_distribution,*/ apop_uniform,
                  apop_yule, apop_zipf, /*apop_wishart,*/
                 null_model};
 
-    for (int i=0; strcmp(dist[i].name, "the null model"); i++){
-        if (verbose) {printf("%s: ", dist[i].name); fflush(NULL);}
+    for (int i=0; strcmp(dist[i]->name, "the null model"); i++){
+        if (verbose) {printf("%s: ", dist[i]->name); fflush(NULL);}
         true_params = apop_model_copy(dist[i]);
-        true_params->parameters = apop_data_fill_base(apop_data_alloc(dist[i].vsize==1 ? 1 : 2), true_parameter_v);
-        if (!strcmp(dist[i].name, "Dirichlet distribution"))
-            dist[i].dsize=2;
-        if (!strcmp(dist[i].name, "Beta distribution"))
+        true_params->parameters = apop_data_fill_base(apop_data_alloc(dist[i]->vsize==1 ? 1 : 2), true_parameter_v);
+        if (!strcmp(dist[i]->name, "Dirichlet distribution"))
+            dist[i]->dsize=2;
+        if (!strcmp(dist[i]->name, "Beta distribution"))
             true_params->parameters = apop_data_falloc((2), .5, .2);
-        if (!strcmp(dist[i].name, "Bernoulli distribution"))
+        if (!strcmp(dist[i]->name, "Bernoulli distribution"))
             true_params->parameters = apop_data_falloc((1), .1);
-        if (!strcmp(dist[i].name, "Binomial distribution")){
+        if (!strcmp(dist[i]->name, "Binomial distribution")){
             true_params->parameters = apop_data_falloc((2), 15, .2);
-            dist[i].dsize=2;
+            dist[i]->dsize=2;
         }
-        if (!strcmp(dist[i].name, "Multivariate normal distribution")){
+        if (!strcmp(dist[i]->name, "Multivariate normal distribution")){
             true_params->parameters = apop_data_falloc((2, 2, 2), 15, .5, .2,
                                                                    3, .2, .5);
-            dist[i].dsize=2;
+            dist[i]->dsize=2;
         }
-        if (!strcmp(dist[i].name, "Multinomial distribution")){
+        if (!strcmp(dist[i]->name, "Multinomial distribution")){
             true_params->parameters = apop_data_falloc((4), 15, .5, .2, .1);
-            dist[i].dsize=4;
+            dist[i]->dsize=4;
         }
-        if (apop_regex(dist[i].name, "gamma distribution"))
+        if (apop_regex(dist[i]->name, "gamma distribution"))
             true_params->parameters = apop_data_falloc((2), 1.5, 2.5);
-        if (!strcmp(dist[i].name, "Chi squared distribution"))
+        if (!strcmp(dist[i]->name, "Chi squared distribution"))
             true_params->parameters = apop_data_falloc((1), 996);
-        if (!strcmp(dist[i].name, "F distribution"))
+        if (!strcmp(dist[i]->name, "F distribution"))
             true_params->parameters = apop_data_falloc((2),996, 996);
-        if (!strcmp(dist[i].name, "t distribution"))
+        if (!strcmp(dist[i]->name, "t distribution"))
             true_params->parameters = apop_data_falloc((3), 1, 3, 996);
-        if (!strcmp(dist[i].name, "Wishart distribution")){
+        if (!strcmp(dist[i]->name, "Wishart distribution")){
             true_params->parameters = apop_data_falloc((2, 2, 2), 996, .2, .1,
                                                                     0, .1, .2);
             apop_vector_realloc(true_params->parameters->vector, 1);
         }
-        test_one_distribution(r, dist+i, true_params);
+        test_one_distribution(r, dist[i], true_params);
         test_cdf(r, true_params);
         if (verbose) {printf("\nPASS.   "); fflush(NULL);}
     }

@@ -34,7 +34,7 @@ static void apop_fdist_estimate(apop_data *d, apop_model *m){
     apop_name_add(m->parameters->names, "df2",  'r');
     apop_data_set(m->parameters, 0, -1, d->vector->size -1);
     apop_data_set(m->parameters, 1, -1, d->matrix->size1 * d->matrix->size2 -1);
-    apop_data_add_named_elmt(m->info, "log likelihood", apop_f_distribution.log_likelihood(d, m));
+    apop_data_add_named_elmt(m->info, "log likelihood", apop_f_distribution->log_likelihood(d, m));
 }
 
 static double one_f(double in, void *df_in){ 
@@ -239,10 +239,10 @@ static void wishart_estimate(apop_data *d, apop_model *m){
     m->parameters->vector=t;
 
     //Estimate a model with fixed cov matrix and blank (NaN) df.
-    apop_model *modified_wish = apop_model_copy(*m);
+    apop_model *modified_wish = apop_model_copy(m);
     modified_wish->log_likelihood = fixed_wishart_ll;
     apop_model *fixed_wish = apop_model_fix_params(modified_wish);
-    apop_model *est_via_fix = apop_estimate(d, *fixed_wish);
+    apop_model *est_via_fix = apop_estimate(d, fixed_wish);
 
     //copy df from fixed version to the real thing; clean up.
     t->data[0] = apop_data_get(est_via_fix->parameters, 0, -1);
@@ -285,7 +285,7 @@ for (int i=0; i< 1e8; i++){
     do_math_with_matrix(rmatrix);
 }
 \endcode */
-apop_model apop_wishart  = {"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
+apop_model *apop_wishart  = &(apop_model){"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep, .constraint=wishart_constraint};
 
 /*\amodel apop_t_distribution The t distribution, primarily for descriptive purposes.
@@ -300,7 +300,7 @@ If you want to test a hypothesis, you probably don't need this, and should inste
 \adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */
 
-apop_model apop_t_distribution  = {"t distribution", 3, .dsize=1, .estimate = apop_t_estimate, 
+apop_model *apop_t_distribution  = &(apop_model){"t distribution", 3, .dsize=1, .estimate = apop_t_estimate, 
          .log_likelihood = apop_tdist_llike, .draw=apop_t_dist_draw, .cdf=apop_t_dist_cdf,
          .constraint=apop_t_dist_constraint };
 
@@ -316,7 +316,7 @@ This model is under development, and is of beta-quality.
                           \f$df2=\f$ matrix count minus one. If you set the \c estimate method to \c NULL, via MLE.    
 \adoc    settings   \ref apop_mle_settings    
 */
-apop_model apop_f_distribution  = {"F distribution", 2, .dsize=1, .estimate = apop_fdist_estimate, 
+apop_model *apop_f_distribution  = &(apop_model){"F distribution", 2, .dsize=1, .estimate = apop_fdist_estimate, 
         .log_likelihood = apop_fdist_llike, .draw=apop_f_dist_draw };
 
 /*\amodel apop_chi_squared The \f$\chi^2\f$ distribution, for descriptive purposes.
@@ -330,5 +330,5 @@ apop_model apop_f_distribution  = {"F distribution", 2, .dsize=1, .estimate = ap
 \adoc    settings   \ref apop_mle_settings    
 */
 
-apop_model apop_chi_squared  = {"Chi squared distribution", 1, .dsize=1, .estimate = apop_chi_estimate,  
+apop_model *apop_chi_squared  = &(apop_model){"Chi squared distribution", 1, .dsize=1, .estimate = apop_chi_estimate,  
         .log_likelihood = apop_chisq_llike, .draw=apop_chisq_dist_draw };

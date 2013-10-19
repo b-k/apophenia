@@ -117,7 +117,7 @@ void apop_model_show (apop_model * print_me){
 }
 
 /** Outputs a copy of the \ref apop_model input.
-\param in   The model to be copied
+\param in The model to be copied
 \return A pointer to a copy of the original, which you can mangle as you see fit. 
 
 \li If <tt>in.more_size > 0</tt> I <tt>memcpy</tt> the \c more pointer from the original data set.
@@ -127,26 +127,26 @@ void apop_model_show (apop_model * print_me){
 \exception out->error=='p' Error copying parameters or info page; the given \ref apop_data struct may be \c NULL or may have its own <tt>->error</tt> element.
 \ingroup models
 */
-apop_model * apop_model_copy(apop_model in){
+apop_model * apop_model_copy(apop_model *in){
     apop_model * out = malloc(sizeof(apop_model));
     Apop_stopif(!out, return NULL, 0, "Serious allocation error; returning NULL.");
-    memcpy(out, &in, sizeof(apop_model));
-    if (in.more_size){
-        out->more  = malloc(in.more_size);
+    memcpy(out, in, sizeof(apop_model));
+    if (in->more_size){
+        out->more  = malloc(in->more_size);
         Apop_stopif(!out->more, out->error='a'; return out, 0, "Allocation error setting up the ->more pointer.");
-        memcpy(out->more, in.more, in.more_size);
+        memcpy(out->more, in->more, in->more_size);
     }
     int i=0; 
     out->settings = NULL;
-    if (in.settings)
+    if (in->settings)
         do 
-            apop_settings_copy_group(out, &in, in.settings[i].name);
-        while (strlen(in.settings[i++].name));
-    out->parameters = apop_data_copy(in.parameters);
-    Apop_stopif(in.parameters && (!out->parameters || out->parameters->error), 
+            apop_settings_copy_group(out, in, in->settings[i].name);
+        while (strlen(in->settings[i++].name));
+    out->parameters = apop_data_copy(in->parameters);
+    Apop_stopif(in->parameters && (!out->parameters || out->parameters->error), 
                     out->error='p'; return out, 0, "Error copying the model parameters.");
-    out->info = apop_data_copy(in.info);
-    Apop_stopif(in.info && (!out->info || out->info->error), 
+    out->info = apop_data_copy(in->info);
+    Apop_stopif(in->info && (!out->info || out->info->error), 
                     out->error='p'; return out, 0, "Error copying the info segment.");
     return out;
 }
@@ -170,10 +170,10 @@ If you have a situation where these options are out, you'll have to do something
 \ingroup models
 \li This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
 */
-apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
+apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]){
     apop_model *out = apop_model_copy(in);
     apop_prep(NULL, out);
-    Apop_stopif((in.vsize == -1) || (in.msize1 == -1) || (in.msize2 == -1), out->error='d', 
+    Apop_stopif((in->vsize == -1) || (in->msize1 == -1) || (in->msize2 == -1), out->error='d', 
             0, "This function only works with models whose number of params does not "
             "depend on data size. You'll have to use apop_model *new = apop_model_copy(in); "
            " apop_model_clear(your_data, in); and then set in->parameters using your data.");
@@ -184,11 +184,11 @@ apop_model *apop_model_set_parameters_base(apop_model in, double ap[]){
 /** estimate the parameters of a model given data.
 
 This function copies the input model, preps it, and calls \c
-m.estimate(d,&m). If your model has no \c estimate method, then I
+m.estimate(d, m). If your model has no \c estimate method, then I
 assume \c apop_maximum_likelihood(d, m), with the default MLE params.
 
 I assume that you are using this function rather than directly calling the
-model's the \c estimate method directly. For example, the \c estimate
+model's the \c estimate method. For example, the \c estimate
 method may assume that \c apop_prep has already been called.
 
 \param d    The data
@@ -197,7 +197,7 @@ method may assume that \c apop_prep has already been called.
 
 \ingroup models
 */
-apop_model *apop_estimate(apop_data *d, apop_model m){
+apop_model *apop_estimate(apop_data *d, apop_model *m){
     apop_model *out = apop_model_copy(m);
     apop_prep(d, out);
     if (out->estimate) out->estimate(d, out); 
@@ -207,8 +207,8 @@ apop_model *apop_estimate(apop_data *d, apop_model m){
 
 /** Find the probability of a data/parametrized model pair.
 
-\param d    The data
-\param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
+\param d The data
+\param m The parametrized model, which must have either a \c log_likelihood or a \c p method.
 
 \ingroup models
 */
@@ -265,7 +265,7 @@ apop_data_unpack to reformat to the preferred shape.
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
-    apop_score_type ms = apop_score_vtable_get(*m);
+    apop_score_type ms = apop_score_vtable_get(m);
     if (ms){
         ms(d, out, m);
         return;
@@ -341,13 +341,13 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
     if (!settings)
         settings = Apop_settings_add_group(m, apop_pm, .base= m);
-    apop_parameter_model_type pm = apop_parameter_model_vtable_get(*m);
+    apop_parameter_model_type pm = apop_parameter_model_vtable_get(m);
     if (pm) return pm(d, m);
     else if (d){
         Get_vmsizes(m->parameters);//vsize, msize1, msize2
         apop_model *out = apop_model_copy(apop_multivariate_normal);
         out->msize1 = out->vsize = out->msize2 = out->dsize = vsize+msize1+msize2;
-        out->parameters = apop_bootstrap_cov(d, *m, settings->rng, settings->draws);
+        out->parameters = apop_bootstrap_cov(d, m, settings->rng, settings->draws);
         out->parameters->vector = apop_data_pack(m->parameters);
         if (settings->index == -1)
             return out;
@@ -363,7 +363,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     Get_vmsizes(m->parameters);//vsize, msize1, msize2
     apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
     for (int i=0; i < settings->draws; i++){
-        apop_model *mm = apop_estimate (NULL, *m);//If you're here, d==NULL.
+        apop_model *mm = apop_estimate (NULL, m);//If you're here, d==NULL.
         Apop_matrix_row(param_draws->matrix, i, onerow);
         apop_data_pack(mm->parameters, onerow);
         apop_model_free(mm);
@@ -443,7 +443,7 @@ apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
     apop_data *out = d ? d : apop_data_alloc(0, 1, m->dsize);
     if (!d) gsl_matrix_set_all(out->matrix, GSL_NAN);
-    apop_predict_type mp = apop_predict_vtable_get(*m);
+    apop_predict_type mp = apop_predict_vtable_get(m);
     if (mp) prediction = mp(out, m);
     if (prediction) return prediction;
     if (!apop_map_sum(out, disnan)) return out;

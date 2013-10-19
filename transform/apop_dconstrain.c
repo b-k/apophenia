@@ -92,7 +92,7 @@ static long double dc_ll(apop_data *indata, apop_model* m){
     return apop_log_likelihood(indata, cs->base_model) - log(scaling)*maxsize;
 }
 
-apop_model apop_dconstrain = {"Data-constrained model", .log_likelihood=dc_ll, .draw=dc_rng, .prep=dc_prep};
+apop_model *apop_dconstrain = &(apop_model){"Data-constrained model", .log_likelihood=dc_ll, .draw=dc_rng, .prep=dc_prep};
 
 /** \def apop_model_dconstrain
 Build an \c apop_dconstrain model, q.v., which applies a data constraint to the data set. For example, this is how one would truncate a model to have data above zero.

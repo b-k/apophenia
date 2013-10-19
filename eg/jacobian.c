@@ -23,7 +23,7 @@ double rev_j(apop_data *in){ return fabs(apop_map_sum(in, .fn_d=inv, .part='a'))
 int main(){
     apop_model *ct = apop_model_coordinate_transform(
             .transformed_to_base= rev, .jacobian_to_base=rev_j,
-            .base_model=&apop_normal);
+            .base_model=apop_normal);
     Apop_model_add_group(ct, apop_parts_wanted);//Speed up the MLE.
 
     //make fake data
@@ -31,7 +31,7 @@ int main(){
     apop_data *d = draw_exponentiated_normal(mu, sigma, 2e5);
 
     //If we correctly replicated a Lognormal, mu and sigma will be right:
-    apop_model *est = apop_estimate(d, *ct);
+    apop_model *est = apop_estimate(d, ct);
     Diff(apop_data_get(est->parameters, 0, -1), mu);
     Diff(apop_data_get(est->parameters, 1, -1), sigma);
 

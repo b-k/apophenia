@@ -74,5 +74,5 @@ static void yule_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_yule = {"Yule distribution", 1,0,0, .dsize=1, .log_likelihood = yule_log_likelihood, 
+apop_model *apop_yule = &(apop_model){"Yule distribution", 1,0,0, .dsize=1, .log_likelihood = yule_log_likelihood, 
     .prep = yule_prep, .constraint = yule_constraint, .draw = yule_rng};

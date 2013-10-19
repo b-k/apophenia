@@ -201,10 +201,10 @@ The covariance matrix will be \f$k \times k\f$.
         of \f$N\f$ balls into \f$k\f$ urns, with the given probabilities.
             */
 
-apop_model apop_multinomial = {"Multinomial distribution", -1, .dsize=-1,
+apop_model *apop_multinomial = &(apop_model){"Multinomial distribution", -1, .dsize=-1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show};
 
-apop_model apop_binomial = {"Binomial distribution", 2, .dsize=1,
+apop_model *apop_binomial = &(apop_model){"Binomial distribution", 2, .dsize=1,
 	.estimate = multinomial_estimate, .log_likelihood = multinomial_log_likelihood, 
    .constraint = multinomial_constraint, .draw = multinomial_rng, .print=multinomial_show, .cdf= binomial_cdf};

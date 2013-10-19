@@ -25,7 +25,7 @@ void write_data(){
 int main(){
     write_data();
     apop_data *d = apop_text_to_data(testfile);
-    Apop_model_add_group(&apop_logit, apop_mle, .tolerance=1e-5);
+    Apop_model_add_group(apop_logit, apop_mle, .tolerance=1e-5);
     apop_model *est = apop_estimate(d, apop_logit);
     unlink(testfile);
 

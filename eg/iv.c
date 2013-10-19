@@ -56,7 +56,7 @@ int main(){
     APOP_COL(instrumet_data, 0, firstcol);
     gsl_vector_memcpy(firstcol, col1);
     apop_name_add(instrumet_data->names, "independent", 'c');
-    Apop_model_add_group(&apop_iv, apop_lm, .instruments = instrumet_data);
+    Apop_model_add_group(apop_iv, apop_lm, .instruments = instrumet_data);
 
     //Now add noise to the base data four times, and estimate four IVs.
     int tries = 4;

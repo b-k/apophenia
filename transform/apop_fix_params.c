@@ -166,7 +166,7 @@ static void fixed_param_show(apop_model *m, FILE *out){
         apop_model_print(mset->base_model, out);
 }
 
-static apop_model fixed_param_model = {"Fill me", .estimate=fixed_est, .p = fix_params_p, 
+static apop_model *fixed_param_model = &(apop_model){"Fill me", .estimate=fixed_est, .p = fix_params_p, 
             .log_likelihood=fix_params_ll, .constraint= fix_params_constraint, 
             .draw=fix_params_draw, .print=fixed_param_show};
 
@@ -215,7 +215,7 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     Apop_stopif (!predict_tab || !predict_tab->matrix|| !predict_tab->matrix->size2,
         apop_data_free(predict_tab);
         apop_model_free(model_out);
-        return apop_model_copy(*model_in);
+        return apop_model_copy(model_in);
         , 1, "No free parameters (which would be marked with a NaN). "
                 "Returning a copy of the input model."
     );

@@ -22,7 +22,7 @@ long double pack_constraint(apop_data *d, apop_model *m){
     //penalty size is irrelevant, but must be smaller than p().
 }
 
-apop_model pack_counter ={"Optimum is that each element equals its pack order", .p = pack_p, 
+apop_model *pack_counter = &(apop_model){"Optimum is that each element equals its pack order", .p = pack_p, 
                 .prep=pack_prep, .constraint = pack_constraint };
 
 int main(){

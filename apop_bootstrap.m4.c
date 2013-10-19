@@ -43,12 +43,12 @@ apop_data_show(apop_jackknife_cov(your_data, your_model));
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \see apop_bootstrap_cov
  */
-apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
+apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     Apop_stopif(!in, apop_return_data_error(n), 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
     apop_model *e = apop_model_copy(model);
     int i, n = GSL_MAX(msize1, GSL_MAX(vsize, in->textsize[0]));
-    apop_model *overall_est = e->parameters ? e : apop_estimate(in, *e);//if not estimated, do so
+    apop_model *overall_est = e->parameters ? e : apop_estimate(in, e);//if not estimated, do so
     gsl_vector *overall_params = apop_data_pack(overall_est->parameters);
     gsl_vector_scale(overall_params, n); //do it just once.
     gsl_vector *pseudoval = gsl_vector_alloc(overall_params->size);
@@ -68,7 +68,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model model){
             Apop_data_row(subset, i, subsetrow);
             apop_data_memcpy(subsetrow, onerow);
         }
-        apop_model *est = apop_estimate(subset, *e);
+        apop_model *est = apop_estimate(subset, e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         gsl_vector_memcpy(pseudoval, overall_params);// *n above.
         gsl_vector_scale(estp, n-1);
@@ -115,10 +115,10 @@ apop_vector_print(row_27);
 \li This function uses the \ref designated syntax for inputs.
 \see apop_jackknife_cov
  */
-APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans) {
+APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans) {
     static gsl_rng *spare = NULL;
     apop_data * apop_varad_var(data, NULL);
-    apop_model model = varad_in.model;
+    apop_model *model = varad_in.model;
     int apop_varad_var(iterations, 1000);
     Apop_stopif(!data, apop_return_data_error(n), 0, "The data input can't be NULL.");
     gsl_rng * apop_varad_var(rng, NULL);
@@ -148,7 +148,7 @@ APOP_VAR_ENDHEAD
             apop_data_memcpy(subset_row_j, random_data_row);
 		}
 		//get the parameter estimates.
-		apop_model *est = apop_estimate(subset, *e);
+		apop_model *est = apop_estimate(subset, e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         if (!gsl_isnan(apop_sum(estp))){
             if (i==0){

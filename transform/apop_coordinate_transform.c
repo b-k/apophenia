@@ -48,7 +48,7 @@ static long double ct_ll(apop_data *indata, apop_model* mj){
     return ll;
 }
 
-apop_model apop_coordinate_transform = {"Jacobian-transformed model", .log_likelihood=ct_ll, .prep=jacobian_prep};
+apop_model *apop_coordinate_transform = &(apop_model){"Jacobian-transformed model", .log_likelihood=ct_ll, .prep=jacobian_prep};
 
 typedef apop_data *(*d_to_d)(apop_data*);
 typedef double (*d_to_f)(apop_data*);

@@ -28,9 +28,9 @@ int main(){
     model_val_cdf(uni, 260, 1);
 
     //Improper uniform always returns 1/2.
-    model_val_cdf(&apop_improper_uniform, 0, 0.5);
-    model_val_cdf(&apop_improper_uniform, 228, 0.5);
-    model_val_cdf(&apop_improper_uniform, INFINITY, 0.5);
+    model_val_cdf(apop_improper_uniform, 0, 0.5);
+    model_val_cdf(apop_improper_uniform, 228, 0.5);
+    model_val_cdf(apop_improper_uniform, INFINITY, 0.5);
 
     apop_model *binom = apop_model_set_parameters(apop_binomial, 2001, 0.5);
     model_val_cdf(binom, 0, 0);
@@ -71,7 +71,7 @@ int main(){
 
 
     //sum of three symmetric distributions: still symmetric.
-    apop_model *sum_of_three = apop_model_mixture(beta, &apop_improper_uniform, beta_uni);
+    apop_model *sum_of_three = apop_model_mixture(beta, apop_improper_uniform, beta_uni);
     model_val_cdf(sum_of_three, 0.5, 0.5);
 
 

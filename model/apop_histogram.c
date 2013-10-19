@@ -126,5 +126,5 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_data_free(point);
 }
 
-apop_model apop_kernel_density = {"kernel density estimate", .dsize=1,
+apop_model *apop_kernel_density = &(apop_model){"kernel density estimate", .dsize=1,
 	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf, .draw=kernel_draw};

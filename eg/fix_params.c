@@ -16,7 +16,7 @@ int main(){
     //set up and estimate a model with fixed covariance matrix but free means
     gsl_vector_set_all(pvm->parameters->vector, GSL_NAN);
     apop_model *mep1 = apop_model_fix_params(pvm);
-    apop_model *e1 = apop_estimate(d, *mep1);
+    apop_model *e1 = apop_estimate(d, mep1);
     
     //compare results, via assert for the test suite, or on-screen for human use.
 #ifdef Testing

@@ -57,7 +57,7 @@ apop_data *ols_predict(apop_data *in, apop_model *m);
 Apop_settings_copy(apop_lm,
     out->instruments = apop_data_copy(in->instruments);
     if (in->input_distribution)
-        out->input_distribution = apop_model_copy(*in->input_distribution);
+        out->input_distribution = apop_model_copy(in->input_distribution);
 )
 
 Apop_settings_free(apop_lm,
@@ -370,9 +370,9 @@ apop_model *ols_param_models(apop_data *d, apop_model *m){
         return apop_model_set_parameters(apop_t_distribution, mu, sigma, df);
     }
     //else run the default
-    apop_parameter_model_vtable_drop(*m);
+    apop_parameter_model_vtable_drop(m);
     apop_model *out = apop_parameter_model(d, m);
-    apop_parameter_model_vtable_add(ols_param_models, *m);
+    apop_parameter_model_vtable_add(ols_param_models, m);
     return out;
 }
 
@@ -384,7 +384,7 @@ void ols_print(apop_model *m, FILE *ap){
     apop_data_add_page(m->info, predict, predict->names->title);
 }
 
-apop_model apop_ols = {.name="Ordinary Least Squares", .vsize = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
+apop_model *apop_ols = &(apop_model){.name="Ordinary Least Squares", .vsize = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
             .log_likelihood = ols_log_likelihood, .prep = ols_prep,
             .draw=ols_rng, .print=ols_print};
 
@@ -443,7 +443,7 @@ static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     apop_parts_wanted_settings *pwant = apop_settings_get_group(ep, apop_parts_wanted);
     if (!olp) olp = Apop_model_add_group(ep, apop_lm);
     if (!olp->instruments || !(olp->instruments->matrix || olp->instruments->vector)) 
-        apop_ols.estimate(inset, ep);
+        apop_ols->estimate(inset, ep);
     ep->data = inset;
     if (ep->parameters) apop_data_free(ep->parameters);
     ep->parameters = apop_data_alloc(inset->matrix->size2);
@@ -512,6 +512,6 @@ static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     if (!olp->destroy_data) apop_data_free(set);
 }
 
-apop_model apop_iv = {.name="instrumental variables", .vsize = -1, .dsize=-1,
+apop_model *apop_iv = &(apop_model){.name="instrumental variables", .vsize = -1, .dsize=-1,
     .estimate =apop_estimate_IV, .prep=ols_prep,
     .log_likelihood = ols_log_likelihood, .print=ols_print};

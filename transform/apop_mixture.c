@@ -72,7 +72,7 @@ typedef struct {
 } apop_mixture_settings;/**< All of the elements of this struct should be considered private. Also, the mixture setup is in beta and these will likely change soon. */
 
 Apop_settings_copy(apop_mixture,
-    out->cmf= in->cmf ? apop_model_copy(*in->cmf): NULL;
+    out->cmf= in->cmf ? apop_model_copy(in->cmf): NULL;
 )
 
 Apop_settings_free(apop_mixture,
@@ -143,7 +143,7 @@ static void mixture_estimate(apop_data *d, apop_model *m){
         for (int i=0; i< ms->model_count; i++)
             if (datasets[i]){
                 apop_model *freeme=ms->model_list[i];
-                ms->model_list[i] = apop_estimate(datasets[i], *ms->model_list[i]);
+                ms->model_list[i] = apop_estimate(datasets[i], ms->model_list[i]);
                 apop_model_free(freeme);
             }
         for (int i=0; i< ms->model_count; i++)
@@ -267,6 +267,6 @@ void mixture_show(apop_model *m, FILE *out){
 //score
 //predict
 
-apop_model apop_mixture={"Mixture of models", .prep=mixture_prep, 
+apop_model *apop_mixture=&(apop_model){"Mixture of models", .prep=mixture_prep, 
     .estimate=mixture_estimate, .constraint=weights_over_zero, .print=mixture_show,
     .log_likelihood=mixture_log_likelihood, .cdf=mixture_cdf, .draw=mixture_draw };

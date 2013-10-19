@@ -244,40 +244,40 @@ int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
 
 // Models and model support functions
 
-extern apop_model apop_beta;
-extern apop_model apop_bernoulli;
-extern apop_model apop_binomial;
-extern apop_model apop_chi_squared;
-extern apop_model apop_dirichlet;
-extern apop_model apop_exponential;
-extern apop_model apop_f_distribution;
-extern apop_model apop_gamma;
-extern apop_model apop_improper_uniform;
-extern apop_model apop_iv;
-extern apop_model apop_kernel_density;
-extern apop_model apop_loess;
-extern apop_model apop_logit;
-extern apop_model apop_lognormal;
-extern apop_model apop_multinomial;
-extern apop_model apop_multivariate_normal;
-extern apop_model apop_normal;
-extern apop_model apop_ols;
-extern apop_model apop_pmf;
-extern apop_model apop_poisson;
-extern apop_model apop_probit;
-extern apop_model apop_t_distribution;
-extern apop_model apop_uniform;
-extern apop_model apop_wishart;
-extern apop_model apop_wls;
-extern apop_model apop_yule;
-extern apop_model apop_zipf;
+extern apop_model *apop_beta;
+extern apop_model *apop_bernoulli;
+extern apop_model *apop_binomial;
+extern apop_model *apop_chi_squared;
+extern apop_model *apop_dirichlet;
+extern apop_model *apop_exponential;
+extern apop_model *apop_f_distribution;
+extern apop_model *apop_gamma;
+extern apop_model *apop_improper_uniform;
+extern apop_model *apop_iv;
+extern apop_model *apop_kernel_density;
+extern apop_model *apop_loess;
+extern apop_model *apop_logit;
+extern apop_model *apop_lognormal;
+extern apop_model *apop_multinomial;
+extern apop_model *apop_multivariate_normal;
+extern apop_model *apop_normal;
+extern apop_model *apop_ols;
+extern apop_model *apop_pmf;
+extern apop_model *apop_poisson;
+extern apop_model *apop_probit;
+extern apop_model *apop_t_distribution;
+extern apop_model *apop_uniform;
+extern apop_model *apop_wishart;
+extern apop_model *apop_wls;
+extern apop_model *apop_yule;
+extern apop_model *apop_zipf;
 
 //model transformations
-extern apop_model apop_coordinate_transform;
-extern apop_model apop_composition;
-extern apop_model apop_dconstrain;
-extern apop_model apop_mixture;
-extern apop_model apop_stack;
+extern apop_model *apop_coordinate_transform;
+extern apop_model *apop_composition;
+extern apop_model *apop_dconstrain;
+extern apop_model *apop_mixture;
+extern apop_model *apop_stack;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */
@@ -292,10 +292,10 @@ extern apop_model apop_stack;
 void apop_model_free (apop_model * free_me);
 void apop_model_print (apop_model * print_me, FILE *out);
 void apop_model_show (apop_model * print_me); //deprecated
-apop_model * apop_model_copy(apop_model in); //in apop_model.c
+apop_model * apop_model_copy(apop_model *in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
 
-apop_model * apop_estimate(apop_data *d, apop_model m);
+apop_model * apop_estimate(apop_data *d, apop_model *m);
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
 double apop_log_likelihood(apop_data *d, apop_model *m);
 double apop_p(apop_data *d, apop_model *m);
@@ -308,7 +308,7 @@ apop_data * apop_predict(apop_data *d, apop_model *m);
 apop_model *apop_beta_from_mean_var(double m, double v); //in apop_beta.c
 
 #define apop_model_set_parameters(in, ...) apop_model_set_parameters_base((in), (double []) {__VA_ARGS__})
-apop_model *apop_model_set_parameters_base(apop_model in, double ap[]);
+apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 
 //apop_mixture.c
 /** Produce a model as a linear combination of other models. See the documentation for the \ref apop_mixture model.  */

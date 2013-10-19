@@ -28,7 +28,7 @@ int main(){
     //the name at which to split the data set
     apop_model *estme = apop_model_stack(apop_model_copy(apop_poisson), apop_model_copy(apop_normal));
     Apop_settings_add(estme, apop_stack, splitpage, "p2");
-    apop_model *ested = apop_estimate(comeback, *estme);
+    apop_model *ested = apop_estimate(comeback, estme);
 
     //test that the parameters are as promised.
     apop_model *m1back = apop_settings_get(ested, apop_stack, model1);

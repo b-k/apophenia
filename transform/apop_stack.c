@@ -70,8 +70,8 @@ static void repaste(twop_s dd){
 static void stack_est(apop_data *d, apop_model *m){
     Preliminaries();
 
-    s->model1 = apop_estimate(datas.d1, *s->model1);
-    s->model2 = apop_estimate(datas.d2, *s->model2);
+    s->model1 = apop_estimate(datas.d1, s->model1);
+    s->model2 = apop_estimate(datas.d2, s->model2);
 
     repaste(datas);
 }
@@ -101,14 +101,14 @@ void stack_draw(double *d, gsl_rng *r, apop_model *m){
     apop_draw(d2, r, s->model2);
 }
 
-apop_model apop_stack = {"Stack of models", .p=stack_p, .log_likelihood=stack_ll, 
+apop_model *apop_stack = &(apop_model){"Stack of models", .p=stack_p, .log_likelihood=stack_ll, 
     .estimate=stack_est, .draw=stack_draw
 };
 
 apop_model *apop_model_stack_base(apop_model *mlist[]){
     Apop_stopif(!mlist[0], apop_model *oute = apop_model_copy(apop_stack); oute->error='i', 
                             0, "No inputs. Returning blank model with outmodel->error=='n'.");
-    Apop_stopif(!mlist[1], return apop_model_copy(*mlist[1]), 
+    Apop_stopif(!mlist[1], return apop_model_copy(mlist[1]), 
                             1, "Only one model input; returning a copy of that model.");
     apop_model *m2 = mlist[2] ? apop_model_stack_base(mlist+1): mlist[1];
     apop_model *out = apop_model_copy(apop_stack);

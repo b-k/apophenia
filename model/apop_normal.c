@@ -130,7 +130,7 @@ static void normal_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1,
+apop_model *apop_normal = &(apop_model){"Normal distribution", 2, 0, 0, .dsize=1,
  .estimate = normal_estimate, .log_likelihood = normal_log_likelihood, 
  .prep = normal_prep, .constraint = positive_sigma_constraint, 
  .draw = normal_rng, .cdf = normal_cdf};
@@ -237,7 +237,7 @@ static void lognormal_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-apop_model apop_lognormal = {"Lognormal distribution", 2, 0, 0, .dsize=1,
+apop_model *apop_lognormal = &(apop_model){"Lognormal distribution", 2, 0, 0, .dsize=1,
  .estimate = lognormal_estimate, .log_likelihood = lognormal_log_likelihood,
  .prep = lognormal_prep, .constraint = positive_sigma_constraint, 
  .draw = lognormal_rng, .cdf= lognormal_cdf};

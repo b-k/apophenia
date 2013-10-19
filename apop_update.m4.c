@@ -14,11 +14,11 @@ Apop_settings_init(apop_update,
 Apop_settings_copy(apop_update, )
 Apop_settings_free(apop_update, )
 
-static apop_model *betabinom(apop_data *data, apop_model prior, apop_model likelihood){
+static apop_model *betabinom(apop_data *data, apop_model *prior, apop_model *likelihood){
     apop_model *outp = apop_model_copy(prior);
-    if (!data && likelihood.parameters){
-        double n = likelihood.parameters->vector->data[0];
-        double p = likelihood.parameters->vector->data[1];
+    if (!data && likelihood->parameters){
+        double n = likelihood->parameters->vector->data[0];
+        double p = likelihood->parameters->vector->data[1];
         *gsl_vector_ptr(outp->parameters->vector, 0) += n*p;
         *gsl_vector_ptr(outp->parameters->vector, 1) += n*(1-p);
     } else {
@@ -31,7 +31,7 @@ static apop_model *betabinom(apop_data *data, apop_model prior, apop_model likel
 
 double countup(double in){return in!=0;}
 
-static apop_model *betabernie(apop_data *data, apop_model prior, apop_model likelihood){
+static apop_model *betabernie(apop_data *data, apop_model *prior, apop_model *likelihood){
     apop_model *outp = apop_model_copy(prior);
     Get_vmsizes(data);//tsize
     double sum = apop_map_sum(data, .fn_d=countup, .part='a');
@@ -40,14 +40,14 @@ static apop_model *betabernie(apop_data *data, apop_model prior, apop_model like
     return outp;
 }
 
-static apop_model *gammaexpo(apop_data *data, apop_model prior, apop_model likelihood){
+static apop_model *gammaexpo(apop_data *data, apop_model *prior, apop_model *likelihood){
     apop_model *outp = apop_model_copy(prior);
     *gsl_vector_ptr(outp->parameters->vector, 0) += data->matrix->size1*data->matrix->size2;
     apop_data_set(outp->parameters, 1, -1, 1/(1/apop_data_get(outp->parameters, 1, -1) + apop_matrix_sum(data->matrix)));
     return outp;
 }
 
-static apop_model *gammapoisson(apop_data *data, apop_model prior, apop_model likelihood){
+static apop_model *gammapoisson(apop_data *data, apop_model *prior, apop_model *likelihood){
     /* Posterior alpha = alpha_0 + sum x; posterior beta = beta_0/(beta_0*n + 1) */
     apop_model *outp = apop_model_copy(prior);
     Get_vmsizes(data); //vsize, msize1
@@ -61,7 +61,7 @@ static apop_model *gammapoisson(apop_data *data, apop_model prior, apop_model li
     return outp;
 }
 
-static apop_model *normnorm(apop_data *data, apop_model prior, apop_model likelihood){
+static apop_model *normnorm(apop_data *data, apop_model *prior, apop_model *likelihood){
 /*
 output \f$(\mu, \sigma) = (\frac{\mu_0}{\sigma_0^2} + \frac{\sum_{i=1}^n x_i}{\sigma^2})/(\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2}), (\frac{1}{\sigma_0^2} + \frac{n}{\sigma^2})^{-1}\f$
 
@@ -71,11 +71,11 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
     double mu_like, var_like;
     long int n;
     apop_model *outp = apop_model_copy(prior);
-    long double  mu_pri    = prior.parameters->vector->data[0];
-    long double  var_pri = gsl_pow_2(prior.parameters->vector->data[1]);
-    if (!data && likelihood.parameters){
-        mu_like  = likelihood.parameters->vector->data[0];
-        var_like = gsl_pow_2(likelihood.parameters->vector->data[1]);
+    long double  mu_pri    = prior->parameters->vector->data[0];
+    long double  var_pri = gsl_pow_2(prior->parameters->vector->data[1]);
+    if (!data && likelihood->parameters){
+        mu_like  = likelihood->parameters->vector->data[0];
+        var_like = gsl_pow_2(likelihood->parameters->vector->data[1]);
         n        = 1;
     } else {
         n = data->matrix->size1 * data->matrix->size2;
@@ -166,8 +166,8 @@ APOP_VAR_END_HEAD
         apop_update_vtable_add(gammapoisson, apop_gamma, apop_poisson);
         apop_update_vtable_add(normnorm, apop_normal, apop_normal);
     }
-    apop_update_type conj = apop_update_vtable_get(*prior, *likelihood);
-    if (conj) return conj(data, *prior, *likelihood);
+    apop_update_type conj = apop_update_vtable_get(prior, likelihood);
+    if (conj) return conj(data, prior, likelihood);
 
     apop_update_settings *s = apop_settings_get_group(prior, apop_update);
     if (!s) s = Apop_model_add_group(prior, apop_update);
@@ -177,15 +177,15 @@ APOP_VAR_END_HEAD
              likelihood->msize1 >= 0 &&     // there is still prep to do.
              likelihood->msize2 >= 0 && likelihood->prep){
                 ll_is_a_copy++;
-                likelihood =apop_model_copy(*likelihood);
+                likelihood =apop_model_copy(likelihood);
                 apop_prep(data, likelihood);
         }
         likelihood->parameters = apop_data_alloc(likelihood->vsize, likelihood->msize1, likelihood->msize2);
     }
     Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2
-    double    ratio, ll, cp_ll = GSL_NEGINF;
-    double    *draw          = malloc(sizeof(double)* (vsize+msize1*msize2));
-    apop_data *current_param = apop_data_alloc(vsize , msize1, msize2);
+    double ratio, ll, cp_ll = GSL_NEGINF;
+    double *draw = malloc(sizeof(double)* (vsize+msize1*msize2));
+    apop_data *current_param = apop_data_alloc(vsize, msize1, msize2);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods+0.0), 
                 1, "Burn-in should be a fraction of the number of periods, "
                     "not a whole number of periods. Rescaling to burnin=%g", s->burnin/=(s->periods+0.0));

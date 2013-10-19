@@ -83,7 +83,7 @@ APOP_VAR_ENDHEAD
 
 static void i_est(apop_data *d, apop_model *ml_model){
     Switch_back
-    actual_base = apop_estimate(real_data, *actual_base);
+    actual_base = apop_estimate(real_data, actual_base);
 }
 
 static long double i_ll(apop_data *d, apop_model *ml_model){
@@ -96,7 +96,7 @@ static long double i_p(apop_data *d, apop_model *ml_model){
     return apop_p(real_data, actual_base);
 }
 
-static apop_model apop_ml_impute_model = {"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
+static apop_model *apop_ml_impute_model = &(apop_model){"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
 
 /** Impute the most likely data points to replace NaNs in the data, and insert them into 
 the given data. That is, the data set is modified in place.
@@ -126,7 +126,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);
     Apop_model_add_group(fixed, apop_parts_wanted);
-    apop_model *m = apop_estimate(mvn->parameters, *fixed);
+    apop_model *m = apop_estimate(mvn->parameters, fixed);
     apop_model_free(fixed);
     return m;
 }

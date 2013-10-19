@@ -70,6 +70,6 @@ static void bernie_print(apop_model *m, FILE *out){
 }
 
 /* \adoc Settings None. */
-apop_model apop_bernoulli = {"Bernoulli distribution", 1,0,0, .dsize=1,
+apop_model *apop_bernoulli = &(apop_model){"Bernoulli distribution", 1,0,0, .dsize=1,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
    .constraint =  bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng, .print=bernie_print};

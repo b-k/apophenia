@@ -1422,7 +1422,7 @@ of the auxiliary data you want.
 \code
 1 apop_model *m = apop_model_copy(apop_ols);
 2 Apop_settings_add_group(m, apop_parts_wanted, .covariance='y');
-3 apop_model *est = apop_estimate(data, *m);
+3 apop_model *est = apop_estimate(data, m);
 \endcode
 
 
@@ -1446,7 +1446,7 @@ values and covariance via:
 
 \code
 Apop_settings_set(est, apop_parts_wanted, predicted, 'y');
-apop_model *est2 = apop_estimate(data, *est);
+apop_model *est2 = apop_estimate(data, est);
 \endcode
 
 
@@ -1536,8 +1536,8 @@ double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
   Apop_assert_c(in, 0, 0, "input vector is NULL. Doing nothing.");
   gsl_vector	*normed;
   double 		sum=0;
-    apop_vector_normalize((gsl_vector *)in,&normed, 1);
-    gsl_vector_mul(normed,normed);
+    apop_vector_normalize((gsl_vector *)in, &normed, 1);
+    gsl_vector_mul(normed, normed);
     for(size_t i=0;i< normed->size; 
             sum +=gsl_vector_get(normed,i++));
     gsl_vector_free(normed);
@@ -1629,8 +1629,11 @@ endofdiv
 
 Outlineheader Maxi Maximum likelihood methods
 
-This section includes some notes on the maximum likelihood routine, but 
-if you read the section on writing models, then you already know how to do maximum likelihood on exotic setups. Just write a model that has a \c p or \c log_likelihood function, and call \c apop_estimate(your_data,your_model).  The default estimation routine is maximum likelihood.
+This section includes some notes on the maximum likelihood routine, but if you read
+the section on writing models, then you already know how to do maximum likelihood
+on exotic setups. Just write a model that has a \c p or \c log_likelihood function,
+and call \c apop_estimate(your_data, your_model).  The default estimation routine is
+maximum likelihood.
 
 If you are a not a statistician, then there are a few things you will need to keep in
 mind:
@@ -2599,7 +2602,7 @@ This function will return the value of the log likelihood function at the given 
 \li Write the object:
 
 \code
-apop_model your_new_model = {"The Me distribution", 
+apop_model *your_new_model = &(apop_model){"The Me distribution", 
             .vsize=n0, .msize1=n1, .msize2=n2, .dbase=nd,
             .log_likelihood = new_log_likelihood };
 \endcode

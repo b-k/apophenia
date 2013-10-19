@@ -67,7 +67,7 @@ static void uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     *out =  gsl_rng_uniform(r) *(eps->parameters->vector->data[1]- eps->parameters->vector->data[0])+ eps->parameters->vector->data[0];
 }
 
-apop_model apop_uniform = {"Uniform distribution", 2, 0, 0,  .dsize=1,
+apop_model *apop_uniform = &(apop_model){"Uniform distribution", 2, 0, 0,  .dsize=1,
     .estimate = uniform_estimate,  .p = unif_p,.log_likelihood = unif_ll,   
     .draw = uniform_rng, .cdf = unif_cdf};
 
@@ -99,7 +99,7 @@ static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     Apop_stopif(1, *out=GSL_NAN, 0, "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
-apop_model apop_improper_uniform = {"Improper uniform distribution", 2, 0, 0,  .dsize=1,
+apop_model *apop_improper_uniform = &(apop_model){"Improper uniform distribution", 2, 0, 0,  .dsize=1,
     .estimate = improper_uniform_estimate,  .p = improper_unif_p,
     .log_likelihood = improper_unif_ll,  .draw = improper_uniform_rng,
     .cdf = improper_unif_cdf};

@@ -62,5 +62,5 @@ static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
     *out = x;
 }
 
-apop_model apop_zipf = {"Zipf distribution", 1,0,0, .dsize=1,
+apop_model *apop_zipf = &(apop_model){"Zipf distribution", 1,0,0, .dsize=1,
      .log_likelihood = zipf_log_likelihood, .constraint = zipf_constraint, .draw = zipf_rng};

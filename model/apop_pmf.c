@@ -256,7 +256,7 @@ static void pmf_prep(apop_data * data, apop_model *model){
     apop_model_clear(data, model);
 }
 
-apop_model apop_pmf = {"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p, 
+apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimate = estim, .draw = draw, .p=pmf_p, 
                         .print=pmf_print, .prep=pmf_prep};
 
 
