@@ -98,47 +98,6 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 <p>See the documentation page for individual functions for details on how errors are reported to the caller.</p>
 <p>The end of <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em>Modeling with Data</em> offers some GDB macros which can make dealing with Apophenia from the GDB command line much more pleasant.</p>
 <p></div>
-<p><h2><a class="anchor" name="python"><div class="trigger" onClick="showBranch('pythond');swapFolder('pythonf')"><img src="right.png" border="0" id="pythonf" alt="pip"> The Python interface</div></a></h2><div class="branch" id="pythond">
-<p>The distribution includes a Python interface via the SWIG tool for bridging across languages.</p>
-<p>Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, </p>
-<div class="fragment"><pre class="fragment">./configure --enable-python
-make
-sudo make install
-</pre></div><p> will produce the Python library and install it in Python's site-packages directory.</p>
-<p>Sample script:</p>
-<p>On the page on the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> model, you will find a few lines of toy data and a sample program to run an OLS regression. Once you have set up the <code>data</code> file, you can use this Python rewrite of the OLS program:</p>
-<div class="fragment"><pre class="fragment"><span class="keyword">from</span> apop <span class="keyword">import</span> *
-<a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="stringliteral">&quot;d&quot;</span>, 0, 1, <span class="keywordtype">None</span>)
-data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>)
-est  = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, avar.apop_ols)
-<span class="keywordflow">print</span> est
-
-<span class="comment">#And one last example of using a method of the apop_data object:</span>
-
-<span class="keywordflow">print</span> est.parameters.transpose()
-</pre></div><ul>
-<li>SWIG sets all C-side global variables into a category named avar. Thus the <code>apop_ols</code> variable had to be called <code>avar.apop_ols</code>.</li>
-</ul>
-<ul>
-<li>The verbose package-object-action scheme for naming functions is mostly unnecessary in Python, where objects can more closely be attached to functions. Thus, instead of calling <code>apop_vector_skew(my_v)</code>, you would call <code>my_v.skew()</code>. If you want a list of methods, just use <code>help(my_v)</code> or any of the other familiar means of introspection.</li>
-</ul>
-<p>Here is another simple example, that copies a Python-side list into a matrix using <code>apop_pylist_to_data</code>, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned <a class="el" href="gentle.html#apop_data">apop_data</a> structure.</p>
-<div class="fragment"><pre class="fragment"><span class="keyword">from</span> apop <span class="keyword">import</span> *
-data = [[15, 13], [18, 19]]
-adata = apop_pylist_to_data(data) 
-
-<span class="keywordflow">print</span> <span class="stringliteral">&quot;display the data&quot;</span>
-<span class="keywordflow">print</span> adata.matrix
-
-result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(adata)
-<span class="keywordflow">print</span> result
-
-<span class="keywordflow">print</span> <span class="stringliteral">&quot;Or, just one value:&quot;</span>
-<span class="keywordflow">print</span> result.get(<span class="stringliteral">&quot;p value&quot;</span>, -1)
-</pre></div><ul>
-<li>The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strange Python-side errors that will only be explicable if you understand the C-side. That said, you can still access most of the functions from Python (including many that make little sense from Python).</li>
-</ul>
-<p></div>
 <p><h2><a class="anchor" name="About"><div class="trigger" onClick="showBranch('Aboutd');swapFolder('Aboutf')"><img src="right.png" border="0" id="Aboutf" alt="pip"> SQL, the syntax for querying databases</div></a></h2><div class="branch" id="Aboutd">
 <p>For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>. Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.</p>
 <p>Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.</p>
@@ -162,8 +121,7 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <p>It is currently at version 0.99, which is intended to indicate that it is substantially complete. Of course, a library for scientific computing, or even for that small subset that is statistics, will never cover all needs and all methods. But as it stands Apophenia's framework, based on the <a class="el" href="gentle.html#apop_data">apop_data</a> and <a class="el" href="structapop__model.html">apop_model</a>, is basicaly internally consistent, has enough tools that you can get common work done quickly, and is reasonably fleshed out with a good number of models out of the box.</p>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure is set, and there are enough functions there that you could use it as a subpackage by itself (along with the database functions) for nontrivial dealings with data.</p>
 <p>The <a class="el" href="structapop__model.html">apop_model</a> structure is much more ambitious, and although its interface is largely set, its internal system can still be improved. The promise underlying the structure is that you can provide just one item, such as an RNG or a likelihood function, and the structure will do all of the work to fill in computationally-intensive methods for everything else. Some directions aren't quite there yet (such as RNG -&gt; most other things); the default likelihood -&gt; RNG function only works for models with a domain of unidimensional reals; the PMF model (the essential bridge from data sets to empirical models) needs an internal index for faster lookups.</p>
-<p>The next step is providing better tools for transforming models. For example, the <a class="el" href="transform_2apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> function takes in a model with several parameters, and returns one with fewer; or the apop_update function produces a more complex model by convoluting together a prior model and a likelihood model. When these transformations are more complete and usable, Apophenia will be at 1.0, and at that point it will be more than a library for conveniently estimating and drawing from distributions, but a language for expressing how models are developed.</p>
-<p>The Python library could use more testing and revision.</p>
+<p>The next step is providing better tools for transforming models. For example, the <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> function takes in a model with several parameters, and returns one with fewer; or the apop_update function produces a more complex model by convoluting together a prior model and a likelihood model. When these transformations are more complete and usable, Apophenia will be at 1.0, and at that point it will be more than a library for conveniently estimating and drawing from distributions, but a language for expressing how models are developed.</p>
 <p></div>
 <p><h2><a class="anchor" name="ext"><div class="trigger" onClick="showBranch('extd');swapFolder('extf')"><img src="right.png" border="0" id="extf" alt="pip"> How do I write extensions?</div></a></h2><div class="branch" id="extd">
 <p>It's not a package, so you don't need an API---write your code and <code>include</code> it like any other C code. The system is written to not require a registration or initialization step to add a new model or other such parts. You can read the notes below on generating new models, which have to conform to some rules if they are to play well with <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, and so forth.</p>
@@ -255,8 +213,8 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <li><a class="el" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy()</a> </li>
 <li><a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack()</a> </li>
-<li><a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns()</a> </li>
-<li><a class="el" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort()</a> </li>
+<li>apop_data_rm_columns() </li>
+<li><a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose()</a> </li>
@@ -286,7 +244,7 @@ result = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b
 <li><code>gsl_matrix_set_identity (gsl_matrix * m)</code> </li>
 <li><code>void gsl_vector_set_all (gsl_vector * v, double x)</code> </li>
 <li><code>void gsl_vector_set_zero (gsl_vector * v)</code> </li>
-<li><code>int gsl_vector_set_basis (gsl_vector * v, size_t i)</code>: set all elements to zero, but set item <img class="formulaInl" alt="$i$" src="form_61.png"/> to one. </li>
+<li><code>int gsl_vector_set_basis (gsl_vector * v, size_t i)</code>: set all elements to zero, but set item <img class="formulaInl" alt="$i$" src="form_59.png"/> to one. </li>
 <li><code>gsl_vector_reverse (gsl_vector * v)</code>: reverse the order of your vector's elements </li>
 <li><code>gsl_vector_ptr</code> and <code>gsl_matrix_ptr</code>. To increment an element in a vector use, e.g., <code>*gsl_vector_ptr(v, 7) += 3;</code> or <code>(*gsl_vector_ptr(v, 7))++</code>.</li>
 </ul>
@@ -399,7 +357,7 @@ gsl_vector *outvector = <a class="code" href="group__convenience__fns.html#ga5ba
 <p>Get the sum of squares of a vector's elements:</p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> sum_of_squares = <a class="code" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(dataset, gsl_pow_2); <span class="comment">//given &lt;tt&gt; apop_data *dataset&lt;/tt&gt;</span>
 <span class="keywordtype">double</span> sum_of_squares = <a class="code" href="group__mapply.html#gaa1a135fcdd8ea6f9cbc0d518773d6c3c">apop_vector_map_sum</a>(v, gsl_pow_2); <span class="comment">//given &lt;tt&gt; gsl_vector *v&lt;/tt&gt;</span>
-</pre></div><p>Here, we create an index vector [ <img class="formulaInl" alt="$0, 1, 2, ...$" src="form_94.png"/>].</p>
+</pre></div><p>Here, we create an index vector [ <img class="formulaInl" alt="$0, 1, 2, ...$" src="form_92.png"/>].</p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> index(<span class="keywordtype">double</span> in, <span class="keywordtype">int</span> index){<span class="keywordflow">return</span> index;}
 <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(100);
 <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_di=index, .inplace=<span class="charliteral">&#39;y&#39;</span>);
@@ -532,7 +490,7 @@ gsl_rng *r;
 <p></div>
 <p><h2><a class="anchor" name="matrixmath"><div class="trigger" onClick="showBranch('matrixmathd');swapFolder('matrixmathf')"><img src="right.png" border="0" id="matrixmathf" alt="pip"> Matrix math</div></a></h2><div class="branch" id="matrixmathd">
 <ul>
-<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> matrix </li>
+<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_31.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_31.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_31.png"/> matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> : returns the determinant of the input matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> : returns the inverse of the input matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> : find determinant and inverse at the same time</li>
@@ -605,11 +563,11 @@ gsl_matrix *m;
 <span class="comment">//all at once:</span>
 <a class="code" href="structapop__data.html">apop_data</a> *v_dot_m2 = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>((<a class="code" href="structapop__data.html">apop_data</a>){.vector=v}, (<a class="code" href="types_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=m});
 </pre></div><ul>
-<li><a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_38.png"/> <code>gsl_vector</code> </li>
-<li><a class="el" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_38.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. See also <a class="el" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </li>
+<li><a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_36.png"/> <code>gsl_vector</code> </li>
+<li><a class="el" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_36.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. See also <a class="el" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </li>
 <li><a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data()</a> </li>
-<li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_38.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
-<li><a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_38.png"/> database </li>
+<li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_36.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
+<li><a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_36.png"/> database </li>
 <li><a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data()</a> </li>
 <li><a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix()</a></li>
 </ul>
@@ -867,10 +825,10 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <ul>
 <li><a class="el" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update()</a> : Bayesian updating </li>
 <li><a class="el" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform()</a> : apply an invertible transformation to the data space </li>
-<li><a class="el" href="types_8h.html#a34644b9d55c7528b47f0b887c9241928">apop_model_dconstrain()</a> : constrain the data space of a model to a subspace. E.g., truncate a Normal distribution so <img class="formulaInl" alt="$x>0$" src="form_95.png"/>. </li>
-<li><a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params()</a> : hold some parameters constant </li>
+<li><a class="el" href="types_8h.html#a34644b9d55c7528b47f0b887c9241928">apop_model_dconstrain()</a> : constrain the data space of a model to a subspace. E.g., truncate a Normal distribution so <img class="formulaInl" alt="$x>0$" src="form_93.png"/>. </li>
+<li><a class="el" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params()</a> : hold some parameters constant </li>
 <li><a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture()</a> : a linear combination of models </li>
-<li><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack()</a> : If <img class="formulaInl" alt="$(p_1, p_2)$" src="form_96.png"/> has a Normal distribution and <img class="formulaInl" alt="$p_3$" src="form_97.png"/> has an independent Poisson distribution, then <img class="formulaInl" alt="$(p_1, p_2, p_3)$" src="form_98.png"/> has a <code><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack(apop_normal, apop_poisson)</a></code> distribution. </li>
+<li><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack()</a> : If <img class="formulaInl" alt="$(p_1, p_2)$" src="form_94.png"/> has a Normal distribution and <img class="formulaInl" alt="$p_3$" src="form_95.png"/> has an independent Poisson distribution, then <img class="formulaInl" alt="$(p_1, p_2, p_3)$" src="form_96.png"/> has a <code><a class="el" href="types_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack(apop_normal, apop_poisson)</a></code> distribution. </li>
 <li><a class="el" href="types_8h.html#ab664f68b5e481bec56c8ddc7f16928c0">apop_model_dcompose()</a> : use the output of one model as a data set for another</li>
 </ul>
 <p></div>
@@ -969,26 +927,26 @@ end
     gsl_vector_free(normed);
     <span class="keywordflow">return</span> gsl_cdf_chisq_P(sum,in-&gt;size); 
 }
-</pre></div><p>Or, consider the Rao statistic, <img class="formulaInl" alt="${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$" src="form_99.png"/> where <img class="formulaInl" alt="$L$" src="form_100.png"/> is your model's likelihood function and <img class="formulaInl" alt="$I$" src="form_101.png"/> its information matrix. In code:</p>
+</pre></div><p>Or, consider the Rao statistic, <img class="formulaInl" alt="${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)$" src="form_97.png"/> where <img class="formulaInl" alt="$L$" src="form_98.png"/> is your model's likelihood function and <img class="formulaInl" alt="$I$" src="form_99.png"/> its information matrix. In code:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * infoinv = <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(data, your_model);
 <a class="code" href="structapop__data.html">apop_data</a> * score;
 <a class="code" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a>(data, score-&gt;vector, your_model);
 <a class="code" href="structapop__data.html">apop_data</a> * stat    = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(<a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(score, infoinv), score);
-</pre></div><p>Given the correct assumptions, this is <img class="formulaInl" alt="$\sim \chi^2_m$" src="form_102.png"/>, where <img class="formulaInl" alt="$m$" src="form_103.png"/> is the dimension of <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, so the odds of a Type I error given the model is:</p>
+</pre></div><p>Given the correct assumptions, this is <img class="formulaInl" alt="$\sim \chi^2_m$" src="form_100.png"/>, where <img class="formulaInl" alt="$m$" src="form_101.png"/> is the dimension of <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, so the odds of a Type I error given the model is:</p>
 <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> p_value = <a class="code" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(stat, <span class="stringliteral">&quot;chi squared&quot;</span>, beta-&gt;size);
 </pre></div><p></div>
 <p><h2><a class="anchor" name="Histosec"><div class="trigger" onClick="showBranch('Histosecd');swapFolder('Histosecf')"><img src="right.png" border="0" id="Histosecf" alt="pip"> Empirical distributions and PMFs (probability mass functions)</div></a></h2><div class="branch" id="Histosecd">
 <p>The <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model wraps a <a class="el" href="gentle.html#apop_data">apop_data</a> set so it can be read as an empirical model, with a likelihoood function (equal to the associated weight for observed values and zero for unobserved values), a random number generator (which consists simply of making weighted random draws from the data), and so on. Setting it up counts as a model estimation from data like any other, done via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>).</p>
 <p>You have the option of cleaning up the data before turning it into a PMF. For example...</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a>(your_data);
-<a class="code" href="apop__asst_8c.html#aa552a19d3b609864ea7a3e71c5ad13ac">apop_data_sort</a>(your_data);
+<a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(your_data);
 <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(your_data-&gt;weights);
 <a class="code" href="structapop__model.html">apop_model</a> *a_pmf = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
 </pre></div><p>...would remove all duplicates and set the weights column to reflect the original number of copies for each observation, sort the data, normalize the weights to sum to one, and build a PMF model around the data. Compression produces a corresponding improvement in efficiency when calculating CDFs or making draws, but is otherwise not necessary. Sorting or normalizing is not necessary for making draws or getting a likelihood or log likelihood.</p>
 <p>It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no <code>weights</code> segment, then I assume that all rows have equal weight.</p>
 <p>Most models have a <code>parameters</code> <a class="el" href="gentle.html#apop_data">apop_data</a> set that is filled when you call <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>. For a PMF model, the <code>parameters</code> are <code>NULL</code>, and the <code>data</code> itself is used for calculation. Therefore, if you modify the data, the model will be confused. If you modify the data, throw away any existing PMFs (<code>apop_model_free</code>) and re-estimate a new one.</p>
 <p>Using <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram. A binspec has as many columns as the data set being binned, and has one or two rows. The first row gives a bin width for the given column, so each column may have a different bin width. The second row, if present, gives the offset from zero for the bins. All bins, both above and below zero, are shifted accordingly. If there is no second row, the offset is zero.</p>
-<p>Send this binspec to <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/> bins from minimum to maximum. There are other preferred formulæ for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code></p>
+<p>Send this binspec to <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/> bins from minimum to maximum. There are other preferred formulæ for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code></p>
 <p>There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec.</p>
 <p>For example, if you do not have a prior binspec in mind, then you can use the one generated by the first call to the histogram binning function to make sure that the second data set is in sync:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(first_set, NULL);
@@ -999,7 +957,7 @@ end
 <ul>
 <li><a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress()</a> : merge together redundant rows in a data set before calling <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>); optional. </li>
 <li><a class="el" href="apop__smoothing_8c.html#a9f236ac6d9bff6835c185b9f098d46d3">apop_vector_moving_average()</a> : smooth a vector (e.g., your_pmf-&gt;data-&gt;weights) via moving average. </li>
-<li><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a> : goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic </li>
+<li><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a> : goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_16.png"/> statistic </li>
 <li><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a> : goodness-of-fit via Kolmogorov-Smirnov statistic</li>
 </ul>
 <p></div>
@@ -1013,7 +971,7 @@ end
 <li>The overall setup is about estimating the parameters of a model with data. The user provides a data set and an unparameterized model, and the system tries parameterized models until one of them is found to be optimal. The data is fixed---it was observed before the statistician sat down to the computer. The parameters make sense only in the context of a model, so the optimization sends around a series of parameterized models, searching for the one that is most likely. In a non-stats setting, you will probably have <code>NULL</code> data, and will be optimizing the parameters internal to the model.</li>
 </ul>
 <ul>
-<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_104.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_105.png"/> is fixed ahead of time, say at 100.</li>
+<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_102.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_103.png"/> is fixed ahead of time, say at 100.</li>
 </ul>
 <div class="fragment"><pre class="fragment">    <span class="keyword">typedef</span> <span class="keyword">struct </span>{
             <span class="keywordtype">double</span> scaling;
@@ -1199,4 +1157,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>

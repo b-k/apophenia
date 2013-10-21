@@ -122,7 +122,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_59.png"/> </p>
+<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_57.png"/> </p>
 
 </div>
 </div>
@@ -140,9 +140,9 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_53.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
+<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_51.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
 <ul>
-<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_54.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_55.png"/>, not three, one, or zero. </li>
+<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_52.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_53.png"/>, not three, one, or zero. </li>
 </ul>
 
 </div>
@@ -171,7 +171,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_58.png"/>) of the data in the given vector, with an optional weighting.</p>
+<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_56.png"/>) of the data in the given vector, with an optional weighting.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -201,7 +201,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_52.png"/>) of the data in the given vector. </p>
+<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_50.png"/>) of the data in the given vector. </p>
 
 </div>
 </div>
@@ -229,7 +229,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_56.png"/> of the data in the given vector. Observations may be weighted.</p>
+<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_54.png"/> of the data in the given vector. Observations may be weighted.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -239,10 +239,10 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The weighted skew. No sample adjustment given weights.</dd></dl>
 <ul>
-<li>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_57.png"/>; that's not done here, so you'll have to do so separately if need be.</li>
+<li>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_55.png"/>; that's not done here, so you'll have to do so separately if need be.</li>
 </ul>
 <ul>
-<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_53.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_7.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly. </li>
+<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_51.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_7.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly. </li>
 </ul>
 
 </div>
@@ -284,4 +284,4 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Oct 21 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
