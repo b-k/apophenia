@@ -794,7 +794,7 @@ double first_col_sum = apop_matrix_sum(subm);
 \li\ref Apop_col
 \li\ref Apop_row
 \li\ref Apop_col_t
-\li\ref Apop_row_t
+\li\ref Apop_matrix_row_t
 \li\ref Apop_matrix_col
 \li\ref Apop_matrix_row
 \li\ref Apop_submatrix
