@@ -6,7 +6,7 @@ int main(void){
     apop_model *est = apop_estimate(data, apop_ols);
     apop_model_show(est);
 
-    apop_model_add_group(est, apop_pm, .index =1);  
+    Apop_settings_add_group(est, apop_pm, .index =1);  
     apop_model *first_param_distribution = apop_parameter_model(data, est);
     Apop_data_row(est->parameters, 1, param);
     double area_under_p = apop_cdf(param, first_param_distribution);

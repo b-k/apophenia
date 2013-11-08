@@ -94,6 +94,25 @@ static void estim (apop_data *d, apop_model *out){
     }
 }
 
+static void setup_cmf(apop_model *m){
+    //already assumed a weights vector in the data
+    apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
+    size_t maxsize = m->data->weights->size;
+    settings->cmf = gsl_vector_alloc(maxsize);
+    Apop_stopif(!settings->cmf, m->error='a'; return,
+            0, "Allocation error setting up the CMF.");
+    gsl_vector *cdf = settings->cmf; //alias.
+    cdf->data[0] = m->data->weights->data[0];
+    for (int i=1; i< maxsize; i++)
+        cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
+    //Now make sure the last entry is one.
+    Apop_stopif(cdf->data[maxsize-1]==0 || isnan(cdf->data[maxsize-1]), m->error='f'; return,
+            0, "Bad density in the PMF.");
+    gsl_vector_scale(cdf, 1./cdf->data[maxsize-1]);
+    Apop_stopif(!isfinite(cdf->data[maxsize-1]), m->error='f';  return,
+            0, "Bad density in the PMF.");
+}
+
 /* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a
       weights vector, i will use that to make draws; else all rows are equiprobable.
 
@@ -123,21 +142,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         current = gsl_rng_uniform(r)* (maxsize-1);
     else {
         size_t size = m->data->weights->size;
-        if (!settings->cmf){
-            settings->cmf = gsl_vector_alloc(size);
-            Apop_stopif(!settings->cmf, m->error='a'; *out=GSL_NAN; return,
-                    0, "Allocation error setting up the CMF.");
-            gsl_vector *cdf = settings->cmf; //alias.
-            cdf->data[0] = m->data->weights->data[0];
-            for (int i=1; i< size; i++)
-                cdf->data[i] = m->data->weights->data[i] + cdf->data[i-1];
-            //Now make sure the last entry is one.
-            Apop_stopif(cdf->data[size-1]==0 || isnan(cdf->data[size-1]), m->error='f'; *out=GSL_NAN; return,
-                    0, "Bad density in the PMF.");
-            gsl_vector_scale(cdf, 1./cdf->data[size-1]);
-            Apop_stopif(!isfinite(cdf->data[size-1]), m->error='f'; *out=GSL_NAN; return,
-                    0, "Bad density in the PMF.");
-        }
+        if (!settings->cmf) setup_cmf(m);
         Apop_stopif(m->error=='f', *out=GSL_NAN; return, 0, "Zero or NaN density in the PMF.");
         double draw = gsl_rng_uniform(r);
         //do a binary search for where draw is in the CDF.
@@ -247,6 +252,13 @@ static long double pmf_p(apop_data *d, apop_model *m){
     return p;
 }
 
+/*
+static long double pmf_cmf(apop_data *d, apop_model *m){
+
+
+
+}*/
+
 static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
 static void pmf_prep(apop_data * data, apop_model *model){
@@ -258,7 +270,7 @@ static void pmf_prep(apop_data * data, apop_model *model){
 }
 
 apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimate = estim, 
-                .draw = draw, .p=pmf_p, .prep=pmf_prep};
+                .draw = draw, .p=pmf_p, .prep=pmf_prep, /*.cdf=pmf_cmf*/};
 
 
 /** Say that you have added a long list of observations to a single \ref apop_data set,
@@ -294,7 +306,6 @@ You would like to reduce this to a set of distinct values, with their weights ad
 <tr><td>2</td><td>Pair</td><td>4</td></tr>
 </table>
 
-
 \param in An \ref apop_data set that may have duplicate rows. As above, the data may be in text and/or numeric formats. If there is a \c weights vector, I will add those weights together as duplicates are merged. If there is no \c weights vector, I will create one, which is initially set to one for all values, and then aggregated as above.
 
 \return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref apop_data_copy before calling this function if you need to retain the original format. For your convenience, this function returns a pointer to your original data, which has now been pruned.
@@ -305,20 +316,20 @@ apop_data *apop_data_pmf_compress(apop_data *in){
     Get_vmsizes(in); //maxsize
     Apop_assert_c(maxsize, in, 1, "You sent a non-NULL data set, but the vector, matrix, and text are all of length zero. Returning the original data set unchanged.");
     if (!in->weights){
-        in->weights=gsl_vector_alloc(maxsize);
+        in->weights = gsl_vector_alloc(maxsize);
         gsl_vector_set_all(in->weights, 1);
     }
     if (maxsize==1) return in; //optional check.
     int *cutme = calloc(maxsize, sizeof(int));
     int not_done = 1; //if we do a full j-loop and everything is to be cut, we're done.
-    for (int i=0; i< maxsize && not_done;i++){
+    for (int i=0; i< maxsize && not_done; i++){
         if (cutme[i]) continue;
-        Apop_data_row(in, i, subject);
+        Apop_row(in, i, subject);
         not_done = 0;
         for (int j=i+1; j< maxsize; j++){
             if (cutme[j]) continue;
             not_done = 1;
-            Apop_data_row(in, j, compare_me);
+            Apop_row(in, j, compare_me);
             if (are_equal(subject, compare_me)){
                 *gsl_vector_ptr(subject->weights, 0) += gsl_vector_get(compare_me->weights, 0);
                 cutme[j]=1;

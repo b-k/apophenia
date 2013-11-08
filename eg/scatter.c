@@ -4,7 +4,7 @@ int main(){
     char outfile[] = "scatter.gplot";
 
     apop_db_open("data-metro.db");
-    apop_data *data = apop_query_to_data("select riders, year from riders where station like 'Silver%%'");
+    apop_data *data = apop_query_to_data("select riders, year from riders where station like 'Silver%%' and riders>0");
     apop_db_close();
 
     //The regression destroys your data, so copy it first.

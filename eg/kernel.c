@@ -50,6 +50,6 @@ int main(){
     apop_model *k2 = apop_model_copy_set(apop_kernel_density,
                     apop_kernel_density, .base_data=d,
                                          .set_fn = set_uniform_edges,
-                                         .kernel = &apop_uniform);
+                                         .kernel = apop_uniform);
     plot(k, k2);
 }

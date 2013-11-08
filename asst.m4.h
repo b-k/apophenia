@@ -98,7 +98,9 @@ Apop_var_declare( double apop_test(double statistic, char *distribution, double 
 
 //Sorting (apop_asst.c)
 Apop_var_declare( double * apop_vector_percentiles(gsl_vector *data, char rounding)  )
-Apop_var_declare( apop_data * apop_data_sort(apop_data *data, int sortby, char asc) )
+
+//apop_sort.c
+Apop_var_declare( apop_data *apop_data_sort(apop_data *data, apop_data *sort_order, char asc, char inplace, double *col_order))
 
 //raking
 Apop_var_declare( apop_data * apop_rake(char const *margin_table, char * const*var_list, 

@@ -300,7 +300,7 @@ apop_vector_show(in);
 */
 APOP_VAR_HEAD void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type){
     gsl_vector * apop_varad_var(in, NULL);
-    Apop_assert_c(in,  , 1, "Input vector is NULL. Doing nothing.");
+    Apop_stopif(!in, return, 1, "Input vector is NULL. Doing nothing.");
     gsl_vector ** apop_varad_var(out, NULL);
     const char apop_varad_var(normalization_type, 'p');
 APOP_VAR_END_HEAD
@@ -308,29 +308,29 @@ APOP_VAR_END_HEAD
 	if (!out) out = &in;
 	else {
 		*out = gsl_vector_alloc (in->size);
-		gsl_vector_memcpy(*out,in);
+		gsl_vector_memcpy(*out, in);
 	}
-	if ((normalization_type == 's')){
-		mu	= apop_vector_mean(in);
+	if (normalization_type == 's'){
+		mu = apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
         double scaling = 1./(sqrt(apop_vector_var_m(in, 0)));
         Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
 		gsl_vector_scale(*out, scaling);
 	} 
-	else if ((normalization_type == 'r')){
+	else if (normalization_type == 'r'){
         gsl_vector_minmax(in, &min, &max);
 		gsl_vector_add_constant(*out, -min);
 		gsl_vector_scale(*out, 1/(max-min));	
 
 	}
-	else if ((normalization_type == 'p')){
+	else if (normalization_type == 'p'){
 		long double sum	= apop_sum(in);
         Apop_stopif(!sum, return, 0, "the vector sums to zero, so I can't normalize it to sum to one.");
 		gsl_vector_scale(*out, 1/sum);	
 	}
-	else if ((normalization_type == 'm')){
-		mu	= apop_vector_mean(in);
+	else if (normalization_type == 'm'){
+		mu = apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
 	}

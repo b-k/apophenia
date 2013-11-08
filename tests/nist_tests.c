@@ -8,7 +8,7 @@ of the relative accuracies of various operations. */
 #define TOL2 1e-5
 #define TOL3 1e-9
 
-#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R))>(eps), return, 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 void pontius(){
     apop_text_to_db("pontius.dat","pont", .delimiters=" ");
@@ -49,8 +49,15 @@ void numacc4(){
 }
 
 int main(){
-    if (getenv("srcdir")) //if defined, this is probably via an automake rule.
-    apop_system("cp %s/*dat* %s/printing_sample .", getenv("srcdir"), getenv("srcdir")); //needed for make distcheck. No-op in many cases.
+    chdir(Datadir); //Datadir is defined via autoconf.
+
+    char wd[10000]; getcwd(wd, 10000);
+    FILE *fuck = fopen("/home/b/fffff", "w");
+    fprintf(fuck, "RIGHT NOW I AM IN %s\n", wd);
+    fprintf(fuck, "Srcdir IS %s\n", getenv("srcdir"));
+    fprintf(fuck, "DATADIR IS " Datadir);
+    fclose(fuck);
+
     pontius();
     wampler1();
     numacc4();

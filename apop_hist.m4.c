@@ -8,6 +8,7 @@ Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the modifie
 #include "apop_internal.h"
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_sort_vector.h>
+#include <stdbool.h>
 
 /** \defgroup histograms The GSL's histograms and Apophenia's PMFs. */
 
@@ -117,11 +118,10 @@ static double psmirnov2x(double x, int m, int n) {
         u[0] = (i / md) > q 
                 ? 0
                 : w * u[0];
-        for(int j = 1; j <= n; j++) {
+        for(int j = 1; j <= n; j++) 
             u[j] = fabs(i / md - j / nd) > q
                     ? 0
                     : w * u[j] + u[j - 1];
-        }
     }
     return u[n];
 }
@@ -132,18 +132,18 @@ static double psmirnov2x(double x, int m, int n) {
  
 \return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
 
-\li I assume that the data sets are sorted.
+\li <b>The data sets must be sorted before you call this.</b> See \ref apop_data_sort.
 
 \include ks_tests.c
 
 \ingroup histograms
 */
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
+    bool m1_is_pmf = (m1->cdf == apop_pmf->cdf);
+    bool m2_is_pmf = (m2->cdf == apop_pmf->cdf);
     //version for not a pair of histograms
-    Apop_assert(m1->data, "I will test the CDF at each point in the data set, but the first model has a NULL data set. "
-                          "Maybe generate, then apop_data_sort, a few thousand random draws?");
-    Apop_assert(m2->data, "I will test the CDF at each point in the data set, but the second model has a NULL data set. "
-                          "Maybe generate, then apop_data_sort, a few thousand random draws?");
+
+    int drawct = /* I dunno. */ 1000;
     int maxsize1, maxsize2;
     {Get_vmsizes(m1->data); maxsize1 = maxsize;}//copy one of the macro's variables 
     {Get_vmsizes(m2->data); maxsize2 = maxsize;}//  to the full function's scope.
