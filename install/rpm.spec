@@ -14,7 +14,7 @@ URL:          http://apophenia.info
 Apophenia is a library of functions and models for scientific computing.
 It is intended to make work easier---and even fun---when handling data sets, fitting
 models, and designing new models in C. Facilities for managing data include an easy
-link to SQLite3 or mySQL databases. Also includes a Python interface (in Beta).
+link to SQLite3 or mySQL databases.
 
 %prep
 %setup

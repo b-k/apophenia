@@ -51,13 +51,6 @@ void numacc4(){
 int main(){
     chdir(Datadir); //Datadir is defined via autoconf.
 
-    char wd[10000]; getcwd(wd, 10000);
-    FILE *fuck = fopen("/home/b/fffff", "w");
-    fprintf(fuck, "RIGHT NOW I AM IN %s\n", wd);
-    fprintf(fuck, "Srcdir IS %s\n", getenv("srcdir"));
-    fprintf(fuck, "DATADIR IS " Datadir);
-    fclose(fuck);
-
     pontius();
     wampler1();
     numacc4();

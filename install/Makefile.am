@@ -35,29 +35,6 @@ pkgconfigdir = `pkg-config --variable pc_path pkg-config | cut -f1 -d:`
 
 SUBDIRS=. tests
 
-#SWIG
-
-if HAVE_PYTHON
-python_PYTHON = apop.py
-
-apop.py: apop.i
-	swig -python -globals avar apop.i ; \
-	sed  -e "s/:print/:_print/" -e "s/def print/def _print/" < apop.py > apop.tmp.py; \
-	mv apop.tmp.py apop.py; \
-	$(CC) -c -fpic -std=gnu99  apop_wrap.c -I$(pkgincludedir) $(PYTHON_CPPFLAGS) ; \
-	$(CC) -shared apop_wrap.o $(PYTHON_CPPFLAGS) -o _apop.so -lapophenia -lgsl -lgslcblas $(MYSQL_LDFLAGS) $(SQLITE_LDFLAGS) ;
-
-
-install-exec-hook: apop.py
-	@if test -e _apop.so ; then \
-		cp _apop.so ${pythondir} ; \
-	fi
-else 
-apop.py: apop.i
-	@echo "NOT setting up the Python interface. Maybe install a Python$(PYTHON_VERSION)-dev package, or run ./configure --enable-python ?" ; \
-	touch apop.py ; 
-endif
-
 #The programs
 bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_plot_query apop_lookup
 apop_text_to_db_SOURCES = cmd/apop_text_to_db.c
@@ -75,7 +52,7 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		$(srcdir)/docs/*.js 	\
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
-		eg apop_db_mysql.c apop_db_sqlite.c apop.i \
+		eg apop_db_mysql.c apop_db_sqlite.c \
 		apop_internal.h internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1

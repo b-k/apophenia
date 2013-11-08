@@ -4,6 +4,10 @@
 !!Big.
 ]
 
+	November 2013
+--rewrite apop_data_sort to allow sorting by multiple columns or text or names
+--removed the Swig Python wrapper from this package.
+
 	October 2013
 **all built-in models (apop_ols, apop_dirichlet, ...) are now apop_model* (ptr-to-struct), from apop_model (plain struct).
 **apop_estimate and apop_copy take in an apop_model* instead of plain apop_model.

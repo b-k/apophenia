@@ -10,7 +10,7 @@ else
 
 echo "Don't forget: Apophenia always depends on the GNU Scientific Library and SQLite3 (_and_ their -dev or -devel headers) to build and run."
 mkdir -p $workdir/m4
-cp -r *.h *.c apop.i cmd docs eg install/* model tests transform README ChangeLog $workdir
+cp -r *.h *.c cmd docs eg install/* model tests transform README ChangeLog $workdir
 #mkdir -p $workdir/tests/apophenia
 #cp *.h $workdir/tests/apophenia
 cd $workdir

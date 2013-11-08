@@ -56,28 +56,10 @@ AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp asprintf])
 
-# For SWIG.
-
-# Does the user want to build Python?
-AC_MSG_CHECKING([whether to build the Python extension])
-AC_ARG_ENABLE([python],
-              [AS_HELP_STRING([--enable-python],
-                              [set flags to build Python extension (ignored if
---disable-flag-setting is used)])])
-test "x$enable_python" = xyes || enable_python=no
-AC_MSG_RESULT($enable_python)
-AM_CONDITIONAL([USE_PYTHON], [test "x$enable_python" = xyes ])
-
-if test  "x$enable_python" = xyes ; then
-AM_PATH_PYTHON
-AC_PYTHON_DEVEL
-fi
-
 #Check for database systems, then export results to automake
 AX_LIB_MYSQL
 AX_LIB_SQLITE3
 AM_CONDITIONAL([HAVE_MYSQL], [test x$HAVE_MYSQL = xtrue])
-AM_CONDITIONAL([HAVE_PYTHON], [test $PYTHON_VERSION > 1 ])
 
 
 PACKAGE_NAME=apophenia
@@ -94,9 +76,6 @@ Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
 
  Root for the install: '${prefix}'.
  Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
-
- Package features:
-   Python: ${enable_python}
 
  Now type 'make @<:@<target>@:>@'
    where the optional <target> is:

@@ -13,7 +13,7 @@ double get_distance(gsl_vector *v) {return apop_vector_distance(v);}
 int main(){
     chdir(Datadir); //Datadir is defined via autoconf.
     apop_text_to_db("amash_vote_analysis.csv", .tabname="amash_vote_analysis");
-    apop_data *d = apop_query_to_mixed_data("mntmtm", "select 1,id,party,contribs/1000.,vote,ideology from amash_vote_analysis ");
+    apop_data *d = apop_query_to_mixed_data("mntmtm", "select 1,id,party,contribs/1000.0,vote,ideology from amash_vote_analysis ");
 
     //use the default order of columns for sorting
     apop_data *sorted = apop_data_sort(d, .inplace='n');

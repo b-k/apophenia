@@ -7,7 +7,7 @@ Apophenia is an open statistical library for working with data sets and statisti
 models. It provides functions on the same level as those of the typical stats package
 (such as OLS, probit, or singular value decomposition) but gives the user more
 flexibility to be creative in model-building.  The core functions are written in C,
-but bindings exist for Python (and they should be easy to bind to in Perl/Ruby/&amp;c.)
+but experience has shown them to be easy to bind to in Python/Julia/Perl/Ruby/&c.
 
 It is written to scale well, to comfortably work with gigabyte data sets, million-step simulations, or
 computationally-intensive agent-based models. If you have tried using other open source
@@ -137,14 +137,6 @@ If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer
 
 In the documentation for the \ref apop_ols model, a program to read in data and run a regression. You'll need to go to that page for the sample data and further discussion.
 
-Now, from the Python section of the outline page, the same thing via Python:
-
-\include ols.py
-
-The same page illustrates some other calls of Apophenia functions via Python, such as the \ref apop_test_fisher_exact function.
-
-\include fisher.py
-
 From the \ref setup page, an example of gathering data from two processes, saving the input to a database, then doing a later analysis:
 
 \include draw_to_db.c
@@ -162,9 +154,11 @@ In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with 
 In the documentation for \ref apop_query_to_text, a program to list all the tables in an SQLite database.
 \include ls_tables.c
 
-Finally, a demonstration of fixing parameters to create a marginal distribution, via \ref apop_model_fix_params
+A demonstration of fixing parameters to create a marginal distribution, via \ref apop_model_fix_params
 \include fix_params.c
 
+Several uses of the \ref apop_dot function
+\include dot_products.c
  */
 
 
@@ -526,37 +520,6 @@ macros which can make dealing with Apophenia from the GDB command line much more
 
 endofdiv
 
-Outlineheader python The Python interface
-
-The distribution includes a Python interface via the SWIG tool for bridging across languages. 
-
-Installation: You will need to have the SWIG and Python-development packages installed on your computer when compiling. From there, 
-\code
-./configure --enable-python
-make
-sudo make install
-\endcode 
-will produce the Python
-library and install it in Python's site-packages directory.
-
-Sample script:
-
-On the page on the \ref apop_ols model, you will find a few lines of toy data and a sample program to run an OLS regression. Once you have set up the \c data file, you can use this Python rewrite of the OLS program:
-
-\include ols.py
-
-\li SWIG sets all C-side global variables into a category named avar. Thus the \c apop_ols variable had to be called \c avar.apop_ols.
-
-\li The verbose package-object-action scheme for naming functions is mostly unnecessary in Python, where objects can more closely be attached to functions. Thus, instead of calling \c apop_vector_skew(my_v), you would call \c my_v.skew(). If you want a list of methods, just use <tt>help(my_v)</tt> or any of the other familiar means of introspection.
-
-Here is another simple example, that copies a Python-side list into a matrix using \c apop_pylist_to_data, and then runs a Fisher Exact test on the matrix. If the list were one-dimensional (flat), then the data would be copied into the vector element of the returned \ref apop_data structure.
-
-\include fisher.py
-
-\li The focus of the work is still in C, so there will likely always be things that you can do in C that can't be done in Python, and strange Python-side errors that will only be explicable if you understand the C-side.  That said, you can still access most of the functions from Python (including many that make little sense from Python).
-
-endofdiv
-
 Outlineheader About SQL, the syntax for querying databases
 
  For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.
@@ -633,8 +596,6 @@ When these transformations are more complete and usable, Apophenia will be at 1.
 and at that point it will be more than a library for conveniently estimating and
 drawing from distributions, but a language for expressing how models are developed.
 
-
-The Python library could use more testing and revision.
 
 endofdiv
 
@@ -1894,15 +1855,6 @@ Minimalist GNU for Windows is indeed minimalist: it is not a full POSIX subsyste
 
 Matt P. Dziubinski successfully used Apophenia via MinGW; here are his instructions (with edits by BK):
 
-\li For the Python interface, get Python Windows installer from: http://python.org/download/
-
-\li If installed to "c:\bin\prog\Python2", for example, you'll need to set:
-\code
-export PYTHON=/C/bin/prog/Python2/python
-\endcode
-
-\li Get SWIG at: http://www.swig.org/download.html . Being on Windows, I've opted for "swigwin".
-
 \li get libregex (the ZIP file) from:
 http://sourceforge.net/project/showfiles.php?group_id=204414&package_id=306189
 \li get libintl (three ZIP files) from:
@@ -1918,13 +1870,6 @@ http://kayalang.org/download/compiling/windows
 \code
 make
 \endcode
-
-\li Compile the Python interface:
-\code
-make apop.py
-\endcode
-should now run OK. Ignore warnings that
-<em>'print' is a python keyword...</em>.
 
 \li Finally, put one more expected directory in place and install:
 \code
