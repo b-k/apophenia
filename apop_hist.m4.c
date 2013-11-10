@@ -99,7 +99,106 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
     return out;
 }
 
-/*psmirnov2x is cut/pasted/trivially modified from the R project. Copyright them. */
+/*Everything from here to psmirnov2x (inclusive) is cut/pasted/trivially modified from the R project. Copyright them. */
+static void m_multiply(long double *A, long double *B, long double *C, int m) {
+    /* Auxiliary routine used by K().
+       Matrix multiplication.
+    */
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < m; j++) {
+            long double s = 0;
+            for (int k = 0; k < m; k++)
+                s += A[i * m + k] * B[k * m + j];
+            C[i * m + j] = s;
+        }
+}
+
+static void m_power(long double *A, int eA, long double *V, int *eV, int m, int n) {
+    /* Auxiliary routine used by K().
+       Matrix power.
+    */
+    long double *B;
+    int eB, i;
+
+    if (n == 1) {
+        for (i = 0; i < m * m; i++)
+            V[i] = A[i];
+        *eV = eA;
+        return;
+    }
+    m_power(A, eA, V, eV, m, n / 2);
+    B = calloc(m * m, sizeof(long double));
+    m_multiply(V, V, B, m);
+    eB = 2 * (*eV);
+    if ((n % 2) == 0) {
+        for (i = 0; i < m * m; i++)
+            V[i] = B[i];
+        *eV = eB;
+    } else {
+        m_multiply(A, B, V, m);
+        *eV = eA + eB;
+    }
+    if (V[(m / 2) * m + (m / 2)] > 1e140) {
+        for (i = 0; i < m * m; i++)
+            V[i] = V[i] * 1e-140;
+        *eV += 140;
+    }
+    free(B);
+}
+
+/* The two-sided one-sample 'exact' distribution */
+static double kolmogorov_2x(int n, double d) {
+    /* Compute Kolmogorov's distribution.
+       Code published in
+	 George Marsaglia and Wai Wan Tsang and Jingbo Wang (2003),
+	 "Evaluating Kolmogorov's distribution".
+	 Journal of Statistical Software, Volume 8, 2003, Issue 18.
+	 URL: http://www.jstatsoft.org/v08/i18/.
+    */
+
+   int k, m, i, j, g, eH, eQ;
+   long double h, s, *H, *Q;
+
+   /* The faster right-tail approximation is omitted here.
+      s = d*d*n; 
+      if(s > 7.24 || (s > 3.76 && n > 99)) 
+          return 1-2*exp(-(2.000071+.331/sqrt(n)+1.409/n)*s);
+   */
+   k = (n * d) + 1;
+   m = 2 * k - 1;
+   h = k - n * d;
+   H = calloc(m * m, sizeof(long double));
+   Q = calloc(m * m, sizeof(long double));
+   for(i = 0; i < m; i++)
+       for(j = 0; j < m; j++)
+           if (i - j + 1 < 0) H[i * m + j] = 0;
+           else               H[i * m + j] = 1;
+   for(i = 0; i < m; i++) {
+       H[i * m] -= pow(h, i + 1);
+       H[(m - 1) * m + i] -= pow(h, (m - i));
+   }
+   H[(m - 1) * m] += ((2 * h - 1 > 0) ? pow(2 * h - 1, m) : 0);
+   for(i = 0; i < m; i++)
+       for(j=0; j < m; j++)
+           if(i - j + 1 > 0)
+               for(g = 1; g <= i - j + 1; g++)
+                   H[i * m + j] /= g;
+   eH = 0;
+   m_power(H, eH, Q, &eQ, m, n);
+   s = Q[(k - 1) * m + k - 1];
+   for(i = 1; i <= n; i++) {
+       s = s * i / n;
+       if(s < 1e-140) {
+           s *= 1e140;
+           eQ -= 140;
+       }
+   }
+   s *= pow(10., eQ);
+   free(H);
+   free(Q);
+   return(s);
+}
+
 static double psmirnov2x(double x, int m, int n) {
     if(m > n) {
         int tmp = n; n = m; m = tmp;
@@ -108,13 +207,13 @@ static double psmirnov2x(double x, int m, int n) {
     double nd = n;
         // q has 0.5/mn added to ensure that rounding error doesn't
         // turn an equality into an inequality, eg abs(1/2-4/5)>3/10
-    double q = (.5+floor(x * md * nd - 1e-7)) / (md * nd);
-    double u[n+1];
+    long double q = (.5+floor(x * md * nd - 1e-7)) / (md * nd);
+    long double u[n+1];
 
     for(int j = 0; j <= n; j++) 
         u[j] = ((j / nd) > q) ? 0 : 1;
     for(int i = 1; i <= m; i++) {
-        double w = i/(i + nd);
+        long double w = i/(i + nd);
         u[0] = (i / md) > q 
                 ? 0
                 : w * u[0];
@@ -128,38 +227,61 @@ static double psmirnov2x(double x, int m, int n) {
 
 /** Run the Kolmogorov-Smirnov test to determine whether two distributions are identical.
 
-\param m1, m2  Two models, most likely of \ref apop_pmf type. I will ue the cdf method, so if your function doesn't have one, expect this to run the slow default. I run it for each row of each data set, so if your model has a \c NULL at the data, I won't know what to do. 
- 
-\return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov test that the two distributions are equal.
+\param m1 A sorted PMF model. I.e., a model estimated via something like 
 
-\li <b>The data sets must be sorted before you call this.</b> See \ref apop_data_sort.
+\code
+apop_model *m1 = apop_estimate(apop_data_sort(input_data), apop_pmf);
+\endcode
+
+\param m2  Another \ref apop_model. If it is a PMF, then I will use a two-sample test,
+which is different from the one-sample test used if this is not a PMF.
+
+\return An \ref apop_data set including the \f$p\f$-value from the Kolmogorov-Smirnov
+test that the two distributions are equal.
+
+\exception out->error='m'  Model error: \c m1 is not an \ref apop_pmf. I verify this
+by checking whether <tt>m1->cdf == apop_pmf->cdf<tt>.
+
+\li If you are using a \ref apop_pmf model, <b>the data set(s) must be sorted before
+you call this.</b> See \ref apop_data_sort and the discussion of CDFs in the \ref
+apop_pmf documentation. If you don't do this, the test will almost certainly reject
+the null hypothesis that \c m1 and \cm2 are identical.
+
+Here is an example, which tests whether a set of draws from a Normal(0, 1) matches a
+sequence of Normal distributions with increasing mean.
 
 \include ks_tests.c
 
 \ingroup histograms
 */
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
-    bool m1_is_pmf = (m1->cdf == apop_pmf->cdf);
+    Apop_stopif(m1->cdf != apop_pmf->cdf, apop_return_data_error('m'), 
+            0, "First model has to be a PMF. I check whether m1->cdf == apop_pmf->cdf.");
     bool m2_is_pmf = (m2->cdf == apop_pmf->cdf);
-    //version for not a pair of histograms
 
-    int drawct = /* I dunno. */ 1000;
     int maxsize1, maxsize2;
-    {Get_vmsizes(m1->data); maxsize1 = maxsize;}//copy one of the macro's variables 
-    {Get_vmsizes(m2->data); maxsize2 = maxsize;}//  to the full function's scope.
-    double largest_diff=GSL_NEGINF;
+    {Get_vmsizes(m1->data); maxsize1 = maxsize;} //copy one of the macro's variables 
+    {Get_vmsizes(m2->data); maxsize2 = maxsize;} //to the full function's scope.
+    double largest_diff = GSL_NEGINF;
+    double sum = 0;
     for (size_t i=0; i< maxsize1; i++){
-        Apop_data_row(m1->data, i, arow);
-        largest_diff = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
+        Apop_row(m1->data, i, arow);
+        sum += m1->data->weights ? gsl_vector_get(m1->data->weights, i) : 1./maxsize1;
+        largest_diff = GSL_MAX(largest_diff, fabs(sum-apop_cdf(arow, m2)));
     }
-    for (size_t i=0; i< maxsize2; i++){     //There should be matched data rows, so there is redundancy.
-        Apop_data_row(m2->data, i, arow); // Feel free to submit a smarter version.
-        largest_diff = GSL_MAX(largest_diff, fabs(apop_cdf(arow, m1)-apop_cdf(arow, m2)));
+    if (m2_is_pmf){
+        double sum = 0;
+        for (size_t i=0; i< maxsize2; i++){     //There could be matched data rows to m1, so there is redundancy.
+            Apop_data_row(m2->data, i, arow);   // Feel free to submit a smarter version.
+            sum += m2->data->weights ? gsl_vector_get(m2->data->weights, i) : 1./maxsize2;
+            largest_diff = GSL_MAX(largest_diff, fabs(sum-apop_cdf(arow, m2)));
+        }
     }
     apop_data *out = apop_data_alloc();
     asprintf(&out->names->title, "Kolmogorov-Smirnov test");
     apop_data_add_named_elmt(out, "max distance", largest_diff);
-    double ps = psmirnov2x(largest_diff, maxsize1, maxsize2);
+    double ps = m2_is_pmf ? psmirnov2x(largest_diff, maxsize1, maxsize2)
+                          : kolmogorov_2x(maxsize1, largest_diff);
     apop_data_add_named_elmt(out, "p value, 2 tail", 1-ps);
     apop_data_add_named_elmt(out, "confidence, 2 tail", ps);
     return out;

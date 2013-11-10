@@ -91,7 +91,7 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     if (!m->cdf || !strcmp(m->name, "Bernoulli distribution")
                 || !strcmp(m->name, "Binomial distribution"))
         return;
-    int drawct = 1e4;
+    int drawct = 1e3;
     apop_data *draws = apop_data_alloc(drawct, m->dsize);
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
@@ -100,6 +100,14 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
         Apop_row(draws, i, one_data_pt);
         apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
     }
+    apop_model *cdf = apop_estimate(apop_data_sort(cdfs), apop_pmf);
+    apop_model *u01 = apop_model_set_parameters(apop_uniform, 0, 1);
+    apop_data *ktest = apop_test_kolmogorov(cdf, u01);
+    //apop_data_show(ktest);
+    double maxdist = apop_data_get(ktest, .rowname="max distance");
+    assert(maxdist < .03); //the K-S test has high confidence of rejection with large N
+    apop_data_free(ktest); apop_data_free(draws); apop_data_free(cdfs);
+    apop_model_free(u01);  apop_model_free(cdf);
 }
 
 double true_parameter_v[] = {1.82,2.1};

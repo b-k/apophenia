@@ -4,18 +4,9 @@
 
 //Produce two models with synced PMFs.
 //To do: rewrite the K-S test so that this is unnecessary
-void models_to_pmfs(apop_model *m1, apop_model *m2, int size, gsl_rng *r,
-        apop_model **out1, apop_model **out2){
+apop_model * model_to_pmfs(apop_model *m1, int size, gsl_rng *r){
     apop_data *outd1 = apop_model_draws(m1, size, r);
-    apop_data_sort(outd1);
-    apop_data *outd2 = apop_data_copy(outd1);
-    outd2->weights = gsl_vector_alloc(size);
-    for(int i=0; i< size; i++){
-        Apop_data_row(outd1, i, onerow);
-        gsl_vector_set(outd2->weights, i, apop_p(onerow, m2));
-    }
-    *out1= apop_estimate(outd1, apop_pmf);
-    *out2= apop_estimate(outd2, apop_pmf);
+    return apop_estimate(apop_data_sort(outd1), apop_pmf);
 }
 
 #ifndef Testing
@@ -26,21 +17,24 @@ void models_to_pmfs(apop_model *m1, apop_model *m2, int size, gsl_rng *r,
 
 int main(){
     apop_model *n1 = apop_model_set_parameters(apop_normal, 0, 1);
-    apop_model *pmf1, *pmf2;
     gsl_rng *r = apop_rng_alloc(123);
+    apop_model *pmf1 = model_to_pmfs(n1, 5e2, r);
     apop_data *ktest;
 
     //as the mean m drifts, the pval for a comparison
     //between a N(0, 1) and N(m, 1) gets smaller.
     cprintf("mean\tpval\n");
     double prior_pval = 18;
-    for(double i=0; i<= 1; i+=0.2){
+    for(double i=0; i<= .5; i+=0.1){
         apop_model *n11 = apop_model_set_parameters(apop_normal, i, 1);
-        models_to_pmfs(n1, n11, 5e2, r, &pmf1, &pmf2);
-        ktest = apop_test_kolmogorov(pmf1, pmf2);
+        ktest = apop_test_kolmogorov(pmf1, n11);
+        #ifndef Testing
+            apop_data_show(ktest);
+        #endif
         double pval = apop_data_get(ktest, .rowname="p value, 2 tail");
         assert(pval < prior_pval);
         cprintf("%g\t%g\n", i, pval);
         prior_pval = pval;
     }
+    apop_model_free(pmf1);
 }

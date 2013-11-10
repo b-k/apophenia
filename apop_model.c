@@ -506,12 +506,14 @@ Here are many examples using common, mostly symmetric distributions.
 double apop_cdf(apop_data *d, apop_model *m){
     if (m->cdf) return m->cdf(d, m);
     apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);
-    if (!cs)
-        cs = Apop_model_add_group(m, apop_cdf);
+    if (!cs) cs = Apop_model_add_group(m, apop_cdf);
     long int tally = 0; 
-    Apop_matrix_row(d->matrix, 0, ref);
+    Apop_row(d, 0, row);
+    gsl_vector *ref = apop_data_pack(row);
     if (!cs->draws_made){
-        cs->draws_made= gsl_matrix_alloc(cs->draws, m->dsize == -1? ref->size : m->dsize);
+        if (m->dsize == -1) apop_prep(d, m);
+        Apop_stopif(m->dsize==0, return GSL_NAN, 0, "I need to make random draws from your model, but it has dsize==0. Returning NaN");
+        cs->draws_made = gsl_matrix_alloc(cs->draws, m->dsize);
         for (int i=0; i< cs->draws; i++){
             Apop_matrix_row(cs->draws_made, i, onerow);
             apop_draw(onerow->data, cs->rng, m);
@@ -521,6 +523,7 @@ double apop_cdf(apop_data *d, apop_model *m){
         Apop_matrix_row(cs->draws_made, i, onerow);
         tally += lte(onerow, ref);
     }
+    gsl_vector_free(ref);
     return tally/(double)cs->draws_made->size1;
 }
 

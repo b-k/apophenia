@@ -54,6 +54,7 @@ equally probable.
 the \c vector element. If you put the weights in the \c vector and have \c NULL \c
 weights, then draws are equiprobable. This will be difficult to debug.
 
+
 \adoc    Input_format     As above, you can input to the \c estimate
                       routine a 2-D matrix that will be converted into this form.     
 \adoc    Parameter_format  None. The list of observations and their weights are in the \c data set, not the \c parameters.
@@ -63,19 +64,20 @@ weights, then draws are equiprobable. This will be difficult to debug.
 #include "apop_internal.h"
 
 Apop_settings_copy(apop_pmf,
-    if (in->cmf){
-        out->cmf = apop_vector_copy(in->cmf);
-        out->cmf_refct++;
-    }
+    (*out->cmf_refct)++;
 )
 
 Apop_settings_free(apop_pmf,
-    if (!(--in->cmf_refct)) gsl_vector_free(in->cmf);
+    if (!(--in->cmf_refct)) {
+        gsl_vector_free(in->cmf);
+        free(in->cmf_refct);
+    }
 ) 
 
 Apop_settings_init(apop_pmf,
     Apop_varad_set(draw_index, 'n')
-    out->cmf_refct = 1;
+    out->cmf_refct = calloc(1, sizeof(int));
+    (*out->cmf_refct)++;
 )
 
 
@@ -124,10 +126,12 @@ Apop_settings_add(your_model, apop_pmf, draw_index, 'y');
 
 then I will return the row number of the draw, not the data in that row. 
 
-\li  The first time you draw from a PMF, I will generate a CMF (Cumulative Mass
-Function). For an especially large data set this may take a human-noticeable amount
-of time. The CMF will be stored in <tt>parameters->weights[1]</tt>, and subsequent
-draws will have no computational overhead. 
+\li  The first time you draw from a PMF with uneven weights, I will generate a
+vector tallying the cumulative mass. Subsequent draws will have no computational
+overhead. Because the  vector is built using the data on the first call to this or
+the \c cdf method, do not rearrange or modify the data after the first call. I.e.,
+if you choose to use \ref apop_data_sort or \ref apop_data_pmf_sort on your data,
+do it before the first draw or CDF calculation.
 
 \exception m->error='f' There is zero or NaN density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
 \exception m->error='a' Allocation error. I set the model's \c error element to \c 'a' and set <tt>out=NAN</tt>. Maybe try \ref apop_data_pmf_compress first?
@@ -252,12 +256,37 @@ static long double pmf_p(apop_data *d, apop_model *m){
     return p;
 }
 
-/*
+/* \adoc    CDF  <b>Assuming the data is sorted in a meaningful manner</b>, find the total mass up to a given data point.
+
+That is, a CDF only makes sense if the data space is totally ordered. The sorting you
+define using \ref apop_data_sort defines that ordering.
+
+\li The input data should have the same number of columns as the data set used to construct the PMF. I use only the first row.
+
+\li If the observation is not found in the data, return zero.
+
+\li  The first time you get a CDF from from a data set with uneven weights, I
+will generate a vector tallying the cumulative mass. Subsequent draws will have no
+computational overhead. Because the  vector is built using the data on the first call
+to this or the \c cdf method, do not rearrange or modify the data after the first
+call. I.e., if you choose to use \ref apop_data_sort or \ref apop_data_pmf_sort on
+your data, do it before the first draw or CDF calculation.
+ */
 static long double pmf_cmf(apop_data *d, apop_model *m){
-
-
-
-}*/
+    Get_vmsizes(m->data); //maxsize
+    Apop_data_row(d, 0, onerow);
+    int elmt = find_in_data(m->data, onerow);
+    if (elmt == -1) return 0; //Can't find one observation: prob=0;
+    if (!m->data->weights) return (elmt+0.0)/maxsize;
+    else {
+        apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
+        if (!settings) settings = Apop_model_add_group(m, apop_pmf);
+        if (!settings->cmf) setup_cmf(m);
+        Apop_stopif(m->error=='f', return GSL_NAN, 0, "Zero or NaN density in the PMF.");
+        gsl_vector_view v = gsl_vector_subvector(settings->cmf, 0, elmt+1);
+        return apop_sum(&v.vector);
+    }
+}
 
 static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
@@ -270,7 +299,7 @@ static void pmf_prep(apop_data * data, apop_model *model){
 }
 
 apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimate = estim, 
-                .draw = draw, .p=pmf_p, .prep=pmf_prep, /*.cdf=pmf_cmf*/};
+                .draw = draw, .p=pmf_p, .prep=pmf_prep, .cdf=pmf_cmf};
 
 
 /** Say that you have added a long list of observations to a single \ref apop_data set,

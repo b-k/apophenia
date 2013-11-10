@@ -331,7 +331,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'i' \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
@@ -356,7 +356,7 @@ APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char pos
     Apop_stopif(!(posn == 'r' || posn == 'c'), return NULL, 0, "Valid positions are 'r' or 'c'"
                                                          " you gave me '%c'. Returning NULL.", posn);
     char apop_varad_var(inplace, 'n')
-    inplace = (inplace == 'i' || inplace == 'y' || inplace == 1 || inplace == 'I' || inplace == 'Y') ? 1 : 0;
+    inplace = (inplace == 'y' || inplace == 1 || inplace == 'Y') ? 1 : 0;
 APOP_VAR_ENDHEAD
     if (!m1) return apop_data_copy(m2);
     if (!m2) return inplace ? m1 : apop_data_copy(m1);
