@@ -306,7 +306,7 @@ void test_listwise_delete(){
 void test_nan_data(){
     apop_text_to_db("test_data_nans", "nandata");
     strcpy(apop_opts.db_name_column, "head");
-    strcpy(apop_opts.db_nan, "(nan|\\.)");
+    apop_opts.nan_string = "(nan|\\.)";
     apop_data *d  = apop_query_to_data("select * from nandata");
     apop_data_print(d, "nantest", .output_type='d');
     apop_data_free(d);
@@ -315,7 +315,7 @@ void test_nan_data(){
     assert(gsl_isnan(apop_data_get(d2, .rowname="third", .colname="b")));
     assert(!apop_data_get(d2, .rowname="fourth", .colname="b"));
     apop_data_free(d2);
-    strcpy(apop_opts.db_nan, "NaN");
+    apop_opts.nan_string = "NaN";
     
     //while we're here, test querying just names & no data.
     apop_data *justnames = apop_query_to_data("select head from nandata");

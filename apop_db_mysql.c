@@ -152,7 +152,7 @@ static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
 		out[currentrow]	= malloc(sizeof(char*) * total_cols);
 		for (size_t jj=0;jj<total_cols;jj++){
 			if (row[jj]==NULL)
-				asprintf(&(out[currentrow][jj]), "%s", apop_opts.db_nan);
+				asprintf(&(out[currentrow][jj]), "%s", apop_opts.nan_string);
 			else
 				asprintf(&(out[currentrow][jj]), "%s", row[jj]);
 		}

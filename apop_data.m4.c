@@ -633,7 +633,7 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
 }
 
 
-/** Remove the columns set to one in the \c drop vector.
+/* Remove the columns set to one in the \c drop vector.
 The returned data structure looks like it was modified in place, but the data matrix and the names are duplicated before being pared down, so if your data is taking up more than half of your memory, this may not work.
 
 \param d the \ref apop_data structure to be pared down. 
@@ -1139,7 +1139,7 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 
 
 /** Add a string to the text element of an \ref apop_data set.  If you
- send me a \c NULL string, I will write the value of  <tt>apop_opts.db_nan</tt> in the given slot.
+ send me a \c NULL string, I will write the value of  <tt>apop_opts.nan_string</tt> in the given slot.
  If there is already something in that slot, that string is freed, preventing memory leaks.
 
 \param in   The \ref apop_data set, that already has an allocated \c text element.
@@ -1178,7 +1178,7 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
     free (in->text[row][col]);
     if (!fmt){
-        asprintf(&(in->text[row][col]), "%s", apop_opts.db_nan);
+        asprintf(&(in->text[row][col]), "%s", apop_opts.nan_string);
         return 0;
     }
     va_list argp;

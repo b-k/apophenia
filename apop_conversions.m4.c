@@ -372,17 +372,20 @@ point. E.g., try: \code
 \endcode
 
 If you have missing data delimiters, you will need to set \ref apop_opts_type
-"apop_opts.db_nan" to text that matches the given format. E.g.,
+"apop_opts.nan_string" to text that matches the given format. E.g.,
 
 \code
 //Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
-strcpy(apop_opts.db_nan, "NaN");
-strcpy(apop_opts.db_nan, "Missing");
-strcpy(apop_opts.db_nan, ".");
+apop_opts.nan_string = "NaN";
+apop_opts.nan_string = "Missing";
+apop_opts.nan_string = ".";
+
+//Or, turn off nan-string checking entirely with:
+apop_opts.nan_string = NULL;
 \endcode
 
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
-\ref apop_query_to_data will convert both your db_nan string and \c NULL to an \c NaN value.
+\ref apop_query_to_data will convert both your nan_string string and \c NULL to an \c NaN value.
 
 \li The system uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
@@ -986,7 +989,8 @@ static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_
  --If the string isn't a number, it needs quotes
  */
 char *prep_string_for_sqlite(int prepped_statements, char const *astring){
-    if (!astring || astring[0]=='\0' || !strcasecmp(apop_opts.db_nan, astring))
+    if (!astring || astring[0]=='\0' || 
+            (apop_opts.nan_string && !strcasecmp(apop_opts.nan_string, astring)))
         return NULL;
 
     char *out  = NULL,

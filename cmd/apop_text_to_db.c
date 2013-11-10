@@ -53,10 +53,8 @@ int main(int argc, char **argv){
 	}
 	while ((c = getopt (argc, argv, "n:d:f:hmp:ru:vN:O")) != -1)
         if (c=='n') {
-              if (optarg[0]=='c')
-			    colnames='n';
-              else
-                strcpy(apop_opts.db_nan, optarg);
+              if (optarg[0]=='c') colnames='n';
+              else                apop_opts.nan_string = optarg;
         }
 		else if (c=='N') {
             apop_regex(optarg, " *([^,]*[^ ]) *(,|$) *", &field_name_data);

@@ -21,7 +21,7 @@ static double find_smallest_larger_than(apop_data const *sort_order, double *x){
             }
     if (*sort_order->textsize)
         for (int i=0; i< sort_order->textsize[1]; i++)
-            if (strcmp(sort_order->text[0][i], apop_opts.db_nan)
+            if (apop_opts.nan_string && strcmp(sort_order->text[0][i], apop_opts.nan_string)
                     && (v=atof(sort_order->text[0][i])) > *x && v < candidate_val){
                 candidate_val = v;
                 candidate_col = i+0.5;
@@ -32,7 +32,7 @@ static double find_smallest_larger_than(apop_data const *sort_order, double *x){
         candidate_col = -2;
     }
     if (sort_order->names->rowct)
-        if (strcmp(*sort_order->names->row, apop_opts.db_nan)
+        if (apop_opts.nan_string && strcmp(*sort_order->names->row, apop_opts.nan_string)
                 && (v=atof(*sort_order->names->row)) > *x && v < candidate_val){
             candidate_val = v;
             candidate_col = 0.2;

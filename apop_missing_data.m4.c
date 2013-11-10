@@ -8,7 +8,7 @@
 /** If there is an NaN anywhere in the row of data (including the matrix, the vector, the weights, and the text) then delete the row from the data set.
 
 \li If every row has an NaN, then this returns \c NULL.
-\li If \c apop_opts.db_nan is not \c NULL, then I will make case-insensitive comparisons to the text elements to check for bad data as well.
+\li If \c apop_opts.nan_string is not \c NULL, then I will make case-insensitive comparisons to the text elements to check for bad data as well.
 \li If \c inplace = 'y', then I'll free each element of the input data
     set and refill it with the pruned elements. I'll still take up (up to)
     twice the size of the data set in memory during the function. If
@@ -47,11 +47,11 @@ APOP_VAR_ENDHEAD
     for (int i=0; i< wsize; i++)
         if (gsl_isnan(gsl_vector_get(d->weights, i)))
             marked[i] = 1;
-    if (d->textsize[0] && apop_opts.db_nan){
+    if (d->textsize[0] && apop_opts.nan_string){
         for(int i=0; i< d->textsize[0]; i++)
             if (!marked[i])
                 for(int j=0; j< d->textsize[1]; j++)
-                    if (!strcasecmp(apop_opts.db_nan, d->text[i][j])){
+                    if (!strcasecmp(apop_opts.nan_string, d->text[i][j])){
                         marked[i] ++;
                         break;
                     }

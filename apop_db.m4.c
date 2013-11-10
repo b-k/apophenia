@@ -9,7 +9,7 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 apop_opts_type apop_opts	= 
           { .verbose=1,
             .output_delimiter ="\t",       .input_delimiters = "|,\t", 
-            .db_name_column = "row_names", .db_nan = "NaN", 
+            .db_name_column = "row_names", .nan_string = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .thread_count = 1,
             .log_file = NULL,
@@ -181,7 +181,7 @@ int min_height = 175;
 apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
 \endcode
 
-\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.db_nan" are filled with <tt>NAN</tt>s in the matrix.
+\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
 
   \{
   */
@@ -222,7 +222,7 @@ int apop_query(const char *fmt, ...){
 
 \li <tt>query_output->text</tt> is always a 2-D array of strings, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
 
-\li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.db_nan. The default is \c "NaN", but you can use <tt>sprintf(apop_opts.db_nan, "whatever you like")</tt> to change the text to whatever you like.
+\li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.nan_string. The default is \c "NaN", but you can set <tt>apop_opts.nan_string = "whatever you like"</tt> to change the text to whatever you like.
 
 \li Returns \c NULL if your query is valid but returns zero rows.
 
@@ -273,7 +273,8 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
     for (int jj=0;jj<argc;jj++)
         if (jj != qi->namecol){
             double valor = 
-                !argv[jj] || !strcmp(argv[jj], "NULL")|| !strcasecmp(apop_opts.db_nan, argv[jj])
+                !argv[jj] || !strcmp(argv[jj], "NULL")|| 
+                (apop_opts.nan_string && !strcasecmp(apop_opts.nan_string, argv[jj]))
                  ? GSL_NAN : atof(argv[jj]);
             gsl_matrix_set(qi->outdata->matrix,qi->currentrow,jj-ncfound, valor);
         } else {

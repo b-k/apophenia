@@ -84,7 +84,7 @@ some things that are noteworthy.
 called `CSV files', meaning <em>comma-separated values</em>, but the delimiter can be
 anything (or even some mix of things), and there is no requirement that text have
 "special delimiters". Missing data can be specified by a simple blank or a marker
-of your choosing (e.g., <tt>sprintf(apop_opts.db_nan, "N/A");</tt>). Or there can be
+of your choosing (e.g., <tt>apop_opts.nan_string = "N/A";</tt>). Or there can be
 no delimiters, as in the case of fixed-width files. If you are a heavy SQLite user,
 Apophenia may be useful to you simply for its \ref apop_text_to_db function.
 
