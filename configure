@@ -8,7 +8,7 @@ then
 echo "I couldn't find and execute autoreconf, part of the Autotools suite. See README for details."
 else
 
-echo "Don't forget: Apophenia always depends on the GNU Scientific Library and SQLite3 (_and_ their -dev or -devel headers) to build and run."
+echo "Don't forget: Apophenia always depends on the GNU Scientific Library and SQLite3 (_and_ their -dev or -devel packages) to build and run."
 mkdir -p $workdir/m4
 cp -r *.h *.c cmd docs eg install/* model tests transform README ChangeLog $workdir
 #mkdir -p $workdir/tests/apophenia

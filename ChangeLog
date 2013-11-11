@@ -6,6 +6,8 @@
 
 	November 2013
 --rewrite apop_data_sort to allow sorting by multiple columns or text or names
+--apop_pmf now has a CDF method.
+--fixed up K-S tests.
 --removed the Swig Python wrapper from this package.
 **replaced char apop_opts.db_nan[101] with char *apop_opts.nan_string. More descriptive, easier to use.
 

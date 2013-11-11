@@ -683,13 +683,14 @@ columns into a list of strings, adds a \c NULL string at the end, and calls that
 \param d The data set to prune.
 \param colnames A null-terminated list of names to retain (i.e. the columns that shouldn't be pruned
 out). 
+\return A pointer to the input data set, now pruned.
   */
-void apop_data_prune_columns_base(apop_data *d, char **colnames){
+apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
     find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
-    Apop_stopif(!d, return, 1, "You're asking me to prune a NULL data set; returning.");
-    Apop_stopif(!d->matrix, return, 1, "You're asking me to prune a data set with NULL matrix; returning.");
+    Apop_stopif(!d, return NULL, 1, "You're asking me to prune a NULL data set; returning.");
+    Apop_stopif(!d->matrix, return d, 1, "You're asking me to prune a data set with NULL matrix; returning.");
     int rm_list[d->matrix->size1];
     int keep_count = 0;
     char **name_step = colnames;
@@ -713,6 +714,7 @@ void apop_data_prune_columns_base(apop_data *d, char **colnames){
     apop_data_rm_columns(d, rm_list);
     for (int j=0; j<keep_count; j++)
         Apop_stopif(!used_field[j], , 1, "You asked me to keep column \"%s\" but I couldn't find a match for it. Typo?", colnames[j]);
+    return d;
 }
 
 /** \defgroup data_set_get Set/get/point to the data element at the given point
@@ -1277,7 +1279,6 @@ APOP_VAR_HEAD apop_data * apop_data_transpose(apop_data const *in, char transpos
     apop_data const * apop_varad_var(in, NULL);
     Apop_stopif(!in, return NULL, 1, "Transposing a NULL data set; returning NULL.");
     char apop_varad_var(transpose_text, 'y');
-
 APOP_VAR_ENDHEAD
     Apop_stopif(!in->matrix && !*in->textsize, return apop_data_alloc(), 
             1, "input data set has neither matrix nor text elements; returning an empty data set.");
@@ -1491,7 +1492,7 @@ APOP_VAR_ENDHEAD
 
 typedef int (*apop_fn_ir)(apop_data*, void*);
 
-/** Remove the columns set to one in the \c drop vector or for which the \c do_drop function returns one.  
+/** Remove the rows set to one in the \c drop vector or for which the \c do_drop function returns one.  
   \param in the \ref apop_data structure to be pared down
   \param drop  a vector with as many elements as the max of the vector, matrix, or text
   parts of \c in, with a one marking those columns to be removed.       \ingroup names
@@ -1504,18 +1505,20 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
   \ref apop_data_rm_rows uses \ref Apop_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
 
+\return Returns a pointer to the input data set, now pruned.
+
   \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
 
  \li The typical use is to provide only a list or only a function. If both are \c NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose >=1</tt>. If you provide both, I will drop the row if either the vector has a one in that row's position, or if the function returns a nonzero value.
  \li This function uses the \ref designated syntax for inputs.
 */  
-APOP_VAR_HEAD void apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
+APOP_VAR_HEAD apop_data* apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);
-    Apop_stopif(!in, return, 1, "Input data set was NULL; no changes made.");
+    Apop_stopif(!in, return in, 1, "Input data set was NULL; no changes made.");
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
-    Apop_stopif(!drop && !do_drop, return, 0, "You gave me neither a list of ints "
+    Apop_stopif(!drop && !do_drop, return in, 0, "You gave me neither a list of ints "
             "indicating which rows to drop, nor a drop_fn I can use to test "
             "each row. Returning with no changes made.");
 APOP_VAR_ENDHEAD
@@ -1555,4 +1558,5 @@ APOP_VAR_ENDHEAD
             free(in->names->row[k]);
         in->names->rowct = outlength;
     }
+    return in;
 }
