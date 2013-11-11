@@ -109,8 +109,8 @@ Functions</h2>
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a> (<a class="el" href="structapop__data.html">apop_data</a> *intab)
 <li>int <a class="el" href="stats_8h.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> (gsl_matrix *m, char semi)
 <li>double <a class="el" href="stats_8h.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a> (gsl_matrix *m)
-<li>double <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> (double a, double p)
-<li>double <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> (double a, double p)
+<li>long double <a class="el" href="stats_8h.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> (double a, int p)
+<li>long double <a class="el" href="stats_8h.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> (double a, int p)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a> (gsl_vector *a, gsl_vector *b)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a> (gsl_vector *a, gsl_vector *b)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="stats_8h.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a> (char *table, char *data, char *grouping1, char *grouping2)
@@ -218,7 +218,7 @@ gsl_vector * v = &amp;( apop_vv_##v );
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_column((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#a6c71f6c23090592a291fc878c8836120">apop_name_find</a>((m)-&gt;names, col, <span class="charliteral">&#39;c&#39;</span>)).vector;\
+<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_column((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#ac1b94277b0055f11d00f6dd26cb70e00">apop_name_find</a>((m)-&gt;names, col, <span class="charliteral">&#39;c&#39;</span>)).vector;\
 gsl_vector * v = &amp;( apop_vv_##v );
 </pre></div>
 </div>
@@ -406,7 +406,7 @@ gsl_vector * v = &amp;( apop_vv_##v );
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_row((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#a6c71f6c23090592a291fc878c8836120">apop_name_find</a>((m)-&gt;names, row, <span class="charliteral">&#39;r&#39;</span>)).vector;\
+<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_row((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#ac1b94277b0055f11d00f6dd26cb70e00">apop_name_find</a>((m)-&gt;names, row, <span class="charliteral">&#39;r&#39;</span>)).vector;\
 gsl_vector * v = &amp;( apop_vv_##v );
 </pre></div>
 </div>
@@ -885,7 +885,7 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
 </pre></div></li>
 </ul>
 <ul>
-<li>The <code>.remove='y'</code> option specifies that I should use apop_data_rm_columns to remove the column used to generate the dummies. Implemented only for <code>type=='d'</code>.</li>
+<li>The <code>.remove='y'</code> option specifies that I should use <a class="el" href="types_8h.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> to remove the column used to generate the dummies. Implemented only for <code>type=='d'</code>.</li>
 </ul>
 <ul>
 <li>By specifying <code>.append='y'</code> or <code>.append='e'</code> I will run the above two lines for you. Your <a class="el" href="gentle.html#apop_data">apop_data</a> pointer will not change, but its <code>matrix</code> element will be reallocated (via <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>).</li>
@@ -1587,12 +1587,12 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 
 </div>
 </div>
-<a class="anchor" id="a463920325a6102396515d80e57e6c519"></a><!-- doxytag: member="stats.h::apop_multivariate_gamma" ref="a463920325a6102396515d80e57e6c519" args="(double a, double p)" -->
+<a class="anchor" id="a2c76ad8792959b6605402a1d71a1b6c9"></a><!-- doxytag: member="stats.h::apop_multivariate_gamma" ref="a2c76ad8792959b6605402a1d71a1b6c9" args="(double a, int p)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> </td>
+          <td class="memname">long double <a class="el" href="stats_8h.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1600,7 +1600,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -1615,17 +1615,17 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_78.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_79.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_80.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_81.png"/> takes on one of those values.</p>
-<p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_79.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_80.png"/>, this function returns <code>NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_81.png"/> takes on one of those values.</p>
+<p>See also <a class="el" href="stats_8h.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
 </div>
-<a class="anchor" id="a565a9c7bf2cb5b171cf0fce622d54bca"></a><!-- doxytag: member="stats.h::apop_multivariate_lngamma" ref="a565a9c7bf2cb5b171cf0fce622d54bca" args="(double a, double p)" -->
+<a class="anchor" id="a180b231acc3c64d07664ed2b1a8ad0e1"></a><!-- doxytag: member="stats.h::apop_multivariate_lngamma" ref="a180b231acc3c64d07664ed2b1a8ad0e1" args="(double a, int p)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> </td>
+          <td class="memname">long double <a class="el" href="stats_8h.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -1633,7 +1633,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -1644,7 +1644,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
       </table>
 </div>
 <div class="memdoc">
-<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a>. </p>
+<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="stats_8h.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a>. </p>
 
 </div>
 </div>
@@ -1715,7 +1715,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
                               30, 50, 45, 
                               34, 12, 17 );
     <a class="code" href="structapop__data.html">apop_data</a> * t2 = <a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(testdata);
-    assert(fabs(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(t2,1) - 0.0001761) &lt; 1e-6);
+    assert(fabs(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(t2,1) - 0.0001761) &lt; 1e-6);
 }
 </pre></div> 
 </div>
@@ -1995,4 +1995,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

@@ -117,7 +117,7 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 <p><h2><a class="anchor" name="status"><div class="trigger" onClick="showBranch('statusd');swapFolder('statusf')"><img src="right.png" border="0" id="statusf" alt="pip"> What is the status of the code?</div></a></h2><div class="branch" id="statusd">
 <p>[This section last updated 17 April 2013.]</p>
 <p>Apophenia was first posted to SourceForge in February 2005, which means that we've had several years to develop and test the code in real-world applications.</p>
-<p>The test suite, including the sample code and solution set for _Modeling with Data_, is about 5,500 lines over 135 files. gprof reports that it covers over 85% of the 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is that the well-worn parts, in this case functions like <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a> and <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>'s <code>log_likelihood</code>, are likely to be entirely reliable, while the out-of-the-way functions (maybe the score for the Beta distribution) are worth a bit of caution. Close to all of the code has been used in production, so all of it was at least initially tested against real-world data.</p>
+<p>The test suite, including the sample code and solution set for _Modeling with Data_, is about 5,500 lines over 135 files. gprof reports that it covers over 85% of the 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is that the well-worn parts, in this case functions like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> and <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>'s <code>log_likelihood</code>, are likely to be entirely reliable, while the out-of-the-way functions (maybe the score for the Beta distribution) are worth a bit of caution. Close to all of the code has been used in production, so all of it was at least initially tested against real-world data.</p>
 <p>It is currently at version 0.99, which is intended to indicate that it is substantially complete. Of course, a library for scientific computing, or even for that small subset that is statistics, will never cover all needs and all methods. But as it stands Apophenia's framework, based on the <a class="el" href="gentle.html#apop_data">apop_data</a> and <a class="el" href="structapop__model.html">apop_model</a>, is basicaly internally consistent, has enough tools that you can get common work done quickly, and is reasonably fleshed out with a good number of models out of the box.</p>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure is set, and there are enough functions there that you could use it as a subpackage by itself (along with the database functions) for nontrivial dealings with data.</p>
 <p>The <a class="el" href="structapop__model.html">apop_model</a> structure is much more ambitious, and although its interface is largely set, its internal system can still be improved. The promise underlying the structure is that you can provide just one item, such as an RNG or a likelihood function, and the structure will do all of the work to fill in computationally-intensive methods for everything else. Some directions aren't quite there yet (such as RNG -&gt; most other things); the default likelihood -&gt; RNG function only works for models with a domain of unidimensional reals; the PMF model (the essential bridge from data sets to empirical models) needs an internal index for faster lookups.</p>
@@ -200,7 +200,7 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 <div class="fragment"><pre class="fragment"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j&lt; data-&gt;matrix-&gt;size1; j++){
     printf(<span class="stringliteral">&quot;%s\t&quot;</span>, apop_name_get(data-&gt;names, j, <span class="charliteral">&#39;r&#39;</span>));
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = -1; i&lt; data-&gt;matrix-&gt;size2; i++)
-        printf(<span class="stringliteral">&quot;%g\t&quot;</span>, <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, j, i));
+        printf(<span class="stringliteral">&quot;%g\t&quot;</span>, <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, j, i));
     printf(<span class="stringliteral">&quot;\n&quot;</span>);
 }
 </pre></div><p>Most functions assume that the data vector, data matrix, and text have the same row count: <code>data-&gt;vector-&gt;size==data-&gt;matrix-&gt;size1</code> and <code>data-&gt;vector-&gt;size==*data-&gt;textsize</code>. This means that the <a class="el" href="structapop__name.html">apop_name</a> structure doesn't have separate vector_names, row_names, and text_row_names elements: the rownames are assumed to apply for all.</p>
@@ -213,11 +213,11 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 <li><a class="el" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy()</a> </li>
 <li><a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack()</a> </li>
-<li>apop_data_rm_columns() </li>
+<li><a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns()</a> </li>
 <li><a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split()</a> </li>
 <li><a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack()</a> </li>
-<li><a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose()</a> </li>
+<li><a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose()</a> </li>
 <li><a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack()</a> </li>
 <li><a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy()</a> </li>
 <li><a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc()</a> </li>
@@ -250,7 +250,7 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 </ul>
 <p><h2><a class="anchor" name="readin"><div class="trigger" onClick="showBranch('readind');swapFolder('readinf')"><img src="right.png" border="0" id="readinf" alt="pip"> Reading from text files</div></a></h2><div class="branch" id="readind">
 <p>The <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> function takes in the name of a text file with a grid of data in (comma|tab|pipe|whatever)-delimited format and reads it to a matrix. If there are names in the text file, they are copied in to the data set. See <a class="el" href="text_format.html">Notes on input text file formatting</a> for the full range and details of what can be read in.</p>
-<p>If you have any columns of text, then you will need to go through the database: use <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db()</a> to convert your text file to a database table, do any database-appropriate cleaning of the input data, then use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data()</a> or <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data()</a> to pull the data to a <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<p>If you have any columns of text, then you will need to go through the database: use <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db()</a> to convert your text file to a database table, do any database-appropriate cleaning of the input data, then use <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data()</a> or <a class="el" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data()</a> to pull the data to a <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
 <p></div>
 <p><h2><a class="anchor" name="datalloc"><div class="trigger" onClick="showBranch('datallocd');swapFolder('datallocf')"><img src="right.png" border="0" id="datallocf" alt="pip"> Alloc/free</div></a></h2><div class="branch" id="datallocd">
 <ul>
@@ -326,13 +326,13 @@ gsl_vector *outvector = <a class="code" href="group__convenience__fns.html#ga5ba
 <p></div>
 <p><h2><a class="anchor" name="setgetsec"><div class="trigger" onClick="showBranch('setgetsecd');swapFolder('setgetsecf')"><img src="right.png" border="0" id="setgetsecf" alt="pip"> Set/get</div></a></h2><div class="branch" id="setgetsecd">
 <p>The set/get functions can act on both names or indices. Sample usages:</p>
-<div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> twothree = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, 2, 3); <span class="comment">//just indices</span>
-<a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(data, .rowname=<span class="stringliteral">&quot;A row&quot;</span>, .colname=<span class="stringliteral">&quot;this column&quot;</span>, .val=13);
-<span class="keywordtype">double</span> AIC = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;Info&quot;</span>);
+<div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> twothree = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, 2, 3); <span class="comment">//just indices</span>
+<a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(data, .rowname=<span class="stringliteral">&quot;A row&quot;</span>, .colname=<span class="stringliteral">&quot;this column&quot;</span>, .val=13);
+<span class="keywordtype">double</span> AIC = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;Info&quot;</span>);
 </pre></div><ul>
-<li><a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get()</a> </li>
-<li><a class="el" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set()</a> </li>
-<li><a class="el" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr()</a> : returns a pointer to the element.</li>
+<li><a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get()</a> </li>
+<li><a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set()</a> </li>
+<li><a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr()</a> : returns a pointer to the element.</li>
 </ul>
 <p>See also:</p>
 <ul>
@@ -413,11 +413,11 @@ gsl_rng *r;
     <span class="comment">//Some sanity checks, for Apophenia&#39;s test suite.</span>
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){
         <span class="comment">//sign of mean == sign of t stat.</span>
-        assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(means, i, -1) * <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(tstats, i, -1) &gt;=0);
+        assert(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(means, i, -1) * <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(tstats, i, -1) &gt;=0);
 
         <span class="comment">//inverse of P-value should be the t statistic.</span>
-        assert(fabs(gsl_cdf_tdist_Pinv(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(confidences, i, -1),100) 
-                    - <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(tstats, i, -1) &lt; 1e-3));
+        assert(fabs(gsl_cdf_tdist_Pinv(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(confidences, i, -1),100) 
+                    - <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(tstats, i, -1) &lt; 1e-3));
     }
 }
 </pre></div><p>One more toy example, demonstrating the use of the <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> :</p>
@@ -430,7 +430,7 @@ gsl_rng *r;
 <span class="comment">   correctly handled. */</span>
 
 <span class="keywordtype">double</span> set_vector_to_even(<a class="code" href="structapop__data.html">apop_data</a> * r, <span class="keywordtype">int</span> index){
-    <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(r, 0, -1, 1 - (index %2));
+    <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(r, 0, -1, 1 - (index %2));
     <span class="keywordflow">return</span> 0;
 }
 
@@ -567,7 +567,7 @@ gsl_matrix *m;
 <li><a class="el" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_36.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. See also <a class="el" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </li>
 <li><a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data()</a> </li>
 <li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_36.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
-<li><a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_36.png"/> database </li>
+<li><a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_36.png"/> database </li>
 <li><a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data()</a> </li>
 <li><a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix()</a></li>
 </ul>
@@ -603,7 +603,7 @@ d-&gt;names-&gt;vector;
 <li><a class="el" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add()</a> : add one name </li>
 <li><a class="el" href="types_8h.html#aeca6159c82c21da0db82ae9ed0582dc6">apop_data_add_names()</a> : add a sequence of names at once </li>
 <li><a class="el" href="apop__name_8c.html#ab4fd369dba75ec4782400cf7378e56ec">apop_name_stack()</a> : copy the contents of one name list to another </li>
-<li><a class="el" href="apop__name_8c.html#a6c71f6c23090592a291fc878c8836120">apop_name_find()</a> : find the row/col number for a given name. </li>
+<li><a class="el" href="apop__name_8c.html#ac1b94277b0055f11d00f6dd26cb70e00">apop_name_find()</a> : find the row/col number for a given name. </li>
 <li><a class="el" href="apop__name_8c.html#af7220e4b2fe43c56593af0ceb2c7001a">apop_name_print()</a> : print the <a class="el" href="structapop__name.html">apop_name</a> struct, for diagnostic purposes.</li>
 </ul>
 <p></div>
@@ -650,7 +650,7 @@ d-&gt;names-&gt;vector;
     printf(<span class="stringliteral">&quot;\n States covered: %s\n&quot;</span>, states_as_list);
 }
 </pre></div><ul>
-<li><a class="el" href="apop__data_8c.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose()</a> : also transposes the text data. Say that you use <code>dataset = apop_query_to_text("select onecolumn from data");</code> then you have a sequence of strings, <code>d-&gt;text[0][0], d-&gt;text[1][0], </code>.... After <code><a class="el" href="structapop__data.html">apop_data</a> dt = apop_data_transpose(dataset)</code>, you will have a single list of strings, <code>dt-&gt;text[0]</code>, which is often useful as input to list-of-strings handling functions.</li>
+<li><a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose()</a> : also transposes the text data. Say that you use <code>dataset = apop_query_to_text("select onecolumn from data");</code> then you have a sequence of strings, <code>d-&gt;text[0][0], d-&gt;text[1][0], </code>.... After <code><a class="el" href="structapop__data.html">apop_data</a> dt = apop_data_transpose(dataset)</code>, you will have a single list of strings, <code>dt-&gt;text[0]</code>, which is often useful as input to list-of-strings handling functions.</li>
 </ul>
 <ul>
 <li><a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text()</a> </li>
@@ -675,10 +675,10 @@ d-&gt;names-&gt;vector;
 <p></div>
 <p><h2><a class="anchor" name="dbs"><div class="trigger" onClick="showBranch('dbsd');swapFolder('dbsf')"><img src="right.png" border="0" id="dbsf" alt="pip"> Databases</div></a></h2><div class="branch" id="dbsd">
 <p>These are convenience functions to handle interaction with SQLite or mySQL. They open one and only one database, and handle most of the interaction therewith for you.</p>
-<p>You will probably first use <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> to pull data into the database, then <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> to clean the data in the database, and finally <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> to pull some subset of the data out for analysis.</p>
+<p>You will probably first use <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> to pull data into the database, then <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> to clean the data in the database, and finally <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> to pull some subset of the data out for analysis.</p>
 <p>Also see the <a class="el" href="db_moments.html">Database moments (plus pow()!)</a> page for not-SQL-standard math functions that you can use when sending queries from Apophenia, such as <code>pow</code>, <code>stddev</code>, or <code>sqrt</code>.</p>
 <ul>
-<li><a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> : Read a text file on disk into the database. Most data analysis projects start with a call to this. </li>
+<li><a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> : Read a text file on disk into the database. Most data analysis projects start with a call to this. </li>
 <li><a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> : If you include the argument <code>.output_type='d'</code>, this prints your <a class="el" href="gentle.html#apop_data">apop_data</a> set to the database. </li>
 <li><a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> : Manipulate the database, return nothing (e.g., insert rows or create table). </li>
 <li><a class="el" href="db_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a> : Optional, for when you want to use a database on disk. </li>
@@ -726,9 +726,9 @@ d-&gt;names-&gt;vector;
 <ul>
 <li>Scalar statistics of the model are listed in the output model's <code>info</code> group, and can be retrieved via a form like</li>
 </ul>
-<div class="fragment"><pre class="fragment"><a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(your_model-&gt;info, .rowname=<span class="stringliteral">&quot;log likelihood&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(your_model-&gt;info, .rowname=<span class="stringliteral">&quot;log likelihood&quot;</span>);
 <span class="comment">//or</span>
-<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(your_model-&gt;info, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>);
+<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(your_model-&gt;info, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>);
 </pre></div><ul>
 <li>Covariances of the parameters are a page appended to the parameters; retrieve via</li>
 </ul>
@@ -765,10 +765,12 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <li><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">apop_bernoulli</a> </li>
 <li><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a> </li>
 <li><a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var()</a> </li>
-<li><a class="el" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a> </li>
-<li><a class="el" href="group__models.html#gaae78271fc81d299c910a54d8ab3c91b5">apop_chi_squared</a> </li>
-<li><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">apop_exponential</a> </li>
-<li><a class="el" href="group__models.html#ga88a178ec7fceed826f72caa52eccca93">apop_f_distribution</a> </li>
+<li><a class="el" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a></li>
+</ul>
+<ul>
+<li><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">apop_exponential</a></li>
+</ul>
+<ul>
 <li><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">apop_gamma</a> </li>
 <li><a class="el" href="types_8h.html#abbdfc523f5b269827db8cebf28216e28">apop_gaussian</a> </li>
 <li><a class="el" href="group__models.html#ga8b3ad07d082de47bc9cd85661fe9fc4b">apop_improper_uniform</a> </li>
@@ -1020,15 +1022,15 @@ end
 
 <span class="keywordtype">int</span> main(){
     <a class="code" href="structcoeff__struct.html">coeff_struct</a> co = {.scaling=100};
-    <a class="code" href="structapop__model.html">apop_model</a> b = {<span class="stringliteral">&quot;¡Bananas!&quot;</span>, .<a class="code" href="structapop__model.html#a6a098bc488ce578e0f9009f68a670cd3">log_likelihood</a>= ll, .vsize=2, 
+    <a class="code" href="structapop__model.html">apop_model</a> *b = &amp;(<a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>) {<span class="stringliteral">&quot;¡Bananas!&quot;</span>, .<a class="code" href="structapop__model.html#a6a098bc488ce578e0f9009f68a670cd3">log_likelihood</a>= ll, .vsize=2, 
                                 .more = &amp;co, .more_size=<span class="keyword">sizeof</span>(<a class="code" href="structcoeff__struct.html">coeff_struct</a>)};
-    Apop_model_add_group(&amp;b, apop_mle, .verbose=<span class="charliteral">&#39;y&#39;</span>, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa248f6334474e051473670ddab07b5217">APOP_SIMPLEX_NM</a>);
-    Apop_model_add_group(&amp;b, apop_parts_wanted);
-    <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(NULL, &amp;b);
+    Apop_model_add_group(b, apop_mle, .verbose=<span class="charliteral">&#39;y&#39;</span>, .method=<a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa248f6334474e051473670ddab07b5217">APOP_SIMPLEX_NM</a>);
+    Apop_model_add_group(b, apop_parts_wanted);
+    <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(NULL, b);
     <a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(e1, NULL);
 
-    <a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(&amp;b, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fae4f9d1edeebe0414eb66e2d7fe22579a">APOP_CG_BFGS</a>);
-    <a class="code" href="structapop__model.html">apop_model</a> *e2 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(NULL, &amp;b);
+    <a class="code" href="group__settings.html#ga8659282b6003f7c2adac6f4baad5fae4">Apop_settings_set</a>(b, apop_mle, method, <a class="code" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fae4f9d1edeebe0414eb66e2d7fe22579a">APOP_CG_BFGS</a>);
+    <a class="code" href="structapop__model.html">apop_model</a> *e2 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(NULL, b);
     <a class="code" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>(e2, NULL);
 
     gsl_vector *one = <a class="code" href="types_8h.html#af9b051e2fbe0e473dddeabfe4932ce0c">apop_vector_fill</a>(gsl_vector_alloc(2), 1, 1);
@@ -1057,7 +1059,7 @@ end
     <span class="keyword">static</span> <a class="code" href="structapop__data.html">apop_data</a> *constraint = NULL;
     <span class="keywordflow">if</span> (!constraint){
         constraint= <a class="code" href="apop__data_8c.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a>(1,1,1);
-        <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(constraint, 0, 0, 1);
+        <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(constraint, 0, 0, 1);
     }
     <span class="keywordflow">return</span> <a class="code" href="apop__linear__constraint_8c.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>(v-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, constraint, 1e-3);
 }
@@ -1136,8 +1138,8 @@ pclose(lesspipe);
 <li><a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite()</a> </li>
 <li><a class="el" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite()</a> </li>
 <li><a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic()</a> </li>
-<li><a class="el" href="apop__stats_8c.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma()</a> </li>
-<li><a class="el" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma()</a> </li>
+<li><a class="el" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma()</a> </li>
+<li><a class="el" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma()</a> </li>
 <li><a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc()</a></li>
 </ul>
 <p><h2><a class="anchor" name="Prob"><div class="trigger" onClick="showBranch('Probd');swapFolder('Probf')"><img src="right.png" border="0" id="Probf" alt="pip"> Deprecated</div></a></h2><div class="branch" id="Probd">
@@ -1157,4 +1159,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

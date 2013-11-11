@@ -118,7 +118,7 @@
 \form#117:$p\times p$
 \form#118:${\mathbf{W}}$
 \form#119:$\Gamma_p(\cdot)$
-\form#120:\[ P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
+\form#120:\[ P(\mathbf{W}, \mathbf{V}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
 \form#121:$Y = f(x_1) + f(x_2) + ... + \epsilon$
 \form#122:$j$
 \form#123:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$

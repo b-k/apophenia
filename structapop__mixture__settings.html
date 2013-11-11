@@ -28,25 +28,93 @@ urchinTracker();
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
   <div class="headertitle">
-<div class="title">apop_mixture_settings Struct Reference</div>  </div>
+<div class="title">apop_mixture_settings Struct Reference<div class="ingroups"><a class="el" href="group__settings.html">Settings</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 <!-- doxytag: class="apop_mixture_settings" --><h2><a name="pub-attribs"></a>
 Data Fields</h2>
 <ul>
-<li><a class="anchor" id="a0d7afaf00df6805d7a2cddd8a192888c"></a><!-- doxytag: member="apop_mixture_settings::model_list" ref="a0d7afaf00df6805d7a2cddd8a192888c" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> ** <b>model_list</b>
-<li><a class="anchor" id="a4035a16c0723f7d9b1605e8cbd7fe248"></a><!-- doxytag: member="apop_mixture_settings::param_sizes" ref="a4035a16c0723f7d9b1605e8cbd7fe248" args="" -->
-int * <b>param_sizes</b>
-<li><a class="anchor" id="afcd4c1f47054b057448c5c54f0be52c3"></a><!-- doxytag: member="apop_mixture_settings::cmf" ref="afcd4c1f47054b057448c5c54f0be52c3" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> * <b>cmf</b>
-<li><a class="anchor" id="af1779cb7f18e23e89b1772443cad247c"></a><!-- doxytag: member="apop_mixture_settings::refct" ref="af1779cb7f18e23e89b1772443cad247c" args="" -->
-int <b>refct</b>
+<li>gsl_vector * <a class="el" href="structapop__mixture__settings.html#accaf45aa982baaefd578695e8c5eadc4">weights</a>
+<li><a class="el" href="structapop__model.html">apop_model</a> ** <a class="el" href="structapop__mixture__settings.html#a0d7afaf00df6805d7a2cddd8a192888c">model_list</a>
 <li><a class="anchor" id="a97e96fdd675fc395442075be0e13baec"></a><!-- doxytag: member="apop_mixture_settings::model_count" ref="a97e96fdd675fc395442075be0e13baec" args="" -->
 int <b>model_count</b>
-<li><a class="anchor" id="a1b9943e3c78e0d333554a06bca4fb60d"></a><!-- doxytag: member="apop_mixture_settings::rng" ref="a1b9943e3c78e0d333554a06bca4fb60d" args="" -->
-gsl_rng * <b>rng</b>
+<li>int * <a class="el" href="structapop__mixture__settings.html#a4035a16c0723f7d9b1605e8cbd7fe248">param_sizes</a>
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="structapop__mixture__settings.html#afcd4c1f47054b057448c5c54f0be52c3">cmf</a>
+<li>int * <a class="el" href="structapop__mixture__settings.html#a53431b28e86a83e7ed4aa516c919ef48">cmf_refct</a>
 </ul>
+<hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
+<div class="textblock"><p>For mixture distributions, typically set up using <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>. See <a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a> for discussion. Please consider all elements but <code>model_list</code> and <code>weights</code> as private and subject to change. See the examples for use of these elements. </p>
+</div><hr/><h2>Field Documentation</h2>
+<a class="anchor" id="afcd4c1f47054b057448c5c54f0be52c3"></a><!-- doxytag: member="apop_mixture_settings::cmf" ref="afcd4c1f47054b057448c5c54f0be52c3" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="structapop__mixture__settings.html#afcd4c1f47054b057448c5c54f0be52c3">apop_mixture_settings::cmf</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>For internal use by the draw method. </p>
+
+</div>
+</div>
+<a class="anchor" id="a53431b28e86a83e7ed4aa516c919ef48"></a><!-- doxytag: member="apop_mixture_settings::cmf_refct" ref="a53431b28e86a83e7ed4aa516c919ef48" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int* <a class="el" href="structapop__mixture__settings.html#a53431b28e86a83e7ed4aa516c919ef48">apop_mixture_settings::cmf_refct</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>For internal use, so I can garbage-collect the CMF when needed. </p>
+
+</div>
+</div>
+<a class="anchor" id="a0d7afaf00df6805d7a2cddd8a192888c"></a><!-- doxytag: member="apop_mixture_settings::model_list" ref="a0d7afaf00df6805d7a2cddd8a192888c" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>** <a class="el" href="structapop__mixture__settings.html#a0d7afaf00df6805d7a2cddd8a192888c">apop_mixture_settings::model_list</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A <code>NULL-terminated</code> list of component models. </p>
+
+</div>
+</div>
+<a class="anchor" id="a4035a16c0723f7d9b1605e8cbd7fe248"></a><!-- doxytag: member="apop_mixture_settings::param_sizes" ref="a4035a16c0723f7d9b1605e8cbd7fe248" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int* <a class="el" href="structapop__mixture__settings.html#a4035a16c0723f7d9b1605e8cbd7fe248">apop_mixture_settings::param_sizes</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The number of parameters for each model. Useful for unpacking the params. </p>
+
+</div>
+</div>
+<a class="anchor" id="accaf45aa982baaefd578695e8c5eadc4"></a><!-- doxytag: member="apop_mixture_settings::weights" ref="accaf45aa982baaefd578695e8c5eadc4" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">gsl_vector* <a class="el" href="structapop__mixture__settings.html#accaf45aa982baaefd578695e8c5eadc4">apop_mixture_settings::weights</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The likelihood of a draw from each component. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

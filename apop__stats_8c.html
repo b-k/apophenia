@@ -60,8 +60,8 @@ Functions</h2>
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
 <li>double <a class="el" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a> (<a class="el" href="structapop__model.html">apop_model</a> *from, <a class="el" href="structapop__model.html">apop_model</a> *to, int draw_ct, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *top, <a class="el" href="structapop__model.html">apop_model</a> *bottom)
-<li>double <a class="el" href="apop__stats_8c.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> (double a, double p)
-<li>double <a class="el" href="apop__stats_8c.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> (double a, double p)
+<li>long double <a class="el" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> (double a, int p)
+<li>long double <a class="el" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> (double a, int p)
 <li>int <a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> (gsl_matrix *m, char semi)
 <li><a class="anchor" id="afc6ff60871ebd99031ac8355e427ab60"></a><!-- doxytag: member="apop_stats.c::vfabs" ref="afc6ff60871ebd99031ac8355e427ab60" args="(double *x)" -->
 void <b>vfabs</b> (double *x)
@@ -343,12 +343,12 @@ void <b>vfabs</b> (double *x)
 
 </div>
 </div>
-<a class="anchor" id="a463920325a6102396515d80e57e6c519"></a><!-- doxytag: member="apop_stats.c::apop_multivariate_gamma" ref="a463920325a6102396515d80e57e6c519" args="(double a, double p)" -->
+<a class="anchor" id="a2c76ad8792959b6605402a1d71a1b6c9"></a><!-- doxytag: member="apop_stats.c::apop_multivariate_gamma" ref="a2c76ad8792959b6605402a1d71a1b6c9" args="(double a, int p)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a> </td>
+          <td class="memname">long double <a class="el" href="stats_8h.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -356,7 +356,7 @@ void <b>vfabs</b> (double *x)
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -371,17 +371,17 @@ void <b>vfabs</b> (double *x)
 <p class="formulaDsp">
 <img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_78.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_79.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_80.png"/>, this function returns <code>GSL_NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_81.png"/> takes on one of those values.</p>
-<p>See also <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_79.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_80.png"/>, this function returns <code>NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_81.png"/> takes on one of those values.</p>
+<p>See also <a class="el" href="stats_8h.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
 </div>
-<a class="anchor" id="a565a9c7bf2cb5b171cf0fce622d54bca"></a><!-- doxytag: member="apop_stats.c::apop_multivariate_lngamma" ref="a565a9c7bf2cb5b171cf0fce622d54bca" args="(double a, double p)" -->
+<a class="anchor" id="a180b231acc3c64d07664ed2b1a8ad0e1"></a><!-- doxytag: member="apop_stats.c::apop_multivariate_lngamma" ref="a180b231acc3c64d07664ed2b1a8ad0e1" args="(double a, int p)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="stats_8h.html#a565a9c7bf2cb5b171cf0fce622d54bca">apop_multivariate_lngamma</a> </td>
+          <td class="memname">long double <a class="el" href="stats_8h.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>a</em>, </td>
@@ -389,7 +389,7 @@ void <b>vfabs</b> (double *x)
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -400,7 +400,7 @@ void <b>vfabs</b> (double *x)
       </table>
 </div>
 <div class="memdoc">
-<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="stats_8h.html#a463920325a6102396515d80e57e6c519">apop_multivariate_gamma</a>. </p>
+<p>The log of the multivariate generalization of the Gamma; see also <a class="el" href="stats_8h.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a>. </p>
 
 </div>
 </div>
@@ -612,4 +612,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

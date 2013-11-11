@@ -245,7 +245,7 @@ int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attrib
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">d</td><td>The data, with NaNs </td></tr>
-    <tr><td class="paramname">inplace</td><td>If <code>'y'</code>, clear out the pointer-to-<a class="el" href="gentle.html#apop_data">apop_data</a> that you sent in and refill with the pruned data. If <code>'n'</code>, leave the set alone and return a new data set. </td></tr>
+    <tr><td class="paramname">inplace</td><td>If <code>'y'</code>, clear out the pointer-to-<a class="el" href="gentle.html#apop_data">apop_data</a> that you sent in and refill with the pruned data. If <code>'n'</code>, leave the set alone and return a new data set. Default=<code>'n'</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -398,7 +398,7 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 
 <span class="keywordtype">int</span> main(){
     chdir(Datadir); <span class="comment">//Datadir is defined via autoconf.</span>
-    <a class="code" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a>(<span class="stringliteral">&quot;amash_vote_analysis.csv&quot;</span>, .tabname=<span class="stringliteral">&quot;amash_vote_analysis&quot;</span>);
+    <a class="code" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a>(<span class="stringliteral">&quot;amash_vote_analysis.csv&quot;</span>, .tabname=<span class="stringliteral">&quot;amash_vote_analysis&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a>(<span class="stringliteral">&quot;mntmtm&quot;</span>, <span class="stringliteral">&quot;select 1,id,party,contribs/1000.0,vote,ideology from amash_vote_analysis &quot;</span>);
 
     <span class="comment">//use the default order of columns for sorting</span>
@@ -444,7 +444,7 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 <span class="preprocessor">#else</span>
 <span class="preprocessor"></span>    <span class="keywordtype">double</span> prev = INFINITY;
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; rowvectors-&gt;vector-&gt;size; i++){
-        <span class="keywordtype">double</span> <span class="keyword">this</span> = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(rowvectors, i, -1);
+        <span class="keywordtype">double</span> <span class="keyword">this</span> = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(rowvectors, i, -1);
         assert(<span class="keyword">this</span> &lt; prev);
         prev = <span class="keyword">this</span>;
     }
@@ -535,8 +535,8 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
     printdata(binned);
     assert(<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(binned-&gt;weights)==6);
     assert(fabs(<span class="comment">//equal distance between bins</span>
-              (<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(binned, 1, -1) - <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(binned, 0, -1))
-            - (<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(binned, 2, -1) - <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(binned, 1, -1))) &lt; 1e-5);
+              (<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(binned, 1, -1) - <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(binned, 0, -1))
+            - (<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(binned, 2, -1) - <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(binned, 1, -1))) &lt; 1e-5);
 
         <span class="comment">//compressed, where the data is as in the original, but weights </span>
         <span class="comment">//are redome to accommodate repeated observations.</span>
@@ -887,7 +887,7 @@ gets_soc_security=1" is a structural zero.</p>
     assert(!subs);
 }
 </pre></div><ul>
-<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a06f38caecb66ec90b18b406b15068381">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
+<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
 </ul>
 
 </div>
@@ -1217,7 +1217,7 @@ gets_soc_security=1" is a structural zero.</p>
     <span class="comment">//distribution?</span>
     apop_data *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(draws, 1);
     <span class="keywordflow">for</span>(i=0; i &lt; draws; i ++)
-        <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(d, i, 0), r, out_h);
+        <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(d, i, 0), r, out_h);
     apop_model *out_beta = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
     <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
     <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
@@ -1308,4 +1308,4 @@ gets_soc_security=1" is a structural zero.</p>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

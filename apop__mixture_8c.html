@@ -26,7 +26,6 @@ urchinTracker();
 </div>
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Defines</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -34,11 +33,6 @@ urchinTracker();
 <div class="title">transform/apop_mixture.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="nested-classes"></a>
-Data Structures</h2>
-<ul>
-<li>struct <a class="el" href="structapop__mixture__settings.html">apop_mixture_settings</a>
-</ul>
 <h2><a name="define-members"></a>
 Defines</h2>
 <ul>
@@ -47,20 +41,18 @@ Defines</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li><a class="anchor" id="a8bb5ae0c469ce4b046b9284e94794cb1"></a><!-- doxytag: member="apop_mixture.c::mixture_show" ref="a8bb5ae0c469ce4b046b9284e94794cb1" args="(apop_model *m, FILE *out)" -->
-void <b>mixture_show</b> (<a class="el" href="structapop__model.html">apop_model</a> *m, FILE *out)
-<li><a class="anchor" id="a6a838df403c2f6f7c5441e82decc052f"></a><!-- doxytag: member="apop_mixture.c::Apop_settings_copy" ref="a6a838df403c2f6f7c5441e82decc052f" args="(apop_mixture, out&#45;&gt;cmf=in&#45;&gt;cmf?apop_model_copy(in&#45;&gt;cmf):NULL;) Apop_settings_free(apop_mixture" -->
-<b>Apop_settings_copy</b> (<a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>, out-&gt;cmf=in-&gt;cmf?<a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(in-&gt;cmf):NULL;) <a class="el" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(<a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>
-<li><a class="anchor" id="a17ce6c109e90b9978e12949af2d09f73"></a><!-- doxytag: member="apop_mixture.c::apop_model_free" ref="a17ce6c109e90b9978e12949af2d09f73" args="(in&#45;&gt;cmf)" -->
-<b>apop_model_free</b> (in-&gt;cmf)
+<li><a class="anchor" id="ad274575faa18247956b398ec54d285fc"></a><!-- doxytag: member="apop_mixture.c::Apop_settings_copy" ref="ad274575faa18247956b398ec54d285fc" args="(Apop_settings_free(apop_mixture,*&#45;&gt;cmf_refct++;)" -->
+<b>Apop_settings_copy</b> (<a class="el" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(<a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>,*-&gt;cmf_refct++;)
 <li><a class="anchor" id="a5f86887dc2f606453066f0d9d6ee6cd1"></a><!-- doxytag: member="apop_mixture.c::free" ref="a5f86887dc2f606453066f0d9d6ee6cd1" args="(in&#45;&gt;param_sizes)" -->
 <b>free</b> (in-&gt;param_sizes)
-<li><a class="anchor" id="a77ef89671f9979202b17f837554ccb1f"></a><!-- doxytag: member="apop_mixture.c::Apop_settings_init" ref="a77ef89671f9979202b17f837554ccb1f" args="(apop_mixture, Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++)))" -->
-<b>Apop_settings_init</b> (<a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>, Apop_varad_set(rng, <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(apop_opts.rng_seed++)))
-<li><a class="anchor" id="a4b4cf1f96a0004172360a66b53f4cdae"></a><!-- doxytag: member="apop_mixture.c::allocate_to_data_sets" ref="a4b4cf1f96a0004172360a66b53f4cdae" args="(apop_data *d, apop_model *m, apop_data **outsets)" -->
-void <b>allocate_to_data_sets</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, <a class="el" href="structapop__data.html">apop_data</a> **outsets)
+<li><a class="anchor" id="a828c6396991268e7dde5e2a7bb53c6f4"></a><!-- doxytag: member="apop_mixture.c::Apop_settings_init" ref="a828c6396991268e7dde5e2a7bb53c6f4" args="(apop_mixture, out&#45;&gt;cmf_refct=calloc(1, sizeof(int));(*out&#45;&gt;cmf_refct)++;) apop_model *apop_model_mixture_base(apop_model **inlist)" -->
+<b>Apop_settings_init</b> (<a class="el" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>, out-&gt;cmf_refct=calloc(1, sizeof(int));(*out-&gt;cmf_refct)++;) <a class="el" href="structapop__model.html">apop_model</a> *apop_model_mixture_base(<a class="el" href="structapop__model.html">apop_model</a> **inlist)
+<li><a class="anchor" id="a8bb5ae0c469ce4b046b9284e94794cb1"></a><!-- doxytag: member="apop_mixture.c::mixture_show" ref="a8bb5ae0c469ce4b046b9284e94794cb1" args="(apop_model *m, FILE *out)" -->
+void <b>mixture_show</b> (<a class="el" href="structapop__model.html">apop_model</a> *m, FILE *out)
 <li><a class="anchor" id="a87ed400b16439c275c68c3d794aaf0ad"></a><!-- doxytag: member="apop_mixture.c::unpack" ref="a87ed400b16439c275c68c3d794aaf0ad" args="(apop_model *min)" -->
 void <b>unpack</b> (<a class="el" href="structapop__model.html">apop_model</a> *min)
+<li><a class="anchor" id="a3fec12bb665bb9455f54a33c76cdf3ca"></a><!-- doxytag: member="apop_mixture.c::get_lls" ref="a3fec12bb665bb9455f54a33c76cdf3ca" args="(apop_data *d, apop_model *m)" -->
+<a class="el" href="structapop__data.html">apop_data</a> * <b>get_lls</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
@@ -83,17 +75,11 @@ Variables</h2>
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordtype">long</span> <span class="keywordtype">double</span> total=0;                                                            \
-    if (model_in-&gt;parameters) {                                                     \
-        gsl_vector vforsum = gsl_vector_subvector(model_in-&gt;parameters-&gt;vector, 0, ms-&gt;model_count).vector; \
-        long <span class="keywordtype">double</span> total_weight = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(&amp;vforsum);                       \
-        size_t i=0;                                                                 \
-        for (<a class="code" href="structapop__model.html">apop_model</a> **m = ms-&gt;model_list; *m; m++)                              \
-            total += fn(d, *m) * vforsum.data[i++]/total_weight;                    \
-    } <span class="keywordflow">else</span> {   <span class="comment">/*assume equal weights.*/</span>                                            \
-        for (<a class="code" href="structapop__model.html">apop_model</a> **m = ms-&gt;model_list; *m; m++)                              \
-            total += fn(d, *m)/ms-&gt;model_count;                                     \
-    }
+<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordtype">long</span> <span class="keywordtype">double</span> total=0;                                                     \
+    long <span class="keywordtype">double</span> total_weight = <a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(ms-&gt;weights);                        \
+    size_t i=0;                                                              \
+    for (<a class="code" href="structapop__model.html">apop_model</a> **m = ms-&gt;model_list; *m; m++)                           \
+        total += fn(d, *m) * gsl_vector_get(ms-&gt;weights, i++)/total_weight;
 </pre></div>
 </div>
 </div>
@@ -108,12 +94,12 @@ Variables</h2>
       </table>
 </div>
 <div class="memdoc">
-<b>Initial value:</b><div class="fragment"><pre class="fragment">&amp;(<a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>){<span class="stringliteral">&quot;Mixture of models&quot;</span>, .prep=mixture_prep, 
-    .estimate=mixture_estimate, .constraint=weights_over_zero,
-    .log_likelihood=mixture_log_likelihood, .cdf=mixture_cdf, .draw=mixture_draw }
+<b>Initial value:</b><div class="fragment"><pre class="fragment">&amp;(<a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>){<span class="stringliteral">&quot;Mixture of models&quot;</span>, .prep=mixture_prep,
+    .constraint=mixture_constraint, .log_likelihood=mixture_log_likelihood,
+    .cdf=mixture_cdf, .draw=mixture_draw }
 </pre></div>
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

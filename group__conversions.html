@@ -39,7 +39,7 @@ Functions</h2>
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
 <li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
 <li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
-<li>int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters)
+<li>int <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters, char if_table_exists)
 <li>int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -335,12 +335,12 @@ Functions</h2>
 
 </div>
 </div>
-<a class="anchor" id="gaa57d56a9a364a4f2955d27741bbbf137"></a><!-- doxytag: member="apop_conversions.c::apop_text_to_db" ref="gaa57d56a9a364a4f2955d27741bbbf137" args="(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters)" -->
+<a class="anchor" id="gabd00e16791a970631c3ed4ac3487da46"></a><!-- doxytag: member="apop_conversions.c::apop_text_to_db" ref="gabd00e16791a970631c3ed4ac3487da46" args="(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters, char if_table_exists)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="group__conversions.html#gaa57d56a9a364a4f2955d27741bbbf137">apop_text_to_db</a> </td>
+          <td class="memname">int <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>text_file</em>, </td>
@@ -391,7 +391,13 @@ Functions</h2>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">char const *&#160;</td>
-          <td class="paramname"><em>delimiters</em>&#160;</td>
+          <td class="paramname"><em>delimiters</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&#160;</td>
+          <td class="paramname"><em>if_table_exists</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -418,7 +424,12 @@ Functions</h2>
     <tr><td class="paramname">field_ends</td><td>If fields have a fixed size, give the end of each field, e.g. {3, 8 11}. </td></tr>
     <tr><td class="paramname">field_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is the <code>text</code> grid, which should be <img class="formulaInl" alt="$N \times 2$" src="form_6.png"/>. The first item in each row (<code>your_params-&gt;text[n][0]</code>, for each <img class="formulaInl" alt="$n$" src="form_7.png"/>) is a regular expression to match against the variable names; the second item (<code>your_params-&gt;text[n][1]</code>) is the type, constraint, and/or key (i.e., what comes after the name in the <code>create</code> query). Not all variables need be mentioned; the default type if nothing matches is <code>numeric</code>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <code>.*</code>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> on details of matching. </td></tr>
     <tr><td class="paramname">table_params</td><td>There is an implicit <code>create table</code> in setting up the database. If you want to add a table constraint or key, such as <code>not null primary key (age, sex)</code>, put that here. </td></tr>
-    <tr><td class="paramname">delimiters</td><td>A string listing the characters that delimit fields. default = <code>"|,\t"</code></td></tr>
+    <tr><td class="paramname">delimiters</td><td>A string listing the characters that delimit fields. default = <code>"|,\t"</code> </td></tr>
+    <tr><td class="paramname">if_table_exists</td><td>What should I do if the table exists?<br/>
+ <code>'n'</code> Do nothing; exit this function. (default)<br/>
+ <code>'d'</code> Retain the table but delete all data; refill with the new data (i.e., call <code>"delete * from your_table"</code>).<br/>
+ <code>'o'</code> Overwrite the table from scratch; deleting the previous table entirely.<br/>
+ <code>'a'</code> Append new data to the existing table.</td></tr>
   </table>
   </dd>
 </dl>
@@ -473,4 +484,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>

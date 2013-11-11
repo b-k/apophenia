@@ -34,11 +34,11 @@ urchinTracker();
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>double * <a class="el" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const int row, const int col, const char *rowname, const char *colname, const char *page)
-<li>double <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page)
+<li>double * <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, int row, int col, const char *rowname, const char *colname, const char *page)
+<li>double <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const char *rowname, const char *colname, const char *page)
 <li><a class="anchor" id="ga39d2e5893f1631a7a1ef2d06f3925fe6"></a><!-- doxytag: member="data_set_get::apop_gsl_error_for_set" ref="ga39d2e5893f1631a7a1ef2d06f3925fe6" args="(const char *reason, const char *file, int line, int gsl_errno)" -->
 void <b>apop_gsl_error_for_set</b> (const char *reason, const char *file, int line, int gsl_errno)
-<li>int <a class="el" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page)
+<li>int <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>First, some examples:</p>
@@ -46,22 +46,22 @@ void <b>apop_gsl_error_for_set</b> (const char *reason, const char *file, int li
 <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;Zeroth row&quot;</span>, <span class="charliteral">&#39;r&#39;</span>);
 <a class="code" href="apop__name_8c.html#ae32d4f48cff7788b617d40155703ae64">apop_name_add</a>(d-&gt;names, <span class="stringliteral">&quot;Zeroth col&quot;</span>, <span class="charliteral">&#39;c&#39;</span>);
 
-<a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, 8, 0, 27);
-assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 8, .colname=<span class="stringliteral">&quot;Zeroth&quot;</span>) == 27);
-<span class="keywordtype">double</span> *x = <a class="code" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a>(d, .col=7, .rowname=<span class="stringliteral">&quot;Zeroth&quot;</span>);
+<a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(d, 8, 0, 27);
+assert(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(d, 8, .colname=<span class="stringliteral">&quot;Zeroth&quot;</span>) == 27);
+<span class="keywordtype">double</span> *x = <a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(d, .col=7, .rowname=<span class="stringliteral">&quot;Zeroth&quot;</span>);
 *x = 270;
-assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(d, 0, 7) == 270);
+assert(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(d, 0, 7) == 270);
 
 
 <span class="comment">//apop_data set holding a scalar:</span>
 <a class="code" href="structapop__data.html">apop_data</a> *s = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(1);
-<a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(s, .val=12);
-assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(s) == 12);
+<a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(s, .val=12);
+assert(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(s) == 12);
 
 <span class="comment">//apop_data set holding a vector:</span>
 <a class="code" href="structapop__data.html">apop_data</a> *v = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(12);
-<span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 12; i++) <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(s, i, .val=i*10);
-assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(s,3) == 30);
+<span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 12; i++) <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(s, i, .val=i*10);
+assert(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(s,3) == 30);
 </pre></div><p>A call like <code> apop_data_set(in, row, col, data)</code> is much like the GSL's <code>gsl_matrix_set(in-&gt;matrix, row, col, data)</code>, but with some differences:</p>
 <ul>
 <li>The <a class="el" href="gentle.html#apop_data">apop_data</a> set has names, so we can get/set elements using those names. </li>
@@ -70,7 +70,7 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 <li>For those that take a column number, column -1 is the vector element. </li>
 <li>For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return column -1. </li>
 <li>If you give me both a .row and a .rowname, I go with the name; similarly for .col and .colname. </li>
-<li>You can give me the name of a page, e.g. <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> AIC = <a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;&lt;Info&gt;&quot;</span>);
+<li>You can give me the name of a page, e.g. <div class="fragment"><pre class="fragment"><span class="keywordtype">double</span> AIC = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;&lt;Info&gt;&quot;</span>);
 </pre></div></li>
 </ul>
 <ul>
@@ -81,12 +81,12 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 <li>These functions use the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="gae3c2f0d4bd96555e8eeb32a44511d0ac"></a><!-- doxytag: member="apop_data.c::apop_data_get" ref="gae3c2f0d4bd96555e8eeb32a44511d0ac" args="(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page)" -->
+<a class="anchor" id="ga06107779e4a3eb229715ceca24352b89"></a><!-- doxytag: member="apop_data.c::apop_data_get" ref="ga06107779e4a3eb229715ceca24352b89" args="(const apop_data *data, size_t row, int col, const char *rowname, const char *colname, const char *page)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32a44511d0ac">apop_data_get</a> </td>
+          <td class="memname">double <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -94,13 +94,13 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>row</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const int&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>col</em>, </td>
         </tr>
         <tr>
@@ -146,12 +146,12 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 
 </div>
 </div>
-<a class="anchor" id="ga036a0ed6241af89643566086d5cb5373"></a><!-- doxytag: member="apop_data.c::apop_data_ptr" ref="ga036a0ed6241af89643566086d5cb5373" args="(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page)" -->
+<a class="anchor" id="ga59d1c0299c7eb87224bc6c60555784fe"></a><!-- doxytag: member="apop_data.c::apop_data_ptr" ref="ga59d1c0299c7eb87224bc6c60555784fe" args="(apop_data *data, int row, int col, const char *rowname, const char *colname, const char *page)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double* <a class="el" href="group__data__set__get.html#ga036a0ed6241af89643566086d5cb5373">apop_data_ptr</a> </td>
+          <td class="memname">double* <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -159,13 +159,13 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const int&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>row</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const int&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>col</em>, </td>
         </tr>
         <tr>
@@ -215,12 +215,12 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 
 </div>
 </div>
-<a class="anchor" id="ga1e7ba48032cb438271d57818b85613f2"></a><!-- doxytag: member="apop_data.c::apop_data_set" ref="ga1e7ba48032cb438271d57818b85613f2" args="(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page)" -->
+<a class="anchor" id="gaea55629952c595bc8211d3333077dc51"></a><!-- doxytag: member="apop_data.c::apop_data_set" ref="gaea55629952c595bc8211d3333077dc51" args="(apop_data *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a> </td>
+          <td class="memname">int <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -228,13 +228,13 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const size_t&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>row</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const int&#160;</td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>col</em>, </td>
         </tr>
         <tr>
@@ -271,11 +271,11 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 <div class="memdoc">
 <p>Set a data element.</p>
 <p>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax, so with names you don't have to worry about element ordering. But the ordering of elements may still be noteworthy. For compatibility with older editions of Apophenia, the order is (row, col, value, rowname, colname), so the following would all set row 3, column 8, of <code>d</code> to 5: </p>
-<div class="fragment"><pre class="fragment">  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, 3, 8, 5);
-  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .col=8, .val=5);
-  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, .val=5);
+<div class="fragment"><pre class="fragment">  <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(d, 3, 8, 5);
+  <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(d, .row = 3, .col=8, .val=5);
+  <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, .val=5);
 <span class="comment">//but:</span>
-  <a class="code" href="group__data__set__get.html#ga1e7ba48032cb438271d57818b85613f2">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, 5);  <span class="comment">//invalid---the value doesn&#39;t follow the colname.</span>
+  <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(d, .row = 3, .colname=<span class="stringliteral">&quot;Column 8&quot;</span>, 5);  <span class="comment">//invalid---the value doesn&#39;t follow the colname.</span>
 </pre></div><dl class="return"><dt><b>Returns:</b></dt><dd>0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).</dd></dl>
 <ul>
 <li>The error codes for out-of-bounds errors are thread-safe iff you are have a C11-compliant compiler (thanks to the <code>_Thread_local</code> keyword) or a version of GCC with the <code>__thread</code> extension enabled.</li>
@@ -299,4 +299,4 @@ assert(<a class="code" href="group__data__set__get.html#gae3c2f0d4bd96555e8eeb32
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Nov 10 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
