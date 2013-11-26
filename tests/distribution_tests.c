@@ -8,12 +8,23 @@
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 #define Print_dot if(verbose){printf(".");fflush(NULL);}
+#define is_t(d) !strcmp((d)->name, "t distribution")
+#define is_bernie(d) !strcmp((d)->name, "Bernoulli distribution")
+#define is_binom(d) !strcmp((d)->name, "Binomial distribution")
+#define is_beta(d) !strcmp((d)->name, "Beta distribution")
+#define is_poisson(d) !strcmp((d)->name, "Poisson distribution")
 
 int verbose = 1;
 
+//The MLE of the t distribution may have non-integer value (why not?)
+//Because we started with an integer value, we have to find the floor.
+void tfloor(apop_model *dce){
+    if (is_t(dce)) dce->parameters->vector->data[2] = round(dce->parameters->vector->data[2]);
+}
+
 int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *true_params){
     double *starting_pt;
-    if(!strcmp(dist->name, "Bernoulli distribution"))
+    if(is_bernie(dist))
         starting_pt = (double[]){.5};
     else starting_pt = (double[]) {1.6, 1.4};
 
@@ -26,20 +37,22 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
         );
     Apop_model_add_group(dist, apop_parts_wanted);
 
-    if((!strcmp(dist->name, "Bernoulli distribution") ||
-       !strcmp(dist->name, "Beta distribution") )
+    if((is_bernie(dist) || is_beta(dist))
        && method==APOP_RF_HYBRID)
         return 0;
     apop_model *e = apop_estimate(data, dist);
+    tfloor(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params), apop_data_pack(e->parameters)), 1e-1); 
-    if (!strcmp(dist->name, "Poisson distribution")) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
+    if (is_poisson(dist)) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
     Print_dot
     e = apop_estimate_restart(e);
+    tfloor(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params),apop_data_pack(e->parameters)), 1e-1); 
 
         if (!strcmp(e->name, "Dirichlet distribution")
             || !strcmp(e->name, "Gamma distribution") //just doesn't work.
-            ||(!strcmp(e->name, "Bernoulli distribution") && method==APOP_RF_HYBRID)
+            ||(is_bernie(e) && method==APOP_RF_HYBRID)
+            ||(is_t(e)) //requires several restarts to work.
             ||(!strcmp(e->name, "Exponential distribution")) //imprecise
             || !strcmp(e->name, "Yule distribution")){
             //cycle takes all day.
@@ -79,6 +92,7 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
     if (model->estimate) estimate_model(data, model, -3, true_params->parameters);
     else { //try all the MLEs.
         estimate_model(data, model,APOP_SIMPLEX_NM, true_params->parameters);
+        if(is_t(model)) return; //t distribution still v. slow to converge.
         estimate_model(data, model,APOP_CG_PR, true_params->parameters);
         estimate_model(data, model,APOP_RF_HYBRID, true_params->parameters);
     }
@@ -88,10 +102,9 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
 void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     //Make random draws from the dist, then find the CDF at that draw
     //That should generate a uniform distribution.
-    if (!m->cdf || !strcmp(m->name, "Bernoulli distribution")
-                || !strcmp(m->name, "Binomial distribution"))
+    if (!m->cdf || is_bernie(m) || is_binom(m))
         return;
-    int drawct = 1e3;
+    int drawct = 1e4;
     apop_data *draws = apop_data_alloc(drawct, m->dsize);
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
@@ -124,33 +137,33 @@ void test_distributions(gsl_rng *r){
   fish_no_est->estimate=NULL;
   apop_model *beta_no_est = apop_model_copy(apop_beta);
   beta_no_est->estimate=NULL;
+  apop_t_distribution->estimate=NULL; //find df by MLE, not observation count.
   apop_model *dist[] = {
                 apop_bernoulli, bernie_no_est, apop_beta, 
                 beta_no_est,
-                apop_binomial, /*apop_chi_squared,*/
+                apop_binomial,
                 apop_dirichlet, apop_exponential, exp_no_est,
-                /*apop_f_distribution,*/
                 apop_gamma, 
                 apop_lognormal, apop_multinomial, apop_multivariate_normal,
                 apop_normal, apop_poisson, fish_no_est,
-                /*apop_t_distribution,*/ apop_uniform,
-                 apop_yule, apop_zipf, /*apop_wishart,*/
+                apop_t_distribution, apop_uniform,
+                apop_yule, apop_zipf, /*apop_wishart,*/
                 null_model};
 
     for (int i=0; strcmp(dist[i]->name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i]->name); fflush(NULL);}
         true_params = apop_model_copy(dist[i]);
         true_params->parameters = apop_data_fill_base(apop_data_alloc(dist[i]->vsize==1 ? 1 : 2), true_parameter_v);
-        if (!strcmp(dist[i]->name, "Dirichlet distribution"))
-            dist[i]->dsize=2;
-        if (!strcmp(dist[i]->name, "Beta distribution"))
+        if (is_beta(dist[i]))
             true_params->parameters = apop_data_falloc((2), .5, .2);
-        if (!strcmp(dist[i]->name, "Bernoulli distribution"))
+        if (is_bernie(dist[i]))
             true_params->parameters = apop_data_falloc((1), .1);
-        if (!strcmp(dist[i]->name, "Binomial distribution")){
+        if (is_binom(dist[i])){
             true_params->parameters = apop_data_falloc((2), 15, .2);
             dist[i]->dsize=2;
         }
+        if (!strcmp(dist[i]->name, "Dirichlet distribution"))
+            dist[i]->dsize=2;
         if (!strcmp(dist[i]->name, "Multivariate normal distribution")){
             true_params->parameters = apop_data_falloc((2, 2, 2), 15, .5, .2,
                                                                    3, .2, .5);
@@ -166,8 +179,8 @@ void test_distributions(gsl_rng *r){
             true_params->parameters = apop_data_falloc((1), 996);
         if (!strcmp(dist[i]->name, "F distribution"))
             true_params->parameters = apop_data_falloc((2),996, 996);
-        if (!strcmp(dist[i]->name, "t distribution"))
-            true_params->parameters = apop_data_falloc((3), 1, 3, 996);
+        if (is_t(dist[i]))
+            true_params->parameters = apop_data_falloc((3), 1, 3, 16);
         if (!strcmp(dist[i]->name, "Wishart distribution")){
             true_params->parameters = apop_data_falloc((2, 2, 2), 996, .2, .1,
                                                                     0, .1, .2);

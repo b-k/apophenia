@@ -240,12 +240,12 @@ which is different from the one-sample test used if this is not a PMF.
 test that the two distributions are equal.
 
 \exception out->error='m'  Model error: \c m1 is not an \ref apop_pmf. I verify this
-by checking whether <tt>m1->cdf == apop_pmf->cdf<tt>.
+by checking whether <tt>m1->cdf == apop_pmf->cdf</tt>.
 
 \li If you are using a \ref apop_pmf model, <b>the data set(s) must be sorted before
 you call this.</b> See \ref apop_data_sort and the discussion of CDFs in the \ref
 apop_pmf documentation. If you don't do this, the test will almost certainly reject
-the null hypothesis that \c m1 and \cm2 are identical.
+the null hypothesis that \c m1 and \c m2 are identical.
 
 Here is an example, which tests whether a set of draws from a Normal(0, 1) matches a
 sequence of Normal distributions with increasing mean.

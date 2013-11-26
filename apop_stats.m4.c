@@ -735,8 +735,8 @@ apop_data *t_for_testing = apop_estimate(data, apop_t)
 
 \li By removing the \c estimate method---
 \code
-apop_model *spare_t = apop_model_copy(t);
-spare_t.estimate = NULL;
+apop_model *spare_t = apop_model_copy(apop_t);
+spare_t->estimate = NULL;
 apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
 \endcode
 ---I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
