@@ -10,6 +10,7 @@
 --fixed up K-S tests.
 --removed the Swig Python wrapper from this package.
 **replaced char apop_opts.db_nan[101] with char *apop_opts.nan_string. More descriptive, easier to use.
+**apop_name_find does plain case-insensitive search; no regexes.
 
 	October 2013
 **all built-in models (apop_ols, apop_dirichlet, ...) are now apop_model* (ptr-to-struct), from apop_model (plain struct).

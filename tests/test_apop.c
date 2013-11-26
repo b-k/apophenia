@@ -532,7 +532,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tol5);
 
-    Apop_col_t(predict_tab, "pred", vv);
+    Apop_col_t(predict_tab, "predicted", vv);
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, vv);
     assert(fabs(apop_vector_sum(prediction)) < tol5);
@@ -553,9 +553,9 @@ void test_f(apop_model *est){
     //apop_data_show(ftab2);
     double n = est->data->matrix->size1;
     double K = est->parameters->vector->size-1;
-    double r = apop_data_get(rsq, .rowname="R.squared");
-    double f = apop_data_get(ftab, .rowname="F.stat");
-    double f2 = apop_data_get(ftab2, .rowname="F.stat");
+    double r = apop_data_get(rsq, .rowname="R squared");
+    double f = apop_data_get(ftab, .rowname="F statistic");
+    double f2 = apop_data_get(ftab2, .rowname="F statistic");
     Diff (f , r*(n-K)/((1-r)*K) , tol5);
     Diff (f2 , r*(n-K)/((1-r)*K) , tol5);
 }
@@ -998,7 +998,7 @@ void db_to_text(){
         apop_text_to_db("data-mixed", "d", 0, 1, NULL, .field_params=field_params);
     }
     apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
-    int b_allele_col = apop_name_find(d->names, "b_all.*", 't');
+    int b_allele_col = apop_name_find(d->names, "b_allele", 't');
     assert(!strcmp("T",  d->text[3][b_allele_col]));
     int rsid_col = apop_name_find(d->names, "rsid", 't');
     assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
@@ -1012,13 +1012,13 @@ void db_to_text(){
     assert(apop_data_get(dcc, 5, .colname="ab")==201);
 
     apop_data *dd = apop_query_to_text ("select * from d");
-    b_allele_col = apop_name_find(dd->names, "b_all.*", 't');
+    b_allele_col = apop_name_find(dd->names, "b_allele", 't');
     assert(!strcmp("T",  dd->text[3][b_allele_col]));
     rsid_col = apop_name_find(dd->names, "rsid", 't');
     assert(!strcmp("rs2977656",  dd->text[4][rsid_col]));
     
     apop_data *dc = apop_data_copy(d);
-    b_allele_col = apop_name_find(dc->names, "b_all.*", 't');
+    b_allele_col = apop_name_find(dc->names, "b_allele", 't');
     assert(!strcmp("T",  dc->text[3][b_allele_col]));
     rsid_col = apop_name_find(dc->names, "rsid", 't');
     assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
@@ -1026,7 +1026,7 @@ void db_to_text(){
 
     apop_data_print(dc, "mixedtest", .output_type='d');
     apop_data *de = apop_query_to_mixed_data("mmmmtttt","select * from mixedtest");
-    b_allele_col = apop_name_find(de->names, "b_all.*", 't');
+    b_allele_col = apop_name_find(de->names, "b_allele", 't');
     assert(!strcmp("T",  de->text[3][b_allele_col]));
     rsid_col = apop_name_find(de->names, "rsid", 't');
     assert(!strcmp("rs2977656",  de->text[4][rsid_col]));

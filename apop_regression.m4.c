@@ -472,8 +472,8 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
   Internally allocates (and frees) a vector the size of your data set.
 
 \return: a \f$5 \times 1\f$ apop_data table with the following fields:
-\li "R_squared"
-\li "R_squared_adj"
+\li "R squared"
+\li "R squared adj"
 \li "SSE"
 \li "SST"
 \li "SSR"
@@ -519,8 +519,8 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
     sst = apop_vector_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;
-    apop_data_add_named_elmt(out, "R_squared", rsq);
-    apop_data_add_named_elmt(out, "R_squared_adj", 1 - adjustment);
+    apop_data_add_named_elmt(out, "R squared", rsq);
+    apop_data_add_named_elmt(out, "R squared adj", 1 - adjustment);
     apop_data_add_named_elmt(out, "SSE", sse);
     apop_data_add_named_elmt(out, "SST", sst);
     apop_data_add_named_elmt(out, "SSR", sst - sse);

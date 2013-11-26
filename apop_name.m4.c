@@ -169,21 +169,16 @@ apop_name * apop_name_copy(apop_name *in){
 
 /** Finds the position of an element in a list of names.
 
-The function uses case-insensitive regular expressions to search. 
-
-For example, "p.val.*" will match "P value", "p.value", and "p values".
+The function uses case-insensitive search (POSIX's \c strcasecmp).
 
 \param n        the \ref apop_name object to search.
-\param in       the name you seek; see above.
-\param type     'c', 'r', or 't'. Default is 'c'.
-\return         The position of \c findme. If 'c', then this may be -1, meaning the vector name. If not found, returns -2.
-
-\li Returns -3 on error (e.g., name to find \c NULL or not found).
+\param name     the name you seek; see above.
+\param type     \c 'c', \c 'r', or \c 't'. Default is \c 'c'.
+\return         The position of \c findme. If \c 'c', then this may be -1, meaning the vector name. If not found, returns -2.  On error, e.g. <tt>name==NULL</tt>, returns -2.
 
 \ingroup names */
-int apop_name_find(const apop_name *n, const char *in, const char type){
-    Apop_stopif(!in, return -3, 0, "You asked me to search for NULL.");
-    regex_t re;
+int apop_name_find(const apop_name *n, const char *name, const char type){
+    Apop_stopif(!name, return -2, 0, "You asked me to search for NULL.");
     char **list;
     int listct;
     if (type == 'r' || type == 'R'){
@@ -198,17 +193,9 @@ int apop_name_find(const apop_name *n, const char *in, const char type){
         list = n->col;
         listct = n->colct;
     }
-    int compiled_ok = !regcomp(&re, in, REG_EXTENDED + REG_ICASE);
-    Apop_stopif(!compiled_ok, return -3, 0, "Regular expression \"%s\" didn't compile.", in);
     for (int i = 0; i < listct; i++)
-        if (!regexec(&re, list[i], 0, NULL, 0)){
-            regfree(&re);
-            return i;
-        }
-    if ((type=='c' || type == 'C') && n->vector && !regexec(&re, n->vector, 0, NULL, 0)){
-        regfree(&re);
-        return -1;
-    }
-    regfree(&re);
+        if (!strcasecmp(name, list[i])) return i;
+
+    if ((type=='c' || type == 'C') && n->vector && !strcasecmp(name, n->vector)) return -1;
     return -2;
 }
