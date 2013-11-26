@@ -175,9 +175,9 @@ apop_data ** apop_data_split(apop_data *in, int splitpoint, char r_or_c);
 apop_data * apop_data_copy(const apop_data *in);
 void        apop_data_rm_columns(apop_data *d, int *drop);
 void apop_data_memcpy(apop_data *out, const apop_data *in);
-Apop_var_declare( double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page) )
-Apop_var_declare( double apop_data_get(const apop_data *data, const size_t row, const int  col, const char *rowname, const char *colname, const char *page) )
-Apop_var_declare( int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *rowname, const char * colname, const char *page) )
+Apop_var_declare( double * apop_data_ptr(apop_data *data, int row, int col, const char *rowname, const char *colname, const char *page) )
+Apop_var_declare( double apop_data_get(const apop_data *data, size_t row, int  col, const char *rowname, const char *colname, const char *page) )
+Apop_var_declare( int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *rowname, const char * colname, const char *page) )
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);

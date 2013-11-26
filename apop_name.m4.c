@@ -178,11 +178,11 @@ For example, "p.val.*" will match "P value", "p.value", and "p values".
 \param type     'c', 'r', or 't'. Default is 'c'.
 \return         The position of \c findme. If 'c', then this may be -1, meaning the vector name. If not found, returns -2.
 
-\li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
+\li Returns -3 on error (e.g., name to find \c NULL or not found).
 
 \ingroup names */
 int apop_name_find(const apop_name *n, const char *in, const char type){
-    Apop_stopif(!in, return -1, 0, "You asked me to search for NULL.");
+    Apop_stopif(!in, return -3, 0, "You asked me to search for NULL.");
     regex_t re;
     char **list;
     int listct;
@@ -199,7 +199,7 @@ int apop_name_find(const apop_name *n, const char *in, const char type){
         listct = n->colct;
     }
     int compiled_ok = !regcomp(&re, in, REG_EXTENDED + REG_ICASE);
-    Apop_stopif(!compiled_ok, return -1, 0, "Regular expression \"%s\" didn't compile.", in);
+    Apop_stopif(!compiled_ok, return -3, 0, "Regular expression \"%s\" didn't compile.", in);
     for (int i = 0; i < listct; i++)
         if (!regexec(&re, list[i], 0, NULL, 0)){
             regfree(&re);

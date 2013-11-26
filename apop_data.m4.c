@@ -769,30 +769,6 @@ The \c _ptr functions return a pointer to the given cell. Those functions follow
 \li These functions use the \ref designated syntax for inputs.
 */
 
-static double *apop_data_ptr_ti(apop_data *in, const char* row, const int col){
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(rownum == -2, return NULL, 0,"Couldn't find '%s' amongst the row names.", row);
-    return (col==-1 || (col == 0 && !in->matrix && in->vector)) 
-                ? gsl_vector_ptr(in->vector, rownum)
-                : gsl_matrix_ptr(in->matrix, rownum, col);
-}
-
-static double *apop_data_ptr_it(apop_data *in, const size_t row, const char* col){
-    int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_stopif(colnum == -2, return NULL, 0,"Couldn't find '%s' amongst the column names.", col);
-    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, row, colnum)
-                         : gsl_vector_ptr(in->vector, row);
-}
-
-static double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col){
-    int colnum =  apop_name_find(in->names, col, 'c');
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(rownum == -2, return NULL, 0,"Couldn't find '%s' amongst the row names.", row);
-    Apop_stopif(colnum == -2, return NULL, 0,"Couldn't find '%s' amongst the column names.", col);
-    return (colnum >= 0) ? gsl_matrix_ptr(in->matrix, rownum, colnum)
-                         : gsl_vector_ptr(in->vector, rownum);
-}
-
 /** Get a pointer to an element of an \ref apop_data set. 
 
 \li If a \c NULL vector or matrix (as the case may be), stop (unless <tt>apop_opts.stop_on_warning='n'</tt>, then return \c NULL).
@@ -808,77 +784,36 @@ static double *apop_data_ptr_tt(apop_data *in, const char *row, const char* col)
 
 \return A pointer to the element.
 */
-APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, const int row, const int col, const char *rowname, const char *colname, const char *page){
+APOP_VAR_HEAD double * apop_data_ptr(apop_data *data, int row, int col, const char *rowname, const char *colname, const char *page){
     apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NULL, 0, "You sent me a NULL data set. Returning NULL pointer.");
-    const int apop_varad_var(row, 0);
-    const int apop_varad_var(col, 0);
+    int apop_varad_var(row, 0);
+    int apop_varad_var(col, 0);
     const char * apop_varad_var(rowname, NULL);
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
 
-    apop_data *d;
     if (page){
-        d = apop_data_get_page(data, page);
-        Apop_stopif(!d, return NULL, 0, "I couldn't find a page with label '%s'. Returning NULL.", page);
-    } else d = data;
-    if (rowname && colname)
-        return apop_data_ptr_tt(d, rowname,colname);
-    if (rowname && !colname)
-        return apop_data_ptr_ti(d, rowname,col);
-    if (!rowname && colname)
-        return apop_data_ptr_it(d, row,colname);
-
-    //else: row number, column number
-    if (col == -1 || (col == 0 && !d->matrix && d->vector)){
-        Apop_stopif(!d->vector, return NULL, 0, "You asked for the vector element (col=-1) but it is NULL. Returning NULL.");
-        return gsl_vector_ptr(d->vector, row);
-    } else {
-        Apop_stopif(!d->matrix, return NULL, 0, "You asked for the matrix element (%i, %i) but the matrix is NULL Returning NULL..", row, col);
-        return gsl_matrix_ptr(d->matrix, row,col);
+        data = apop_data_get_page(data, page);
+        Apop_stopif(!data, return NULL, 0, "I couldn't find a page with label '%s'. Returning NULL.", page);
+    };
+    if (rowname){
+        row = apop_name_find(data->names, rowname, 'r');
+        Apop_stopif(row == -2, return NULL, 0, "Couldn't find '%s' amongst the row names.", rowname);
+    }
+    if (colname){
+        col =  apop_name_find(data->names, colname, 'c');
+        Apop_stopif(col == -2, return NULL, 0, "Couldn't find '%s' amongst the column names.", colname);
     }
 APOP_VAR_ENDHEAD
+    if (col == -1 || (col == 0 && !data->matrix && data->vector)){
+        Apop_stopif(!data->vector, return NULL, 0, "You asked for the vector element (col=-1) but it is NULL. Returning NULL.");
+        return gsl_vector_ptr(data->vector, row);
+    } else {
+        Apop_stopif(!data->matrix, return NULL, 0, "You asked for the matrix element (%i, %i) but the matrix is NULL Returning NULL..", row, col);
+        return gsl_matrix_ptr(data->matrix, row,col);
+    }
     return NULL;//the main function is blank.
-}
-
-static double apop_data_get_ti(const apop_data *in, const char* row, const int col){
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(rownum == -2, return GSL_NAN, 0, "Couldn't find '%s' amongst the row names.", row);
-    if (col==-1 || (col == 0 && !in->matrix && in->vector)){
-        Apop_stopif(!in->vector, return NAN, 0, "You asked me to get the %ith element of "
-                                                "a NULL vector. Returning NaN.", rownum);
-        return gsl_vector_get(in->vector, rownum);
-    } else {
-        Apop_stopif(!in->matrix, return NAN, 0, "You asked me to get the (%i, %i) element of a "
-                                 "NULL matrix. Returning NaN.", rownum, col);
-        return gsl_matrix_get(in->matrix, rownum, col);
-    }
-}
-
-static double apop_data_get_it(const apop_data *in, const size_t row, const char* col){
-    int colnum = apop_name_find(in->names, col, 'c');
-    Apop_stopif(colnum == -2, return GSL_NAN, 0, "Couldn't find '%s' amongst the column names.", col);
-    if (colnum >= 0){
-        Apop_assert_nan(in->matrix, "You asked me to get the (%zu, %i) element of a NULL matrix.", row, colnum);
-        return gsl_matrix_get(in->matrix, row, colnum);
-    } else {
-        Apop_assert_nan(in->vector, "You asked me to get the %zuth element of a NULL vector.", row);
-        return gsl_vector_get(in->vector, row);
-    }
-}
-
-static double apop_data_get_tt(const apop_data *in, const char *row, const char* col){
-    int colnum =  apop_name_find(in->names, col, 'c');
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(colnum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the column names.", col);
-    Apop_stopif(rownum == -2, return GSL_NAN, 0,"Couldn't find '%s' amongst the row names.", row);
-    if (colnum >= 0){
-        Apop_assert_nan(in->matrix, "You asked me to get the (%i, %i) element of a NULL matrix.", rownum, colnum);
-        return gsl_matrix_get(in->matrix, rownum, colnum);
-    } else {
-        Apop_assert_nan(in->vector, "You asked me to get the %ith element of a NULL vector.", rownum);
-        return gsl_vector_get(in->vector, rownum);
-    }
 }
 
 /** Returns the data element at the given point.
@@ -894,36 +829,35 @@ static double apop_data_get_tt(const apop_data *in, const char *row, const char*
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
 
 \return The value at the given location. */
-APOP_VAR_HEAD double apop_data_get(const apop_data *data, const size_t row, const int col, const char *rowname, const char *colname, const char *page){
+APOP_VAR_HEAD double apop_data_get(const apop_data *data, size_t row, int col, const char *rowname, const char *colname, const char *page){
     const apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NAN, 0, "You sent me a NULL data set. Returning NaN.");
-    const size_t apop_varad_var(row, 0);
-    const int apop_varad_var(col, 0);
+    size_t apop_varad_var(row, 0);
+    int apop_varad_var(col, 0);
     const char * apop_varad_var(rowname, NULL);
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
     
-    const apop_data *d;
     if (page){
-        d = apop_data_get_page(data, page);
-        Apop_assert_nan(d, "I couldn't find a page with label '%s'.", page);
-    } else d = data;
-    if (rowname && colname)
-        return apop_data_get_tt(d, rowname,colname);
-    if (rowname && !colname)
-        return apop_data_get_ti(d, rowname,col);
-    if (!rowname && colname)
-        return apop_data_get_it(d, row,colname);
-    //else: row number, column number
-    if (col==-1 || (col == 0 && !d->matrix && d->vector)){
-        Apop_assert_nan(d->vector, "You asked for the vector element (col=-1) but it is NULL.");
-        return gsl_vector_get(d->vector, row);
-    } else {
-        Apop_assert_nan(d->matrix, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        return gsl_matrix_get(d->matrix, row, col);
+        data = apop_data_get_page(data, page);
+        Apop_stopif(!data, return NAN, 0, "I couldn't find a page with label '%s'. Returning NaN.", page);
+    };
+    if (rowname){
+        row = apop_name_find(data->names, rowname, 'r');
+        Apop_stopif(row == -2, return NAN, 0,"Couldn't find '%s' amongst the row names. Returning NaN.", rowname);
+    }
+    if (colname){
+        col =  apop_name_find(data->names, colname, 'c');
+        Apop_stopif(col == -2, return NAN, 0,"Couldn't find '%s' amongst the column names. Returning NaN.", colname);
     }
 APOP_VAR_ENDHEAD
-    return 0;//the main function is blank.
+    if (col==-1 || (col == 0 && !data->matrix && data->vector)){
+        Apop_stopif(!data->vector, return NAN, 0,  "You asked for the vector element (col=-1) but it is NULL.");
+        return gsl_vector_get(data->vector, row);
+    } else {
+        Apop_stopif(!data->matrix, return NAN, 0, "You asked for the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        return gsl_matrix_get(data->matrix, row, col);
+    }
 }
 
 /* The only hint the GSL gives that something failed is that the error-handler is called.
@@ -937,39 +871,6 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
     Apop_notify(1, "%s: %s", file, reason);
     Apop_maybe_abort(1);
     error_for_set = -1;
-}
-
-static int apop_data_set_ti(apop_data *in, const char* row, const int col, const double data){
-    Set_gsl_handler
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(rownum == -2, return -1, 0, "Couldn't find '%s' amongst the row names. Making no changes.", row);
-    if (col==-1 || (col == 0 && !in->matrix && in->vector))
-                gsl_vector_set(in->vector, rownum, data);
-    else        gsl_matrix_set(in->matrix, rownum, col, data);
-    Unset_gsl_handler
-    return error_for_set;
-}
-
-static int apop_data_set_it(apop_data *in, const size_t row, const char* col, const double data){
-    Set_gsl_handler
-    int colnum =  apop_name_find(in->names, col, 'c');
-    Apop_stopif(colnum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
-    if (colnum >= 0)  gsl_matrix_set(in->matrix, row, colnum, data);
-    else              gsl_vector_set(in->vector, row, data);
-    Unset_gsl_handler
-    return error_for_set;
-}
-
-static int apop_data_set_tt(apop_data *in, const char *row, const char* col, const double data){
-    Set_gsl_handler
-    int colnum =  apop_name_find(in->names, col, 'c');
-    int rownum =  apop_name_find(in->names, row, 'r');
-    Apop_stopif(colnum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", col);
-    Apop_stopif(rownum == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", row);
-    if (colnum >= 0) gsl_matrix_set(in->matrix, rownum, colnum, data);
-    else             gsl_vector_set(in->vector, rownum, data);
-    Unset_gsl_handler
-    return error_for_set;
 }
 
 /**  Set a data element.
@@ -1003,37 +904,39 @@ extension enabled.
 \param val The value to give the point.
 
 \return The value at the given location. */
-APOP_VAR_HEAD int apop_data_set(apop_data *data, const size_t row, const int col, const double val, const char *colname, const char *rowname, const char *page){
+APOP_VAR_HEAD int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page){
     apop_data * apop_varad_var(data, NULL);
-    Apop_assert_negone(data, "You sent me a NULL data set.");
-    const size_t apop_varad_var(row, 0);
-    const int apop_varad_var(col, 0);
+    Apop_stopif(!data, return -1, 0, "You sent me a NULL data set.");
+    size_t apop_varad_var(row, 0);
+    int apop_varad_var(col, 0);
     const double apop_varad_var(val, 0);
     const char * apop_varad_var(rowname, NULL);
     const char * apop_varad_var(colname, NULL);
     const char * apop_varad_var(page, NULL);
     
-    apop_data *d;
     if (page){
-        d = apop_data_get_page((apop_data*)data, page);
-        Apop_assert_negone(d, "I couldn't find a page with label '%s'.", page);
-    } else d = data;
-    if (rowname && colname)  return apop_data_set_tt(d, rowname, colname, val);
-    if (rowname && !colname) return apop_data_set_ti(d, rowname, col, val);
-    if (!rowname && colname) return apop_data_set_it(d, row, colname, val);
-    //else: row number, column number
+        data = apop_data_get_page((apop_data*)data, page);
+        Apop_stopif(!data, return -1, 0, "I couldn't find a page with label '%s'. Making no changes.", page);
+    }
+    if (rowname){
+        row = apop_name_find(data->names, rowname, 'r');
+        Apop_stopif(row == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", rowname);
+    }
+    if (colname){
+        col = apop_name_find(data->names, colname, 'c');
+        Apop_stopif(col == -2, return -1, 0, "Couldn't find '%s' amongst the column names. Making no changes.", colname);
+    }
+APOP_VAR_ENDHEAD
     Set_gsl_handler
-    if (col==-1 || (col == 0 && !d->matrix && d->vector)){
-        Apop_assert_negone(d->vector, "You're trying to set a vector element (row=-1) but the vector is NULL.");
-        gsl_vector_set(d->vector, row, val);
+    if (col==-1 || (col == 0 && !data->matrix && data->vector)){
+        Apop_stopif(!data->vector, return -1, 0, "You're trying to set a vector element (row=-1) but the vector is NULL.");
+        gsl_vector_set(data->vector, row, val);
     } else {
-        Apop_assert_negone(d->matrix, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
-        gsl_matrix_set(d->matrix, row, col, val);
+        Apop_stopif(!data->matrix, return -1, 0, "You're trying to set the matrix element (%zu, %i) but the matrix is NULL.", row, col);
+        gsl_matrix_set(data->matrix, row, col, val);
     }
     Unset_gsl_handler
     return error_for_set;
-APOP_VAR_ENDHEAD
-    return 0; //the main function is blank.
 }
 /** \} //End data_set_get group */
 
