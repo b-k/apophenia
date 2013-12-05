@@ -32,10 +32,10 @@ typedef struct {
     grad_params *gp; //Used only by apop_internal_numerical_gradient.
     gsl_vector  *beta, *starting_pt;
     int         use_constraint;
-    char        trace_path;
     double      best_ll;
     char        want_cov, want_predicted, want_tests, want_info;
     jmp_buf     bad_eval_jump;
+    apop_data** path;
 }   infostruct;
 
 static apop_model * find_roots (infostruct p); //see end of file.
@@ -53,9 +53,7 @@ Apop_settings_init(apop_parts_wanted,
 )
 
 Apop_settings_copy(apop_mle, )
-Apop_settings_free(apop_mle, 
-        apop_data_free(in->path);
-        )
+Apop_settings_free(apop_mle, )
 Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-5);
@@ -265,12 +263,15 @@ APOP_VAR_ENDHEAD
 
 ///On to the interfaces between the models and the methods
 
-static void tracepath(const gsl_vector *beta, apop_data **path){
-    size_t msize1 = *path ? (*path)->matrix->size1: 0;
+static void tracepath(const gsl_vector *beta, double value, apop_data **path){
+    size_t msize1 = (*path && (*path)->matrix) ? (*path)->matrix->size1: 0;
     if (!*path) *path = apop_data_alloc();
     (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
     Apop_matrix_row((*path)->matrix, msize1, lastv);
     gsl_vector_memcpy(lastv, beta);
+
+    (*path)->vector = apop_vector_realloc((*path)->vector, msize1+1);
+    gsl_vector_set((*path)->vector, msize1, value);
 }
 
 /* Every actual evaluation of the function go through the negshell and dnegshell fns,
@@ -302,10 +303,7 @@ static double negshell (const gsl_vector *beta, void * in){
     Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
                 0, "I got a NaN in evaluating the objective function.%s", 
                     !i->model->constraint ? " Maybe add a constraint to your model?" : "");
-    if (i->trace_path=='y'){
-        apop_mle_settings *mp =  apop_settings_get_group(i->model, apop_mle);
-        tracepath(i->model->parameters->vector, &(mp->path));
-    }
+    if (i->path) tracepath(i->model->parameters->vector, -out, i->path);
     if (i->want_info =='y'){
         //I report the log likelihood under the assumption that the final param set 
         //matches the best ll evaluated.
@@ -349,8 +347,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
         apop_fn_with_params ll = i->model->log_likelihood ? i->model->log_likelihood : i->model->p;
         apop_internal_numerical_gradient(ll, i, g, mp->delta);
     }
-    if (i->trace_path =='y')
-        negshell (beta,  in);
+    if (mp->path) negshell (beta,  in);
     gsl_vector_scale(g, -1);
     return GSL_SUCCESS;
 }
@@ -609,13 +606,13 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     Apop_stopif(!dist->parameters, dist->error='p'; return, 0, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,
                        .use_constraint = 1,
+                       .path           = mp->path,
                        .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
+    if (info.path) *info.path = apop_data_alloc();
     if (setup_starting_point(mp, info.beta)) return;
-    apop_data_free(mp->path);
     info.model->data = data;
-    info.trace_path = mp->want_path;
     if (mp->dim_cycle_tolerance)            dim_cycle(data, dist, info);
     else if (mp->method == APOP_SIMAN)      apop_annealing(&info);  //below.
     else if (mp->method==APOP_SIMPLEX_NM)   apop_maximum_likelihood_no_d(data, &info);

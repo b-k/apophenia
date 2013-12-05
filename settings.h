@@ -212,9 +212,18 @@ delta;
     int         n_tries, iters_fixed_T;
     double      k, t_initial, mu_t, t_min ;
     gsl_rng     *rng;
-    char        want_path; ///< If 'y', record the points tried by the optimizer in path
-    apop_data   *path;      /**< if want_path='y', record each vector tried by the optimizer as one row of this \ref apop_data set.
-                              If already allocated, free what is here and reallocate. This data set has no names; add them as desired.*/
+    apop_data   **path;    /**< If not \c NULL, record each vector tried by the optimizer as one row of this \ref apop_data set.
+                              Each row of the \c matrix element holds the vector tried; the corresponding element in the \c vector is the evaluated value at that vector (after out-of-constraints penalties have been subtracted).
+                              A new \ref apop_data set is allocated at the pointer you send in. This data set has no names; add them as desired. Sample use:
+\code                              
+apop_data *mypath;
+Apop_model_add_group(mymodel, apop_mle, .path=&mypath);
+apop_model *out = apop_estimate(mydata, mymodel);
+apop_data_print(mypath, .output_file="search");
+apop_data_free(mypath);
+\endcode                              
+                              
+*/
 } apop_mle_settings;
 
 /** Settings for least-squares type models 
