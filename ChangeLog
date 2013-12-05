@@ -4,6 +4,11 @@
 !!Big.
 ]
 
+	December 2013
+--apop_probit bug fix
+**apop_plot_histograms now uses gnuplot's impulses, not boxes by default---handles missing zero bins better.
+**MLE path trace lists the probs/loglikelihoods in the vector of the apop_data set it produces. path is apop_data**, from apop_data*.
+
 	November 2013
 --rewrite apop_data_sort to allow sorting by multiple columns or text or names
 --apop_pmf now has a CDF method.

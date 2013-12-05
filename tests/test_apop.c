@@ -46,7 +46,7 @@ double tol1 = 1e-1;
 #undef Apop_assert
 #define Apop_assert(expr, ...) {if (!(expr)) {fprintf(stderr, __VA_ARGS__); abort();}}
 
-#define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) {double left=(L), right=(R); Apop_stopif(isnan(left-right) || fabs((left)-(right))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(left), (double)(right), eps);}
 
 //A NULL-tolerant strcmp, which used to be a fn and has been deleted.
 #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))

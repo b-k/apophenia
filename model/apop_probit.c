@@ -135,19 +135,19 @@ static void probit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mode
         gsl_vector * numeric_default = apop_numerical_gradient(d, p);
         gsl_vector_memcpy(gradient, numeric_default);
         gsl_vector_free(numeric_default);
+        return;
     }
     long double	cdf, betax, deriv_base;
     apop_data *betadotx = apop_dot(d, p->parameters); 
-    gsl_vector_set_all(gradient,0);
+    gsl_vector_set_all(gradient, 0);
     for (size_t i=0; i< d->matrix->size1; i++){
         betax = apop_data_get(betadotx, i, 0);
-        cdf   = gsl_cdf_gaussian_P(-betax, 1);
+        cdf = gsl_cdf_gaussian_P(-betax, 1);
         cdf = cdf ? cdf : 1e-10; //prevent -inf in the next step.
         cdf = cdf<1 ? cdf : 1-1e-10; 
-        if (apop_data_get(d, i, -1))
-            deriv_base      = gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf);
-        else
-            deriv_base      = -gsl_ran_gaussian_pdf(-betax, 1) / cdf;
+        deriv_base = apop_data_get(d, i, -1)
+                       ?  gsl_ran_gaussian_pdf(-betax, 1) /(1-cdf)
+                       : -gsl_ran_gaussian_pdf(-betax, 1) / cdf;
         for (size_t j=0; j< d->matrix->size2; j++)
             *gsl_vector_ptr(gradient, j) += apop_data_get(d, i, j) * deriv_base;
 	}

@@ -8,7 +8,7 @@ of the relative accuracies of various operations. */
 #define TOL2 1e-5
 #define TOL3 1e-9
 
-#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) Apop_stopif(isnan(L-R) || fabs((L)-(R))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 void pontius(){
     apop_text_to_db("pontius.dat","pont", .delimiters=" ");
@@ -22,7 +22,7 @@ void pontius(){
     Diff(apop_data_get(cov, 0, 0), pow(0.107938612033077E-03,2), TOL2);
     Diff(apop_data_get(cov, 1, 1), pow(0.157817399981659E-09,2), TOL2);
     Diff(apop_data_get(cov, 2, 2), pow(0.486652849992036E-16,2), TOL2);
-    Diff(apop_data_get(est->info, .rowname="R.sq.*"), 0.999999900178537, TOL);
+    Diff(apop_data_get(est->info, .rowname="R squared"), 0.999999900178537, TOL);
     Diff(apop_data_get(est->info, .rowname="SSR"), 15.6040343244198, TOL3);
 }
 
@@ -36,7 +36,7 @@ void wampler1(){
     apop_data *cov = apop_data_get_page(est->parameters, "<covariance>");
     for (int i=0; i<6; i++)
         Diff(apop_data_get(cov, i, i), 0, TOL2);
-    Diff(apop_data_get(est->info, .rowname="R.sq.*"), 1, TOL);
+    Diff(apop_data_get(est->info, .rowname="R squared"), 1, TOL);
 }
 
 void numacc4(){
