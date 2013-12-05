@@ -147,7 +147,7 @@ APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char 
     gsl_vector * apop_varad_var(data, NULL);
     Apop_assert_n(data, "Input vector is NULL.");
     size_t apop_varad_var(bin_count, 0);
-    char * apop_varad_var(with, "boxes");
+    char * apop_varad_var(with, "impulses");
     Dispatch_output
 APOP_VAR_ENDHEAD
     apop_data vector_as_data = (apop_data){.vector=data};
