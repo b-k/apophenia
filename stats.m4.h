@@ -139,8 +139,8 @@ apop_data *apop_test_fisher_exact(apop_data *intab); //in apop_fisher.c
 //from apop_t_f_chi.c:
 Apop_var_declare( int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi) )
 double apop_matrix_to_positive_semidefinite(gsl_matrix *m);
-double apop_multivariate_gamma(double a, double p);
-double apop_multivariate_lngamma(double a, double p);
+long double apop_multivariate_gamma(double a, int p);
+long double apop_multivariate_lngamma(double a, int p);
 
 //apop_tests.c
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b);

@@ -175,10 +175,6 @@ void test_distributions(gsl_rng *r){
         }
         if (apop_regex(dist[i]->name, "gamma distribution"))
             true_params->parameters = apop_data_falloc((2), 1.5, 2.5);
-        if (!strcmp(dist[i]->name, "Chi squared distribution"))
-            true_params->parameters = apop_data_falloc((1), 996);
-        if (!strcmp(dist[i]->name, "F distribution"))
-            true_params->parameters = apop_data_falloc((2),996, 996);
         if (is_t(dist[i]))
             true_params->parameters = apop_data_falloc((3), 1, 3, 16);
         if (!strcmp(dist[i]->name, "Wishart distribution")){

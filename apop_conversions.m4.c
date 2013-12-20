@@ -1104,13 +1104,18 @@ apop_query("commit;");
 \param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
 \param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 \param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
+\param if_table_exists What should I do if the table exists?<br>
+\c 'n' Do nothing; exit this function. (default)<br>
+\c 'd' Retain the table but delete all data; refill with the new data (i.e., call <tt>"delete * from your_table"</tt>).<br>
+\c 'o' Overwrite the table from scratch; deleting the previous table entirely.<br>
+\c 'a' Append new data to the existing table.
 
 \return Returns the number of rows on success, -1 on error.
 
 \li This function uses the \ref designated syntax for inputs.
 \ingroup conversions
 */
-APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters){
+APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters, char if_table_exists){
     char const *apop_varad_var(text_file, "-")
     char *apop_varad_var(tabname, cut_at_dot(text_file))
     int apop_varad_var(has_row_names, 'n')
@@ -1122,6 +1127,7 @@ APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_
     apop_data * apop_varad_var(field_params, NULL)
     char * apop_varad_var(table_params, NULL)
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
+    char apop_varad_var(if_table_exists, 'n')
 APOP_VAR_ENDHEAD
     int  batch_size  = 10000, not_ok=0,
       	 col_ct, ct = 0, rows = 1;
@@ -1131,8 +1137,17 @@ APOP_VAR_ENDHEAD
     apop_data *add_this_line = apop_data_alloc();
     sqlite3_stmt *statement = NULL;
     line_parse_t L = {1,0};
-
-	Apop_assert_c(!apop_table_exists(tabname), -1, 0, "table %s exists; not recreating it.", tabname);
+        
+    bool tab_exists = apop_table_exists(tabname);
+    if (tab_exists){
+        Apop_stopif(if_table_exists=='n', return -1, 0, "table %s exists; not recreating it.", tabname);
+        if (if_table_exists=='d')      
+            apop_query("delete * from %s", tabname);
+        else if (if_table_exists=='o') {
+            apop_query("drop table %s", tabname); 
+            tab_exists=false;
+        }
+    }
 
     //get names and the first row.
     if (prep_text_reading(text_file, &infile)) return -1;
@@ -1141,11 +1156,13 @@ APOP_VAR_ENDHEAD
                                     add_this_line, fn, field_ends, delimiters);
     col_ct = L.ct = *add_this_line->textsize;
     Apop_stopif(!col_ct, return -1, 0, "counted zero columns in the input file (%s).", tabname);
-    if (apop_opts.db_engine=='m')
-        not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
-    else
-        not_ok = tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
-    Apop_stopif(not_ok, return -1, 0, "Creating the table in the database failed.");
+    if (!tab_exists){
+        if (apop_opts.db_engine=='m')
+            not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
+        else
+            not_ok = tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
+        Apop_stopif(not_ok, return -1, 0, "Creating the table in the database failed.");
+    }
 #if SQLITE_VERSION_NUMBER < 3003009
     Apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "

@@ -515,7 +515,7 @@ static void apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
 /*There is a basically standard location for the log likelihood. Search there, and if you don't
 find it, then recalculate it.*/
 static double get_ll(apop_data *d, apop_model *est){
-    int index = apop_name_find(est->info->names, "log likelihood", 'r');
+    int index = est->info ? apop_name_find(est->info->names, "log likelihood", 'r') : -2;
     if (index>-2) return apop_data_get(est->info, index);
     //last resort: recalculate
     return apop_log_likelihood(d, est);

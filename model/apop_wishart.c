@@ -2,35 +2,32 @@
 Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 #include "apop_internal.h"
 
+#if 0
+
 static long double pos_def(apop_data *data, apop_model *candidate){
     return apop_matrix_to_positive_semidefinite(candidate->parameters->matrix);
 }
 
 typedef struct{
-    double paramdet, df;
-    gsl_matrix *wparams;
+    double df;
+    gsl_matrix *paraminv;
     int len;
 } wishartstruct_t;
 
 static double one_wishart_row(gsl_vector *in, void *ws_in){
     wishartstruct_t *ws = ws_in;
-    gsl_matrix *inv;
-    gsl_matrix *inv_dot_params = gsl_matrix_alloc(ws->len, ws->len);
-    apop_data *square= apop_data_alloc(0, ws->len, ws->len);
+    gsl_matrix *invparams_dot_data = gsl_matrix_alloc(ws->len, ws->len);
+    apop_data *square= apop_data_alloc(ws->len, ws->len);
     apop_data_unpack(in, square);
-    double datadet = apop_det_and_inv(square->matrix, &inv, 1, 1);
-    double out = log(datadet) * ((ws->df - ws->len -1.)/2.);
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans, 1, inv, ws->wparams, 0, inv_dot_params);   
+    double datadet = apop_matrix_determinant(square->matrix);
     assert(datadet);
-    gsl_vector_view diag = gsl_matrix_diagonal(inv_dot_params);
+
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1, ws->paraminv, square->matrix, 0, invparams_dot_data);   
+    gsl_vector_view diag = gsl_matrix_diagonal(invparams_dot_data);
     double trace = apop_sum(&diag.vector);
-    out += -0.5 * trace;
-    out -= log(2) * ws->len* ws->df/2.;
-    out -= log(ws->paramdet) * ws->df/2.;
-    out -= apop_multivariate_lngamma(ws->df/2., ws->len);
-    gsl_matrix_free(inv);
-    gsl_matrix_free(inv_dot_params);
+    gsl_matrix_free(invparams_dot_data);
     apop_data_free(square);
+    double out= log(datadet) * (ws->df - ws->len -1.)/2. - trace*ws->df/2.;
     assert(isfinite(out));
     return out;
 }
@@ -38,14 +35,18 @@ static double one_wishart_row(gsl_vector *in, void *ws_in){
 static long double wishart_ll(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, GSL_NAN);
     wishartstruct_t ws = {
-            .paramdet = apop_matrix_determinant(m->parameters->matrix),
-            .wparams = m->parameters->matrix,
+            .paraminv = apop_matrix_inverse(m->parameters->matrix),
             .len = sqrt(in->matrix->size2),
             .df = m->parameters->vector->data[0]
         };
-    if (ws.paramdet < 1e-3) return GSL_NEGINF;
+    double paramdet = apop_matrix_determinant(m->parameters->matrix);
+    if (paramdet < 1e-3) return GSL_NEGINF;
     double ll =  apop_map_sum(in, .fn_vp = one_wishart_row, .param=&ws, .part='r');
-    return ll;
+    double k = log(ws.df)*ws.df/2.;
+    k -= M_LN2 * ws.len* ws.df/2.;
+    k -= log(paramdet) * ws.df/2.;
+    k -= apop_multivariate_lngamma(ws.df/2., ws.len);
+    return ll + k*in->matrix->size1;
 }
 
 static void apop_wishart_draw(double *out, gsl_rng *r, apop_model *m){
@@ -61,7 +62,7 @@ C     matrix of size NP * NP [...]
 C     whose elements have a Wishart(N, SIGMA) distribution.
 */
     Nullcheck_mp(m, );
-    int DF, np = m->parameters->matrix->size1;
+    int np = m->parameters->matrix->size1;
     int n = m->parameters->vector->data[0];
     if (!m->more) { 
         gsl_matrix *ccc = apop_matrix_copy(m->parameters->matrix);
@@ -78,25 +79,22 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
 
 //C     Load diagonal elements with square root of chi-square variates
     for(int i = 0; i< np; i++){
-        DF = n - i + 2.;
-        apop_data_set(rmatrix, i, i, gsl_ran_chisq(r, DF));
+        int DF = n - i;
+        apop_data_set(rmatrix, i, i, sqrt(gsl_ran_chisq(r, DF)));
     }
     
-    for(int i = 0; i< np; i++) //off-diagonal triangles: Normals.
+    for(int i = 1; i< np; i++) //off-diagonal triangles: Normals.
           for(int j = 0; j< i; j++){
             double ndraw;
             apop_draw(&ndraw, r, std_normal);
             assert (!gsl_isnan(ndraw));
             apop_data_set(rmatrix, i, j, ndraw);
-//            apop_draw(&ndraw, r, std_normal);
-//            apop_data_set(rmatrix, j, i, ndraw);
           }
     //Now find C * rand * rand' * C'
     apop_data *cr = apop_dot(Chol, rmatrix);
     apop_data *crr = apop_dot(cr, rmatrix, .form2='t');
     apop_data *crrc = apop_dot(crr, Chol, .form2='t');
     memmove(out, crrc->matrix->data, sizeof(double)*np*np);
-    assert(!gsl_isnan(*out));
     apop_data_free(rmatrix); apop_data_free(cr);
     apop_data_free(crrc);    apop_data_free(crr);
 }
@@ -162,7 +160,7 @@ likelihood is being evaluated.  \f$\Gamma_p(\cdot)\f$ is the \ref apop_multivari
 "multivariate gamma function".
 
 \f[
-P(\mathbf{W}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
+P(\mathbf{W}, \mathbf{V}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
                          {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\f]
 
 See also notes in \ref tfchi.
@@ -188,3 +186,4 @@ for (int i=0; i< 1e8; i++){
 \endcode */
 apop_model *apop_wishart  = &(apop_model){"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep, .constraint=wishart_constraint};
+#endif

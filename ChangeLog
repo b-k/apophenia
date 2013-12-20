@@ -5,6 +5,7 @@
 ]
 
 	December 2013
+--append and replace options for apop_text_to_db
 --apop_probit bug fix
 **apop_plot_histograms now uses gnuplot's impulses, not boxes by default---handles missing zero bins better.
 **MLE path trace lists the probs/loglikelihoods in the vector of the apop_data set it produces. path is apop_data**, from apop_data*.

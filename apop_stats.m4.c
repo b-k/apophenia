@@ -753,14 +753,14 @@ For the Wishart, the degrees of freedom and covariance matrix are always estimat
 \pi^{p(p-1)/4}\prod_{j=1}^p
 \Gamma\left[ a+(1-j)/2\right]. \f]
 
-Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this function returns \c GSL_NAN when \f$a+(1-j)/2\f$ takes on one of those values.
+Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this function returns \c NAN when \f$a+(1-j)/2\f$ takes on one of those values.
 
 See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
 */
-double apop_multivariate_gamma(double a, double p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-j)/2 = 0, -1, -2, ... [you sent a=%g, p=%g]", a, p);
-    double out = pow(M_PI, p*(p-1.)/4.);
-    double factor = 1;
+long double apop_multivariate_gamma(double a, int p){
+    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    long double out = pow(M_PI, p*(p-1.)/4.);
+    long double factor = 1;
     for (int i=1; i<=p; i++)
         factor *= gsl_sf_gamma(a+(1-i)/2.);
     return out * factor;
@@ -769,13 +769,12 @@ double apop_multivariate_gamma(double a, double p){
 /** The log of the multivariate generalization of the Gamma; see also
  \ref apop_multivariate_gamma.
 */
-double apop_multivariate_lngamma(double a, double p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-j)/2 = 0, -1, -2, ... [you sent a=%g, p=%g]", a, p);
-    double out = M_LNPI * p*(p-1.)/4.;
-    double factor = 0;
+long double apop_multivariate_lngamma(double a, int p){
+    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    long double out = M_LNPI * p*(p-1.)/4.;
     for (int i=1; i<=p; i++)
-        factor += gsl_sf_lngamma(a+(1-i)/2.);
-    return out + factor;
+        out += gsl_sf_lngamma(a+(1-i)/2.);
+    return out;
 }
 
 static void find_eigens(gsl_matrix **subject, gsl_vector *eigenvals, gsl_matrix *eigenvecs){

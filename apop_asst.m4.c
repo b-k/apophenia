@@ -245,7 +245,7 @@ APOP_VAR_ENDHEAD
     regex_t re;
     int matchcount=count_parens(regex);
     int found, found_ct=0;
-    regmatch_t result[matchcount];
+    regmatch_t result[matchcount+1];
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
