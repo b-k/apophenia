@@ -20,7 +20,7 @@
 \param d       The data, with NaNs
 \param inplace If \c 'y', clear out the pointer-to-\ref apop_data that
 you sent in and refill with the pruned data. If \c 'n', leave the
-set alone and return a new data set.
+set alone and return a new data set. Default=\c 'n'.
 \return        A (potentially shorter) copy of the data set, without
 NaNs. If <tt>inplace=='y'</tt>, a pointer to the input, which was shortened in place. If the entire data set is cleared out, then this will be \c NULL.
 */

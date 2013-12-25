@@ -193,7 +193,7 @@ void apop_vector_exp(gsl_vector *v){
 
 \param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
 \param  v2  the second vector (default=\c NULL, in which case nothing is added)
-\param  inplace If one, use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default=0)
+\param  inplace If 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 \li This function uses the \ref designated syntax for inputs.
@@ -202,7 +202,7 @@ void apop_vector_exp(gsl_vector *v){
 APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
     gsl_vector * apop_varad_var(v1, NULL);
     gsl_vector * apop_varad_var(v2, NULL);
-    char apop_varad_var(inplace, 0);
+    char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     gsl_vector *out;
     gsl_vector t;
@@ -211,7 +211,7 @@ APOP_VAR_ENDHEAD
         gsl_vector_memcpy(out, v2);
         return out;
     } else if (!v2  && v1){
-        if (inplace)
+        if (inplace == 'y')
             return v1;
         out = gsl_vector_alloc(v1->size);
         gsl_vector_memcpy(out, v1);
@@ -220,7 +220,7 @@ APOP_VAR_ENDHEAD
         return NULL;
     //else:
     size_t v1size = v1->size; //save in case of reallocing.
-    if (inplace)
+    if (inplace == 'y' )
         out = apop_vector_realloc(v1, v1->size+v2->size);
     else {
         out = gsl_vector_alloc(v1->size + v2->size);
@@ -238,7 +238,7 @@ APOP_VAR_ENDHEAD
 \param  m1  the upper/rightmost matrix (default=\c NULL, in which case this basically copies \c m2)
 \param  m2  the second matrix (default = \c NULL, in which case \c m1 is returned)
 \param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
-\param  inplace If one, use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default=0)
+\param  inplace If 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
 \return     the stacked data, either in a new matrix or a pointer to \c m1.
 
 \ingroup convenience_fns
@@ -261,7 +261,7 @@ APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, cha
     gsl_matrix *apop_varad_var(m1, NULL);
     gsl_matrix *apop_varad_var(m2, NULL);
     char apop_varad_var(posn, 'r');
-    char apop_varad_var(inplace, 0);
+    char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     gsl_matrix      *out;
     gsl_vector_view tmp_vector;
@@ -270,7 +270,7 @@ APOP_VAR_ENDHEAD
         gsl_matrix_memcpy(out, m2);
         return out;
     } else if (!m2 && m1) {
-        if (inplace)
+        if (inplace =='y')
             return m1;
         out = gsl_matrix_alloc(m1->size1, m1->size2);
         gsl_matrix_memcpy(out, m1);
@@ -281,7 +281,7 @@ APOP_VAR_ENDHEAD
     if (posn == 'r'){
         Apop_stopif(m1->size2 != m2->size2, return NULL, 0, "When stacking matrices on top of each other, they have to have the same number of columns, but  m1->size2==%zu and m2->size2==%zu. Returning NULL.", m1->size2, m2->size2);
         int m1size = m1->size1;
-        if (inplace)
+        if (inplace =='y')
             out = apop_matrix_realloc(m1, m1->size1 + m2->size1, m1->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1 + m2->size1, m1->size2);
@@ -300,7 +300,7 @@ APOP_VAR_ENDHEAD
                 "they have to have the same number of rows, but m1->size1==%zu and m2->size1==%zu. Returning NULL."
                 , m1->size1, m2->size1);
         int m1size = m1->size2;
-        if (inplace)
+        if (inplace =='y')
             out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);

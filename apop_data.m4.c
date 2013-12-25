@@ -331,7 +331,7 @@ twice as much memory. Plan accordingly.
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
 if 'c', stack columns of m1's matrix to left of m2's<br>
 (default = 'r')
-\param  inplace If \c 'y' or 1, use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
@@ -1162,40 +1162,106 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
     return in;
 }
 
-/** Produce a copy of the input set where the matrix and text elements are transposed,
- including the row/column names. 
- The vector and weights elements of the input data set are completely ignored (but see also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.)
+/** Transpose the matrix and text elements of the input data set, including the row/column names. 
 
-This is mostly just a friendly wrapper for \c gsl_matrix_transpose_memcpy; if you have a \c gsl_matrix with no names or text, you may prefer to just use that function.
+The vector and weights elements of the input data set are completely ignored (but see
+also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.) If
+copying, these other elements won't be present; if <tt>.inplace='y'</tt>, it is up to you to
+handle these not-transposed elements correctly.
 
 \param in The input \ref apop_data set. If \c NULL, I return \c NULL. Default is \c NULL.
 \param transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
-\return  A newly alloced \ref apop_data set, with the appropriately transposed matrix and/or text. The vector and weights elements will be \c NULL. If <tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.
+\param inplace If \c 'y', transpose the input in place; if \c 'n', produce a transposed
+copy, leaving the original untouched. Due to how <tt>gsl_matrix_transpose_memcpy</tt>
+works, a copy will still be made, then copied to the original location.  Default is \c 'y'.
+\return  If <tt>inplace=='n'</tt>, a newly alloced \ref apop_data set, with the appropriately transposed
+matrix and/or text. The vector and weights elements will be \c NULL. If
+<tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.<br>
+if <tt>inplace=='y'</tt>, a pointer to the original data set, with matrix and (if <tt>transpose_text='y'</tt>)
+text transposed and vector and weights left in place untouched.
 
 \li Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input).
 \li If only the matrix or only the text have names, then the one set of names is written to the row names of the output.
 \li If both matrix column names and text column names are present, text column names are lost.
+\li if you have a \c gsl_matrix with no names or text, you may prefer to use \c gsl_matrix_transpose_memcpy.
 
 \li This function uses the \ref designated syntax for inputs.
  */ 
-APOP_VAR_HEAD apop_data * apop_data_transpose(apop_data const *in, char transpose_text){
-    apop_data const * apop_varad_var(in, NULL);
+APOP_VAR_HEAD apop_data * apop_data_transpose(apop_data *in, char transpose_text, char inplace){
+    apop_data * apop_varad_var(in, NULL);
     Apop_stopif(!in, return NULL, 1, "Transposing a NULL data set; returning NULL.");
     char apop_varad_var(transpose_text, 'y');
+    char apop_varad_var(inplace, 'y');
 APOP_VAR_ENDHEAD
     Apop_stopif(!in->matrix && !*in->textsize, return apop_data_alloc(), 
             1, "input data set has neither matrix nor text elements; returning an empty data set.");
-    apop_data *out = apop_data_alloc(0, in->matrix ? in->matrix->size2 : 0
-                                      , in->matrix ? in->matrix->size1 : 0);
-    if (in->matrix) gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
-    apop_name_stack(out->names, in->names, 'r', 'c');
-    apop_name_stack(out->names, in->names, 'c', 'r');
-    if (!(transpose_text=='y')) return out;
-
-    apop_text_alloc(out, in->textsize[1], in->textsize[0]);
-    for (int r=0; r< in->textsize[0]; r++)
-        for (int c=0; c< in->textsize[1]; c++)
-            apop_text_add(out, c, r, in->text[r][c]);
+    apop_data *out = (inplace=='y') ? in
+                                    : apop_data_alloc(0, in->matrix ? in->matrix->size2 : 0
+                                                       , in->matrix ? in->matrix->size1 : 0);
+    if (inplace=='y'){
+        if (in->matrix) {
+            if (in->matrix->size1 == in->matrix->size2)
+                gsl_matrix_transpose(in->matrix);
+            else {
+                gsl_matrix *outm = gsl_matrix_alloc(in->matrix->size2, in->matrix->size1);
+                gsl_matrix_transpose_memcpy(outm, in->matrix);
+                gsl_matrix_free(in->matrix);
+                in->matrix = outm;
+            }
+        }
+        if (out->names){
+            char **tmp = out->names->col;
+            out->names->col = out->names->row;
+            out->names->row = tmp;
+            int tmpct = out->names->colct;
+            out->names->colct = out->names->rowct;
+            out->names->rowct = tmpct;
+        }
+    } else if (inplace!='y' && in->matrix){
+        if (in->matrix) gsl_matrix_transpose_memcpy(out->matrix, in->matrix);
+        apop_name_stack(out->names, in->names, 'r', 'c');
+        apop_name_stack(out->names, in->names, 'c', 'r');
+    }
+    if (transpose_text!='y' || in->textsize[0] > 0 || in->textsize[1] > 0) return out;
+    if (inplace=='y'){
+        size_t orows = in->textsize[0];
+        size_t ocols = in->textsize[1];
+        if (orows > ocols){ //extend the first ocols rows to their now-longer length
+            for (size_t i=0; i< ocols; i++){
+                in->text[i] = realloc(in->text[i], sizeof(char*)*orows);
+                Apop_stopif(!in->text[i], in->error='a'; return in, 
+                        0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
+                for (int j=ocols; j < orows; j++)
+                    in->text[i][j] = strdup(in->text[j][i]);
+            }
+        }
+        if (ocols > orows){ //add rows.
+            in->text = realloc(in->text, sizeof(char**)*ocols);
+            Apop_stopif(!in->text, in->error='a'; return in,
+                            0, "realloc failed setting up %zu rows. Probably out of memory.", ocols);
+            for (size_t i=orows; i < ocols; i++){
+                in->text[i] = malloc(sizeof(char*) * orows);
+                Apop_stopif(!in->text[i], in->error='a'; return in, 
+                        0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
+                for (int j=0; j < orows; j++)
+                    in->text[i][j] = strdup(in->text[j][i]);
+            }
+        }
+        size_t squaresize = GSL_MIN(orows, ocols);
+        for (int i=0; i< squaresize; i++) //now do the no-need-to-extend square
+            for (int j=i+1; j< squaresize; j++){
+                char *tmp = in->text[i][j];
+                in->text[i][j] = in->text[j][i];
+                in->text[j][i] = tmp;
+            }
+        in->textsize[0] = ocols;
+        in->textsize[1] = orows;
+    } else {
+        apop_text_alloc(out, in->textsize[1], in->textsize[0]);
+        for (int r=0; r< in->textsize[0]; r++)
+            for (int c=0; c< in->textsize[1]; c++)
+                apop_text_add(out, c, r, in->text[r][c]);
+    }
     if (in->names && in->names->textct && !in->names->colct)
         apop_name_stack(out->names, in->names, 't', 'r');
     return out;

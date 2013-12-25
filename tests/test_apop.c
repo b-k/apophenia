@@ -239,10 +239,9 @@ void test_normalizations(gsl_vector *v){
     gsl_vector_scale(v, 23);
     gsl_vector_add_constant(v, 8);
     apop_data dv = (apop_data){.matrix=apop_vector_to_matrix(v)};
-    apop_data *dvprime = apop_data_transpose(&dv);
-    apop_matrix_normalize(dvprime->matrix, 'r', 's');
-    apop_data *dvagain = apop_data_transpose(dvprime);
-    apop_data_free(dvprime);
+    apop_data_transpose(&dv);
+    apop_matrix_normalize(dv.matrix, 'r', 's');
+    apop_data *dvagain = apop_data_transpose(&dv, .inplace='n');
     apop_data *sum = apop_data_summarize(dvagain);
     apop_data_free(dvagain);
     Diff(apop_data_get(sum, .colname="mean"), 0, 1e-5);
@@ -1112,12 +1111,18 @@ void test_vector_moving_average(){
 
 void test_transpose(){
     apop_data *t = apop_text_to_data("test_data", 0, 1);
-    apop_data *tt = apop_data_transpose(t);
+    apop_data *tt = apop_data_transpose(t, .inplace='n');
     assert(apop_data_get(tt, 0, 3) == 9);
     assert(apop_data_get(tt, 1, 0) == 4);
     assert(!strcmp(tt->names->row[2], "c"));
     assert(!strcmp(tt->names->row[3], "d"));
     assert(!tt->names->colct);
+    apop_data_transpose(t);
+    assert(apop_data_get(t, 0, 3) == 9);
+    assert(apop_data_get(t, 1, 0) == 4);
+    assert(!strcmp(t->names->row[2], "c"));
+    assert(!strcmp(t->names->row[3], "d"));
+    assert(!t->names->colct);
 }
 
 apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, apop_model *method){

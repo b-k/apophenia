@@ -9,6 +9,7 @@
 --apop_probit bug fix
 **apop_plot_histograms now uses gnuplot's impulses, not boxes by default---handles missing zero bins better.
 **MLE path trace lists the probs/loglikelihoods in the vector of the apop_data set it produces. path is apop_data**, from apop_data*.
+**apop_data_transpose has an .inplace option, which is 'y' by default. Add .inplace='n' to existing uses.
 
 	November 2013
 --rewrite apop_data_sort to allow sorting by multiple columns or text or names

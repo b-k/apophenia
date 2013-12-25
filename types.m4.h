@@ -182,7 +182,7 @@ void apop_data_add_named_elmt(apop_data *d, char *name, double val);
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
-Apop_var_declare( apop_data * apop_data_transpose(apop_data const *in, char transpose_text) )
+Apop_var_declare( apop_data * apop_data_transpose(apop_data *in, char transpose_text, char inplace) )
 gsl_matrix * apop_matrix_realloc(gsl_matrix *m, size_t newheight, size_t newwidth);
 gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight);
 
