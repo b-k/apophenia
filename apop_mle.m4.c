@@ -737,6 +737,12 @@ static double annealing_distance(void *xin, void *yin) {
     return apop_vector_distance(from, to, .metric='m');
 }
 
+static void annealing_check_constraint(infostruct *i){
+    apop_data_unpack(i->beta, i->model->parameters);
+    if (i->model->constraint && i->model->constraint(i->data, i->model))
+        apop_data_pack(i->model->parameters, i->beta, .all_pages='y');
+}
+
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
 /** The algorithm: 
     --randomly pick dimension
@@ -759,9 +765,7 @@ This will give a move \f$\leq\f$ step_size on the Manhattan metric.
         amt   = cutpoints[j+1]- cutpoints[j];
         *gsl_vector_ptr(i->beta, j) += amt * sign * scale * step_size;
     }
-    apop_data_unpack(i->beta, i->model->parameters);
-    if (i->model->constraint && i->model->constraint(i->data, i->model))
-        apop_data_pack(i->model->parameters, i->beta, .all_pages='y');
+    annealing_check_constraint(i);
 }
 
 static void annealing_print(void *xp) {
@@ -818,6 +822,7 @@ static void apop_annealing(infostruct *i){
     gsl_siman_print_t printing_fn = NULL;
     if (mp && mp->verbose>1)    printing_fn = annealing_print;
     else if (mp && mp->verbose) printing_fn = annealing_print2;
+    annealing_check_constraint(i); //shift starting point if needed.
     if (setjmp(i->bad_eval_jump)) {
         apopstatus = -1;
         goto done;
