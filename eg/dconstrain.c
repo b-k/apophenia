@@ -50,5 +50,5 @@ int main(){
     apop_model *re_est = apop_estimate(normald, re_trunc);
     Show_results(re_est)
     assert(apop_vector_distance(re_est->parameters->vector, apop_vector_fill(gsl_vector_alloc(2), 0, 1))<1e-1);
-
+    apop_model_free(trunc);
 }

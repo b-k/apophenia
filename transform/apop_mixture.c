@@ -24,8 +24,7 @@ But the assignment of which element goes where is unknown information, which we 
 We're still experimenting with better algorithms.
 
 In the first maximization step, I estimate the parameters of each model by sending all
-available data to each model's native <tt>estimate</tt> routine (which may or may not
-be a maximization).  In the expectation step, I calculate the likelihood that the data
+available data to each model's native <tt>estimate</tt> routine.  In the expectation step, I calculate the likelihood that the data
 point is drawn from each of the distributions (given the parameters to this point),
 and then assign the data point to the most likely distribution. The maximization step
 then re-estimates the parameters using the new selection of data points. The expectation

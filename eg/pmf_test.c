@@ -19,7 +19,7 @@ void pack_prep(apop_data *d, apop_model *m){
 
 long double pack_constraint(apop_data *d, apop_model *m){
     return apop_linear_constraint(apop_data_pack(m->parameters, .all_pages='y'))*1e-5;
-    //penalty size is irrelevant, but must be smaller than p().
+    //penalty size must be smaller than p().
 }
 
 apop_model *pack_counter = &(apop_model){"Optimum is that each element equals its pack order", .p = pack_p, 

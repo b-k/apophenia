@@ -32,6 +32,7 @@ int main(){
 
     //If we correctly replicated a Lognormal, mu and sigma will be right:
     apop_model *est = apop_estimate(d, ct);
+    apop_model_free(ct);
     Diff(apop_data_get(est->parameters, 0, -1), mu);
     Diff(apop_data_get(est->parameters, 1, -1), sigma);
 

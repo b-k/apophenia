@@ -2099,14 +2099,11 @@ To my knowledge, Apophenia is the only open source system for doing statistical
 analysis that is not a walled-garden stats package. Its data structures, syntax, and use 
 reflect its unique position.
 
-You could use Apophenia for 
-simple stats-package--like fitting of models, where the user gathers data, cleans it, and
-runs a series of regressions.  Or you could use the library as input to the design of other
-systems, like fitting a model and then using the fitted model to generate agents in your simulation, or
-designing hierarchical models built from simpler base models. 
-You will see below that Apophenia provides many of the conveniences that stats package 
-users are used to in simply fitting a
-model, while still being structured in a manner that facilitates and encourages building new types of model.
+You will see below that Apophenia provides many of the conveniences that stats package
+users are used to in simply fitting a regression-style model, while still being
+structured in a manner that facilitates and encourages building new types of model,
+using fitted models to generate agents in your simulation, or designing hierarchical
+models built from simpler base models.
 
 The workflow of a typical fitting-a-model project using Apophenia's tools goes something like this:
 

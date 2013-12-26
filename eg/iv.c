@@ -45,18 +45,18 @@ int main(){
     }
     apop_name_add(data->names, "dependent", 'c');
     apop_name_add(data->names, "independent", 'c');
-    apop_model *oest = apop_estimate(data, apop_ols);
     #ifndef Testing
+    apop_model *oest = apop_estimate(data, apop_ols);
     apop_model_show(oest);
     #endif
 
     //the data with no noise will be the instrument.
     Apop_col(data, 1, col1);
-    apop_data *instrumet_data  =apop_data_alloc(data->matrix->size1, 1);
-    APOP_COL(instrumet_data, 0, firstcol);
+    apop_data *instrument_data = apop_data_alloc(data->matrix->size1, 1);
+    APOP_COL(instrument_data, 0, firstcol);
     gsl_vector_memcpy(firstcol, col1);
-    apop_name_add(instrumet_data->names, "independent", 'c');
-    Apop_model_add_group(apop_iv, apop_lm, .instruments = instrumet_data);
+    apop_name_add(instrument_data->names, "independent", 'c');
+    Apop_model_add_group(apop_iv, apop_lm, .instruments = instrument_data);
 
     //Now add noise to the base data four times, and estimate four IVs.
     int tries = 4;
