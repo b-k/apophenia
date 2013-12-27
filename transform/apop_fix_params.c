@@ -170,6 +170,8 @@ static void fixed_param_show(apop_model *m, FILE *out){
 static void fixed_param_prep(apop_data *data, apop_model *params){
     apop_model_print_vtable_add(fixed_param_show, fixed_param_model);
     apop_model_clear(data, params);
+    apop_model *base_model = Apop_settings_get(params, apop_fix_params, base_model);
+    apop_prep(data, base_model);
 }
 
 static apop_model *fixed_param_model = &(apop_model){"Fill me", .estimate=fixed_est, .p = fix_params_p, 

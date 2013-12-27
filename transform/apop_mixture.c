@@ -1,3 +1,14 @@
+/* is_iid option
+
+The algorithm to allocate observations to models does so by evaluating the log likelihood (LL) of a (model, single observation) pair, which makes sense iff observations are IID. In the typical case, when all input models are IID, leave this at the default of <tt>.is_iid='y'</tt>.
+
+Assuming IID, there is no need for a second evaluation step: the total LL is simply the sum of the individual LLs. Setting this to <tt>.is_iid='n'</tt> asks the LL algorithm to generate a separate data set for each model (which involves copying each observation), and then calculating the LL for each (model, chosen observations) set. There will still be distortion, because individual observations are allocated via evaluations of the LL of only that observation. This is also problematic if the input model fails with a one-observation data set. The idealwould be for the algorithm to calculate the LL of all partitions of the data and select the most likely, but in naïve application this is clearly infeasible; readers are welcome to submit alternative algorithms. [Default: 'y']
+
+ * weights element
+ * faithful demo.
+ */
+
+
 /** \file 
  */
 /*
@@ -7,7 +18,18 @@ Generated via \ref apop_model_mixture.
 
 Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
-\li This is still in beta. Please keep an eye out for bugs, and expect the interface to change a little. 
+One can think of the estimation as a missing-data problem: each data point originated
+in one distribution or the other, and if we knew with certainty which data point came
+from which distribution, then the estimation problem would be trivial: just generate the subsets and call 
+<tt>apop_estimate(dataset1, model1)</tt>, ...,  <tt>apop_estimate(datasetn, modeln)</tt> separately.
+But the assignment of which element goes where is unknown information, which we guess at using an E-M algorithm. The standard algorithm starts with an initial set of parameters for the models, and assigns each data point to its most likely model. It then re-estimates the model parameters using their subsets. The algorithm repeats until it arrives at an optimum.
+
+Thus, the log likelihood method for this model includes a step that allocates each data point to its most likely model, and calculates the log likelihood of each observation using its most likely model. (If your model is not IID, see the notes in the \ref apop_mixture_settings struct.
+
+Apohenia modifies this routine slightly because it uses the same maximum likelihood back-end that most other <tt>apop_model</tt>s use for estimation. The ML search algorithm provides model parameters, then the LL method allocates observations and reports a LL to the search algorithm, then the search algorithm uses its usual rules to step to the next candidate set of parameters. This provides slightly more flexibility in the ---hold on.
+
+
+\li Mixture searches can be sensitive to initial conditions. You are encouraged to try a sequence random starting points for your model parameters.
 
 \li You could potentially provide a list of unparameterized models, and then have \ref apop_estimate estimate the parameters of all of them at once:
 
@@ -16,11 +38,6 @@ Note that a kernel density is a mixture of a large number of homogeneous models,
     apop_model *m_estimated = apop_estimate(your_data, m);
 \endcode
 
-One can think of the estimation as a missing-data problem: each data point originated
-in one distribution or the other, and if we knew with certainty which data point came
-from which distribution, then the estimation problem would be trivial: just generate the subsets and call 
-<tt>apop_estimate(dataset1, model1)</tt>, ...,  <tt>apop_estimate(datasetn, modeln)</tt> separately.
-But the assignment of which element goes where is unknown information, which we guess at using an E-M algorithm. 
 We're still experimenting with better algorithms.
 
 In the first maximization step, I estimate the parameters of each model by sending all
@@ -47,13 +64,8 @@ fix them, then use \ref apop_model_fix_params to do so. E.g.
 
 \adoc    Input_format   The same data gets sent to each of the submodels.
 \adoc    Settings   \ref apop_mixture_settings 
-\adoc    Parameter_format You probably just want to look at the submodel parameters. 
-The parent model's parameter list is entirely in <tt>yrmodel->parameters->vector</tt>. The
-first N are the weights, and then we have each model's parameters packed in, in turn.
-There are pack/unpack functions that run as needed. Given the estimated mixture model \c m over three models, the weights are:
-\code
-    gsl_vector weightsvector = gsl_vector_subvector(m->parameters->vector, 0, 3).vector;
-\endcode
+\adoc    Parameter_format The parameters are broken out in a readable form in the
+                          settings group, so your best bet is to use those. See the sample code for usage.<br> The <tt>parameter</tt> element is a single vector piling up all elements, beginning with the first $n-1$ weights, followed by an <tt>apop_data_pack</tt> of each model's parameters in sequence. Because all elements are in a single vector, one could run a maximum likelihood search for all components (including the weights) at once. Fortunately for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack this vector into its component parts for you.
 
 \adoc   Examples
 \include hills2.c
@@ -97,43 +109,53 @@ apop_model *apop_model_mixture_base(apop_model **inlist){
 }
 
 void allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
-    apop_model *odds = apop_model_copy(apop_pmf); //Set up a CDF for mixing each data point.
-    Apop_model_add_group(odds, apop_pmf, .draw_index='y');
-    odds->data = apop_data_alloc();
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-    odds->data->weights = gsl_vector_alloc(ms->model_count);
+    static int arbitrary_counter;
 
-    gsl_vector weightings = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
-    gsl_vector_set_all(&weightings, 0);
+    /*gsl_vector weightings = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
+    gsl_vector_set_all(&weightings, 0);*/
 
-    //apop_pmf_settings *ps = Apop_settings_get_group(odds, apop_pmf);
     Get_vmsizes(d); //maxsize, vsize, msize1
     for (int i=0; i< maxsize; i++){
         Apop_data_row(d, i, onepoint);
-        for (int j=0; j< odds->data->weights->size; j++)
-            gsl_vector_set(odds->data->weights, j,
-                    apop_p(onepoint, ms->model_list[j]));
-        //gsl_vector_free(ps->cmf); //This is what apop_model_clear is supposed to do.
-        double chosen_model;
-        apop_draw(&chosen_model, ms->rng, odds);
-        apop_data *pick = outsets[(int)chosen_model]; //alias
-        (*gsl_vector_ptr(&weightings, (int)chosen_model))++;
-        if (!pick) outsets[(int)chosen_model] = apop_data_copy(onepoint);
-        else {
-            if (pick->vector) apop_vector_realloc(pick->vector, pick->vector->size+1);
-            if (pick->matrix) apop_matrix_realloc(pick->matrix, pick->matrix->size1, pick->matrix->size2+1);
-            if (*pick->textsize) apop_text_alloc(pick, pick->textsize[0], pick->textsize[1]+1);
-            Get_vmsizes(pick); //maxsize again.
-            apop_data_set_row(pick, onepoint, maxsize-1);
+        int best_model = 0;
+        double best_val = -INFINITY;
+        for (int j=0; j< ms->model_count; j++){
+            double this_val = apop_log_likelihood(onepoint, ms->model_list[j]);
+            if (this_val > best_val){
+                best_model = j;
+                best_val = this_val;
+            } else if (this_val == best_val && (i+arbitrary_counter)%2==1){//split data set amongst models with the same params.
+                best_model = j;
+                best_val = this_val;
+            }
         }
+        apop_data *pick = outsets[best_model]; //alias
+        if (!pick) pick = outsets[best_model] = apop_data_copy(onepoint);
+        else apop_data_stack(pick, onepoint, .inplace='y');
     }
+    arbitrary_counter++;
     //set weights parameters here.
-    apop_data_free(odds->data);
-    apop_model_free(odds);
 }
 
 static void mixture_estimate(apop_data *d, apop_model *m){
-    apop_maximum_likelihood(d, m);
+    //The weights are a tally, while the parameters are found via ML search.
+    //So fix the weights, do the search, then calculate the weights.
+    apop_prep(d, m);
+    gsl_vector_set_all(m->parameters->vector, NAN);
+    int mcount= Apop_settings_get(m, apop_mixture, model_count);
+    gsl_vector weights = gsl_vector_subvector(m->parameters->vector, 0, mcount-1).vector;
+    gsl_vector_set_all(&weights, 0);
+
+    apop_model *mf = apop_model_fix_params(m);
+    apop_prep(d, mf);
+    apop_maximum_likelihood(d, mf);
+    apop_model_fix_params_get_base(mf); //re-fills m.
+
+
+}
+
+/*
     Apop_stopif(m->error, return, 0, "Trouble estimating the initial MLEs.");
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
 
@@ -150,14 +172,13 @@ static void mixture_estimate(apop_data *d, apop_model *m){
             apop_data_free(datasets[i]);
     }
 }
+*/
 
 static void mixture_prep(apop_data * data, apop_model *model){
     apop_model_print_vtable_add(mixture_show, apop_mixture);
+    if (model->parameters) return;
     apop_mixture_settings *ms = Apop_settings_get_group(model, apop_mixture);
-    model->parameters=apop_data_alloc(ms->model_count);
-
-    //scaffolding, to remove later
-    gsl_vector_set_all(model->parameters->vector, 1./ms->model_count);
+    model->parameters = apop_data_alloc(ms->model_count-1);
 
     int i=0;
     for (apop_model **m = ms->model_list; *m; m++){
@@ -172,7 +193,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
 
 void unpack(apop_model *min){
     apop_mixture_settings *ms = Apop_settings_get_group(min, apop_mixture);
-    int posn=ms->model_count, i=0;
+    int posn=ms->model_count-1, i=0;
     if (!min->parameters) return; //Trusting user that the user has added already-esimated models.
     for (apop_model **m = ms->model_list; *m; m++){
         gsl_vector v = gsl_vector_subvector(min->parameters->vector, posn, ms->param_sizes[i]).vector;
@@ -199,8 +220,25 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     Apop_stopif(!ms, model_in->error='p'; return GSL_NAN, 0, "No apop_mixture_settings group. "
                                               "Did you estimate this with apop_model_mixture?");
-    unpack(model_in);
+    if (model_in->parameters) unpack(model_in);
+    apop_data **datasets = calloc(ms->model_count, sizeof(apop_data*));
+    allocate_to_data_sets(d, model_in, datasets);
     long double total=0;
+
+    for (int i=0; i< ms->model_count; i++){
+        if (datasets[i]) total += apop_log_likelihood(datasets[i], ms->model_list[i]);
+printf("\n%i (%g, %g):%g\t%zu", i, 
+        apop_data_get(ms->model_list[i]->parameters, 0),
+        apop_data_get(ms->model_list[i]->parameters, 1),
+        datasets[i] ? apop_log_likelihood(datasets[i], ms->model_list[i]): NAN,
+        datasets[i] ? datasets[i]->matrix->size1: 0);
+//apop_vector_print(ms->model_list[i]->parameters->vector);
+        apop_data_free(datasets[i]);
+    }
+    free(datasets);
+
+printf(" Σ:%Lg\n", total);
+#if 0
     if (model_in->parameters) {
         gsl_vector vforsum = gsl_vector_subvector(model_in->parameters->vector, 0, ms->model_count).vector;
         long double total_weight = apop_vector_sum(&vforsum);
@@ -211,7 +249,8 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
         for (apop_model **m = ms->model_list; *m; m++)
             total += apop_p(d, *m)/ms->model_count;
     }
-    return log(total);
+#endif
+    return total;
 }
 
 static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
@@ -236,12 +275,6 @@ static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
     apop_draw(out, r, ms->model_list[(int)index]);
 }
 
-static long double weights_over_zero(apop_data *data, apop_model *m){
-    apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-    gsl_vector v = gsl_vector_subvector(m->parameters->vector, 0, ms->model_count).vector;
-    return apop_linear_constraint(&v);
-}
-
 static long double mixture_cdf(apop_data *d, apop_model *model_in){
     Nullcheck_m(model_in, GSL_NAN)
     Nullcheck_d(d, GSL_NAN)
@@ -250,6 +283,27 @@ static long double mixture_cdf(apop_data *d, apop_model *model_in){
     weighted_sum(apop_cdf);
     return total;
 }
+
+static long double mixture_constraint(apop_data *data, apop_model *model_in){
+    apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
+    long double penalty = 0;
+    unpack(model_in);
+    for (apop_model **m = ms->model_list; *m; m++)
+        penalty += (*m)->constraint(data, *m);
+    if (penalty){
+        int posn=ms->model_count-1, i=0;
+        for (apop_model **m = ms->model_list; *m; m++){
+            gsl_vector v = gsl_vector_subvector(model_in->parameters->vector, posn, ms->param_sizes[i]).vector;
+            apop_data_pack((*m)->parameters, &v);
+            posn+=ms->param_sizes[i++];
+        }
+    }
+    //weights are all positive?
+    gsl_vector v = gsl_vector_subvector(model_in->parameters->vector, 0, ms->model_count).vector;
+    penalty += apop_linear_constraint(&v);
+    return penalty;
+}
+
 
 void mixture_show(apop_model *m, FILE *out){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
@@ -269,5 +323,5 @@ void mixture_show(apop_model *m, FILE *out){
 //predict
 
 apop_model *apop_mixture=&(apop_model){"Mixture of models", .prep=mixture_prep, 
-    .estimate=mixture_estimate, .constraint=weights_over_zero,
+    .estimate=mixture_estimate, .constraint=mixture_constraint,
     .log_likelihood=mixture_log_likelihood, .cdf=mixture_cdf, .draw=mixture_draw };
