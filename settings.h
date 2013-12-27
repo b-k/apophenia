@@ -546,6 +546,16 @@ typedef struct {
     int draw_ct;
 } apop_composition_settings;/**< All of the elements of this struct should be considered private.*/
 
+typedef struct {
+    apop_model **model_list;
+    int *param_sizes;
+    apop_model *cmf;
+    gsl_vector *weights;
+    int refct, model_count;
+    gsl_rng *rng;
+    char is_iid;
+} apop_mixture_settings;/**< All of the elements of this struct should be considered private. Also, the mixture setup is in beta and these will likely change soon. */
+
 /** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
@@ -559,6 +569,7 @@ Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_stack)
 Apop_settings_declarations(apop_update)
+Apop_settings_declarations(apop_mixture)
 Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
 Apop_settings_declarations(apop_parts_wanted)
