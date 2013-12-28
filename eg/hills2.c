@@ -1,12 +1,11 @@
 #include <apop.h>
 
-/* A beta example whose syntax and method is under development, under the presumption that
-  a sketch is better than no examples at all.
- 
- Uses \ref apop_model_mixture to generate a hump-filled distribution, with the tallest hump at (3,3).
+/* 
+Use \ref apop_model_mixture to generate a hump-filled distribution, then find 
+the most likely data points and check that they are near the humps.
 
- Part of Apophenia's test suite.
- */
+Part of Apophenia's test suite.
+*/
 
 //Produce a 2-D multivariate normal model with unit covariance and given mean 
 apop_model *produce_fixed_mvn(double x, double y){
@@ -26,7 +25,6 @@ int main(){
                         produce_fixed_mvn(0, 1));
     apop_prep(NULL, many_humps);
 
-
     gsl_rng *r = apop_rng_alloc(21);
     int len = 100000;
     apop_data *d = apop_model_draws(many_humps, len, r);
@@ -41,9 +39,8 @@ int main(){
     #endif
     assert(fabs(apop_mean(second)- 1) < 5e-2);
 
- /*  Abuse the ML imputation routine to search for the input value with the highest
- log likelihood.
-  Do the search via simulated annealing. */
+/*  Abuse the ML imputation routine to search for the input value with the highest
+    log likelihood. Do the search via simulated annealing. */
 
     apop_data *x = apop_data_alloc(1,2);
     gsl_matrix_set_all(x->matrix, NAN);

@@ -1,14 +1,3 @@
-/* is_iid option
-
-The algorithm to allocate observations to models does so by evaluating the log likelihood (LL) of a (model, single observation) pair, which makes sense iff observations are IID. In the typical case, when all input models are IID, leave this at the default of <tt>.is_iid='y'</tt>.
-
-Assuming IID, there is no need for a second evaluation step: the total LL is simply the sum of the individual LLs. Setting this to <tt>.is_iid='n'</tt> asks the LL algorithm to generate a separate data set for each model (which involves copying each observation), and then calculating the LL for each (model, chosen observations) set. There will still be distortion, because individual observations are allocated via evaluations of the LL of only that observation. This is also problematic if the input model fails with a one-observation data set. The idealwould be for the algorithm to calculate the LL of all partitions of the data and select the most likely, but in naïve application this is clearly infeasible; readers are welcome to submit alternative algorithms. [Default: 'y']
-
- * weights element
- * faithful demo.
- */
-
-
 /** \file 
  */
 /*
@@ -18,159 +7,138 @@ Generated via \ref apop_model_mixture.
 
 Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
-One can think of the estimation as a missing-data problem: each data point originated
-in one distribution or the other, and if we knew with certainty which data point came
-from which distribution, then the estimation problem would be trivial: just generate the subsets and call 
-<tt>apop_estimate(dataset1, model1)</tt>, ...,  <tt>apop_estimate(datasetn, modeln)</tt> separately.
-But the assignment of which element goes where is unknown information, which we guess at using an E-M algorithm. The standard algorithm starts with an initial set of parameters for the models, and assigns each data point to its most likely model. It then re-estimates the model parameters using their subsets. The algorithm repeats until it arrives at an optimum.
-
-Thus, the log likelihood method for this model includes a step that allocates each data point to its most likely model, and calculates the log likelihood of each observation using its most likely model. (If your model is not IID, see the notes in the \ref apop_mixture_settings struct.
-
-Apohenia modifies this routine slightly because it uses the same maximum likelihood back-end that most other <tt>apop_model</tt>s use for estimation. The ML search algorithm provides model parameters, then the LL method allocates observations and reports a LL to the search algorithm, then the search algorithm uses its usual rules to step to the next candidate set of parameters. This provides slightly more flexibility in the ---hold on.
-
-
-\li Mixture searches can be sensitive to initial conditions. You are encouraged to try a sequence random starting points for your model parameters.
-
-\li You could potentially provide a list of unparameterized models, and then have \ref apop_estimate estimate the parameters of all of them at once:
+Use \ref apop_model_mixture to produce one of these models. In the examples below, some are generated from unparameterized input models with a form like 
 
 \code
-    apop_model *m_blank = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_exponential));
-    apop_model *m_estimated = apop_estimate(your_data, m);
+apop_model *mf = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_normal));
+Apop_model_add_group(mf, apop_mle, .starting_pt=(double[]){50, 5, 80, 5},
+                                   .step_size=3, .tolerance=1e-6);
+apop_model_show(apop_estimate(dd, mf));
 \endcode
 
-We're still experimenting with better algorithms.
+One can also skip the estimation and use already-parameterized models as input to \ref apop_model_mixture, e.g.:
 
-In the first maximization step, I estimate the parameters of each model by sending all
-available data to each model's native <tt>estimate</tt> routine.  In the expectation step, I calculate the likelihood that the data
-point is drawn from each of the distributions (given the parameters to this point),
-and then assign the data point to the most likely distribution. The maximization step
-then re-estimates the parameters using the new selection of data points. The expectation
-and maximization steps alternate until convergence.
+\code
+apop_model *r_ed = apop_model_mixture(apop_model_set_parameters(apop_normal, 54.6, 5.87),
+                       apop_model_set_parameters(apop_normal, 80.1, 5.87));
+apop_data *wts = apop_data_falloc((2), 0.36, 0.64);
+Apop_settings_add(r_ed, apop_mixture, weights, wts->vector);
+printf("LL=%g\n", apop_log_likelihood(dd, r_ed));
+\endcode
 
-Note that determining to which parts of a mixture to assign a data point is a
+Notice that the weights vector has to be added after the model is set up. If none is given, then equal weights are assigned to all components of the mixture.
+
+
+One can think of the estimation as a missing-data problem: each data point originated
+in one distribution or the other, and if we knew with certainty which data point
+came from which distribution, then the estimation problem would be trivial:
+just generate the subsets and call <tt>apop_estimate(dataset1, model1)</tt>, ...,
+<tt>apop_estimate(datasetn, modeln)</tt> separately.  But the assignment of which
+element goes where is unknown information, which we guess at using an E-M algorithm. The
+standard algorithm starts with an initial set of parameters for the models, and assigns
+each data point to its most likely model. It then re-estimates the
+model parameters using their subsets. The standard algorithm, see e.g. <a
+href="http://www.jstatsoft.org/v32/i06/paper">this PDF</a>, repeats until it arrives
+at an optimum.
+
+Thus, the log likelihood method for this model includes a step that allocates each data
+point to its most likely model, and calculates the log likelihood of each observation
+using its most likely model. [It would be a valuable extension to extend this to
+not-conditionally IID models. Commit \c 1ac0dd44 in the repository had some notes on
+this, now removed.]  As a side-effect, it calculates the odds of drawing from each model
+(the vector λ). Following the above-linked paper, the probability for a given
+observation under the mixture model is its probability under the most likely model
+weighted by the previously calculated λ for the given model.
+
+Apohenia modifies this routine slightly because it uses the same maximum likelihood
+back-end that most other <tt>apop_model</tt>s use for estimation. The ML search algorithm
+provides model parameters, then the LL method allocates observations and reports a LL to
+the search algorithm, then the search algorithm uses its usual rules to step to the next
+candidate set of parameters. This provides slightly more flexibility in the search.
+
+\li <b>Estimations of mixture distributions can be sensitive to initial conditions.</b>
+You are encouraged to try a sequence random starting points for your model parameters.
+Some authors recommend plotting the data and eyeballing a guess as to the model parameters.
+
+Determining to which parts of a mixture to assign a data point is a
 well-known hard problem, which is often not solvable--that information is basically lost. 
 
-\li The weights are free parameters, to be estimated like any other. If you want to
-fix them, then use \ref apop_model_fix_params to do so. E.g.
+\adoc    Input_format   The same data gets sent to each of the component models of the
+mixture. Each row is an observation, and the estimation routine assumes that models are
+conditionally IID (i.e., having chosen what component of the mixture the observation
+comes from, its likelihood can be calculated independently of all other observations).
 
-\code
-    apop_model *m = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_exponential));
-    apop_prep(NULL, m); //for some models, NULL will need to be an \ref apop_data set.
-    gsl_vector_set_all(m->parameters->vector, NAN);
-    gsl_vector weightsvector = gsl_vector_subvector(m->parameters->vector, 0, 2).vector;
-    gsl_vector_set_all(&weightsvector, 1);
-    apop_model *fixed =apop_model_fix_params(m->parameters, m);
-\endcode
-
-\adoc    Input_format   The same data gets sent to each of the submodels.
 \adoc    Settings   \ref apop_mixture_settings 
+
 \adoc    Parameter_format The parameters are broken out in a readable form in the
-                          settings group, so your best bet is to use those. See the sample code for usage.<br> The <tt>parameter</tt> element is a single vector piling up all elements, beginning with the first $n-1$ weights, followed by an <tt>apop_data_pack</tt> of each model's parameters in sequence. Because all elements are in a single vector, one could run a maximum likelihood search for all components (including the weights) at once. Fortunately for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack this vector into its component parts for you.
+    settings group, so your best bet is to use those. See the sample code for usage.<br>
+    The <tt>parameter</tt> element is a single vector piling up all elements, beginning
+    with the first $n-1$ weights, followed by an <tt>apop_data_pack</tt> of each model's
+    parameters in sequence. Because all elements are in a single vector, one could run a
+    maximum likelihood search for all components (including the weights) at once. Fortunately
+    for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack
+    this vector into its component parts for you.
+
+\adoc RNG Uses the weights to select a component model, then makes a draw from that component.
+The model's \c dsize (draw size) element is set when you set up the model in the
+model's \c prep method (automatically called by \ref apop_estimate, or call it directly)
+iff all component models have the same \c dsize.
 
 \adoc   Examples
+The first example uses a text file \c faith.data, in the \c tests directory of the distribution.
+\include faithful.c
+
 \include hills2.c
 */
 
 #include "apop_internal.h"
 #include "types.h"
-void mixture_show(apop_model *m, FILE *out);
-
-
 Apop_settings_copy(apop_mixture,
-    out->cmf= in->cmf ? apop_model_copy(in->cmf): NULL;
+    (*out->cmf_refct)++;
 )
 
 Apop_settings_free(apop_mixture,
-    apop_model_free(in->cmf);
+    if (!(--in->cmf_refct)) {
+        apop_model_free(in->cmf);
+        free(in->cmf_refct);
+    }
     free(in->param_sizes);
 ) 
 
 Apop_settings_init(apop_mixture, 
-    Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++))
+    out->cmf_refct = calloc(1, sizeof(int));
+    (*out->cmf_refct)++;
 )
 
+//see apop_model_mixture in types.h
 apop_model *apop_model_mixture_base(apop_model **inlist){
     apop_model *out = apop_model_copy(apop_mixture);
     int count=0;
     for (apop_model **m = inlist; *m; m++) count++;
-    Apop_model_add_group(out, apop_mixture, .model_list=inlist, 
+    apop_mixture_settings *ms =Apop_settings_add_group(out, apop_mixture, .model_list=inlist, 
             .model_count=count, .param_sizes=malloc(sizeof(int)*count));
     int dsize = inlist[0]->dsize;
     for (int i=1; i< count && dsize > -99; i++) if (inlist[i]->dsize != dsize) dsize = -100;
     if (dsize > -99) out->dsize = dsize;
+
+    ms->weights = gsl_vector_alloc(ms->model_count);
+    gsl_vector_set_all(ms->weights, 1./count);
     return out;
 }
 
-apop_data* allocate_to_data_sets(apop_data *d, apop_model *m, apop_data **outsets){
-    //if the data is iid, the output here is a grid of log likelihoods.
-    //if is_iid!='y', then outsets!=NULL, then copy data to its best choice.
-
+void mixture_show(apop_model *m, FILE *out){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-    static int arbitrary_counter;
+    if (m->parameters){
+        fprintf(out, "Mixture of %i models, with weights:\n", ms->model_count);
+        apop_vector_print(ms->weights, .output_pipe=out);
+    } else fprintf(out, "Mixture of %i models, with unspecified weights\n", ms->model_count);
 
-    Get_vmsizes(d); //maxsize, vsize, msize1
-    apop_data *out = apop_data_alloc(maxsize, ms->model_count);
-
-    for (int i=0; i< maxsize; i++){
-        Apop_data_row(d, i, onepoint);
-        int best_model = 0;
-        double best_val = -INFINITY;
-        for (int j=0; j< ms->model_count; j++){
-            double this_val = apop_log_likelihood(onepoint, ms->model_list[j]);
-            apop_data_set(out, i, j, this_val);
-            if (!outsets) continue;
-            if (this_val > best_val){
-                best_model = j;
-                best_val = this_val;
-            } else if (this_val == best_val && (i+arbitrary_counter)%2==1){//split data set amongst models with the same params.
-                best_model = j;
-                best_val = this_val;
-            }
-        }
-        if (outsets){
-            apop_data *pick = outsets[best_model]; //alias
-            if (!pick) pick = outsets[best_model] = apop_data_copy(onepoint);
-            else apop_data_stack(pick, onepoint, .inplace='y');
-        }
-    }
-    arbitrary_counter++;
-    return out;
-}
-
-/*
-static void mixture_estimate(apop_data *d, apop_model *m){
-    //The weights are a tally, while the parameters are found via ML search.
-    //So fix the weights, do the search, then calculate the weights.
-    apop_prep(d, m);
-    gsl_vector_set_all(m->parameters->vector, NAN);
-    int mcount= Apop_settings_get(m, apop_mixture, model_count);
-    gsl_vector weights = gsl_vector_subvector(m->parameters->vector, 0, mcount-1).vector;
-    gsl_vector_set_all(&weights, 0);
-
-    apop_model *mf = apop_model_fix_params(m);
-    apop_prep(d, mf);
-    apop_maximum_likelihood(d, mf);
-    apop_model_fix_params_get_base(mf); //re-fills m.
-}*/
-
-/*
-    Apop_stopif(m->error, return, 0, "Trouble estimating the initial MLEs.");
-    apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-
-    apop_data **datasets = calloc(ms->model_count, sizeof(apop_data*));
-    for (int ctr=0; ctr<100; ctr++){
-        allocate_to_data_sets(d, m, datasets);
-        for (int i=0; i< ms->model_count; i++)
-            if (datasets[i]){
-                apop_model *freeme=ms->model_list[i];
-                ms->model_list[i] = apop_estimate(datasets[i], ms->model_list[i]);
-                apop_model_free(freeme);
-            }
-        for (int i=0; i< ms->model_count; i++)
-            apop_data_free(datasets[i]);
+    for (int i=0; i< ms->model_count; i++){
+        fprintf(out, "\n");
+        apop_model_print(ms->model_list[i], out);
     }
 }
-*/
+
 
 static void mixture_prep(apop_data * data, apop_model *model){
     apop_model_print_vtable_add(mixture_show, apop_mixture);
@@ -187,11 +155,6 @@ static void mixture_prep(apop_data * data, apop_model *model){
         gsl_vector_free(v);
     }
     if (!model->dsize) model->dsize = (*ms->model_list)->dsize;
-
-    if (!ms->weights){
-        ms->weights = gsl_vector_alloc(ms->model_count);
-        gsl_vector_set_all(ms->weights, 1./ms->model_count);
-    }
 }
 
 void unpack(apop_model *min){
@@ -205,35 +168,28 @@ void unpack(apop_model *min){
     }
 }
 
-#define weighted_sum(fn)                                                            \
-    long double total=0;                                                            \
-    if (model_in->parameters) {                                                     \
-        long double total_weight = apop_vector_sum(ms->weights);                    \
-        size_t i=0;                                                                 \
-        for (apop_model **m = ms->model_list; *m; m++)                              \
-            total += fn(d, *m) * gsl_vector_get(ms->weights, i++)/total_weight;     \
-    } else {   /*assume equal weights.*/                                            \
-        for (apop_model **m = ms->model_list; *m; m++)                              \
-            total += fn(d, *m)/ms->model_count;                                     \
+#define weighted_sum(fn)                                                     \
+    long double total=0;                                                     \
+    long double total_weight = apop_sum(ms->weights);                        \
+    size_t i=0;                                                              \
+    for (apop_model **m = ms->model_list; *m; m++)                           \
+        total += fn(d, *m) * gsl_vector_get(ms->weights, i++)/total_weight;
+
+//The output is a grid of log likelihoods.
+apop_data* get_lls(apop_data *d, apop_model *m){
+    apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
+    Get_vmsizes(d); //maxsize
+    apop_data *out = apop_data_alloc(maxsize, ms->model_count);
+
+    for (int i=0; i< maxsize; i++){
+        Apop_data_row(d, i, onepoint);
+        for (int j=0; j< ms->model_count; j++){
+            double this_val = apop_log_likelihood(onepoint, ms->model_list[j]);
+            apop_data_set(out, i, j, this_val);
+        }
     }
-
-/*
-    ll ll ll
-        I need p₁/Σp p₂/Σp p₃/Σp
-        where p₁=exp(ll₁).
-
-        Then p₁/Σp = exp(ll₁) - exp(llM)*(exp(ll₁-llM)+exp(ll₂-llM)+exp(ll₃-llM))
-
-
-        which is equvalent to
-                1/(1+(p₂+p₃))
-        better: the subtract-out-the-max trick.
-p₁/Σp = exp(ll1)/(exp(ll1)+exp(ll2)+exp(ll3))
-let L be the max
-p₁/Σp = exp(ll1)/
-
-N^6 = N^2(N^(6-2))
-*/
+    return out;
+}
 
 /* The trick to summing exponents: subtract the max:
 
@@ -244,7 +200,7 @@ One of the terms in the sum is exp(0)=1. The others are all less than one, and s
 are guaranteed no overflow. If any of them underflow, then that term must not have
 been very important for the sum.
 */
-long double sum_exp_vector(gsl_vector const *onerow){
+static long double sum_exp_vector(gsl_vector const *onerow){
     long double rowtotal = 0;
     double best = gsl_vector_max(onerow);
     for (int j=0; j<onerow->size; j++) rowtotal += exp(gsl_vector_get(onerow, j)-best);
@@ -255,11 +211,9 @@ long double sum_exp_vector(gsl_vector const *onerow){
 static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     Apop_stopif(!ms, model_in->error='p'; return GSL_NAN, 0, "No apop_mixture_settings group. "
-                                              "Did you estimate this with apop_model_mixture?");
+                                              "Did you set this up with apop_model_mixture()?");
     if (model_in->parameters) unpack(model_in);
-    apop_data **datasets = ms->is_iid=='y' ? calloc(ms->model_count, sizeof(apop_data*)) : NULL;
-    apop_data *lls = allocate_to_data_sets(d, model_in, datasets);
-
+    apop_data *lls = get_lls(d, model_in);
 
     //reweight by last round's lambda 
     for (int i=0; i< lls->matrix->size2; i++){
@@ -267,8 +221,12 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
         gsl_vector_add_constant(onecol, gsl_vector_get(ms->weights, i));
     }
 
-//OK, now we need the λs, and then the max ll for each guy.
+//OK, now we need the λs, and then the max ll for each observation
 
+/*
+Draw probabilities are p₁/Σp p₂/Σp p₃/Σp (see equation (2) of the above pdf.)
+But I have logs, and want to stay in log-format for as long as possible, to prevent undeflows and loss of precision.
+*/
     long double total_ll=0;
     gsl_vector *ps = gsl_vector_alloc(lls->matrix->size2);
     gsl_vector *cp = gsl_vector_alloc(lls->matrix->size2);
@@ -282,8 +240,10 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
         }
         gsl_vector_memcpy(onerow, ps);
 
-    //check that the row sums to one.
-        assert(fabs(apop_sum(onerow) - 1) < 1e-3);
+        Apop_stopif(fabs(apop_sum(onerow) - 1) > 1e-3, /*Warn user, but continue.*/, 0,
+                "One of the probability calculations is off: the total for the odds of drawing "
+                "from the %i mixtures is %g but should be 1.", 
+                ms->model_count, fabs(apop_sum(onerow) - 1));
     }
     gsl_vector_free(cp);
     gsl_vector_free(ps);
@@ -292,35 +252,6 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
         Apop_matrix_col(lls->matrix, i, onecol);
         gsl_vector_set(ms->weights, i, apop_sum(onecol)/lls->matrix->size1);
     }
-    return total_ll;
-
-
-
-    if (ms->is_iid=='y')
-        for (int i=0; i< ms->model_count; i++){
-            if (datasets[i]) total_ll += apop_log_likelihood(datasets[i], ms->model_list[i]);
-    printf("\n%i (%g, %g):%g\t%zu", i, 
-            apop_data_get(ms->model_list[i]->parameters, 0),
-            apop_data_get(ms->model_list[i]->parameters, 1),
-            datasets[i] ? apop_log_likelihood(datasets[i], ms->model_list[i]): NAN,
-            datasets[i] ? datasets[i]->matrix->size1: 0);
-    //apop_vector_print(ms->model_list[i]->parameters->vector);
-            apop_data_free(datasets[i]);
-        }
-        free(datasets);
-
-printf(" Σ:%Lg\n", total_ll);
-#if 0
-    if (model_in->parameters) {
-        long double total_weight = apop_vector_sum(ms->weights);
-        size_t i=0;
-        for (apop_model **m = ms->model_list; *m; m++)
-            total += apop_p(d, *m) * vforsum.data[i++]/total_weight;
-    } else {   /*assume equal weights.*/
-        for (apop_model **m = ms->model_list; *m; m++)
-            total += apop_p(d, *m)/ms->model_count;
-    }
-#endif
     return total_ll;
 }
 
@@ -349,6 +280,7 @@ static long double mixture_constraint(apop_data *data, apop_model *model_in){
     apop_mixture_settings *ms = Apop_settings_get_group(model_in, apop_mixture);
     long double penalty = 0;
     unpack(model_in);
+    //check all component models.
     for (apop_model **m = ms->model_list; *m; m++)
         penalty += (*m)->constraint(data, *m);
     if (penalty){
@@ -365,22 +297,6 @@ static long double mixture_constraint(apop_data *data, apop_model *model_in){
     return penalty;
 }
 
-
-void mixture_show(apop_model *m, FILE *out){
-    apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-    if (m->parameters){
-        fprintf(out, "Mixture of %i models, with weights: ", ms->model_count);
-        apop_vector_print(ms->weights, .output_pipe=out);
-    } else
-        fprintf(out, "Mixture of %i models, with unspecified weights\n", ms->model_count);
-
-    for (int i=0; i< ms->model_count; i++)
-        apop_model_print(ms->model_list[i], out);
-}
-
-//score
-//predict
-
-apop_model *apop_mixture=&(apop_model){"Mixture of models", .prep=mixture_prep, 
-    /*.estimate=mixture_estimate,*/ .constraint=mixture_constraint,
-    .log_likelihood=mixture_log_likelihood, .cdf=mixture_cdf, .draw=mixture_draw };
+apop_model *apop_mixture=&(apop_model){"Mixture of models", .prep=mixture_prep,
+    .constraint=mixture_constraint, .log_likelihood=mixture_log_likelihood,
+    .cdf=mixture_cdf, .draw=mixture_draw };

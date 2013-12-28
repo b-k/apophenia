@@ -1288,9 +1288,9 @@ Outlineheader Dist Distributions
 \li\ref apop_beta
 \li\ref apop_beta_from_mean_var()
 \li\ref apop_binomial
-\li\ref apop_chi_squared
-\li\ref apop_exponential
-\li\ref apop_f_distribution
+<!-- \li\ref apop_chi_squared -->
+\li\ref apop_exponential 
+<!-- \li\ref apop_f_distribution -->
 \li\ref apop_gamma
 \li\ref apop_gaussian
 \li\ref apop_improper_uniform

@@ -530,6 +530,8 @@ typedef struct {
     apop_model *base_model;
 } apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
 
+/** For use with the \ref apop_dconstrain model. See its documentation for an example. 
+\hideinitializer \ingroup settings */
 typedef struct {
     apop_model *base_model; /**< The model, before constraint. */
     double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
@@ -537,7 +539,7 @@ typedef struct {
     gsl_rng *rng; /**< If you don't provide a \c scaling function, I calculate the in-constraint model density via random draws.
                        If no \c rng is provided, I use a default RNG; see \ref autorng. */
     int draw_ct; /**< How many draws to make for calculating the in-constraint model density via random draws. Current default: 1e4. */
-} apop_dconstrain_settings; /**< For use with the \ref apop_dconstrain model. See its documentation for an example. */
+} apop_dconstrain_settings;
 
 typedef struct {
     apop_model *generator_m;
@@ -546,15 +548,18 @@ typedef struct {
     int draw_ct;
 } apop_composition_settings;/**< All of the elements of this struct should be considered private.*/
 
+/** For mixture distributions, typically set up using \ref apop_model_mixture. See
+\ref apop_mixture for discussion. Please consider all elements but \c model_list and \c
+weights as private and subject to change. See the examples for use of these elements.  
+\hideinitializer \ingroup settings */
 typedef struct {
-    apop_model **model_list;
-    int *param_sizes;
-    apop_model *cmf;
-    gsl_vector *weights;
-    int refct, model_count;
-    gsl_rng *rng;
-    char is_iid;
-} apop_mixture_settings;/**< All of the elements of this struct should be considered private. Also, the mixture setup is in beta and these will likely change soon. */
+    gsl_vector *weights;     /**< The likelihood of a draw from each component. */
+    apop_model **model_list; /**< A \c NULL-terminated list of component models. */
+    int model_count;
+    int *param_sizes;  /**< The number of parameters for each model. Useful for unpacking the params. */
+    apop_model *cmf;   /**< For internal use by the draw method. */
+    int *cmf_refct;    /**< For internal use, so I can garbage-collect the CMF when needed. */
+} apop_mixture_settings;
 
 /** \defgroup settings Settings*/
 

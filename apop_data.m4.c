@@ -633,7 +633,7 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
 }
 
 
-/* Remove the columns set to one in the \c drop vector.
+/** Remove the columns set to one in the \c drop vector.
 The returned data structure looks like it was modified in place, but the data matrix and the names are duplicated before being pared down, so if your data is taking up more than half of your memory, this may not work.
 
 \param d the \ref apop_data structure to be pared down. 
