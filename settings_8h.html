@@ -28,7 +28,6 @@ urchinTracker();
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Defines</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">settings.h File Reference</div>  </div>
@@ -71,24 +70,6 @@ Defines</h2>
 #define <b>Apop_varad_set</b>(var, value)&#160;&#160;&#160;(out)-&gt;var = (in).var ? (in).var : (value);
 <li>#define <a class="el" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(name,...)
 <li>#define <a class="el" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(name,...)
-</ul>
-<h2><a name="enum-members"></a>
-Enumerations</h2>
-<ul>
-<li>enum <a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1f">apop_optimization_enum</a> { <br/>
-&#160;&#160;<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa248f6334474e051473670ddab07b5217">APOP_SIMPLEX_NM</a> = 0, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fae9671466432f04db5113da8a6a34527d">APOP_CG_FR</a> = 1, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fae4f9d1edeebe0414eb66e2d7fe22579a">APOP_CG_BFGS</a> = 2, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223">APOP_CG_PR</a> = 3, 
-<br/>
-&#160;&#160;<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6">APOP_SIMAN</a> = 5, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fabbceba80ab74cedbbac6c1e416d4e907">APOP_RF_NEWTON</a> = 10, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fac1f718efd21c59ab4224fdbf66eb38b6">APOP_RF_HYBRID</a> = 12, 
-<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1fa098c2f410462e44ce2521e1dc752e278">APOP_RF_HYBRID_NOSCALE</a> =  13, 
-<br/>
-&#160;&#160;<a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1faad9489bb9ba681e4192148b1da900dd8">APOP_UNKNOWN_ML</a> =  -1
-<br/>
- }
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
@@ -250,51 +231,6 @@ void * <b>apop_settings_group_alloc</b> (<a class="el" href="structapop__model.h
 
 </div>
 </div>
-<hr/><h2>Enumeration Type Documentation</h2>
-<a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1f"></a><!-- doxytag: member="settings.h::apop_optimization_enum" ref="a8ad2736f202dd945a0d2097a59d11d1f" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="settings_8h.html#a8ad2736f202dd945a0d2097a59d11d1f">apop_optimization_enum</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fa248f6334474e051473670ddab07b5217"></a><!-- doxytag: member="APOP_SIMPLEX_NM" ref="a8ad2736f202dd945a0d2097a59d11d1fa248f6334474e051473670ddab07b5217" args="" -->APOP_SIMPLEX_NM</em>&nbsp;</td><td>
-<p>Nelder-Mead simplex (gradient handling rule is irrelevant) </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fae9671466432f04db5113da8a6a34527d"></a><!-- doxytag: member="APOP_CG_FR" ref="a8ad2736f202dd945a0d2097a59d11d1fae9671466432f04db5113da8a6a34527d" args="" -->APOP_CG_FR</em>&nbsp;</td><td>
-<p>Conjugate gradient (Fletcher-Reeves) (default) </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fae4f9d1edeebe0414eb66e2d7fe22579a"></a><!-- doxytag: member="APOP_CG_BFGS" ref="a8ad2736f202dd945a0d2097a59d11d1fae4f9d1edeebe0414eb66e2d7fe22579a" args="" -->APOP_CG_BFGS</em>&nbsp;</td><td>
-<p>Conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno) </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223"></a><!-- doxytag: member="APOP_CG_PR" ref="a8ad2736f202dd945a0d2097a59d11d1fa81b229729a74904a28270260ec86e223" args="" -->APOP_CG_PR</em>&nbsp;</td><td>
-<p>Conjugate gradient (Polak-Ribiere) </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6"></a><!-- doxytag: member="APOP_SIMAN" ref="a8ad2736f202dd945a0d2097a59d11d1fa13857c48cea6c885b181be9539fb1aa6" args="" -->APOP_SIMAN</em>&nbsp;</td><td>
-<p><a class="el" href="group__mle.html">simulated annealing</a> </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fabbceba80ab74cedbbac6c1e416d4e907"></a><!-- doxytag: member="APOP_RF_NEWTON" ref="a8ad2736f202dd945a0d2097a59d11d1fabbceba80ab74cedbbac6c1e416d4e907" args="" -->APOP_RF_NEWTON</em>&nbsp;</td><td>
-<p>Find a root of the derivative via Newton's method </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fac1f718efd21c59ab4224fdbf66eb38b6"></a><!-- doxytag: member="APOP_RF_HYBRID" ref="a8ad2736f202dd945a0d2097a59d11d1fac1f718efd21c59ab4224fdbf66eb38b6" args="" -->APOP_RF_HYBRID</em>&nbsp;</td><td>
-<p>Find a root of the derivative via the Hybrid method </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1fa098c2f410462e44ce2521e1dc752e278"></a><!-- doxytag: member="APOP_RF_HYBRID_NOSCALE" ref="a8ad2736f202dd945a0d2097a59d11d1fa098c2f410462e44ce2521e1dc752e278" args="" -->APOP_RF_HYBRID_NOSCALE</em>&nbsp;</td><td>
-<p>Find a root of the derivative via the Hybrid method; no internal scaling </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="a8ad2736f202dd945a0d2097a59d11d1faad9489bb9ba681e4192148b1da900dd8"></a><!-- doxytag: member="APOP_UNKNOWN_ML" ref="a8ad2736f202dd945a0d2097a59d11d1faad9489bb9ba681e4192148b1da900dd8" args="" -->APOP_UNKNOWN_ML</em>&nbsp;</td><td>
-<p>For internal use </p>
-</td></tr>
-</table>
-</dd>
-</dl>
-
-</div>
-</div>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a0dc44b7dfc3c125d19c1db3bef3a80a1"></a><!-- doxytag: member="settings.h::apop_settings_copy_group" ref="a0dc44b7dfc3c125d19c1db3bef3a80a1" args="(apop_model *outm, apop_model *inm, char *copyme)" -->
 <div class="memitem">
@@ -339,4 +275,4 @@ void * <b>apop_settings_group_alloc</b> (<a class="el" href="structapop__model.h
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>

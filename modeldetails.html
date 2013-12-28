@@ -33,7 +33,7 @@ urchinTracker();
 <p>This page includes:</p>
 <ul>
 <li><a class="el" href="modeldetails.html#write_likelihoods">A walkthrough</a>, giving a quick overview of how to write a new model from scratch. </li>
-<li><a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a>, covering the writing of <em>ad hoc</em> structures to hold model- or method-specific details, like the number of periods for burning for an MCMC run or the number of bins in a histogram. </li>
+<li><a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a>, covering the writing of <em>ad hoc</em> structures to hold model- or method-specific details, like the number of periods for burning in an MCMC run or the number of bins in a histogram. </li>
 <li><a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a>, covering the means of writing special-case routines for functions that are not part of the <a class="el" href="structapop__model.html">apop_model</a> itself, including the score. </li>
 <li><a class="el" href="modeldetails.html#modeldataparts">The data elements</a>, a detailed list of the requirements for the data (non-function) elements of an <a class="el" href="structapop__model.html">apop_model</a>. </li>
 <li><a class="el" href="modeldetails.html#methodsection">Methods</a>, a detailed list of requirements for the method (function) elements of an <a class="el" href="structapop__model.html">apop_model</a>.</li>
@@ -53,7 +53,7 @@ A walkthrough</h2>
 <li>Write the object:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *your_new_model = &amp;(<a class="code" href="types_8h.html#afe86ae10fc82d219906211e4f88e4cf9">apop_model</a>){<span class="stringliteral">&quot;The Me distribution&quot;</span>, 
-            .vsize=n0, .msize1=n1, .msize2=n2, .dbase=nd,
+            .vsize=n0, .msize1=n1, .msize2=n2, .dsize=nd,
             .log_likelihood = new_log_likelihood };
 </pre></div><ul>
 <li>The first element is the human-language name for your model. </li>
@@ -62,7 +62,7 @@ A walkthrough</h2>
 <li>It's common to have [the number of columns in your data set] parameters; this count will be filled in if you specify <code>-1</code> for <code>vsize</code>, <code>msize(1|2)</code>, or <code>dsize</code>. If the allocation is exceptional in a different way, then you will need to allocate parameters by writing a custom <code>prep</code> method for the model. </li>
 <li>If there are constraints, add an element for those too.</li>
 </ul>
-<p>You already have enough that something like this will work: </p>
+<p>You already have more than enough that something like this will work (the <code>dsize</code> is used for random draws): </p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *estimated = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, your_new_model);
 </pre></div><p>Once that baseline works, you can fill in other elements of the <a class="el" href="structapop__model.html">apop_model</a> as needed.</p>
 <p>For example, if you are using a maximum likelihood method to estimate parameters, you can get much faster estimates and better covariance estimates by specifying the dlog likelihood function (aka the score):</p>
@@ -79,19 +79,20 @@ Writing new settings groups</h2>
 <p>Your model may need additional settings or auxiliary information to function, which would require associating a model-specific struct with the model.</p>
 <p>Before getting into the detail of how to make model-specific groups of settings work, note that there's a lightweight method of storing sundry settings, so in many cases you can bypass all of the following.</p>
 <p>The <a class="el" href="structapop__model.html">apop_model</a> structure has a <code>void</code> pointer named <code>more</code> which you can use to point to a model-specific struct. If <code>more_size</code> is larger than zero (i.e. you set it to <code>your_model.more_size=sizeof(your_struct)</code>), then it will be copied via <code>memcpy</code> by <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>, and freed by <a class="el" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free</a>. Apophenia's estimation routines will never impinge on this item, so do what you wish with it.</p>
-<p>The remainder of this section describes the information you'll have to provide to make use of the conveniences described to this point: initialization of defaults, smarter copying and freeing, and adding to an arbitrarily long list of settings groups attached to a model. You will need four items: the structure itself, plus init, copy, and free functions. This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java, but it's really a list of arbitrarily-typed elements, which makes this feel more like LISP. [And being a reimplementation of an existing feature of LISP, this section will be macro-heavy.]</p>
+<p>The remainder of this subsection describes the information you'll have to provide to make use of the conveniences described to this point: initialization of defaults, smarter copying and freeing, and adding to an arbitrarily long list of settings groups attached to a model. You will need four items: a typedef for the structure itself, plus init, copy, and free functions. This is the sort of boilerplate that will be familiar to users of object oriented languages in the style of C++ or Java, but it's really a list of arbitrarily-typed elements, which makes this feel more like LISP. [And being a reimplementation of an existing feature of LISP, this section will be macro-heavy.]</p>
 <ul>
 <li>The settings struct will likely go into a header file, so here is a sample header for a new settings group named <code>ysg_settings</code>, with a dataset, its two sizes, and an owner-of-data marker. <code>ysg</code> stands for Your Settings Group; replace that substring with your preferred name in every instance to follow.</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="keyword">typedef</span> <span class="keyword">struct </span>{
-    <span class="keywordtype">int</span> size1, size2, owner;
+    <span class="keywordtype">int</span> size1, size2;
+    <span class="keywordtype">char</span> *refs;
     <a class="code" href="structapop__data.html">apop_data</a> *dataset;
 } ysg_settings;
 
 <a class="code" href="settings_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(ysg)
 </pre></div><p>The first item is a familiar structure definition. The last line is a macro that declares the three functions below. This is everything you would need in a header file, should you need one. These are just declarations; we'll write the actual init/copy/free functions below.</p>
-<p>The structure itself gets the full name, <code>ysg_settings</code>. Everything else is a macro, and so you need only specify <code>ysg</code>, and the <code>_settings</code> part is implied. Because of these macros, your <code>struct</code> name must end in <code>_settings</code>.</p>
-<p>If you have an especially simple structure, then you can generate the three functions with these three macros in your code:</p>
+<p>The structure itself gets the full name, <code>ysg_settings</code>. Everything else is a macro, and so you need only specify <code>ysg</code>, and the <code>_settings</code> part is filled in. Because of these macros, your <code>struct</code> name must end in <code>_settings</code>.</p>
+<p>If you have an especially simple structure, then you can generate the three functions with these three macros in your <code>.c</code> file:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="settings_8h.html#aefe030e4bba4671d8b026e81be70f764">Apop_settings_init</a>(ysg, )
 <a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(ysg, )
 <a class="code" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(ysg, )
@@ -105,34 +106,31 @@ Writing new settings groups</h2>
       Apop_assert(in.size1, <span class="stringliteral">&quot;I need you to give me a value for size1. Stopping.&quot;</span>);
       Apop_varad_set(size2, 10);
       Apop_varad_set(dataset, <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(out-&gt;size1, out-&gt;size2));
-      Apop_varad_set(owner, 1);
+      Apop_varad_set(refs, malloc(<span class="keyword">sizeof</span>(<span class="keywordtype">int</span>)));
+      *refs=1;
 )
 </pre></div><p>Now, <code>Apop_settings_add(a_model, ysg, .size1=100)</code> would set up a group with a 100-by-10 data set, and set the owner bit to one.</p>
 <ul>
 <li>Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. We have to be careful to prevent double-freeing later.</li>
 </ul>
-<div class="fragment"><pre class="fragment"><span class="comment">//alternative one: mark that the copy doesn&#39;t own the data.</span>
-<span class="comment">//From the defaults, out-&gt;dataset is a copy of the in-&gt;dataset pointer.</span>
+<div class="fragment"><pre class="fragment"><span class="comment">//The elements of the set to copy are all copied, and then make one additional modification:</span>
 <a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a> (ysg,
-        out-&gt;owner = 0;
-)
-
-<span class="comment">//alternative two: just copy the data. </span>
-<span class="comment">//owner will be 1, a value copied from the original.</span>
-<a class="code" href="settings_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a> (ysg,
-        out-&gt;dataset = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(in-&gt;dataset);
+        (*refs)++;
 )
 </pre></div><ul>
-<li>Add code in the free function to free data pointed to by pointers in the main struture. The macro defines a pointer-to-struct named <code>in</code> for your use. Continuing the example (for either copying alternative):</li>
+<li>The struct itself is freed by boilerplate code, but add code in the free function to free data pointed to by pointers in the main struture. The macro defines a pointer-to-struct named <code>in</code> for your use. Continuing the example:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><a class="code" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a> (ysg,
-    <span class="keywordflow">if</span> (in-&gt;owner) free(in-&gt;dataset);
+    <span class="keywordflow">if</span> (!(--in-&gt;refs)) {
+        free(in-&gt;dataset);
+        free(in-&gt;refs);
+    }
 )
-</pre></div><p>With those three macros in place, Apophenia will treat your settings group like any other.</p>
+</pre></div><p>With those three macros in place and the header as above, Apophenia will treat your settings group like any other, and users can use <a class="el" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a> to populate it and attach it to any model.</p>
 <h2><a class="anchor" id="vtables"></a>
 Registering new methods in vtables</h2>
 <p>For any given function (e.g., entropy, the dlog likelihood, Bayesian updating), there is probably a special case for well-known models like the Normal distribution. Rather than any procedure that could have a special-case calculation to the <code><a class="el" href="structapop__model.html">apop_model</a></code> struct, functions may maintain a registry of models and associated special-case procedures.</p>
-<p>This section will discuss how to add a function to an existing vtable. Generating a new vtable is not difficult, but is still in beta and may be revised in the future.</p>
+<p>This subsection will discuss how to add a function to an existing vtable.</p>
 <ul>
 <li>See <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, <a class="el" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a>, and <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> for examples and procedure-specific details. </li>
 <li>Write a function following the given type definition. </li>
@@ -140,6 +138,13 @@ Registering new methods in vtables</h2>
 <li>Lookups happen based on a hash that takes into account the elements of the model that will be used in the calculation. For example, the <code>apop_update_hash</code> takes in two models and calculates the hash based on the address of the prior's <code>draw</code> method and the likelihood's <code>log_likelihood</code> or <code>p</code> method. Thus, a vtable lookup for new models that re-use the same methods (at the same addresses in memory) will still find the same special-case function. </li>
 <li>If you need to deregister the function, use the associated deregister function, e.g. <code>apop_update_vtable_drop(apop_beta, apop_binomial)</code>. You can guarantee that a method will not be re-added by following up the <code>_drop</code> with, e.g., <code>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</code>. </li>
 <li>Calls to <code>..._vtable_add</code> are typically placed in the <code>prep</code> method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>.</li>
+</ul>
+<p>This overview will not go into detail about setting up a new vtable. Briefly:</p>
+<ul>
+<li>See the existing setups in <a class="el" href="vtables_8h_source.html">vtables.h</a>. </li>
+<li>Cut/paste one and do a search and replace to change the name to match your desired use. </li>
+<li>Set the typedef to describe the functions that get added to the vtable. </li>
+<li>Rewrite the hash function to check the part of the inputs that interest you. For example, the update vtable associates functions with the <code>draw</code>, <code>log_likelihood</code>, and <code>methods</code> of the model. A model where these elements are identical but the name is changed will still match.</li>
 </ul>
 <h2><a class="anchor" id="modeldataparts"></a>
 The data elements</h2>
@@ -184,10 +189,14 @@ Info</h3>
 <li>predicted </li>
 <li>residual</li>
 </ul>
-<p>For OLS-type estimations, each row correspondes to the row in the original data. For filling in of missing data, the elements may appear anywhere, so the row/col indices are essential.</p>
+<p>For OLS-type estimations, each row corresponds to the row in the original data. For filling in of missing data, the elements may appear anywhere, so the row/col indices are essential.</p>
 <h3><a class="anchor" id="settingsgroupmention"></a>
 settings, more</h3>
 <p>In object-oriented jargon, settings groups are the private elements of the data set, to be pulled out in certain contexts, and ignored in all others. Therefore, there are no rules about internal use. The <code>more</code> element of the <a class="el" href="structapop__model.html">apop_model</a> provides a lightweight means of attaching an arbitrary struct to a model. See <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> above for details.</p>
+<ul>
+<li>As many settings groups of different types as desired can be added to a single <a class="el" href="structapop__model.html">apop_model</a>. </li>
+<li>One <a class="el" href="structapop__model.html">apop_model</a> can not hold two settings groups of the same type. Re-additions cause the removal of the previous version of the group.</li>
+</ul>
 <h2><a class="anchor" id="methodsection"></a>
 Methods</h2>
 <h3><a class="anchor" id="psubsection"></a>
@@ -195,9 +204,9 @@ p, log_likelihood</h3>
 <ul>
 <li>The inputs are an <a class="el" href="gentle.html#apop_data">apop_data</a> set and an <a class="el" href="structapop__model.html">apop_model</a>, which should include a filled <code>-&gt;parameters</code> element. </li>
 <li>We assume that the parameters have been set, by users via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or by <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not <code>NULL</code> and set the model's <code>error</code> element to <code>'p'</code> if they are. </li>
-<li>Return <code>NAN</code> on errors. If an error in the input model is found, the function may set the input model's <code>error</code> element to an appropriate <code>char</code> value. </li>
+<li>Return <code>NaN</code> on errors. If an error in the input model is found, the function may set the input model's <code>error</code> element to an appropriate <code>char</code> value. </li>
 <li>If observations are assumed to be iid, you can probably use <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> to write the core of the log likelihood function. </li>
-<li>You need only write one of the <code>p</code> or <code>log_likelihood</code> functions. It must be the case that <code>log(p(d, m))</code> equals <code>log_likelihood(d, m)</code> for all <code>d</code> and <code>m</code>.</li>
+<li>If your model includes both \ log_likelihood and <code>p</code> methods, it must be the case that <code>log(p(d, m))</code> equals <code>log_likelihood(d, m)</code> for all <code>d</code> and <code>m</code>.</li>
 </ul>
 <h3><a class="anchor" id="prepsubsection"></a>
 prep</h3>
@@ -208,7 +217,7 @@ prep</h3>
 <li>The model's <code>data</code> pointer shall be set to point to the input data. </li>
 <li>The input data may be modified by the prep routine. For example, the OLS prep routine shuffles a single input matrix as described above under <code>data</code>. </li>
 <li>The <code>info</code> element shall be allocated and its title set to "&lt;Info&gt;". </li>
-<li>The default is <a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear</a>. </li>
+<li>The default is <a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear</a>. It does all of the above. </li>
 <li>The prep routine may initialize any desired settings groups. Unless otherwise stated, these should not be removed if they are already there, so that users can override defaults by adding a settings group before starting an estimation. </li>
 <li>If any functions associated with the model need to be added to a vtable (see above), the registration shall happen here. Registration may also happen elsewhere.</li>
 </ul>
@@ -216,18 +225,20 @@ prep</h3>
 estimate</h3>
 <ul>
 <li>Assume that the prep routine has already been run. Notably, this means that parameters have been allocated. </li>
+<li>Assume that the <code>parmaeters</code> hold garbage (as in a <code>malloc</code> without a subsequent assignment to the <code>malloc</code>-ed space). </li>
 <li>The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, which makes a copy of its input model, preps it, and then calls the <code>estimate</code> function with the prepeped copy. </li>
 <li>The function shall set the <code>parameters</code> of the input model. For consistency with other models, the estimate should be the maximum likelihood estimate, unless otherwise documented. </li>
 <li>Additional settings may be set. </li>
 <li>The model's <code>&lt;Info&gt;</code> page may be filled with data. For scalars like log likelihood and AIC, use <a class="el" href="types_8h.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>. </li>
 <li>Data should not be modified by the <code>estimate</code> routine; any changes to the data made by <code>estimate</code> must be documented. </li>
-<li>The default called by <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> is <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>.</li>
+<li>The default called by <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> is <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>. </li>
+<li>If errors occur during processing, set the model's <code>error</code> element to a single character. Documentation should include the list of error characters and their meaning.</li>
 </ul>
 <h3><a class="anchor" id="drawsubsection"></a>
 draw</h3>
 <ul>
 <li>Assume that model <code>paramters</code> are set, via <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>. The author of the draw method should check that <code>parameters</code> are not <code>NULL</code> and fill the output with NaNs if necessary parameters are not set. </li>
-<li>User inputs a pointer to <code>double</code> of length <code>dsize</code>; user is expected to make sure that there is adequate space. User also inputs a <code>gsl_rng</code>, already allocated (probably via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). </li>
+<li>User inputs a pointer-to-<code>double</code> of length <code>dsize</code>; user is expected to make sure that there is adequate space. User also inputs a <code>gsl_rng</code>, already allocated (probably via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). </li>
 <li>The function shall fill the space pointed to by the input pointer with a random draw from the data space, where the likelihood of any given observation is proportional to its likelihood as given by the <code>p</code> method. Data shall be reduced to a single vector via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> if it is not already a single vector.</li>
 </ul>
 <h3><a class="anchor" id="cdfsubsection"></a>
@@ -248,4 +259,4 @@ constraint</h3>
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>

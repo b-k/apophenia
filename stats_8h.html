@@ -38,31 +38,69 @@ urchinTracker();
 Defines</h2>
 <ul>
 <li>#define <b>APOP_SUBMATRIX</b>(m, srow, scol, nrows, ncols, o)
-<li>#define <b>APOP_MATRIX_ROW</b>(m, row, v)
-<li>#define <b>APOP_MATRIX_COL</b>(m, col, v)
-<li>#define <b>APOP_MATRIX_ROW_T</b>(m, row, v)
-<li>#define <b>APOP_COL_T</b>(m, col, v)
-<li>#define <b>APOP_COL</b>(m, col, v)
-<li>#define <a class="el" href="stats_8h.html#a3e95f1e99a52dd9717456a68bf1fab2e">Apop_data_rows</a>(d, rownum, len, outd)
+<li>#define <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(m, row, v)
+<li>#define <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, col, v)
+<li>#define <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>(m, row, v)
+<li>#define <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>(m, col, v)
+<li>#define <a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>(d, rownum, len, outd)
 <li>#define <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, row, outd)
-<li>#define <a class="el" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a>
+<li>#define <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>(d, rowname, outd)
+<li>#define <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>(d, colname, outd)
+<li>#define <a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>(d, colnum, len, outd)
+<li>#define <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>(d, col, outd)
+<li><a class="anchor" id="a6c85d6dc4a491036d8e95630b46a9c45"></a><!-- doxytag: member="stats.h::APOP_COL" ref="a6c85d6dc4a491036d8e95630b46a9c45" args="" -->
+#define <b>APOP_COL</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>
 <li><a class="anchor" id="a1ae65fc29259a9574c22994a21acabe5"></a><!-- doxytag: member="stats.h::apop_col" ref="a1ae65fc29259a9574c22994a21acabe5" args="" -->
-#define <b>apop_col</b>&#160;&#160;&#160;APOP_COL
+#define <b>apop_col</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>
+<li><a class="anchor" id="a6e442cb35468a39369eb823ba250c9d2"></a><!-- doxytag: member="stats.h::APOP_COLS" ref="a6e442cb35468a39369eb823ba250c9d2" args="" -->
+#define <b>APOP_COLS</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>
+<li><a class="anchor" id="a0e38e3e944de364aad9f45597e48100d"></a><!-- doxytag: member="stats.h::apop_cols" ref="a0e38e3e944de364aad9f45597e48100d" args="" -->
+#define <b>apop_cols</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>
+<li><a class="anchor" id="a852a1e47bfbadda00a709c1a905f11e2"></a><!-- doxytag: member="stats.h::APOP_COL_T" ref="a852a1e47bfbadda00a709c1a905f11e2" args="" -->
+#define <b>APOP_COL_T</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>
+<li><a class="anchor" id="aba82501c0ea1406dc7c0a308a6582b63"></a><!-- doxytag: member="stats.h::apop_col_t" ref="aba82501c0ea1406dc7c0a308a6582b63" args="" -->
+#define <b>apop_col_t</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>
+<li><a class="anchor" id="aff4ed7793b32011f151cd9ba92e63d4d"></a><!-- doxytag: member="stats.h::APOP_COL_TV" ref="aff4ed7793b32011f151cd9ba92e63d4d" args="" -->
+#define <b>APOP_COL_TV</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>
+<li><a class="anchor" id="a7ad3559c1a07c4e539d8bfeee7a43cf0"></a><!-- doxytag: member="stats.h::apop_col_tv" ref="a7ad3559c1a07c4e539d8bfeee7a43cf0" args="" -->
+#define <b>apop_col_tv</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>
+<li><a class="anchor" id="af2e3e5c5064a5a4da6dd499581b54b11"></a><!-- doxytag: member="stats.h::APOP_COL_V" ref="af2e3e5c5064a5a4da6dd499581b54b11" args="" -->
+#define <b>APOP_COL_V</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>
+<li><a class="anchor" id="a0faa579670204a7faad21bbe2b6b95c3"></a><!-- doxytag: member="stats.h::apop_col_v" ref="a0faa579670204a7faad21bbe2b6b95c3" args="" -->
+#define <b>apop_col_v</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>
 <li><a class="anchor" id="af91b5791759a04072490f1ffb76287e7"></a><!-- doxytag: member="stats.h::APOP_ROW" ref="af91b5791759a04072490f1ffb76287e7" args="" -->
 #define <b>APOP_ROW</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>
 <li><a class="anchor" id="a31babc8f4ae3adcaf3910b6ec0297d55"></a><!-- doxytag: member="stats.h::apop_row" ref="a31babc8f4ae3adcaf3910b6ec0297d55" args="" -->
 #define <b>apop_row</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>
-<li>#define <a class="el" href="stats_8h.html#afdacf526f18ea8c5bd16bd2572e5d4b3">Apop_col_t</a>
-<li>#define <a class="el" href="stats_8h.html#a62868d34c37ae642962b07bca9961058">Apop_matrix_row_t</a>
-<li>#define <a class="el" href="stats_8h.html#acb72baab9748cb810584df0096397209">Apop_matrix_col</a>
-<li>#define <a class="el" href="stats_8h.html#a61b1e89d679e0011517f95c118f5bcfc">Apop_matrix_row</a>
-<li>#define <a class="el" href="stats_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a>
-<li><a class="anchor" id="afe40fd5f7f1d717324bdd3e158230bf2"></a><!-- doxytag: member="stats.h::apop_data_rows" ref="afe40fd5f7f1d717324bdd3e158230bf2" args="" -->
-#define <b>apop_data_rows</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a3e95f1e99a52dd9717456a68bf1fab2e">Apop_data_rows</a>
 <li><a class="anchor" id="a57d4c38e71ed33ce5aafca03da962d32"></a><!-- doxytag: member="stats.h::Apop_data_row" ref="a57d4c38e71ed33ce5aafca03da962d32" args="" -->
-#define <b>Apop_data_row</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>
-<li><a class="anchor" id="a8ccece7de26ae9d4354f835bfb3503fc"></a><!-- doxytag: member="stats.h::apop_data_row" ref="a8ccece7de26ae9d4354f835bfb3503fc" args="" -->
-#define <b>apop_data_row</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>
+#define <b>Apop_data_row</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>   #deprecated
+<li><a class="anchor" id="a8ea91078c9065ed7f8e125eac7b64406"></a><!-- doxytag: member="stats.h::APOP_ROWS" ref="a8ea91078c9065ed7f8e125eac7b64406" args="" -->
+#define <b>APOP_ROWS</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>
+<li><a class="anchor" id="ae1bdf071631bdc4b6641e96f77c087e1"></a><!-- doxytag: member="stats.h::apop_rows" ref="ae1bdf071631bdc4b6641e96f77c087e1" args="" -->
+#define <b>apop_rows</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>
+<li><a class="anchor" id="a845facd4e5c6f62af3661e50b3fd3e88"></a><!-- doxytag: member="stats.h::APOP_ROW_T" ref="a845facd4e5c6f62af3661e50b3fd3e88" args="" -->
+#define <b>APOP_ROW_T</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>
+<li><a class="anchor" id="ae768ac25fe2e1392becb3f45bd1b378d"></a><!-- doxytag: member="stats.h::apop_row_t" ref="ae768ac25fe2e1392becb3f45bd1b378d" args="" -->
+#define <b>apop_row_t</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>
+<li><a class="anchor" id="a4f9aa6a71945eff937ed422bfe53d507"></a><!-- doxytag: member="stats.h::APOP_ROW_TV" ref="a4f9aa6a71945eff937ed422bfe53d507" args="" -->
+#define <b>APOP_ROW_TV</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>
+<li><a class="anchor" id="aff93bd8638a66a672e53d5a4fef26a58"></a><!-- doxytag: member="stats.h::apop_row_tv" ref="aff93bd8638a66a672e53d5a4fef26a58" args="" -->
+#define <b>apop_row_tv</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>
+<li><a class="anchor" id="a8456f3e332c041eeccb5ec6fe38a150b"></a><!-- doxytag: member="stats.h::APOP_ROW_V" ref="a8456f3e332c041eeccb5ec6fe38a150b" args="" -->
+#define <b>APOP_ROW_V</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>
+<li><a class="anchor" id="acae7cb5a7711c255a76070fb6156d59a"></a><!-- doxytag: member="stats.h::apop_row_v" ref="acae7cb5a7711c255a76070fb6156d59a" args="" -->
+#define <b>apop_row_v</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>
+<li>#define <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(m, row, v)
+<li>#define <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>(m, col, v)
+<li>#define <a class="el" href="stats_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a>&#160;&#160;&#160;APOP_SUBMATRIX
+<li><a class="anchor" id="a8a70a9fff4f3a0efedb583066e6caac9"></a><!-- doxytag: member="stats.h::APOP_MATRIX_ROW" ref="a8a70a9fff4f3a0efedb583066e6caac9" args="" -->
+#define <b>APOP_MATRIX_ROW</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>
+<li><a class="anchor" id="ad8d0f6f694fdca12dd10bc2fee643609"></a><!-- doxytag: member="stats.h::apop_matrix_row" ref="ad8d0f6f694fdca12dd10bc2fee643609" args="" -->
+#define <b>apop_matrix_row</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>
+<li><a class="anchor" id="a51cb56786000f7dbd82fbeeae47ac60c"></a><!-- doxytag: member="stats.h::APOP_MATRIX_COL" ref="a51cb56786000f7dbd82fbeeae47ac60c" args="" -->
+#define <b>APOP_MATRIX_COL</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>
+<li><a class="anchor" id="a23b451a0240fbebdd7a95547269c2bde"></a><!-- doxytag: member="stats.h::apop_matrix_col" ref="a23b451a0240fbebdd7a95547269c2bde" args="" -->
+#define <b>apop_matrix_col</b>&#160;&#160;&#160;<a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>
 <li>#define <a class="el" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(in)&#160;&#160;&#160;<a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(in)
 <li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)
 <li>#define <a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)
@@ -139,110 +177,12 @@ Functions</h2>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"></div><hr/><h2>Define Documentation</h2>
-<a class="anchor" id="a5631641ed13968da46e73b768d225b14"></a><!-- doxytag: member="stats.h::APOP_COL" ref="a5631641ed13968da46e73b768d225b14" args="(m, col, v)" -->
+<a class="anchor" id="a84e73bf42af0baed7b13de3a43eebb72"></a><!-- doxytag: member="stats.h::Apop_col" ref="a84e73bf42af0baed7b13de3a43eebb72" args="(d, col, outd)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define APOP_COL</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">m, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">col, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">v&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = (col &lt; 0) ? *((m)-&gt;vector) : gsl_matrix_column((m)-&gt;matrix, (col)).vector;\
-gsl_vector * v = &amp;( apop_vv_##v );
-</pre></div>
-</div>
-</div>
-<a class="anchor" id="a79fc915cc70adb705029a8b9322abd7d"></a><!-- doxytag: member="stats.h::Apop_col" ref="a79fc915cc70adb705029a8b9322abd7d" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>After this call, <code>v</code> will hold a vector view of the <code>col</code>th column of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>. </p>
-
-</div>
-</div>
-<a class="anchor" id="a4d5d88e3945223ac9bec5a06ba090ecd"></a><!-- doxytag: member="stats.h::APOP_COL_T" ref="a4d5d88e3945223ac9bec5a06ba090ecd" args="(m, col, v)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define APOP_COL_T</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">m, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">col, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">v&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_column((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#ac1b94277b0055f11d00f6dd26cb70e00">apop_name_find</a>((m)-&gt;names, col, <span class="charliteral">&#39;c&#39;</span>)).vector;\
-gsl_vector * v = &amp;( apop_vv_##v );
-</pre></div>
-</div>
-</div>
-<a class="anchor" id="afdacf526f18ea8c5bd16bd2572e5d4b3"></a><!-- doxytag: member="stats.h::Apop_col_t" ref="afdacf526f18ea8c5bd16bd2572e5d4b3" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#afdacf526f18ea8c5bd16bd2572e5d4b3">Apop_col_t</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>After this call, <code>v</code> will hold a vector view of the <code>col</code>th column of <code>m</code>. Unlike <a class="el" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a>, the second argument is a column name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
-
-</div>
-</div>
-<a class="anchor" id="a3e95f1e99a52dd9717456a68bf1fab2e"></a><!-- doxytag: member="stats.h::Apop_data_rows" ref="a3e95f1e99a52dd9717456a68bf1fab2e" args="(d, rownum, len, outd)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#a3e95f1e99a52dd9717456a68bf1fab2e">Apop_data_rows</a></td>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a></td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">d, </td>
@@ -251,7 +191,147 @@ gsl_vector * v = &amp;( apop_vv_##v );
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">rownum, </td>
+          <td class="paramname">col, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">outd&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A macro to generate a temporary one-column view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, pulling out only column <code>col</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. This macro expands to <code><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols(d, col, 1, outd)</a></code>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>, <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>, <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>, <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aaaf15101ec60ce66e80737375baa7391"></a><!-- doxytag: member="stats.h::Apop_col_t" ref="aaaf15101ec60ce66e80737375baa7391" args="(d, colname, outd)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">d, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">colname, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">outd&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a view of an <a class="el" href="gentle.html#apop_data">apop_data</a> set consisting only of vector view of the <code>col</code>th column of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. Unlike <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, the second argument is a column name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>, <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>, <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ad56ce572c7489820777290153ab7d87b"></a><!-- doxytag: member="stats.h::Apop_col_tv" ref="ad56ce572c7489820777290153ab7d87b" args="(m, col, v)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">col, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a vector view of the <code>col</code>th column of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. Unlike <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, the second argument is a column name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>, <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>, <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a4d7938112c815272f9737685bf128ccb"></a><!-- doxytag: member="stats.h::Apop_col_v" ref="a4d7938112c815272f9737685bf128ccb" args="(m, col, v)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">col, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a vector view of the <code>col</code>th column of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. This is like <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, but the output is a <code>gsl_vector</code>, not a full <a class="el" href="gentle.html#apop_data">apop_data</a> set. It is like <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>, but the input is a <a class="el" href="gentle.html#apop_data">apop_data</a> set, not a <code>gsl_matrix</code>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>, <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>, <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>, <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="afbfb5abe21c52dd24570b620ed069c4d"></a><!-- doxytag: member="stats.h::Apop_cols" ref="afbfb5abe21c52dd24570b620ed069c4d" args="(d, colnum, len, outd)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">d, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">colnum, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -273,16 +353,17 @@ gsl_vector * v = &amp;( apop_vv_##v );
       </table>
 </div>
 <div class="memdoc">
-<p>A macro to generate a temporary view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, beginning at row <code>row</code> and having length <code>len</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. However, it expires as soon as the program leaves the current scope (like with the usual statically declared vars). </p>
+<p>A macro to generate a temporary view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, beginning at column <code>col</code> and having length <code>len</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. However, it expires as soon as the program leaves the current scope (like with the usual automatically declared vars). </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>, <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>, <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="aff5598e60100c78cfc5ae527194856a0"></a><!-- doxytag: member="stats.h::APOP_MATRIX_COL" ref="aff5598e60100c78cfc5ae527194856a0" args="(m, col, v)" -->
+<a class="anchor" id="a3e7f99e26eb4d5d5438fd5fa16fcadde"></a><!-- doxytag: member="stats.h::Apop_matrix_col" ref="a3e7f99e26eb4d5d5438fd5fa16fcadde" args="(m, col, v)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define APOP_MATRIX_COL</td>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a></td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">m, </td>
@@ -309,29 +390,31 @@ gsl_vector * v = &amp;( apop_vv_##v );
 <div class="memdoc">
 <b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &amp;( apop_vv_##v );
-</pre></div>
-</div>
-</div>
-<a class="anchor" id="acb72baab9748cb810584df0096397209"></a><!-- doxytag: member="stats.h::Apop_matrix_col" ref="acb72baab9748cb810584df0096397209" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#acb72baab9748cb810584df0096397209">Apop_matrix_col</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>After this call, <code>v</code> will hold a vector view of the <code>col</code>th column of <code>m</code>. </p>
+</pre></div><p>View a single column of a <code>gsl_matrix</code> as a <code>gsl_vector</code>. This is a convenience macro wrapping <code>gsl_matrix_column</code>.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>The <code>gsl_matrix</code> </td></tr>
+    <tr><td class="paramname">col</td><td>The number of the desired column. </td></tr>
+    <tr><td class="paramname">v</td><td>The name of the vector view that will be created.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>An: example </p>
+<div class="fragment"><pre class="fragment">gsl_matrix *m = [fill matrix here];
+<a class="code" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>(m, 2, coltwo);
+<a class="code" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a>(m, 3, colthree);
+printf(<span class="stringliteral">&quot;The correlation coefficient between columns two &quot;</span>
+       <span class="stringliteral">&quot;and three is %g.\n&quot;</span>, <a class="code" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a>(coltwo, colthree));
+</pre></div> <dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a>, <a class="el" href="stats_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a>, <a class="el" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>, <a class="el" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>, <a class="el" href="stats_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="a09e33bc18dc5b3bdc17914fb7e72b34c"></a><!-- doxytag: member="stats.h::APOP_MATRIX_ROW" ref="a09e33bc18dc5b3bdc17914fb7e72b34c" args="(m, row, v)" -->
+<a class="anchor" id="a9abee86763f92d505fd4fb792f06fd7c"></a><!-- doxytag: member="stats.h::Apop_matrix_row" ref="a9abee86763f92d505fd4fb792f06fd7c" args="(m, row, v)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define APOP_MATRIX_ROW</td>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a></td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">m, </td>
@@ -358,70 +441,22 @@ gsl_vector * v = &amp;( apop_vv_##v );
 <div class="memdoc">
 <b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
 gsl_vector * v = &amp;( apop_vv_##v );
-</pre></div>
-</div>
-</div>
-<a class="anchor" id="a61b1e89d679e0011517f95c118f5bcfc"></a><!-- doxytag: member="stats.h::Apop_matrix_row" ref="a61b1e89d679e0011517f95c118f5bcfc" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#a61b1e89d679e0011517f95c118f5bcfc">Apop_matrix_row</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>After this call, <code>v</code> will hold a vector view of the <code>row</code>th row of <code>m</code>.</p>
-<p>After this call, <code>v</code> will hold a vector view of the <code>row</code>th row of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>. </p>
-
-</div>
-</div>
-<a class="anchor" id="aa3390dd8c55fe1f5ac1411c7de04a431"></a><!-- doxytag: member="stats.h::APOP_MATRIX_ROW_T" ref="aa3390dd8c55fe1f5ac1411c7de04a431" args="(m, row, v)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define APOP_MATRIX_ROW_T</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">m, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">row, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">v&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">gsl_vector apop_vv_##v = gsl_matrix_row((m)-&gt;matrix, <a class="code" href="apop__name_8c.html#ac1b94277b0055f11d00f6dd26cb70e00">apop_name_find</a>((m)-&gt;names, row, <span class="charliteral">&#39;r&#39;</span>)).vector;\
-gsl_vector * v = &amp;( apop_vv_##v );
-</pre></div>
-</div>
-</div>
-<a class="anchor" id="a62868d34c37ae642962b07bca9961058"></a><!-- doxytag: member="stats.h::Apop_matrix_row_t" ref="a62868d34c37ae642962b07bca9961058" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#a62868d34c37ae642962b07bca9961058">Apop_matrix_row_t</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>After this call, <code>v</code> will hold a vector view of the <code>row</code>th row of <code>m</code>. Unlike <a class="el" href="stats_8h.html#a61b1e89d679e0011517f95c118f5bcfc">Apop_matrix_row</a>, the second argument is a row name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
+</pre></div><p>View a single row of a <code>gsl_matrix</code> as a <code>gsl_vector</code>. This is a convenience macro wrapping <code>gsl_matrix_row</code>.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">m</td><td>The <code>gsl_matrix</code> </td></tr>
+    <tr><td class="paramname">row</td><td>The number of the desired row. </td></tr>
+    <tr><td class="paramname">v</td><td>The name of the vector view that will be created.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>An: example </p>
+<div class="fragment"><pre class="fragment">gsl_matrix *m = [fill matrix here];
+<a class="code" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(m, 2, rowtwo);
+<a class="code" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(m, 3, rowthree);
+printf(<span class="stringliteral">&quot;The correlation coefficient between rows two &quot;</span>
+       <span class="stringliteral">&quot;and three is %g.\n&quot;</span>, <a class="code" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a>(rowtwo, rowthree));
+</pre></div> <dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>, <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a> </dd></dl>
 
 </div>
 </div>
@@ -455,7 +490,154 @@ gsl_vector * v = &amp;( apop_vv_##v );
       </table>
 </div>
 <div class="memdoc">
-<p>A macro to generate a temporary one-row view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, pulling out only row <code>row</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. This macro expands to <code><a class="el" href="stats_8h.html#a3e95f1e99a52dd9717456a68bf1fab2e">Apop_data_rows(d, row, 1, outd)</a></code>. </p>
+<p>A macro to generate a temporary one-row view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, pulling out only row <code>row</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. This macro expands to <code><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows(d, row, 1, outd)</a></code>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>, <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>, <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a7d87af4e65acbf6982a34cf3dc33eae6"></a><!-- doxytag: member="stats.h::Apop_row_t" ref="a7d87af4e65acbf6982a34cf3dc33eae6" args="(d, rowname, outd)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">d, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">rowname, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">outd&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a view of an <a class="el" href="gentle.html#apop_data">apop_data</a> set consisting only of the <code>row</code>th row of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. Unlike <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, the second argument is a row name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>, <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a6396c26f1d47cced2be3a761185d3b35"></a><!-- doxytag: member="stats.h::Apop_row_tv" ref="a6396c26f1d47cced2be3a761185d3b35" args="(m, row, v)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">row, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a vector view of the <code>row</code>th row of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. Unlike <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, the second argument is a row name, that I'll look up using <a class="el" href="types_8h.html#adb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>, <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a39fd40c5f39795c077716dbaf122d270"></a><!-- doxytag: member="stats.h::Apop_row_v" ref="a39fd40c5f39795c077716dbaf122d270" args="(m, row, v)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">m, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">row, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After this call, <code>v</code> will hold a vector view of the <code>row</code>th row of the <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>m</code>. This is like <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, but the output is a <code>gsl_vector</code>, not a full <a class="el" href="gentle.html#apop_data">apop_data</a> set. It is like <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>, but the input is a <a class="el" href="gentle.html#apop_data">apop_data</a> set, not a <code>gsl_matrix</code>. </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>, <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>, <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="aad1642d90f82ef1f5870a2de4e807005"></a><!-- doxytag: member="stats.h::Apop_rows" ref="aad1642d90f82ef1f5870a2de4e807005" args="(d, rownum, len, outd)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">d, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">rownum, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">len, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">outd&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A macro to generate a temporary view of <a class="el" href="gentle.html#apop_data">apop_data</a> set <code>d</code>, beginning at row <code>row</code> and having length <code>len</code>. After this call, <code>outd</code> will be a pointer to this temporary view, that you can use as you would any <a class="el" href="gentle.html#apop_data">apop_data</a> set. However, it expires as soon as the program leaves the current scope (like with the usual automatically declared vars). </p>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, <a class="el" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>, <a class="el" href="stats_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a>, <a class="el" href="stats_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a>, <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </dd></dl>
 
 </div>
 </div>
@@ -517,12 +699,12 @@ gsl_matrix * o = &amp;( apop_mm_##o );
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define <a class="el" href="stats_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a></td>
+          <td class="memname">#define <a class="el" href="stats_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a>&#160;&#160;&#160;APOP_SUBMATRIX</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Pull a pointer to a submatrix into a <code>gsl_matrix</code> </p>
+<p>Generate a subview of a submatrix within a <code>gsl_matrix</code>. Like <a class="el" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">m</td><td>The root matrix </td></tr>
@@ -693,7 +875,7 @@ gsl_matrix * o = &amp;( apop_mm_##o );
     <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *boot_output = <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);
 <a class="code" href="structapop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);
 
-<a class="code" href="stats_8h.html#a61b1e89d679e0011517f95c118f5bcfc">Apop_matrix_row</a>(boot_stats-&gt;matrix, 27, row_27)
+<a class="code" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(boot_stats-&gt;matrix, 27, row_27)
 <span class="comment">//If the output statistic is not just a vector, you&#39;ll need to use apop_data_unpack to put</span>
 <span class="comment">//it into the right shape. Let&#39;s assume for now that it&#39;s just a vector:</span>
 printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
@@ -1054,7 +1236,7 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_87.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_88.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_89.png"/>.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_87.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_88.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_89.png"/>.</dd></dl>
 <ul>
 <li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_77.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
 </ul>
@@ -1226,19 +1408,26 @@ printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);
       </table>
 </div>
 <div class="memdoc">
-<p>This is designed to be called from within the constraint method of your <a class="el" href="structapop__model.html">apop_model</a>. Just write the constraint vector+matrix and this will do the rest.</p>
+<p>This is designed to be called from within the constraint method of your <a class="el" href="structapop__model.html">apop_model</a>. Just write the constraint vector+matrix and this will do the rest. See the outline page for detailed discussion on setting contrasts.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">beta</td><td>The proposed vector about to be tested. No default, must not be <code>NULL</code>.</td></tr>
-    <tr><td class="paramname">constraint</td><td>See the outline page for detailed discussion on setting contrasts. To give a quick example, say your constraint is <img class="formulaInl" alt="$3 < 2x + 4y - 7z$" src="form_34.png"/>; then the first row of your <code>data-&gt;vector</code> element would be 3, and the first row of the <code>data-&gt;matrix</code> element would be [2 4 -7]. Default: each elements is greater than zero</td></tr>
+    <tr><td class="paramname">constraint</td><td>A vector/matrix pair [v | m1 m2 ... mn] where each row is interpreted as a less-than inequality: <img class="formulaInl" alt="$v < m1x1+ m2x2 + ... + mnxn$" src="form_168.png"/>. For example, say your constraints are <img class="formulaInl" alt="$3 < 2x + 4y - 7z$" src="form_34.png"/> and <img class="formulaInl" alt="$y$" src="form_39.png"/> is positive, i.e. <img class="formulaInl" alt="$0 < y$" src="form_167.png"/>. Allocate and fill the matrix representing these two constraints via: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *constr = <a class="code" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((2,2,3), 3,  2, 4, 7,
+                                              0,  0, 1, 0);
+</pre></div> . Default: each elements is greater than zero. E.g., for three parameters: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *constr = <a class="code" href="types_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3,3,3), 0,  1, 0, 0,
+                                              0,  0, 1, 0,
+                                              0,  0, 0, 1);
+</pre></div></td></tr>
     <tr><td class="paramname">margin</td><td>If zero, then this is a &gt;= constraint, otherwise I will return a point this amount within the borders. You could try <code>GSL_DBL_EPSILON</code>, which is the smallest value a <code>double</code> can hold, or something like 1e-3. Default = 0.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>The penalty = the distance between beta and the closest point that meets the constraints. If the constraint is not met, this <code>beta</code> is shifted by <code>margin</code> (Euclidean distance) to meet the constraints.</dd></dl>
+<p>return The penalty = the distance between beta and the closest point that meets the constraints. If the constraint is not met, this <code>beta</code> is shifted by <code>margin</code> (Euclidean distance) to meet the constraints.</p>
 <ul>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>The apop_linear_constraint function doesn't check for odd cases like coplanar constraints. </dd></dl>
-</li>
+<li>If your <a class="el" href="gentle.html#apop_data">apop_data</a> is not just a vector, try <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> to pack it into a vector. This is what <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> does.</li>
+</ul>
+<ul>
+<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints. </li>
 </ul>
 
 </div>
@@ -1995,4 +2184,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>

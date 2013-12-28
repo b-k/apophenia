@@ -107,302 +107,355 @@ urchinTracker();
 <a name="l00077"></a>00077 <span class="preprocessor">#define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix((m), (srow), (scol), (nrows),(ncols)).matrix;\</span>
 <a name="l00078"></a>00078 <span class="preprocessor">gsl_matrix * o = &amp;( apop_mm_##o );</span>
 <a name="l00079"></a>00079 <span class="preprocessor"></span>
-<a name="l00080"></a>00080 <span class="preprocessor">#define APOP_MATRIX_ROW(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\</span>
-<a name="l00081"></a>00081 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
-<a name="l00082"></a>00082 <span class="preprocessor"></span>
-<a name="l00083"></a>00083 <span class="preprocessor">#define APOP_MATRIX_COL(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\</span>
-<a name="l00084"></a>00084 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
-<a name="l00085"></a>00085 <span class="preprocessor"></span>
-<a name="l00086"></a>00086 <span class="preprocessor">#define APOP_MATRIX_ROW_T(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)-&gt;matrix, apop_name_find((m)-&gt;names, row, &#39;r&#39;)).vector;\</span>
-<a name="l00087"></a>00087 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
-<a name="l00088"></a>00088 <span class="preprocessor"></span>
-<a name="l00089"></a>00089 <span class="preprocessor">#define APOP_COL_T(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)-&gt;matrix, apop_name_find((m)-&gt;names, col, &#39;c&#39;)).vector;\</span>
-<a name="l00090"></a>00090 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
-<a name="l00091"></a>00091 <span class="preprocessor"></span>
-<a name="l00092"></a>00092 <span class="comment">//-1st column is the vector.</span>
-<a name="l00093"></a>00093 <span class="preprocessor">#define APOP_COL(m, col, v) gsl_vector apop_vv_##v = (col &lt; 0) ? *((m)-&gt;vector) : gsl_matrix_column((m)-&gt;matrix, (col)).vector;\</span>
-<a name="l00094"></a>00094 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
-<a name="l00095"></a>00095 <span class="preprocessor"></span>
-<a name="l00096"></a>00096 <span class="preprocessor">#define Apop_data_rows(d, rownum, len, outd) \</span>
-<a name="l00097"></a>00097 <span class="preprocessor">    gsl_vector apop_dd_##outd##_v = ((d)-&gt;vector &amp;&amp; (d)-&gt;vector-&gt;size &gt; (rownum)+(len)-1)  \</span>
-<a name="l00098"></a>00098 <span class="preprocessor">                                    ? gsl_vector_subvector((d)-&gt;vector, (rownum), (len)).vector\</span>
-<a name="l00099"></a>00099 <span class="preprocessor">                                    : (gsl_vector) { };\</span>
-<a name="l00100"></a>00100 <span class="preprocessor">    gsl_vector apop_dd_##outd##_w = ((d)-&gt;weights &amp;&amp; (d)-&gt;weights-&gt;size &gt; (rownum)+(len)-1)  \</span>
-<a name="l00101"></a>00101 <span class="preprocessor">                                    ? gsl_vector_subvector((d)-&gt;weights, (rownum), (len)).vector\</span>
-<a name="l00102"></a>00102 <span class="preprocessor">                                    : (gsl_vector) { };\</span>
-<a name="l00103"></a>00103 <span class="preprocessor">    gsl_matrix apop_dd_##outd##_m = ((d)-&gt;matrix &amp;&amp; (d)-&gt;matrix-&gt;size1 &gt; (rownum)+(len)-1)  \</span>
-<a name="l00104"></a>00104 <span class="preprocessor">                                ? gsl_matrix_submatrix((d)-&gt;matrix, rownum, 0, (len), (d)-&gt;matrix-&gt;size2).matrix\</span>
-<a name="l00105"></a>00105 <span class="preprocessor">                                : (gsl_matrix) { };             \</span>
-<a name="l00106"></a>00106 <span class="preprocessor">    apop_name apop_dd_##outd##_n = !((d)-&gt;names) ? (apop_name) {} :              \</span>
-<a name="l00107"></a>00107 <span class="preprocessor">            (apop_name){                                                         \</span>
-<a name="l00108"></a>00108 <span class="preprocessor">                .title = (d)-&gt;names-&gt;title,                                      \</span>
-<a name="l00109"></a>00109 <span class="preprocessor">                .vector = (d)-&gt;names-&gt;vector,                                    \</span>
-<a name="l00110"></a>00110 <span class="preprocessor">                .col = (d)-&gt;names-&gt;col,                                          \</span>
-<a name="l00111"></a>00111 <span class="preprocessor">                .row = ((d)-&gt;names-&gt;row &amp;&amp; (d)-&gt;names-&gt;rowct &gt; rownum) ? &amp;((d)-&gt;names-&gt;row[rownum]) : NULL,  \</span>
-<a name="l00112"></a>00112 <span class="preprocessor">                .text = (d)-&gt;names-&gt;text,                                        \</span>
-<a name="l00113"></a>00113 <span class="preprocessor">                .colct = (d)-&gt;names-&gt;colct,                                      \</span>
-<a name="l00114"></a>00114 <span class="preprocessor">                .rowct = (d)-&gt;names-&gt;row ? (GSL_MIN(len, GSL_MAX((d)-&gt;names-&gt;rowct - rownum, 0)))      \</span>
-<a name="l00115"></a>00115 <span class="preprocessor">                                          : 0,                                   \</span>
-<a name="l00116"></a>00116 <span class="preprocessor">                .textct = (d)-&gt;names-&gt;textct };                                  \</span>
-<a name="l00117"></a>00117 <span class="preprocessor">    apop_data apop_dd_##outd = (apop_data){                                      \</span>
-<a name="l00118"></a>00118 <span class="preprocessor">                .vector= apop_dd_##outd##_v.size ? &amp;apop_dd_##outd##_v : NULL,   \</span>
-<a name="l00119"></a>00119 <span class="preprocessor">                .weights=apop_dd_##outd##_w.size ? &amp;apop_dd_##outd##_w : NULL ,  \</span>
-<a name="l00120"></a>00120 <span class="preprocessor">                .matrix = apop_dd_##outd##_m.size1 ? &amp;apop_dd_##outd##_m : NULL, \</span>
-<a name="l00121"></a>00121 <span class="preprocessor">                .textsize[0]=(d)-&gt;textsize[0] ? (len) : 0, .textsize[1]=(d)-&gt;textsize[1],   \</span>
+<a name="l00080"></a>00080 <span class="preprocessor">#define Apop_row_v(m, row, v) Apop_matrix_row((m)-&gt;matrix, row, v)</span>
+<a name="l00081"></a>00081 <span class="preprocessor"></span>
+<a name="l00082"></a>00082 <span class="preprocessor">#define Apop_col_v(m, col, v) gsl_vector apop_vv_##v = ((col) == -1) ? (gsl_vector){} : gsl_matrix_column((m)-&gt;matrix, (col)).vector;\</span>
+<a name="l00083"></a>00083 <span class="preprocessor">gsl_vector * v = ((col)==-1) ? (m)-&gt;vector : &amp;( apop_vv_##v );</span>
+<a name="l00084"></a>00084 <span class="preprocessor"></span>
+<a name="l00085"></a>00085 <span class="preprocessor">#define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)-&gt;matrix, apop_name_find((m)-&gt;names, row, &#39;r&#39;)).vector;\</span>
+<a name="l00086"></a>00086 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
+<a name="l00087"></a>00087 <span class="preprocessor"></span>
+<a name="l00088"></a>00088 <span class="preprocessor">#define Apop_col_tv(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)-&gt;matrix, apop_name_find((m)-&gt;names, col, &#39;c&#39;)).vector;\</span>
+<a name="l00089"></a>00089 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
+<a name="l00090"></a>00090 <span class="preprocessor"></span>
+<a name="l00091"></a>00091 <span class="comment">/* //-1st column is the vector.</span>
+<a name="l00092"></a>00092 <span class="comment">#define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = (col &lt; 0) ? *((m)-&gt;vector) : gsl_matrix_column((m)-&gt;matrix, (col)).vector;\</span>
+<a name="l00093"></a>00093 <span class="comment">gsl_vector * v = &amp;( apop_vv_##v );*/</span>
+<a name="l00094"></a>00094 
+<a name="l00095"></a>00095 <span class="preprocessor">#define Apop_rows(d, rownum, len, outd) \</span>
+<a name="l00096"></a>00096 <span class="preprocessor">    gsl_vector apop_dd_##outd##_v = ((d)-&gt;vector &amp;&amp; (d)-&gt;vector-&gt;size &gt; (rownum)+(len)-1)  \</span>
+<a name="l00097"></a>00097 <span class="preprocessor">                                    ? gsl_vector_subvector((d)-&gt;vector, (rownum), (len)).vector\</span>
+<a name="l00098"></a>00098 <span class="preprocessor">                                    : (gsl_vector) { };\</span>
+<a name="l00099"></a>00099 <span class="preprocessor">    gsl_vector apop_dd_##outd##_w = ((d)-&gt;weights &amp;&amp; (d)-&gt;weights-&gt;size &gt; (rownum)+(len)-1)  \</span>
+<a name="l00100"></a>00100 <span class="preprocessor">                                    ? gsl_vector_subvector((d)-&gt;weights, (rownum), (len)).vector\</span>
+<a name="l00101"></a>00101 <span class="preprocessor">                                    : (gsl_vector) { };\</span>
+<a name="l00102"></a>00102 <span class="preprocessor">    gsl_matrix apop_dd_##outd##_m = ((d)-&gt;matrix &amp;&amp; (d)-&gt;matrix-&gt;size1 &gt; (rownum)+(len)-1)  \</span>
+<a name="l00103"></a>00103 <span class="preprocessor">                                ? gsl_matrix_submatrix((d)-&gt;matrix, rownum, 0, (len), (d)-&gt;matrix-&gt;size2).matrix\</span>
+<a name="l00104"></a>00104 <span class="preprocessor">                                : (gsl_matrix) { };             \</span>
+<a name="l00105"></a>00105 <span class="preprocessor">    apop_name apop_dd_##outd##_n = !((d)-&gt;names) ? (apop_name) {} :              \</span>
+<a name="l00106"></a>00106 <span class="preprocessor">            (apop_name){                                                         \</span>
+<a name="l00107"></a>00107 <span class="preprocessor">                .title = (d)-&gt;names-&gt;title,                                      \</span>
+<a name="l00108"></a>00108 <span class="preprocessor">                .vector = (d)-&gt;names-&gt;vector,                                    \</span>
+<a name="l00109"></a>00109 <span class="preprocessor">                .col = (d)-&gt;names-&gt;col,                                          \</span>
+<a name="l00110"></a>00110 <span class="preprocessor">                .row = ((d)-&gt;names-&gt;row &amp;&amp; (d)-&gt;names-&gt;rowct &gt; rownum) ? &amp;((d)-&gt;names-&gt;row[rownum]) : NULL,  \</span>
+<a name="l00111"></a>00111 <span class="preprocessor">                .text = (d)-&gt;names-&gt;text,                                        \</span>
+<a name="l00112"></a>00112 <span class="preprocessor">                .colct = (d)-&gt;names-&gt;colct,                                      \</span>
+<a name="l00113"></a>00113 <span class="preprocessor">                .rowct = (d)-&gt;names-&gt;row ? (GSL_MIN(len, GSL_MAX((d)-&gt;names-&gt;rowct - rownum, 0)))      \</span>
+<a name="l00114"></a>00114 <span class="preprocessor">                                          : 0,                                   \</span>
+<a name="l00115"></a>00115 <span class="preprocessor">                .textct = (d)-&gt;names-&gt;textct };                                  \</span>
+<a name="l00116"></a>00116 <span class="preprocessor">    apop_data apop_dd_##outd = (apop_data){                                      \</span>
+<a name="l00117"></a>00117 <span class="preprocessor">                .vector= apop_dd_##outd##_v.size ? &amp;apop_dd_##outd##_v : NULL,   \</span>
+<a name="l00118"></a>00118 <span class="preprocessor">                .weights=apop_dd_##outd##_w.size ? &amp;apop_dd_##outd##_w : NULL ,  \</span>
+<a name="l00119"></a>00119 <span class="preprocessor">                .matrix = apop_dd_##outd##_m.size1 ? &amp;apop_dd_##outd##_m : NULL, \</span>
+<a name="l00120"></a>00120 <span class="preprocessor">                .textsize[0]=(d)-&gt;textsize[0] ? (len) : 0,                       \</span>
+<a name="l00121"></a>00121 <span class="preprocessor">                .textsize[1]=(d)-&gt;textsize[1],                                   \</span>
 <a name="l00122"></a>00122 <span class="preprocessor">                .text = (d)-&gt;text ? &amp;((d)-&gt;text[rownum]) : NULL,                 \</span>
 <a name="l00123"></a>00123 <span class="preprocessor">                .names= (d)-&gt;names ? &amp;apop_dd_##outd##_n : NULL };               \</span>
 <a name="l00124"></a>00124 <span class="preprocessor">    apop_data *outd =  &amp;apop_dd_##outd;</span>
 <a name="l00125"></a>00125 <span class="preprocessor"></span>
-<a name="l00126"></a>00126 <span class="preprocessor">#define Apop_row(d, row, outd) Apop_data_rows(d, row, 1, outd)</span>
+<a name="l00126"></a>00126 <span class="preprocessor">#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)</span>
 <a name="l00127"></a>00127 <span class="preprocessor"></span>
-<a name="l00128"></a>00128 <span class="preprocessor">#define Apop_col APOP_COL </span>
-<a name="l00129"></a>00129 <span class="preprocessor"></span><span class="preprocessor">#define apop_col APOP_COL </span>
-<a name="l00130"></a>00130 <span class="preprocessor"></span><span class="preprocessor">#define APOP_ROW Apop_row</span>
-<a name="l00131"></a>00131 <span class="preprocessor"></span><span class="preprocessor">#define apop_row Apop_row</span>
-<a name="l00132"></a>00132 <span class="preprocessor"></span><span class="preprocessor">#define Apop_col_t APOP_COL_T</span>
-<a name="l00133"></a>00133 <span class="preprocessor"></span><span class="preprocessor">#define Apop_matrix_row_t APOP_MATRIX_ROW_T</span>
-<a name="l00134"></a>00134 <span class="preprocessor"></span><span class="preprocessor">#define Apop_matrix_col APOP_MATRIX_COL </span>
-<a name="l00135"></a>00135 <span class="preprocessor"></span><span class="preprocessor">#define Apop_matrix_row APOP_MATRIX_ROW</span>
-<a name="l00136"></a>00136 <span class="preprocessor"></span><span class="preprocessor">#define Apop_submatrix APOP_SUBMATRIX</span>
-<a name="l00137"></a>00137 <span class="preprocessor"></span><span class="preprocessor">#define apop_data_rows Apop_data_rows</span>
-<a name="l00138"></a>00138 <span class="preprocessor"></span><span class="preprocessor">#define Apop_data_row Apop_row</span>
-<a name="l00139"></a>00139 <span class="preprocessor"></span><span class="preprocessor">#define apop_data_row Apop_row</span>
-<a name="l00140"></a>00140 <span class="preprocessor"></span>
-<a name="l00141"></a>00141 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(<span class="keyword">const</span> gsl_vector *in);
-<a name="l00142"></a>00142 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a>(<span class="keyword">const</span> gsl_vector *in, <span class="keyword">const</span> <span class="keywordtype">double</span> mean);
-<a name="l00143"></a>00143 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb);
-<a name="l00144"></a>00144 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(<span class="keyword">const</span> gsl_vector *in);
-<a name="l00145"></a>00145 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a>(<span class="keyword">const</span> gsl_vector *in);
-<a name="l00146"></a>00146 
-<a name="l00147"></a><a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">00147</a> <span class="preprocessor">#define apop_sum(in) apop_vector_sum(in)</span>
-<a name="l00148"></a><a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">00148</a> <span class="preprocessor"></span><span class="preprocessor">#define apop_var(in) apop_vector_var(in) </span>
-<a name="l00149"></a>00149 <span class="preprocessor"></span><span class="preprocessor">#define apop_mean(in) apop_vector_mean(in)</span>
-<a name="l00150"></a>00150 <span class="preprocessor"></span>
-<a name="l00154"></a>00154 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00155"></a>00155 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00156"></a>00156 <span class="preprocessor">#else</span>
-<a name="l00157"></a>00157 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_mean_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00158"></a>00158  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00159"></a>00159 <span class="preprocessor">#define apop_vector_mean(...) apop_varad_link(apop_vector_mean, __VA_ARGS__)</span>
-<a name="l00160"></a>00160 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00161"></a>00161 <span class="preprocessor"></span>
-<a name="l00162"></a>00162 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00163"></a>00163 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00164"></a>00164 <span class="preprocessor">#else</span>
-<a name="l00165"></a>00165 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_var_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00166"></a>00166  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00167"></a>00167 <span class="preprocessor">#define apop_vector_var(...) apop_varad_link(apop_vector_var, __VA_ARGS__)</span>
-<a name="l00168"></a>00168 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00169"></a>00169 <span class="preprocessor"></span>
-<a name="l00170"></a>00170 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00171"></a>00171 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00172"></a>00172 <span class="preprocessor">#else</span>
-<a name="l00173"></a>00173 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_skew_pop_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00174"></a>00174  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00175"></a>00175 <span class="preprocessor">#define apop_vector_skew_pop(...) apop_varad_link(apop_vector_skew_pop, __VA_ARGS__)</span>
-<a name="l00176"></a>00176 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00177"></a>00177 <span class="preprocessor"></span>
-<a name="l00178"></a>00178 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00179"></a>00179 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00180"></a>00180 <span class="preprocessor">#else</span>
-<a name="l00181"></a>00181 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_kurtosis_pop_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00182"></a>00182  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00183"></a>00183 <span class="preprocessor">#define apop_vector_kurtosis_pop(...) apop_varad_link(apop_vector_kurtosis_pop, __VA_ARGS__)</span>
-<a name="l00184"></a>00184 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00185"></a>00185 <span class="preprocessor"></span>
-<a name="l00186"></a>00186 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00187"></a>00187 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a>(gsl_vector <span class="keyword">const</span> *v1, gsl_vector <span class="keyword">const</span> *v2,
-<a name="l00188"></a>00188                                          gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00189"></a>00189 <span class="preprocessor">#else</span>
-<a name="l00190"></a>00190 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_cov_base(gsl_vector <span class="keyword">const</span> *v1, gsl_vector <span class="keyword">const</span> *v2,
-<a name="l00191"></a>00191                                          gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00192"></a>00192  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a>, gsl_vector <span class="keyword">const</span> *v1; gsl_vector <span class="keyword">const</span> *v2;
-<a name="l00193"></a>00193                                          gsl_vector <span class="keyword">const</span> *weights);
-<a name="l00194"></a>00194 <span class="preprocessor">#define apop_vector_cov(...) apop_varad_link(apop_vector_cov, __VA_ARGS__)</span>
-<a name="l00195"></a>00195 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00196"></a>00196 <span class="preprocessor"></span>
-<a name="l00197"></a>00197 
-<a name="l00198"></a>00198 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00199"></a>00199 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) ;
-<a name="l00200"></a>00200 <span class="preprocessor">#else</span>
-<a name="l00201"></a>00201 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_distance_base(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) ;
-<a name="l00202"></a>00202  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>, <span class="keyword">const</span> gsl_vector *ina; <span class="keyword">const</span> gsl_vector *inb; <span class="keyword">const</span> <span class="keywordtype">char</span> metric; <span class="keyword">const</span> <span class="keywordtype">double</span> norm);
-<a name="l00203"></a>00203 <span class="preprocessor">#define apop_vector_distance(...) apop_varad_link(apop_vector_distance, __VA_ARGS__)</span>
-<a name="l00204"></a>00204 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00205"></a>00205 <span class="preprocessor"></span>
-<a name="l00206"></a>00206 
-<a name="l00207"></a>00207 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00208"></a>00208 <span class="preprocessor"></span> <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(gsl_vector *in, gsl_vector **out, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type) ;
-<a name="l00209"></a>00209 <span class="preprocessor">#else</span>
-<a name="l00210"></a>00210 <span class="preprocessor"></span> <span class="keywordtype">void</span> apop_vector_normalize_base(gsl_vector *in, gsl_vector **out, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type) ;
-<a name="l00211"></a>00211  apop_varad_declare(<span class="keywordtype">void</span>, <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>, gsl_vector *in; gsl_vector **out; <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type);
-<a name="l00212"></a>00212 <span class="preprocessor">#define apop_vector_normalize(...) apop_varad_link(apop_vector_normalize, __VA_ARGS__)</span>
-<a name="l00213"></a>00213 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00214"></a>00214 <span class="preprocessor"></span>
-<a name="l00215"></a>00215 <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a>(gsl_matrix *data, <span class="keyword">const</span> <span class="keywordtype">char</span> row_or_col, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization);
-<a name="l00216"></a>00216 
-<a name="l00217"></a>00217 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *in);
-<a name="l00218"></a>00218 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *in);
-<a name="l00219"></a>00219 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<span class="keyword">const</span> gsl_matrix *m);
-<a name="l00220"></a>00220 <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a>(<span class="keyword">const</span> gsl_matrix *data);
-<a name="l00221"></a>00221 <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a>(<span class="keyword">const</span> gsl_matrix *data, <span class="keywordtype">double</span> *mean, <span class="keywordtype">double</span> *var);
-<a name="l00222"></a>00222 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a>(<a class="code" href="structapop__data.html">apop_data</a> *data);
-<a name="l00223"></a>00223 
-<a name="l00224"></a>00224 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(<a class="code" href="structapop__data.html">apop_data</a> *intab); <span class="comment">//in apop_fisher.c</span>
-<a name="l00225"></a>00225 
-<a name="l00226"></a>00226 <span class="comment">//from apop_t_f_chi.c:</span>
-<a name="l00227"></a>00227 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00228"></a>00228 <span class="preprocessor"></span> <span class="keywordtype">int</span> <a class="code" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>(gsl_matrix *m, <span class="keywordtype">char</span> semi) ;
-<a name="l00229"></a>00229 <span class="preprocessor">#else</span>
-<a name="l00230"></a>00230 <span class="preprocessor"></span> <span class="keywordtype">int</span> apop_matrix_is_positive_semidefinite_base(gsl_matrix *m, <span class="keywordtype">char</span> semi) ;
-<a name="l00231"></a>00231  apop_varad_declare(<span class="keywordtype">int</span>, <a class="code" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>, gsl_matrix *m; <span class="keywordtype">char</span> semi);
-<a name="l00232"></a>00232 <span class="preprocessor">#define apop_matrix_is_positive_semidefinite(...) apop_varad_link(apop_matrix_is_positive_semidefinite, __VA_ARGS__)</span>
-<a name="l00233"></a>00233 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00234"></a>00234 <span class="preprocessor"></span>
-<a name="l00235"></a>00235 <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a>(gsl_matrix *m);
-<a name="l00236"></a>00236 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a>(<span class="keywordtype">double</span> a, <span class="keywordtype">int</span> p);
-<a name="l00237"></a>00237 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a>(<span class="keywordtype">double</span> a, <span class="keywordtype">int</span> p);
-<a name="l00238"></a>00238 
-<a name="l00239"></a>00239 <span class="comment">//apop_tests.c</span>
-<a name="l00240"></a>00240 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a>(gsl_vector *a, gsl_vector *b);
-<a name="l00241"></a>00241 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a>(gsl_vector *a, gsl_vector *b);
-<a name="l00242"></a>00242 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00243"></a>00243 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a>* <a class="code" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a>(<span class="keywordtype">char</span> *table, <span class="keywordtype">char</span> *data, <span class="keywordtype">char</span> *grouping1, <span class="keywordtype">char</span> *grouping2) ;
-<a name="l00244"></a>00244 <span class="preprocessor">#else</span>
-<a name="l00245"></a>00245 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a>* apop_anova_base(<span class="keywordtype">char</span> *table, <span class="keywordtype">char</span> *data, <span class="keywordtype">char</span> *grouping1, <span class="keywordtype">char</span> *grouping2) ;
-<a name="l00246"></a>00246  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a>*, <a class="code" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a>, <span class="keywordtype">char</span> *table; <span class="keywordtype">char</span> *data; <span class="keywordtype">char</span> *grouping1; <span class="keywordtype">char</span> *grouping2);
-<a name="l00247"></a>00247 <span class="preprocessor">#define apop_anova(...) apop_varad_link(apop_anova, __VA_ARGS__)</span>
-<a name="l00248"></a>00248 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00249"></a>00249 <span class="preprocessor"></span>
-<a name="l00250"></a>00250 <span class="preprocessor">#define apop_ANOVA apop_anova</span>
-<a name="l00251"></a>00251 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00252"></a>00252 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="code" href="structapop__model.html">apop_model</a> *est, <a class="code" href="structapop__data.html">apop_data</a> *contrast) ;
-<a name="l00253"></a>00253 <span class="preprocessor">#else</span>
-<a name="l00254"></a>00254 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_f_test_base(<a class="code" href="structapop__model.html">apop_model</a> *est, <a class="code" href="structapop__data.html">apop_data</a> *contrast) ;
-<a name="l00255"></a>00255  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a>, <a class="code" href="structapop__model.html">apop_model</a> *est; <a class="code" href="structapop__data.html">apop_data</a> *contrast);
-<a name="l00256"></a>00256 <span class="preprocessor">#define apop_f_test(...) apop_varad_link(apop_f_test, __VA_ARGS__)</span>
-<a name="l00257"></a>00257 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00258"></a>00258 <span class="preprocessor"></span>
-<a name="l00259"></a>00259 <span class="preprocessor">#define apop_F_test apop_f_test</span>
-<a name="l00260"></a>00260 <span class="preprocessor"></span>
-<a name="l00261"></a>00261 <span class="comment">//from the regression code:</span>
-<a name="l00262"></a><a class="code" href="group__regression.html#ga33c353f768fb4b0e7a3f98ab7a546ba5">00262</a> <span class="preprocessor">#define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)</span>
-<a name="l00263"></a>00263 <span class="preprocessor"></span>
-<a name="l00264"></a>00264 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">size_t</span> col);
-<a name="l00265"></a>00265 gsl_vector * <a class="code" href="apop__regression_8c.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a>(<span class="keyword">const</span> gsl_vector *v);
-<a name="l00266"></a>00266 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00267"></a>00267 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">char</span> intype, <span class="keywordtype">int</span> incol, <span class="keywordtype">int</span> outcol) ;
-<a name="l00268"></a>00268 <span class="preprocessor">#else</span>
-<a name="l00269"></a>00269 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_to_factors_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">char</span> intype, <span class="keywordtype">int</span> incol, <span class="keywordtype">int</span> outcol) ;
-<a name="l00270"></a>00270  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <span class="keywordtype">char</span> intype; <span class="keywordtype">int</span> incol; <span class="keywordtype">int</span> outcol);
-<a name="l00271"></a>00271 <span class="preprocessor">#define apop_data_to_factors(...) apop_varad_link(apop_data_to_factors, __VA_ARGS__)</span>
-<a name="l00272"></a>00272 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00273"></a>00273 <span class="preprocessor"></span>
-<a name="l00274"></a>00274 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00275"></a>00275 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type) ;
+<a name="l00128"></a>00128 <span class="preprocessor">#define Apop_row_t(d, rowname, outd) int apop_row_##outd = apop_name_find((d)-&gt;names, rowname, &#39;r&#39;); Apop_rows(d, apop_row##outd, 1, outd)</span>
+<a name="l00129"></a>00129 <span class="preprocessor"></span>
+<a name="l00130"></a>00130 <span class="preprocessor">#define Apop_col_t(d, colname, outd) int apop_col_##outd = apop_name_find((d)-&gt;names, colname, &#39;c&#39;); Apop_cols(d, apop_col##outd, 1, outd)</span>
+<a name="l00131"></a>00131 <span class="preprocessor"></span>
+<a name="l00132"></a>00132 <span class="preprocessor">#define Apop_cols(d, colnum, len, outd) \</span>
+<a name="l00133"></a>00133 <span class="preprocessor">    gsl_matrix apop_dd_##outd##_m = ((d)-&gt;matrix &amp;&amp; (d)-&gt;matrix-&gt;size2 &gt; (colnum)+(len)-1)  \</span>
+<a name="l00134"></a>00134 <span class="preprocessor">                                ? gsl_matrix_submatrix((d)-&gt;matrix, colnum, 0, (d)-&gt;matrix-&gt;size1, (len)).matrix\</span>
+<a name="l00135"></a>00135 <span class="preprocessor">                                : (gsl_matrix) { };             \</span>
+<a name="l00136"></a>00136 <span class="preprocessor">    apop_name apop_dd_##outd##_n = !((d)-&gt;names) ? (apop_name) {} :              \</span>
+<a name="l00137"></a>00137 <span class="preprocessor">            (apop_name){                                                         \</span>
+<a name="l00138"></a>00138 <span class="preprocessor">                .title = (d)-&gt;names-&gt;title,                                      \</span>
+<a name="l00139"></a>00139 <span class="preprocessor">                .vector = NULL,                                    \</span>
+<a name="l00140"></a>00140 <span class="preprocessor">                .row = (d)-&gt;names-&gt;row,                                          \</span>
+<a name="l00141"></a>00141 <span class="preprocessor">                .col = ((d)-&gt;names-&gt;col &amp;&amp; (d)-&gt;names-&gt;colct &gt; colnum) ? &amp;((d)-&gt;names-&gt;col[colnum]) : NULL,  \</span>
+<a name="l00142"></a>00142 <span class="preprocessor">                .text = NULL,                                                    \</span>
+<a name="l00143"></a>00143 <span class="preprocessor">                .rowct = (d)-&gt;names-&gt;rowct,                                      \</span>
+<a name="l00144"></a>00144 <span class="preprocessor">                .colct = (d)-&gt;names-&gt;col ? (GSL_MIN(len, GSL_MAX((d)-&gt;names-&gt;colct - colnum, 0)))      \</span>
+<a name="l00145"></a>00145 <span class="preprocessor">                                          : 0,                                   \</span>
+<a name="l00146"></a>00146 <span class="preprocessor">                .textct = (d)-&gt;names-&gt;textct };                                  \</span>
+<a name="l00147"></a>00147 <span class="preprocessor">    apop_data apop_dd_##outd = (apop_data){                                      \</span>
+<a name="l00148"></a>00148 <span class="preprocessor">                .vector= NULL,                                                   \</span>
+<a name="l00149"></a>00149 <span class="preprocessor">                .weights= (d)-&gt;weights,                                          \</span>
+<a name="l00150"></a>00150 <span class="preprocessor">                .matrix = apop_dd_##outd##_m.size1 ? &amp;apop_dd_##outd##_m : NULL, \</span>
+<a name="l00151"></a>00151 <span class="preprocessor">                .textsize[0]=NULL                                                \</span>
+<a name="l00152"></a>00152 <span class="preprocessor">                .text = NULL,                                                    \</span>
+<a name="l00153"></a>00153 <span class="preprocessor">                .names= (d)-&gt;names ? &amp;apop_dd_##outd##_n : NULL };               \</span>
+<a name="l00154"></a>00154 <span class="preprocessor">    apop_data *outd =  &amp;apop_dd_##outd;</span>
+<a name="l00155"></a>00155 <span class="preprocessor"></span>
+<a name="l00156"></a>00156 <span class="preprocessor">#define Apop_col(d, col, outd) Apop_cols(d, col, 1, outd)</span>
+<a name="l00157"></a>00157 <span class="preprocessor"></span>
+<a name="l00158"></a>00158 <span class="preprocessor">#define APOP_COL Apop_col</span>
+<a name="l00159"></a>00159 <span class="preprocessor"></span><span class="preprocessor">#define apop_col Apop_col</span>
+<a name="l00160"></a>00160 <span class="preprocessor"></span><span class="preprocessor">#define APOP_COLS Apop_cols</span>
+<a name="l00161"></a>00161 <span class="preprocessor"></span><span class="preprocessor">#define apop_cols Apop_cols</span>
+<a name="l00162"></a>00162 <span class="preprocessor"></span><span class="preprocessor">#define APOP_COL_T Apop_col_t</span>
+<a name="l00163"></a>00163 <span class="preprocessor"></span><span class="preprocessor">#define apop_col_t Apop_col_t</span>
+<a name="l00164"></a>00164 <span class="preprocessor"></span><span class="preprocessor">#define APOP_COL_TV Apop_col_tv</span>
+<a name="l00165"></a>00165 <span class="preprocessor"></span><span class="preprocessor">#define apop_col_tv Apop_col_tv</span>
+<a name="l00166"></a>00166 <span class="preprocessor"></span><span class="preprocessor">#define APOP_COL_V Apop_col_v</span>
+<a name="l00167"></a>00167 <span class="preprocessor"></span><span class="preprocessor">#define apop_col_v Apop_col_v</span>
+<a name="l00168"></a>00168 <span class="preprocessor"></span>
+<a name="l00169"></a>00169 <span class="preprocessor">#define APOP_ROW Apop_row</span>
+<a name="l00170"></a>00170 <span class="preprocessor"></span><span class="preprocessor">#define apop_row Apop_row</span>
+<a name="l00171"></a>00171 <span class="preprocessor"></span><span class="preprocessor">#define Apop_data_row Apop_row   #deprecated</span>
+<a name="l00172"></a>00172 <span class="preprocessor"></span><span class="preprocessor">#define APOP_ROWS Apop_rows</span>
+<a name="l00173"></a>00173 <span class="preprocessor"></span><span class="preprocessor">#define apop_rows Apop_rows</span>
+<a name="l00174"></a>00174 <span class="preprocessor"></span><span class="preprocessor">#define APOP_ROW_T Apop_row_t</span>
+<a name="l00175"></a>00175 <span class="preprocessor"></span><span class="preprocessor">#define apop_row_t Apop_row_t</span>
+<a name="l00176"></a>00176 <span class="preprocessor"></span><span class="preprocessor">#define APOP_ROW_TV Apop_row_tv</span>
+<a name="l00177"></a>00177 <span class="preprocessor"></span><span class="preprocessor">#define apop_row_tv Apop_row_tv</span>
+<a name="l00178"></a>00178 <span class="preprocessor"></span><span class="preprocessor">#define APOP_ROW_V Apop_row_v</span>
+<a name="l00179"></a>00179 <span class="preprocessor"></span><span class="preprocessor">#define apop_row_v Apop_row_v</span>
+<a name="l00180"></a>00180 <span class="preprocessor"></span>
+<a name="l00198"></a><a class="code" href="stats_8h.html#a9abee86763f92d505fd4fb792f06fd7c">00198</a> <span class="preprocessor">#define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\</span>
+<a name="l00199"></a>00199 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
+<a name="l00200"></a>00200 <span class="preprocessor"></span>
+<a name="l00218"></a><a class="code" href="stats_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">00218</a> <span class="preprocessor">#define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\</span>
+<a name="l00219"></a>00219 <span class="preprocessor">gsl_vector * v = &amp;( apop_vv_##v );</span>
+<a name="l00220"></a>00220 <span class="preprocessor"></span>
+<a name="l00221"></a>00221 <span class="preprocessor">#define Apop_submatrix APOP_SUBMATRIX</span>
+<a name="l00222"></a>00222 <span class="preprocessor"></span><span class="preprocessor">#define APOP_MATRIX_ROW Apop_matrix_row </span>
+<a name="l00223"></a>00223 <span class="preprocessor"></span><span class="preprocessor">#define apop_matrix_row Apop_matrix_row </span>
+<a name="l00224"></a>00224 <span class="preprocessor"></span><span class="preprocessor">#define APOP_MATRIX_COL Apop_matrix_col </span>
+<a name="l00225"></a>00225 <span class="preprocessor"></span><span class="preprocessor">#define apop_matrix_col Apop_matrix_col </span>
+<a name="l00226"></a>00226 <span class="preprocessor"></span>
+<a name="l00227"></a>00227 
+<a name="l00228"></a>00228 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(<span class="keyword">const</span> gsl_vector *in);
+<a name="l00229"></a>00229 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a>(<span class="keyword">const</span> gsl_vector *in, <span class="keyword">const</span> <span class="keywordtype">double</span> mean);
+<a name="l00230"></a>00230 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb);
+<a name="l00231"></a>00231 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(<span class="keyword">const</span> gsl_vector *in);
+<a name="l00232"></a>00232 <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a>(<span class="keyword">const</span> gsl_vector *in);
+<a name="l00233"></a>00233 
+<a name="l00234"></a><a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">00234</a> <span class="preprocessor">#define apop_sum(in) apop_vector_sum(in)</span>
+<a name="l00235"></a><a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">00235</a> <span class="preprocessor"></span><span class="preprocessor">#define apop_var(in) apop_vector_var(in) </span>
+<a name="l00236"></a>00236 <span class="preprocessor"></span><span class="preprocessor">#define apop_mean(in) apop_vector_mean(in)</span>
+<a name="l00237"></a>00237 <span class="preprocessor"></span>
+<a name="l00241"></a>00241 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00242"></a>00242 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00243"></a>00243 <span class="preprocessor">#else</span>
+<a name="l00244"></a>00244 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_mean_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00245"></a>00245  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00246"></a>00246 <span class="preprocessor">#define apop_vector_mean(...) apop_varad_link(apop_vector_mean, __VA_ARGS__)</span>
+<a name="l00247"></a>00247 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00248"></a>00248 <span class="preprocessor"></span>
+<a name="l00249"></a>00249 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00250"></a>00250 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00251"></a>00251 <span class="preprocessor">#else</span>
+<a name="l00252"></a>00252 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_var_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00253"></a>00253  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00254"></a>00254 <span class="preprocessor">#define apop_vector_var(...) apop_varad_link(apop_vector_var, __VA_ARGS__)</span>
+<a name="l00255"></a>00255 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00256"></a>00256 <span class="preprocessor"></span>
+<a name="l00257"></a>00257 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00258"></a>00258 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00259"></a>00259 <span class="preprocessor">#else</span>
+<a name="l00260"></a>00260 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_skew_pop_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00261"></a>00261  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00262"></a>00262 <span class="preprocessor">#define apop_vector_skew_pop(...) apop_varad_link(apop_vector_skew_pop, __VA_ARGS__)</span>
+<a name="l00263"></a>00263 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00264"></a>00264 <span class="preprocessor"></span>
+<a name="l00265"></a>00265 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00266"></a>00266 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a>(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00267"></a>00267 <span class="preprocessor">#else</span>
+<a name="l00268"></a>00268 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_kurtosis_pop_base(gsl_vector <span class="keyword">const</span> *v, gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00269"></a>00269  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a>, gsl_vector <span class="keyword">const</span> *v; gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00270"></a>00270 <span class="preprocessor">#define apop_vector_kurtosis_pop(...) apop_varad_link(apop_vector_kurtosis_pop, __VA_ARGS__)</span>
+<a name="l00271"></a>00271 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00272"></a>00272 <span class="preprocessor"></span>
+<a name="l00273"></a>00273 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00274"></a>00274 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a>(gsl_vector <span class="keyword">const</span> *v1, gsl_vector <span class="keyword">const</span> *v2,
+<a name="l00275"></a>00275                                          gsl_vector <span class="keyword">const</span> *weights);
 <a name="l00276"></a>00276 <span class="preprocessor">#else</span>
-<a name="l00277"></a>00277 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_get_factor_names_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type) ;
-<a name="l00278"></a>00278  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type);
-<a name="l00279"></a>00279 <span class="preprocessor">#define apop_data_get_factor_names(...) apop_varad_link(apop_data_get_factor_names, __VA_ARGS__)</span>
-<a name="l00280"></a>00280 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00281"></a>00281 <span class="preprocessor"></span>
-<a name="l00282"></a>00282 
-<a name="l00283"></a>00283 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00284"></a>00284 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>) ;
-<a name="l00285"></a>00285 <span class="preprocessor">#else</span>
-<a name="l00286"></a>00286 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_to_dummies_base(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>) ;
-<a name="l00287"></a>00287  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>, <a class="code" href="structapop__data.html">apop_data</a> *d; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type; <span class="keywordtype">int</span> keep_first; <span class="keywordtype">char</span> append; <span class="keywordtype">char</span> <span class="keyword">remove</span>);
-<a name="l00288"></a>00288 <span class="preprocessor">#define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)</span>
-<a name="l00289"></a>00289 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00290"></a>00290 <span class="preprocessor"></span>
-<a name="l00291"></a>00291 
-<a name="l00292"></a>00292 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00293"></a>00293 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>(<a class="code" href="structapop__model.html">apop_model</a> *from, <a class="code" href="structapop__model.html">apop_model</a> *to, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng, <a class="code" href="structapop__model.html">apop_model</a> *top, <a class="code" href="structapop__model.html">apop_model</a> *bottom) ;
-<a name="l00294"></a>00294 <span class="preprocessor">#else</span>
-<a name="l00295"></a>00295 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_kl_divergence_base(<a class="code" href="structapop__model.html">apop_model</a> *from, <a class="code" href="structapop__model.html">apop_model</a> *to, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng, <a class="code" href="structapop__model.html">apop_model</a> *top, <a class="code" href="structapop__model.html">apop_model</a> *bottom) ;
-<a name="l00296"></a>00296  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>, <a class="code" href="structapop__model.html">apop_model</a> *from; <a class="code" href="structapop__model.html">apop_model</a> *to; <span class="keywordtype">int</span> draw_ct; gsl_rng *rng; <a class="code" href="structapop__model.html">apop_model</a> *top; <a class="code" href="structapop__model.html">apop_model</a> *bottom);
-<a name="l00297"></a>00297 <span class="preprocessor">#define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)</span>
-<a name="l00298"></a>00298 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00299"></a>00299 <span class="preprocessor"></span>
-<a name="l00300"></a>00300 
-<a name="l00301"></a>00301 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="code" href="structapop__model.html">apop_model</a> *);
-<a name="l00302"></a>00302 <span class="keywordtype">void</span> <a class="code" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> (<a class="code" href="structapop__model.html">apop_model</a> *est);
+<a name="l00277"></a>00277 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_cov_base(gsl_vector <span class="keyword">const</span> *v1, gsl_vector <span class="keyword">const</span> *v2,
+<a name="l00278"></a>00278                                          gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00279"></a>00279  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a>, gsl_vector <span class="keyword">const</span> *v1; gsl_vector <span class="keyword">const</span> *v2;
+<a name="l00280"></a>00280                                          gsl_vector <span class="keyword">const</span> *weights);
+<a name="l00281"></a>00281 <span class="preprocessor">#define apop_vector_cov(...) apop_varad_link(apop_vector_cov, __VA_ARGS__)</span>
+<a name="l00282"></a>00282 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00283"></a>00283 <span class="preprocessor"></span>
+<a name="l00284"></a>00284 
+<a name="l00285"></a>00285 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00286"></a>00286 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) ;
+<a name="l00287"></a>00287 <span class="preprocessor">#else</span>
+<a name="l00288"></a>00288 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_vector_distance_base(<span class="keyword">const</span> gsl_vector *ina, <span class="keyword">const</span> gsl_vector *inb, <span class="keyword">const</span> <span class="keywordtype">char</span> metric, <span class="keyword">const</span> <span class="keywordtype">double</span> norm) ;
+<a name="l00289"></a>00289  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>, <span class="keyword">const</span> gsl_vector *ina; <span class="keyword">const</span> gsl_vector *inb; <span class="keyword">const</span> <span class="keywordtype">char</span> metric; <span class="keyword">const</span> <span class="keywordtype">double</span> norm);
+<a name="l00290"></a>00290 <span class="preprocessor">#define apop_vector_distance(...) apop_varad_link(apop_vector_distance, __VA_ARGS__)</span>
+<a name="l00291"></a>00291 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00292"></a>00292 <span class="preprocessor"></span>
+<a name="l00293"></a>00293 
+<a name="l00294"></a>00294 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00295"></a>00295 <span class="preprocessor"></span> <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(gsl_vector *in, gsl_vector **out, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type) ;
+<a name="l00296"></a>00296 <span class="preprocessor">#else</span>
+<a name="l00297"></a>00297 <span class="preprocessor"></span> <span class="keywordtype">void</span> apop_vector_normalize_base(gsl_vector *in, gsl_vector **out, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type) ;
+<a name="l00298"></a>00298  apop_varad_declare(<span class="keywordtype">void</span>, <a class="code" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>, gsl_vector *in; gsl_vector **out; <span class="keyword">const</span> <span class="keywordtype">char</span> normalization_type);
+<a name="l00299"></a>00299 <span class="preprocessor">#define apop_vector_normalize(...) apop_varad_link(apop_vector_normalize, __VA_ARGS__)</span>
+<a name="l00300"></a>00300 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00301"></a>00301 <span class="preprocessor"></span>
+<a name="l00302"></a>00302 <span class="keywordtype">void</span> <a class="code" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a>(gsl_matrix *data, <span class="keyword">const</span> <span class="keywordtype">char</span> row_or_col, <span class="keyword">const</span> <span class="keywordtype">char</span> normalization);
 <a name="l00303"></a>00303 
-<a name="l00304"></a>00304 
-<a name="l00305"></a>00305 <span class="comment">//Bootstrapping &amp; RNG</span>
-<a name="l00306"></a>00306 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a634432014188489d758d7c1acfc9a0a5">apop_jackknife_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model);
-<a name="l00307"></a>00307 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00308"></a>00308 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
-<a name="l00309"></a>00309 <span class="preprocessor">#else</span>
-<a name="l00310"></a>00310 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
-<a name="l00311"></a>00311  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <a class="code" href="structapop__model.html">apop_model</a> *model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
-<a name="l00312"></a>00312 <span class="preprocessor">#define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)</span>
-<a name="l00313"></a>00313 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00314"></a>00314 <span class="preprocessor"></span>
-<a name="l00315"></a>00315 gsl_rng *<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
-<a name="l00316"></a>00316 <span class="keywordtype">double</span> <a class="code" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a>(gsl_rng * r, <span class="keywordtype">double</span>* a); <span class="comment">//in apop_asst.c</span>
-<a name="l00317"></a>00317 
-<a name="l00318"></a>00318 
-<a name="l00319"></a>00319 <span class="keywordtype">void</span> <a class="code" href="apop__arms_8c.html#ad422a97e52c70bacb585a9f27a987d23" title="Adaptive rejection metropolis sampling.">apop_arms_draw</a> (<span class="keywordtype">double</span> *out, gsl_rng *r, <a class="code" href="structapop__model.html">apop_model</a> *m); <span class="comment">//apop_arms.h</span>
-<a name="l00320"></a>00320 
-<a name="l00321"></a>00321 
-<a name="l00322"></a>00322     <span class="comment">// maximum likelihod estimation related functions</span>
-<a name="l00323"></a>00323 
-<a name="l00324"></a>00324 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00325"></a>00325 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
-<a name="l00326"></a>00326 <span class="preprocessor">#else</span>
-<a name="l00327"></a>00327 <span class="preprocessor"></span> gsl_vector * apop_numerical_gradient_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
-<a name="l00328"></a>00328  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
-<a name="l00329"></a>00329 <span class="preprocessor">#define apop_numerical_gradient(...) apop_varad_link(apop_numerical_gradient, __VA_ARGS__)</span>
-<a name="l00330"></a>00330 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00331"></a>00331 <span class="preprocessor"></span>
-<a name="l00332"></a>00332 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00333"></a>00333 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
-<a name="l00334"></a>00334 <span class="preprocessor">#else</span>
-<a name="l00335"></a>00335 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_model_hessian_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
-<a name="l00336"></a>00336  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
-<a name="l00337"></a>00337 <span class="preprocessor">#define apop_model_hessian(...) apop_varad_link(apop_model_hessian, __VA_ARGS__)</span>
-<a name="l00338"></a>00338 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00339"></a>00339 <span class="preprocessor"></span>
-<a name="l00340"></a>00340 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00341"></a>00341 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
-<a name="l00342"></a>00342 <span class="preprocessor">#else</span>
-<a name="l00343"></a>00343 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_model_numerical_covariance_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
-<a name="l00344"></a>00344  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
-<a name="l00345"></a>00345 <span class="preprocessor">#define apop_model_numerical_covariance(...) apop_varad_link(apop_model_numerical_covariance, __VA_ARGS__)</span>
-<a name="l00346"></a>00346 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00304"></a>00304 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *in);
+<a name="l00305"></a>00305 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *in);
+<a name="l00306"></a>00306 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<span class="keyword">const</span> gsl_matrix *m);
+<a name="l00307"></a>00307 <span class="keywordtype">double</span> <a class="code" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a>(<span class="keyword">const</span> gsl_matrix *data);
+<a name="l00308"></a>00308 <span class="keywordtype">void</span> <a class="code" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a>(<span class="keyword">const</span> gsl_matrix *data, <span class="keywordtype">double</span> *mean, <span class="keywordtype">double</span> *var);
+<a name="l00309"></a>00309 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a>(<a class="code" href="structapop__data.html">apop_data</a> *data);
+<a name="l00310"></a>00310 
+<a name="l00311"></a>00311 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>(<a class="code" href="structapop__data.html">apop_data</a> *intab); <span class="comment">//in apop_fisher.c</span>
+<a name="l00312"></a>00312 
+<a name="l00313"></a>00313 <span class="comment">//from apop_t_f_chi.c:</span>
+<a name="l00314"></a>00314 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00315"></a>00315 <span class="preprocessor"></span> <span class="keywordtype">int</span> <a class="code" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>(gsl_matrix *m, <span class="keywordtype">char</span> semi) ;
+<a name="l00316"></a>00316 <span class="preprocessor">#else</span>
+<a name="l00317"></a>00317 <span class="preprocessor"></span> <span class="keywordtype">int</span> apop_matrix_is_positive_semidefinite_base(gsl_matrix *m, <span class="keywordtype">char</span> semi) ;
+<a name="l00318"></a>00318  apop_varad_declare(<span class="keywordtype">int</span>, <a class="code" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a>, gsl_matrix *m; <span class="keywordtype">char</span> semi);
+<a name="l00319"></a>00319 <span class="preprocessor">#define apop_matrix_is_positive_semidefinite(...) apop_varad_link(apop_matrix_is_positive_semidefinite, __VA_ARGS__)</span>
+<a name="l00320"></a>00320 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00321"></a>00321 <span class="preprocessor"></span>
+<a name="l00322"></a>00322 <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a>(gsl_matrix *m);
+<a name="l00323"></a>00323 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a>(<span class="keywordtype">double</span> a, <span class="keywordtype">int</span> p);
+<a name="l00324"></a>00324 <span class="keywordtype">long</span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a>(<span class="keywordtype">double</span> a, <span class="keywordtype">int</span> p);
+<a name="l00325"></a>00325 
+<a name="l00326"></a>00326 <span class="comment">//apop_tests.c</span>
+<a name="l00327"></a>00327 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a>(gsl_vector *a, gsl_vector *b);
+<a name="l00328"></a>00328 <a class="code" href="structapop__data.html">apop_data</a> *    <a class="code" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a>(gsl_vector *a, gsl_vector *b);
+<a name="l00329"></a>00329 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00330"></a>00330 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a>* <a class="code" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a>(<span class="keywordtype">char</span> *table, <span class="keywordtype">char</span> *data, <span class="keywordtype">char</span> *grouping1, <span class="keywordtype">char</span> *grouping2) ;
+<a name="l00331"></a>00331 <span class="preprocessor">#else</span>
+<a name="l00332"></a>00332 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a>* apop_anova_base(<span class="keywordtype">char</span> *table, <span class="keywordtype">char</span> *data, <span class="keywordtype">char</span> *grouping1, <span class="keywordtype">char</span> *grouping2) ;
+<a name="l00333"></a>00333  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a>*, <a class="code" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a>, <span class="keywordtype">char</span> *table; <span class="keywordtype">char</span> *data; <span class="keywordtype">char</span> *grouping1; <span class="keywordtype">char</span> *grouping2);
+<a name="l00334"></a>00334 <span class="preprocessor">#define apop_anova(...) apop_varad_link(apop_anova, __VA_ARGS__)</span>
+<a name="l00335"></a>00335 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00336"></a>00336 <span class="preprocessor"></span>
+<a name="l00337"></a>00337 <span class="preprocessor">#define apop_ANOVA apop_anova</span>
+<a name="l00338"></a>00338 <span class="preprocessor"></span><span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00339"></a>00339 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="code" href="structapop__model.html">apop_model</a> *est, <a class="code" href="structapop__data.html">apop_data</a> *contrast) ;
+<a name="l00340"></a>00340 <span class="preprocessor">#else</span>
+<a name="l00341"></a>00341 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_f_test_base(<a class="code" href="structapop__model.html">apop_model</a> *est, <a class="code" href="structapop__data.html">apop_data</a> *contrast) ;
+<a name="l00342"></a>00342  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a>, <a class="code" href="structapop__model.html">apop_model</a> *est; <a class="code" href="structapop__data.html">apop_data</a> *contrast);
+<a name="l00343"></a>00343 <span class="preprocessor">#define apop_f_test(...) apop_varad_link(apop_f_test, __VA_ARGS__)</span>
+<a name="l00344"></a>00344 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00345"></a>00345 <span class="preprocessor"></span>
+<a name="l00346"></a>00346 <span class="preprocessor">#define apop_F_test apop_f_test</span>
 <a name="l00347"></a>00347 <span class="preprocessor"></span>
-<a name="l00348"></a>00348 
-<a name="l00349"></a>00349 <span class="keywordtype">void</span> <a class="code" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *dist);
-<a name="l00350"></a>00350 
-<a name="l00351"></a>00351 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00352"></a>00352 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
-<a name="l00353"></a>00353 <span class="preprocessor">#else</span>
-<a name="l00354"></a>00354 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * apop_estimate_restart_base(<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
-<a name="l00355"></a>00355  apop_varad_declare(<a class="code" href="structapop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>, <a class="code" href="structapop__model.html">apop_model</a> *e; <a class="code" href="structapop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
-<a name="l00356"></a>00356 <span class="preprocessor">#define apop_estimate_restart(...) apop_varad_link(apop_estimate_restart, __VA_ARGS__)</span>
-<a name="l00357"></a>00357 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00358"></a>00358 <span class="preprocessor"></span>
-<a name="l00359"></a>00359 
-<a name="l00360"></a>00360 <span class="comment">//in apop_linear_constraint.c</span>
+<a name="l00348"></a>00348 <span class="comment">//from the regression code:</span>
+<a name="l00349"></a><a class="code" href="group__regression.html#ga33c353f768fb4b0e7a3f98ab7a546ba5">00349</a> <span class="preprocessor">#define apop_estimate_r_squared(in) apop_estimate_coefficient_of_determination(in)</span>
+<a name="l00350"></a>00350 <span class="preprocessor"></span>
+<a name="l00351"></a>00351 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a>(<span class="keyword">const</span> <a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">size_t</span> col);
+<a name="l00352"></a>00352 gsl_vector * <a class="code" href="apop__regression_8c.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a>(<span class="keyword">const</span> gsl_vector *v);
+<a name="l00353"></a>00353 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00354"></a>00354 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">char</span> intype, <span class="keywordtype">int</span> incol, <span class="keywordtype">int</span> outcol) ;
+<a name="l00355"></a>00355 <span class="preprocessor">#else</span>
+<a name="l00356"></a>00356 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_to_factors_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">char</span> intype, <span class="keywordtype">int</span> incol, <span class="keywordtype">int</span> outcol) ;
+<a name="l00357"></a>00357  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <span class="keywordtype">char</span> intype; <span class="keywordtype">int</span> incol; <span class="keywordtype">int</span> outcol);
+<a name="l00358"></a>00358 <span class="preprocessor">#define apop_data_to_factors(...) apop_varad_link(apop_data_to_factors, __VA_ARGS__)</span>
+<a name="l00359"></a>00359 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00360"></a>00360 <span class="preprocessor"></span>
 <a name="l00361"></a>00361 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
-<a name="l00362"></a>00362 <span class="preprocessor"></span> <span class="keywordtype">long</span> <span class="keywordtype">double</span>  <a class="code" href="apop__linear__constraint_8c.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>(gsl_vector *beta, <a class="code" href="structapop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin) ;
+<a name="l00362"></a>00362 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type) ;
 <a name="l00363"></a>00363 <span class="preprocessor">#else</span>
-<a name="l00364"></a>00364 <span class="preprocessor"></span> <span class="keywordtype">long</span> <span class="keywordtype">double</span> apop_linear_constraint_base(gsl_vector *beta, <a class="code" href="structapop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin) ;
-<a name="l00365"></a>00365  apop_varad_declare(<span class="keywordtype">long</span> <span class="keywordtype">double</span>, <a class="code" href="apop__linear__constraint_8c.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>, gsl_vector *beta; <a class="code" href="structapop__data.html">apop_data</a> * constraint; <span class="keywordtype">double</span> margin);
-<a name="l00366"></a>00366 <span class="preprocessor">#define apop_linear_constraint(...) apop_varad_link(apop_linear_constraint, __VA_ARGS__)</span>
+<a name="l00364"></a>00364 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_get_factor_names_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type) ;
+<a name="l00365"></a>00365  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type);
+<a name="l00366"></a>00366 <span class="preprocessor">#define apop_data_get_factor_names(...) apop_varad_link(apop_data_get_factor_names, __VA_ARGS__)</span>
 <a name="l00367"></a>00367 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <a name="l00368"></a>00368 <span class="preprocessor"></span>
 <a name="l00369"></a>00369 
-<a name="l00370"></a>00370 <span class="comment">//in apop_model_fix_params.c</span>
-<a name="l00371"></a>00371 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
-<a name="l00372"></a>00372 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#af676505faea1c7e30ffbd8690a092ed8">apop_model_fix_params_get_base</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
-<a name="l00373"></a>00373 
-<a name="l00374"></a>00374 <span class="preprocessor">#ifdef    __cplusplus</span>
-<a name="l00375"></a>00375 <span class="preprocessor"></span>}
-<a name="l00376"></a>00376 <span class="preprocessor">#endif</span>
-<a name="l00377"></a>00377 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00378"></a>00378 <span class="preprocessor"></span>
+<a name="l00370"></a>00370 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00371"></a>00371 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>) ;
+<a name="l00372"></a>00372 <span class="preprocessor">#else</span>
+<a name="l00373"></a>00373 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_data_to_dummies_base(<a class="code" href="structapop__data.html">apop_data</a> *d, <span class="keywordtype">int</span> col, <span class="keywordtype">char</span> type, <span class="keywordtype">int</span> keep_first, <span class="keywordtype">char</span> append, <span class="keywordtype">char</span> <span class="keyword">remove</span>) ;
+<a name="l00374"></a>00374  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>, <a class="code" href="structapop__data.html">apop_data</a> *d; <span class="keywordtype">int</span> col; <span class="keywordtype">char</span> type; <span class="keywordtype">int</span> keep_first; <span class="keywordtype">char</span> append; <span class="keywordtype">char</span> <span class="keyword">remove</span>);
+<a name="l00375"></a>00375 <span class="preprocessor">#define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)</span>
+<a name="l00376"></a>00376 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00377"></a>00377 <span class="preprocessor"></span>
+<a name="l00378"></a>00378 
+<a name="l00379"></a>00379 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00380"></a>00380 <span class="preprocessor"></span> <span class="keywordtype">double</span> <a class="code" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>(<a class="code" href="structapop__model.html">apop_model</a> *from, <a class="code" href="structapop__model.html">apop_model</a> *to, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng, <a class="code" href="structapop__model.html">apop_model</a> *top, <a class="code" href="structapop__model.html">apop_model</a> *bottom) ;
+<a name="l00381"></a>00381 <span class="preprocessor">#else</span>
+<a name="l00382"></a>00382 <span class="preprocessor"></span> <span class="keywordtype">double</span> apop_kl_divergence_base(<a class="code" href="structapop__model.html">apop_model</a> *from, <a class="code" href="structapop__model.html">apop_model</a> *to, <span class="keywordtype">int</span> draw_ct, gsl_rng *rng, <a class="code" href="structapop__model.html">apop_model</a> *top, <a class="code" href="structapop__model.html">apop_model</a> *bottom) ;
+<a name="l00383"></a>00383  apop_varad_declare(<span class="keywordtype">double</span>, <a class="code" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a>, <a class="code" href="structapop__model.html">apop_model</a> *from; <a class="code" href="structapop__model.html">apop_model</a> *to; <span class="keywordtype">int</span> draw_ct; gsl_rng *rng; <a class="code" href="structapop__model.html">apop_model</a> *top; <a class="code" href="structapop__model.html">apop_model</a> *bottom);
+<a name="l00384"></a>00384 <span class="preprocessor">#define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)</span>
+<a name="l00385"></a>00385 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00386"></a>00386 <span class="preprocessor"></span>
+<a name="l00387"></a>00387 
+<a name="l00388"></a>00388 <a class="code" href="structapop__data.html">apop_data</a> *<a class="code" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination</a> (<a class="code" href="structapop__model.html">apop_model</a> *);
+<a name="l00389"></a>00389 <span class="keywordtype">void</span> <a class="code" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> (<a class="code" href="structapop__model.html">apop_model</a> *est);
+<a name="l00390"></a>00390 
+<a name="l00391"></a>00391 
+<a name="l00392"></a>00392 <span class="comment">//Bootstrapping &amp; RNG</span>
+<a name="l00393"></a>00393 <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a634432014188489d758d7c1acfc9a0a5">apop_jackknife_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model);
+<a name="l00394"></a>00394 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00395"></a>00395 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
+<a name="l00396"></a>00396 <span class="preprocessor">#else</span>
+<a name="l00397"></a>00397 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_bootstrap_cov_base(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *model, gsl_rng* rng, <span class="keywordtype">int</span> iterations, <span class="keywordtype">char</span> keep_boots, <span class="keywordtype">char</span> ignore_nans) ;
+<a name="l00398"></a>00398  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__bootstrap_8c.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>, <a class="code" href="structapop__data.html">apop_data</a> *data; <a class="code" href="structapop__model.html">apop_model</a> *model; gsl_rng* rng; <span class="keywordtype">int</span> iterations; <span class="keywordtype">char</span> keep_boots; <span class="keywordtype">char</span> ignore_nans);
+<a name="l00399"></a>00399 <span class="preprocessor">#define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)</span>
+<a name="l00400"></a>00400 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00401"></a>00401 <span class="preprocessor"></span>
+<a name="l00402"></a>00402 gsl_rng *<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(<span class="keywordtype">int</span> seed);
+<a name="l00403"></a>00403 <span class="keywordtype">double</span> <a class="code" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a>(gsl_rng * r, <span class="keywordtype">double</span>* a); <span class="comment">//in apop_asst.c</span>
+<a name="l00404"></a>00404 
+<a name="l00405"></a>00405 
+<a name="l00406"></a>00406 <span class="keywordtype">void</span> <a class="code" href="apop__arms_8c.html#ad422a97e52c70bacb585a9f27a987d23" title="Adaptive rejection metropolis sampling.">apop_arms_draw</a> (<span class="keywordtype">double</span> *out, gsl_rng *r, <a class="code" href="structapop__model.html">apop_model</a> *m); <span class="comment">//apop_arms.h</span>
+<a name="l00407"></a>00407 
+<a name="l00408"></a>00408 
+<a name="l00409"></a>00409     <span class="comment">// maximum likelihod estimation related functions</span>
+<a name="l00410"></a>00410 
+<a name="l00411"></a>00411 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00412"></a>00412 <span class="preprocessor"></span> gsl_vector * <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
+<a name="l00413"></a>00413 <span class="preprocessor">#else</span>
+<a name="l00414"></a>00414 <span class="preprocessor"></span> gsl_vector * apop_numerical_gradient_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a>* model, <span class="keywordtype">double</span> delta) ;
+<a name="l00415"></a>00415  apop_varad_declare(gsl_vector *, <a class="code" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a>* model; <span class="keywordtype">double</span> delta);
+<a name="l00416"></a>00416 <span class="preprocessor">#define apop_numerical_gradient(...) apop_varad_link(apop_numerical_gradient, __VA_ARGS__)</span>
+<a name="l00417"></a>00417 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00418"></a>00418 <span class="preprocessor"></span>
+<a name="l00419"></a>00419 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00420"></a>00420 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
+<a name="l00421"></a>00421 <span class="preprocessor">#else</span>
+<a name="l00422"></a>00422 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_model_hessian_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
+<a name="l00423"></a>00423  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
+<a name="l00424"></a>00424 <span class="preprocessor">#define apop_model_hessian(...) apop_varad_link(apop_model_hessian, __VA_ARGS__)</span>
+<a name="l00425"></a>00425 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00426"></a>00426 <span class="preprocessor"></span>
+<a name="l00427"></a>00427 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00428"></a>00428 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
+<a name="l00429"></a>00429 <span class="preprocessor">#else</span>
+<a name="l00430"></a>00430 <span class="preprocessor"></span> <a class="code" href="structapop__data.html">apop_data</a> * apop_model_numerical_covariance_base(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *model, <span class="keywordtype">double</span> delta) ;
+<a name="l00431"></a>00431  apop_varad_declare(<a class="code" href="structapop__data.html">apop_data</a> *, <a class="code" href="apop__mle_8c.html#a0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a>, <a class="code" href="structapop__data.html">apop_data</a> * data; <a class="code" href="structapop__model.html">apop_model</a> *model; <span class="keywordtype">double</span> delta);
+<a name="l00432"></a>00432 <span class="preprocessor">#define apop_model_numerical_covariance(...) apop_varad_link(apop_model_numerical_covariance, __VA_ARGS__)</span>
+<a name="l00433"></a>00433 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00434"></a>00434 <span class="preprocessor"></span>
+<a name="l00435"></a>00435 
+<a name="l00436"></a>00436 <span class="keywordtype">void</span> <a class="code" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>(<a class="code" href="structapop__data.html">apop_data</a> * data, <a class="code" href="structapop__model.html">apop_model</a> *dist);
+<a name="l00437"></a>00437 
+<a name="l00438"></a>00438 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00439"></a>00439 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> (<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
+<a name="l00440"></a>00440 <span class="preprocessor">#else</span>
+<a name="l00441"></a>00441 <span class="preprocessor"></span> <a class="code" href="structapop__model.html">apop_model</a> * apop_estimate_restart_base(<a class="code" href="structapop__model.html">apop_model</a> *e, <a class="code" href="structapop__model.html">apop_model</a> *copy, <span class="keywordtype">char</span> * starting_pt, <span class="keywordtype">double</span> boundary) ;
+<a name="l00442"></a>00442  apop_varad_declare(<a class="code" href="structapop__model.html">apop_model</a> *, <a class="code" href="group__mle.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a>, <a class="code" href="structapop__model.html">apop_model</a> *e; <a class="code" href="structapop__model.html">apop_model</a> *copy; <span class="keywordtype">char</span> * starting_pt; <span class="keywordtype">double</span> boundary);
+<a name="l00443"></a>00443 <span class="preprocessor">#define apop_estimate_restart(...) apop_varad_link(apop_estimate_restart, __VA_ARGS__)</span>
+<a name="l00444"></a>00444 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00445"></a>00445 <span class="preprocessor"></span>
+<a name="l00446"></a>00446 
+<a name="l00447"></a>00447 <span class="comment">//in apop_linear_constraint.c</span>
+<a name="l00448"></a>00448 <span class="preprocessor">#ifdef APOP_NO_VARIADIC</span>
+<a name="l00449"></a>00449 <span class="preprocessor"></span> <span class="keywordtype">long</span> <span class="keywordtype">double</span>  <a class="code" href="apop__linear__constraint_8c.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>(gsl_vector *beta, <a class="code" href="structapop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin) ;
+<a name="l00450"></a>00450 <span class="preprocessor">#else</span>
+<a name="l00451"></a>00451 <span class="preprocessor"></span> <span class="keywordtype">long</span> <span class="keywordtype">double</span> apop_linear_constraint_base(gsl_vector *beta, <a class="code" href="structapop__data.html">apop_data</a> * constraint, <span class="keywordtype">double</span> margin) ;
+<a name="l00452"></a>00452  apop_varad_declare(<span class="keywordtype">long</span> <span class="keywordtype">double</span>, <a class="code" href="apop__linear__constraint_8c.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>, gsl_vector *beta; <a class="code" href="structapop__data.html">apop_data</a> * constraint; <span class="keywordtype">double</span> margin);
+<a name="l00453"></a>00453 <span class="preprocessor">#define apop_linear_constraint(...) apop_varad_link(apop_linear_constraint, __VA_ARGS__)</span>
+<a name="l00454"></a>00454 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00455"></a>00455 <span class="preprocessor"></span>
+<a name="l00456"></a>00456 
+<a name="l00457"></a>00457 <span class="comment">//in apop_model_fix_params.c</span>
+<a name="l00458"></a>00458 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
+<a name="l00459"></a>00459 <a class="code" href="structapop__model.html">apop_model</a> * <a class="code" href="stats_8h.html#af676505faea1c7e30ffbd8690a092ed8">apop_model_fix_params_get_base</a>(<a class="code" href="structapop__model.html">apop_model</a> *model_in);
+<a name="l00460"></a>00460 
+<a name="l00461"></a>00461 <span class="preprocessor">#ifdef    __cplusplus</span>
+<a name="l00462"></a>00462 <span class="preprocessor"></span>}
+<a name="l00463"></a>00463 <span class="preprocessor">#endif</span>
+<a name="l00464"></a>00464 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00465"></a>00465 <span class="preprocessor"></span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>

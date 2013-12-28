@@ -40,8 +40,7 @@ urchinTracker();
 </ul>
 <dl class="user"><dt><b>The opening example</b></dt><dd></dd></dl>
 <p>To my knowledge, Apophenia is the only open source system for doing statistical analysis that is not a walled-garden stats package. Its data structures, syntax, and use reflect its unique position.</p>
-<p>You will see below that Apophenia provides many of the conveniences that stats package users are used to in simply fitting a regression-style model, while still being structured in a manner that facilitates and encourages building new types of model, using fitted models to generate agents in your simulation, or designing hierarchical models built from simpler base models.</p>
-<p>The workflow of a typical fitting-a-model project using Apophenia's tools goes something like this:</p>
+<p>Setting aside the more advanced applications and model-building tasks, let us begin with the workflow of a typical fitting-a-model project using Apophenia's tools:</p>
 <ul>
 <li>Read the raw data into the database using <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a>. </li>
 <li>Use SQL queries handled by <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a> to massage the data as needed. </li>
@@ -61,7 +60,7 @@ urchinTracker();
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
     apop_model_show(est);
 }
-</pre></div><p>To run this, you will need a file named <code>data</code> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent: </p>
+</pre></div><p>To run this, you will need a file named <code>data</code> in comma-separated form, so here is a set sufficient for the demonstration. The first column is the dependent variable; the remaining columns are the independent:</p>
 <div class="fragment"><pre class="fragment">Y, X_1, X_2, X_3
 2,3,4,5
 1,2,9,3
@@ -73,7 +72,7 @@ urchinTracker();
 <div class="fragment"><pre class="fragment">gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
 </pre></div><p>and then run it with <code>./run_me</code>. This compile line will work on any system with all the requisite tools, but for full-time work with this or any other C library, you will probably want to write a <a class="el" href="makefile.html">Makefile</a> .</p>
 <p>The results should be unremarkable---this is just an ordinary regression on too few data points---but it does give us some lines of code to dissect.</p>
-<p>The first two lines in <code>main()</code> make use of a database. I'll discuss the value of the database step more at the end of this page, but for now, note that there are there are several functions, <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>, and <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL database.</p>
+<p>The first two lines in <code>main()</code> make use of a database. I'll discuss the value of the database step more at the end of this page, but for now, note that there are several functions, <a class="el" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>, and <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a> being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL database.</p>
 <dl class="user"><dt><b>Designated initializers</b></dt><dd></dd></dl>
 <p>If anything, this line in the above sample program---</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a>(.text_file=<span class="stringliteral">&quot;data&quot;</span>, .tabname=<span class="stringliteral">&quot;d&quot;</span>);
@@ -87,24 +86,23 @@ x = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca2
 <div class="fragment"><pre class="fragment"><span class="comment">//Let v be a vector or a one-column matrix:</span>
 <span class="keywordtype">double</span> x1 = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(v, 1);
 <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(v, 2, .val=x1);
-
-<span class="comment">//let s be a scalar stored in an \ref apop_data set:</span>
+</pre></div><div class="fragment"><pre class="fragment"><span class="comment">//let s be a scalar stored in a 1x1 apop_data set:</span>
 <span class="keywordtype">double</span> *scalar = <a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(s);
-</pre></div><p><a class="el" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a> offers another nice example of the utility of the named-argument mechanism.</p>
-<p>Those of you coming from stats packages will enjoy working in C without having to give up all the conveniences of stats packages, such as the awesomeness of not having to think about arguments that will take their default value. C traditionalists may be surprised by this unfamiliar form, but can rest assured that the Apophenia internals build this with entirely standards-compliant C. Everybody can see the <a class="el" href="designated.html">Designated initializers</a> page for details.</p>
+</pre></div><p>Those of you coming from stats packages will enjoy working in C without having to give up the convenience of not having to think about arguments that will take their default value. C traditionalists can rest assured that the Apophenia internals build this with entirely standards-compliant C. Everybody can see the <a class="el" href="designated.html">Designated initializers</a> page for details.</p>
 <h2><a class="anchor" id="apop_data"></a>
 apop_data</h2>
-<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the <a class="el" href="gentle.html#apop_data">apop_data</a> set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its <a class="el" href="gentle.html#apop_data">apop_data</a> set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.</p>
-<p>The structure basically includes six parts:</p>
+<p>It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the <a class="el" href="gentle.html#apop_data">apop_data</a> set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its <a class="el" href="gentle.html#apop_data">apop_data</a> set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.</p>
+<p>The structure includes seven parts:</p>
 <ul>
 <li>a vector </li>
 <li>a matrix </li>
 <li>a grid of text elements </li>
 <li>a vector of weights </li>
 <li>names for everything: row names, a vector name, matrix column names, text names. </li>
-<li>a link to a second page of data</li>
+<li>a link to a second page of data </li>
+<li>an error marker</li>
 </ul>
-<p>This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For example, here is some dummy data for a weighted OLS regression. It includes an outcome variable in the vector, dependent variables in the matrix and text grid, replicate weights, and column names in bold labeling the variables:</p>
+<p>This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For example, here is some data for a weighted OLS regression. It includes an outcome variable in the vector, dependent variables in the matrix and text grid, replicate weights, and column names in bold labeling the variables:</p>
 <table frame=box>
 <tr>
 <td>Rowname</td><td>Vector</td><td> Matrix</td><td> Text</td><td>Weights</td>
@@ -171,6 +169,7 @@ apop_data</h2>
 </td></tr>
 </table>
 <p>As per the example above, Apophenia will generally assume that one row across all of these elements describes a single observation or data point.</p>
+<p>See above for some examples of getting and setting individual elements.</p>
 <p>Also, <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>, <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>, and <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> consider the vector to be the -1st column, so using the data set in the figure, <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a><code>(sample_set, .row=0, .col=-1) == 1</code>.</p>
 <dl class="user"><dt><b>Reading in data</b></dt><dd></dd></dl>
 <p>As per the example above, use <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> or <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> and then <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.</p>
@@ -179,33 +178,39 @@ apop_data</h2>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-  <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>);
-
-  <span class="comment">//tally row zero of the data set&#39;s matrix by viewing it as a vector:</span>
-  <a class="code" href="stats_8h.html#a61b1e89d679e0011517f95c118f5bcfc">Apop_matrix_row</a>(d-&gt;matrix, 0, one_row);
-  <span class="keywordtype">double</span> sigma = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(one_row);
-  printf(<span class="stringliteral">&quot;Sum of the first row: %g\n&quot;</span>, sigma);
-
-  <span class="comment">//view the first column as a vector; take its mean</span>
-  <a class="code" href="stats_8h.html#a79fc915cc70adb705029a8b9322abd7d">Apop_col</a>(d, 0, one_col);
-  <span class="keywordtype">double</span> mu = <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(one_col);
-  printf(<span class="stringliteral">&quot;Mean of the first col: %g\n&quot;</span>, mu);
-
-  <span class="comment">//get a sub-data set of rows 3 through 8; print to screen</span>
-  <a class="code" href="stats_8h.html#a3e95f1e99a52dd9717456a68bf1fab2e">Apop_data_rows</a>(d, 3, 8, six_elmts);
-  <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(six_elmts);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>);
+  
+    <span class="comment">//tally row zero of the data set&#39;s matrix by viewing it as a vector:</span>
+    <a class="code" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, 0, one_row);
+    <span class="keywordtype">double</span> sigma = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(one_row);
+    printf(<span class="stringliteral">&quot;Sum of the first row: %g\n&quot;</span>, sigma);
+    assert(sigma==14);
+  
+    <span class="comment">//view the first column as a vector; take its mean</span>
+    <a class="code" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(d, 0, one_col);
+    <span class="keywordtype">double</span> mu = <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(one_col);
+    printf(<span class="stringliteral">&quot;Mean of the first col: %g\n&quot;</span>, mu);
+    assert(fabs(mu - 19./6)&lt;1e-5);
+  
+    <span class="comment">//get a sub-data set (with names) of two rows beginning at row 3; print to screen</span>
+    <a class="code" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>(d, 3, 2, six_elmts);
+    <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(six_elmts);
 }
-</pre></div><p>All of these slicing routines are macros, because they generate several background variables in the current scope (something a function can't do). Traditional custom is to put macro names in all caps, like <code>APOP_DATA_ROWS</code>, which to modern sensibilities looks like yelling. The custom has a logic: there are ways to hang yourself with macros, so it is worth distinguishing them typographically. Apophenia lets you choose the level of careful/pedantic you prefer: any of <code>APOP_ROW</code>, <code>Apop_row</code>, or <code>apop_row</code> are valid. The documentation always uses a single capital.</p>
+</pre></div><p>All of these slicing routines are macros, because they generate several background variables in the current scope (something a function can't do). Traditional custom is to put macro names in all caps, like <code>APOP_DATA_ROWS</code>, which to modern sensibilities looks like yelling. The custom has a logic: there are ways to hang yourself with macros, so it is worth distinguishing them typographically. The documentation always uses a single capital.</p>
 <p>Notice that all of the slicing macros return nothing, so there is nothing to do with one but put it on a line by itself. This limits the number of misuses.</p>
 <dl class="user"><dt><b>Basic manipulations</b></dt><dd></dd></dl>
-<p>The outline page (which you can get to via a link next to the snowflake header at the top of every page on this site) lists a number of other manipulations of data sets, such as <a class="el" href="asst_8h.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a> for quick-and-dirty removal of observations with <code>NaN</code>s, <a class="el" href="types_8h.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> / <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> to cleave apart or cleave together data sets, or <a class="el" href="asst_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> to sort all elements by a single column.</p>
+<p>The outline page (which you can get to via a link next to the snowflake header at the top of every page on this site) lists a number of other manipulations of data sets, such as <a class="el" href="asst_8h.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a> for quick-and-dirty removal of observations with <code>NaN</code>s, <a class="el" href="types_8h.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> / <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>, or <a class="el" href="asst_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> to sort all elements by a single column.</p>
 <dl class="user"><dt><b>Apply and map</b></dt><dd></dd></dl>
-<p>If you have an operation of the form <em>for each element of my data set, call this function</em>, then you can use <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> to do it. You could basically do everything you can do with an apply/map function via a <code>for</code> loop, but the apply/map approach is clearer and more fun. Also, if you set the global <code>apop_opts.thread_count = n</code> for any <code>n</code> greater than 1, then the work of mapping will be split across multiple CPU threads. See the outline &gt; data sets &gt; map/apply section for a number of examples.</p>
+<p>If you have an operation of the form <em>for each element of my data set, call this function</em>, then you can use <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> to do it. You could basically do everything you can do with an apply/map function via a <code>for</code> loop, but the apply/map approach is clearer and more fun. Also, if you set the global <code>apop_opts.thread_count = N</code> for any <code>N</code> greater than 1, then the work of mapping will be split across multiple CPU threads. See the outline &gt; data sets &gt; map/apply section for a number of examples.</p>
 <dl class="user"><dt><b>Text</b></dt><dd></dd></dl>
 <p>Text in C is annoying. C already treats strings as pointer-to-characters, so a grid of text data is a pointer-to-pointer-to-pointer-to-character, which is as confusing as can be.</p>
 <p>The text grid in the <a class="el" href="gentle.html#apop_data">apop_data</a> structure actually takes this form, but functions are provided so that most or all the pointer work is handled for you. The <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> function is really a realloc function: you can use it to resize the text grid as necessary. The <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> function will do the pointer work in copying a single string to the grid. Functions that act on entire data sets, like <a class="el" href="types_8h.html#ae2ab3a4f332adb368fe970619a8c0252">apop_data_rm_rows</a>, handle the text part as well.</p>
 <p>You have <code>your_data-&gt;textsize[0]</code> rows and <code>your_data-&gt;textsize[1]</code> columns. If you are using only the functions to this point, then empty elements are a blank string (<code>""</code>), not <code>NULL</code>. For reading individual elements, refer to the <img class="formulaInl" alt="$(i,j)$" src="form_106.png"/>th text element via <code>your_data-&gt;text[i][j]</code>.</p>
-<dl class="user"><dt><b>The whole structure</b></dt><dd></dd></dl>
+<dl class="user"><dt><b>Errors</b></dt><dd></dd></dl>
+<p>Many functions will set the <code>error</code> element of the <a class="el" href="gentle.html#apop_data">apop_data</a> structure being operated on if anything goes wrong. You can use this to halt the program or take corrective action:</p>
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *the_data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from d&quot;</span>);
+<span class="keywordflow">if</span> (the_data-&gt;error) exit(0);
+</pre></div><dl class="user"><dt><b>The whole structure</b></dt><dd></dd></dl>
 <p>Here is a diagram of all of Apophenia's structures and how they relate. It is taken from this <a href="http://modelingwithdata.org/pdfs/cheatsheet.pdf">cheat sheet</a> (2 page PDF), which will be useful to you if only because it lists some of the functions that act on GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.</p>
 <div class="image">
 <img src="http://apophenia.info/structs.png" alt="structs.png"/>
@@ -216,7 +221,7 @@ apop_data</h2>
 <p>Now let us move up the structure diagram to the <a class="el" href="structapop__model.html">apop_model</a> structure.</p>
 <h2><a class="anchor" id="gentle_model"></a>
 apop_model</h2>
-<p>Even restricting ourselves to the most basic operations, there are a lot of things that we want to do with our models: estimating the parameters of a model (like the mean and variance of a Normal distribution) from data, or drawing random numbers, or showing the expected value, or showing the expected value of one part of the data given fixed values for the rest of it. The <a class="el" href="structapop__model.html">apop_model</a> is intended to encapsulate most of these desires into one object, so that models can easily be swapped around, modified to create new models, compared, and so on.</p>
+<p>Even restricting ourselves to the most basic operations, there are a lot of things that we want to do with our models: estimating the parameters of a model (like the mean and variance of a Normal distribution) given data, or drawing random numbers, or showing the expected value, or showing the expected value of one part of the data given fixed values for the rest of it. The <a class="el" href="structapop__model.html">apop_model</a> is intended to encapsulate most of these desires into one object, so that models can easily be swapped around, modified to create new models, compared, and so on.</p>
 <p>From the figure above, you can see that the <a class="el" href="structapop__model.html">apop_model</a> structure is pretty big, including a number of informational items, key being the <code>parameters</code>, <code>data</code>, and <code>info</code> elements, a list of settings to be discussed below, and a set of procedures for many operations. Its contents are not (entirely) arbitrary: the theoretical basis for what is and is not included in an <a class="el" href="structapop__model.html">apop_model</a>, as well as its overall intent, are described in this <a href="http://ben.klemens.org/klemens-model_objects.pdf">white paper</a>.</p>
 <p>There are helper functions that will allow you to avoid deailing with the model internals. For example, the <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> helper function means you never have to look at the model's <code>estimate</code> method (if it even has one), and you will simply pass the model to a function, as with the above form:</p>
 <div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
@@ -225,12 +230,13 @@ apop_model</h2>
 <li>The models that ship with Apophenia, like <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>, include the procedures and some metadata, but are of course not yet estimated using a one data set (i.e., <code>parameters == NULL</code>). The line above generated a new model, <code>est</code>, which is identical to the base OLS model but has estimated parameters (and covariances, and basic hypothesis tests, a log likelihood, AIC, BIC, et cetera). </li>
 <li>You will mostly use the models by passing them as inputs to functions like <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, or <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>; more examples below. After <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, most require a parameterized model like <code>est</code>. After all, it doesn't make sense to draw from a Normal distribution until you've specified its mean and standard deviation. </li>
 <li>You can use <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> to print the various elements to screen. </li>
+<li>You can combine and transform models with functions such as <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>, <a class="el" href="types_8h.html#a15d9e73643bf66f7d69c7ebf959757aa">apop_model_coordinate_transform</a>, or <a class="el" href="types_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>. Each of these functions produce a new model, which can be estimated, re-combined, or otherwise used like any other model. </li>
 <li>Writing your own models won't be covered in this introduction, but it can be pretty easy to copy and modify the procedures of an existing model to fit your needs. When in doubt, delete a procedure, because any procedures that are missing will have defaults filled when used by functions like <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> (which uses <a class="el" href="group__mle.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a>) or <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a> (which uses integration via random draws). See <a class="el" href="modeldetails.html">Writing new models</a> for details. </li>
 <li>There's a simple rule of thumb for remembering the order of the arguments to most of Apophenia's functions, including <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> : the data always comes first.</li>
 </ul>
 <dl class="user"><dt><b>Settings</b></dt><dd></dd></dl>
-<p>Every model, and every method one would apply to a model, is prone to have a list of settings: how many bins in the histogram, at what tolerance does the maximum likelihood search end, what percent of the Gibbs sampling run should be thrown out as a burn-in period. These can become an overwhelming mess if not controlled.</p>
-<p>Apophenia organizes settings in settings groups, which are then attached to models. In the following snippet, we specify a Beta distribution prior, and attach a settings group to it with information about how Bayesian updating should be done with this specific copy of the Beta. For a likelihood, we generate an empirical distribution---a PMF---from an input data set; you will often use the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> to turn a data set into an distribution. When we call <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> on the last line, it already has all of the above info on hand.</p>
+<p>Every model, and every method one would apply to a model, is prone to have a list of settings: how many bins in the histogram, at what tolerance does the maximum likelihood search end, what are the models being combined in the mixture?</p>
+<p>Apophenia organizes settings in <em>settings groups</em>, which are then attached to models. In the following snippet, we specify a Beta distribution prior, and attach a settings group to it with information about how Bayesian updating should be done with this specific copy of the Beta. For a likelihood, we generate an empirical distribution---a PMF---from an input data set; you will often use the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> to turn a data set into an distribution. When we call <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> on the last line, it already has all of the above info on hand.</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *beta = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>, 0.5, 0.25);
 <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(beta, <a class="code" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>, .burnin = 0.2, .periods =1e5);
 <a class="code" href="structapop__model.html">apop_model</a> *my_pmf = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
@@ -240,11 +246,11 @@ apop_model</h2>
 <p>Returning to the introductory example, you saw that (1) the library expects you to keep your data in a database, pulling out the data as needed, and (2) that the workflow is built around <a class="el" href="structapop__model.html">apop_model</a> structures.</p>
 <p>Starting with (2), if a stats package has something called a <em>model</em>, then it is probably of the form Y = [an additive function of <b>X</b>], such as <img class="formulaInl" alt="$y = x_1 + \log(x_2) + x_3^2$" src="form_107.png"/>. Trying new models means trying different functional forms for the right-hand side, such as including <img class="formulaInl" alt="$x_1$" src="form_108.png"/> in some cases and excluding it in others. Conversely, Apophenia is designed to facilitate trying new models in the broader sense of switching out a linear model for a hierarchical, or a Bayesian model for a simulation. A formula syntax makes little sense over such a broad range of models.</p>
 <p>As a result, the right-hand side is not part of the <a class="el" href="structapop__model.html">apop_model</a>. Instead, the data is assumed to be correctly formatted, scaled, or logged before being passed to the model. This is where part (1), the database, comes in, because it provides a proxy for the sort of formula specification language above: </p>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *testme= <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select y, x1, log(x2), pow(x3,2) from data&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *testme= <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select y, x1, log(x2), pow(x3, 2) from data&quot;</span>);
 <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(testme, <a class="code" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>);
-</pre></div><p>Generating factors and dummies is also considered data prep, not model internals. See <a class="el" href="stats_8h.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> and <a class="el" href="apop__regression_8c.html#a3771d1cda273eade98c4fa6ddb7d8c3d">apop_text_to_factors</a>.</p>
+</pre></div><p>Generating factors and dummies is also considered data prep, not model internals. See <a class="el" href="stats_8h.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> and <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>.</p>
 <p>Now that you have <code>est</code>, an estimated model, you can interrogate it. This is really where Apophenia and its encapsulated model objects shine, because you can do more than just admire the parameter estimates on the screen: you can take your estimated data set and fill in or generate new data, use it as an input to the parent distribution of a hierarchical model, et cetera. Some simple examples:</p>
-<div class="fragment"><pre class="fragment"> <span class="comment">//If you have a new data set, you can fill in predicted values:</span>
+<div class="fragment"><pre class="fragment"> <span class="comment">//If you have a new data set with missing elements (represented by NaN), you can fill in predicted values:</span>
 <a class="code" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>(new_data_set, est);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(new_data_set)
 
@@ -280,7 +286,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 
     <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(est, apop_pm, .index =1);  
     <a class="code" href="structapop__model.html">apop_model</a> *first_param_distribution = <a class="code" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a>(data, est);
-    Apop_data_row(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, 1, param);
+    <a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>, 1, param);
     <span class="keywordtype">double</span> area_under_p = <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>(param, first_param_distribution);
     <a class="code" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>(param, 0, -1, 0);
     <span class="keywordtype">double</span> area_under_zero = <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>(param, first_param_distribution);
@@ -291,4 +297,4 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 <p>This introduction has shown you the <a class="el" href="gentle.html#apop_data">apop_data</a> set and some of the functions associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed numeric/text values. You've seen how Apophenia encapsulates as many of a model's characteristics as possible into a single <a class="el" href="structapop__model.html">apop_model</a> object, which you can send with data to functions like <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, or <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>. Once you've got your data in the right form, you can use this to simply estimate model parameters, or as an input to later analysis. </p>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sat Dec 28 2013.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
