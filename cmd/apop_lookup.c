@@ -3,7 +3,7 @@
 
 /*  As with many pleasant utility programs, it is mostly parsing of the input text, and then about three lines at the end doing actual work.
 
-Copyright (c) 2008 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2008, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_cdf.h>
@@ -18,15 +18,20 @@ char *plot_type = NULL;
 
 typedef enum {Beta, Binomial, F, Negbinom, Normal, Poisson, T} distlist ;
 
+double parse_to_double(char *in){
+    char *endpt;
+    double out = strtod(in, &endpt);
+    Apop_stopif(*endpt, exit(1), 0, "Can't parse '%s' as a number", in);
+    return out;
+}
+
 int main(int argc, char **argv){
     distlist distribution = Normal;
-    char	 msg[10000], c;
-    int      pval = 0, qval = 0;
-    double   param1 = GSL_NAN, param2 =GSL_NAN, findme = GSL_NAN;
-    char     number[1000];
-	sprintf(msg, "%s [opts] number_to_lookup\n\n"
+    char *msg, c, *number;
+    int pval = 0, qval = 0;
+    double param1 = GSL_NAN, param2 =GSL_NAN, findme = GSL_NAN;
+	asprintf(&msg, "%s [opts] number_to_lookup\n\n"
     "Look up a probability or p-value for a given standard distribution.\n"
-    "[This is still loosely written and counts as beta. Notably, negative numbers are hard to parse.]\n"
     "E.g.:\n"
     "%s -dbin 100 .5 34\n"
     "sets the distribution to a Binomial(100, .5), and find the odds of 34 appearing.\n"
@@ -46,14 +51,12 @@ int main(int argc, char **argv){
     "\t\t-poisson Poisson(L)\n"
     "\t\t-t t distribution(df)\n"
     "I just need enough letters to distinctly identify a distribution.\n"
+    "Getopt has trouble with negative numbers, so try to phrase your query so that all arguments are positive.\n"
 , argv[0], argv[0], argv[0]); 
 
     opterr=0;
-	if(argc==1){
-		printf("%s", msg);
-		return 0;
-	}
-	while ((c = getopt (argc, argv, "B:b:F:f:N:n:pqT:t:")) != -1){
+    Apop_stopif(argc==1, return 1, 0, "%s", msg);
+	while ((c = getopt (argc, argv, "B:b:F:f:HhN:n:pqT:t:")) != -1){
 		switch (c){
 		  case 'B':
 		  case 'b':
@@ -65,15 +68,15 @@ int main(int argc, char **argv){
                 printf("I can't parse the option -b%s\n", optarg);
                 exit(0);
             }
-              param1 = atof(argv[optind]);
-              param2 = atof(argv[optind+1]);
-              findme =  atof(argv[optind+2]);
+              param1 = parse_to_double(optarg);
+              param2 = parse_to_double(argv[optind]);
+              findme =  parse_to_double(argv[optind+1]);
 			  break;
           case 'F':
           case 'f':
             distribution = F;
-            param1 = atof(argv[optind]);
-            findme =  atof(argv[optind+1]);
+            param1 = parse_to_double(optarg);
+            findme =  parse_to_double(argv[optind]);
             break;
           case 'H':
 		  case 'h':
@@ -82,14 +85,14 @@ int main(int argc, char **argv){
           case 'n':
           case 'N':
             if (optarg[0]=='o'){ //normal
-                  param1 = atof(argv[optind]);
-                  param2 = atof(argv[optind+1]);
-                  findme =  atof(argv[optind+2]);
+                  param1 = parse_to_double(optarg);
+                  param2 = parse_to_double(argv[optind]);
+                  findme =  parse_to_double(argv[optind+1]);
             } else if (optarg[0]=='e'){
                   distribution = Negbinom;
-                  param1 = atof(argv[optind]);
-                  param2 = atof(argv[optind+1]);
-                  findme =  atof(argv[optind+2]);
+                  param1 = parse_to_double(optarg);
+                  param2 = parse_to_double(argv[optind]);
+                  findme =  parse_to_double(argv[optind+1]);
             } else {
                 printf("I can't parse the option -n%s\n", optarg);
                 exit(0);
@@ -100,8 +103,8 @@ int main(int argc, char **argv){
                 pval++;
             else if (optarg[0] == 'o'){
                 distribution = Poisson;
-                param1 = atof(argv[optind]);
-                findme =  atof(argv[optind+1]);
+                param1 = parse_to_double(optarg);
+                findme =  parse_to_double(argv[optind]);
             } else {
                 printf("I can't parse the option -p%s\n", optarg);
                 exit(0);
@@ -113,19 +116,17 @@ int main(int argc, char **argv){
           case 'T':
           case 't':
             distribution = T;
-            param1 = atof(argv[optind]);
-            findme =  atof(argv[optind+1]);
+            param1 = parse_to_double(optarg);
+            findme = parse_to_double(argv[optind]);
             break;
           case '?'://probably a negative number
-            if (optarg)
-                 snprintf(number, 1000, "%c%s", optopt, optarg);
-            else snprintf(number, 1000, "%c", optopt);
-            if (gsl_isnan(param1)) param1 = -atof(number);
-            else if (gsl_isnan(param2)) param2 = -atof(number);
-            else if (gsl_isnan(findme)) findme = -atof(number);
+            asprintf(&number, "%c%s", optopt, optarg ? optarg : "");
+            if (gsl_isnan(param1)) param1 = -parse_to_double(number);
+            else if (gsl_isnan(param2)) param2 = -parse_to_double(number);
+            else if (gsl_isnan(findme)) findme = -parse_to_double(number);
 		}
 	}
-    if (gsl_isnan(findme)) findme =  atof(argv[optind]);
+    if (gsl_isnan(findme)) findme =  parse_to_double(argv[optind]);
     //defaults, as promised
     if (gsl_isnan(param1)) param1 = 0;
     if (gsl_isnan(param2)) param2 = 1;

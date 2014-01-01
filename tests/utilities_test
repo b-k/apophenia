@@ -1,0 +1,28 @@
+Diff(){
+return `echo 'out=0
+    if (('"$1 - $2"')^2 < 1/1000) out=1
+    print out' | bc -l`
+}
+
+read_faith(){
+    rm -f ff.db
+    if ! apop_text_to_db faith.data faith ff.db ;
+    then return 1;
+    elif ! sed '1,/id/d'  faith.data |  apop_text_to_db -N"number,len,delay" - faith2 ff.db
+    then return 2;
+    elif Diff `apop_plot_query -n ff.db "select avg(eruptions) - avg(len) 
+                from faith, faith2 where id==number" | sed '/avg/d'` 0
+    then return 3;
+    else return 0;
+    fi
+}
+
+
+( #one big subshell, so exits don't kill the parent shell.
+if [ ! `echo 123 | bc` ]; then echo "Missing POSIX-standard bc; exiting"; exit 0; fi;
+
+if ! read_faith
+    then echo apop_text_to_db test failed with code $?.; exit 1; 
+fi
+
+)
