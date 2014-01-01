@@ -1,5 +1,3 @@
-#include <apop.h>
-
 /*
 Here are assorted unit tests, some mechanical and some much more computation-intensive.
 
@@ -23,10 +21,12 @@ There are two types of error bounds here. One is tighter, and therefore more pro
 to false alarms, but really forces us to write better numeric code. The other is
 much more permissive, and just tells us whether the computation failed to go in the
 right direction. Users who run 'make check' will be running the second type of test,
-because I (BK) just got sick of people sending me bug reports that a test failed
+because I (BK) got sick of people sending me bug reports that a test failed
 because it reported an error of 1e-5 when it should have been 1e-8. There is always
 room for better numeric precision; we all know this without reminders from the
 post-install tests.  */
+
+#include <apop.h>
 
 #ifdef FULL_TOLERANCE
 double tol6 = 1e-6;

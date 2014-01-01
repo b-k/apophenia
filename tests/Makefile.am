@@ -5,11 +5,11 @@ check_PROGRAMS= test_apop distribution_tests error_test nist_tests rake_test sor
 ../eg/test_distances ../eg/test_fisher ../eg/test_harmonic ../eg/test_kl_divergence \
 ../eg/test_pruning ../eg/test_ranks ../eg/test_regex ../eg/test_updating
 
-TESTS=$(check_PROGRAMS)
+TESTS=utilities_test $(check_PROGRAMS)
 
 LDADD=../libapophenia.la
-AM_CFLAGS = -DTesting $(CFLAGS) -I$(top_build_prefix)/$(top_builddir) -DDatadir=\"$(srcdir)/\"
+#AM_CFLAGS = -DTesting $(CFLAGS) -I$(top_build_prefix)/$(top_builddir) -DDatadir=\"$(srcdir)/\"
+AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\"
 
-AM_TESTS_ENVIRONMENT= cd $(srcdir)/tests &&
-EXTRA_DIST = Readme numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
+EXTRA_DIST = utilities_test Readme numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
 		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c

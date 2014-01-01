@@ -45,6 +45,7 @@ apop_lookup_SOURCES = cmd/apop_lookup.c
 apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
+apop_lookup_LDADD = libapophenia.la
 
 VPATH= @srcdir@
 

@@ -24,7 +24,6 @@ int main(int argc, char **argv){
         rownames = 0,
         tab_exists_check = 0;
     char **field_names = NULL;
-    apop_data *field_name_data, *field_name_data_t;
 
 	asprintf(&msg, "%s [-d delimiters] text_file table_name dbname\n"
                 "e.g.: %s -d\",|\" infile.txt a_table info.db\n"
@@ -61,9 +60,13 @@ int main(int argc, char **argv){
               else                apop_opts.nan_string = optarg;
         }
 		else if (c=='N') {
+            apop_data *field_name_data;
             apop_regex(optarg, " *([^,]*[^ ]) *(,|$) *", &field_name_data);
-            field_name_data_t = apop_data_transpose(field_name_data);
-            field_names = field_name_data_t->text[0];
+            Apop_stopif(!field_name_data, return 1, 0, "'%s' should be a "
+                    "comma-delimited list of field names, but I had trouble "
+                    "parsing it as such.", optarg);
+            apop_data_transpose(field_name_data);
+            field_names = field_name_data->text[0];
         }
         else if (c=='d') strcpy(apop_opts.input_delimiters, optarg);
 		else if (c=='f') field_list = break_down(optarg);

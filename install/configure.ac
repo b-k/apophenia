@@ -4,11 +4,11 @@ m4_define([m4_apop_version], [m4_esyscmd_s(date +%Y%m%d)]) #will switch to this 
 
 AC_PREREQ(2.60)
 AC_INIT([Apophenia], [0.996], [fluffmail@f-m.fm])
-AM_INIT_AUTOMAKE([apophenia], [0.996])
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([settings.h])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE
 
 # The normal /usr/local default confused too many people
 AC_PREFIX_DEFAULT([/usr])

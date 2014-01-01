@@ -17,12 +17,44 @@ read_faith(){
     fi
 }
 
+lookups(){
+    if Diff `apop_lookup -p 3` 0.998 ; 
+        then echo "bad lookup."; return 1;
+        else return 0;
+    fi
+}
+
+crosstab(){
+    if [ ! `apop_db_to_crosstab -eo ff.db "faith group by round(eruptions), waiting" waiting 'round(eruptions)' 'count(id)'|sed -n '/70/p' | cut -f 4` \
+        -eq `sqlite3 ff.db "select count(*) from faith where round(eruptions)=4 and waiting=70"` ]
+        then echo crosstabbing failed.; return 1;
+    elif [ ! `apop_db_to_crosstab -d'|' ff.db "faith group by round(eruptions), waiting" waiting 'round(eruptions)' 'count(id)'|sed -n '/70/p' | cut -d'|' -f 4` \
+        -eq `sqlite3 ff.db "select count(*) from faith where round(eruptions)=4 and waiting=70"` ]
+        then echo crosstabbing with nonstandard delimiter failed.; return 2;
+    else 
+        return 0;
+    fi
+}
+
+fixed_read(){
+    apop_text_to_db -ed -f "3,6" -nc test_data_fixed_width td td.db
+    apop_text_to_db -ea -f "3,6" -nc test_data_fixed_width td td.db
+    if Diff $(sqlite3 td.db "select col_2 from td where rowid=4") 2.71828
+        then return 1
+        else return 0
+    fi
+}
 
 ( #one big subshell, so exits don't kill the parent shell.
-if [ ! `echo 123 | bc` ]; then echo "Missing POSIX-standard bc; exiting"; exit 0; fi;
-
-if ! read_faith
+if [ ! `echo 123 | bc` ]; 
+    then echo "Missing POSIX-standard bc; exiting without running tests."; exit 0; #not a fail.
+elif ! read_faith
     then echo apop_text_to_db test failed with code $?.; exit 1; 
+elif ! lookups
+    then echo lookup tests failed with code $?.; exit 2; 
+elif ! fixed_read
+    then echo read of fixed data failed with code $?.; exit 3; 
 fi
+    echo OK, passed.
 
 )

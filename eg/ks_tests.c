@@ -2,8 +2,6 @@
 //This program finds the p-value of a K-S test between
 //500 draws from a N(0, 1) and a N(x, 1), where x grows from 0 to 1.
 
-//Produce two models with synced PMFs.
-//To do: rewrite the K-S test so that this is unnecessary
 apop_model * model_to_pmfs(apop_model *m1, int size, gsl_rng *r){
     apop_data *outd1 = apop_model_draws(m1, size, r);
     return apop_estimate(apop_data_sort(outd1), apop_pmf);
@@ -20,6 +18,12 @@ int main(){
     gsl_rng *r = apop_rng_alloc(123);
     apop_model *pmf1 = model_to_pmfs(n1, 5e2, r);
     apop_data *ktest;
+
+    //first, there should be zero divergence between a PMF and itself:
+    apop_model *pmf2 = apop_model_copy(pmf1);
+    ktest = apop_test_kolmogorov(pmf1, pmf2);
+    double pval = apop_data_get(ktest, .rowname="p value, 2 tail");
+    assert(pval > .999);
 
     //as the mean m drifts, the pval for a comparison
     //between a N(0, 1) and N(m, 1) gets smaller.

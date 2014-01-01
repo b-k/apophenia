@@ -1142,7 +1142,7 @@ APOP_VAR_ENDHEAD
     if (tab_exists){
         Apop_stopif(if_table_exists=='n', return -1, 0, "table %s exists; not recreating it.", tabname);
         if (if_table_exists=='d')      
-            apop_query("delete * from %s", tabname);
+            apop_query("delete from %s", tabname);
         else if (if_table_exists=='o') {
             apop_query("drop table %s", tabname); 
             tab_exists=false;

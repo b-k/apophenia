@@ -1222,7 +1222,7 @@ APOP_VAR_ENDHEAD
         apop_name_stack(out->names, in->names, 'r', 'c');
         apop_name_stack(out->names, in->names, 'c', 'r');
     }
-    if (transpose_text!='y' || in->textsize[0] > 0 || in->textsize[1] > 0) return out;
+    if (transpose_text!='y' || in->textsize[0] == 0 || in->textsize[1] == 0) return out;
     if (inplace=='y'){
         size_t orows = in->textsize[0];
         size_t ocols = in->textsize[1];

@@ -16,17 +16,11 @@ FILE *open_output(char *outfile, int sf){
         return stdout;
     if (sf && outfile){
         f = fopen(outfile, "w");
-        if (!f){
-            fprintf(stderr, "Trouble opening %s. Look into that.\n", outfile);
-            exit(0);
-        }
+        Apop_stopif(!f, exit(0), 0, "Trouble opening %s.", outfile);
         return f;
-    } 
-    f = popen("`which gnuplot` -persist", "w");
-    if (!f){
-        fprintf(stderr, "Trouble opening %s. Look into that.\n", "gnuplot");
-        exit(0);
     }
+    f = popen("`which gnuplot` -persist", "w");
+    Apop_stopif(!f, exit(0), 0, "Trouble opening %s.", "gnuplot");
     return f;
 }
 
@@ -35,12 +29,9 @@ char *read_query(char *infile){
     char *q = malloc(10);
     q[0] = '\0';
     FILE *inf = fopen(infile, "r");
-    if (!inf){
-        fprintf(stderr, "Trouble opening %s. Look into that.\n", infile);
-        exit(0);
-    }
+    Apop_stopif(!inf, exit(0), 0, "Trouble opening %s. Look into that.\n", infile);
     while(fgets(in, 1000, inf)){
-        q   = realloc(q, strlen(q) + strlen(in) + 4);
+        q = realloc(q, strlen(q) + strlen(in) + 4);
         sprintf(q, "%s%s", q, in);
     }
     sprintf(q, "%s;\n", q);
