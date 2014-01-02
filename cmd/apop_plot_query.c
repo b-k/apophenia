@@ -57,7 +57,7 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
         fprintf(f,"plot '-' with %s\n", plot_type);
 	    apop_matrix_print(m, NULL, .output_type='p', .output_pipe=f);
     } else {
-        APOP_MATRIX_COL(m, 0, v);
+        Apop_col_v(&(apop_data){.matrix=m}, 0, v);
         apop_plot_histogram(v, histobins, .output_type='p', .output_pipe=f);
     }
     if (outfile) fclose(f);

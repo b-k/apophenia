@@ -78,13 +78,13 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
         data = apop_data_calloc(runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
         for (size_t i=0; i< runsize; i++){
-            Apop_matrix_row(data->matrix, i, v)
+            Apop_row_v(data, i, v)
             true_params->draw(v->data, r, true_params);
             assert(!isnan(apop_sum(v)));
         }
     } else {
         for (size_t i=0; i< runsize; i++){
-            Apop_matrix_row(data->matrix, i, v)
+            Apop_row_v(data, i, v)
             true_params->draw(v->data, r, true_params);
             assert(!isnan(apop_sum(v)));
         }

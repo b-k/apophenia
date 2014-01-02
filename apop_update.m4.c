@@ -218,7 +218,7 @@ APOP_VAR_END_HEAD
             Apop_notify(3, "reject, with exp(ll_now-ll_prior) = exp(%g-%g) = %g.", ll, cp_ll, exp(ratio));
         }
         if (i >= s->periods * s->burnin){
-            Apop_matrix_row(out->matrix, i-(s->periods *s->burnin), v)
+            Apop_row_v(out, i-(s->periods *s->burnin), v);
             apop_data_pack(current_param, v);
         }
     }

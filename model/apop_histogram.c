@@ -93,7 +93,7 @@ static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;
     Get_vmsizes(pmf_data); //maxsize
     for (size_t k = 0; k < maxsize; k++){
-        Apop_data_row(pmf_data, k, r);
+        Apop_row(pmf_data, k, r);
         double wt = r->weights ? *r->weights->data : 1;
         (ks->set_fn)(r, ks->kernel);
         total += fn(d, ks->kernel)*wt;
@@ -118,7 +118,7 @@ static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
     apop_data *point = apop_data_alloc(1, pmf->dsize);
-    Apop_matrix_row(point->matrix, 0, draw_here);
+    Apop_row_v(point, 0, draw_here);
     apop_draw(draw_here->data, r, pmf);
     (ks->set_fn)(point, ks->kernel);
     //Now draw from the distribution around that point.

@@ -139,7 +139,7 @@ APOP_VAR_ENDHEAD
 	for (int i=0; i< all_evalues->size; i++)
 		eigentotals	+= gsl_vector_get(all_evalues, i);
 	for (int i=0; i<dimensions_we_want; i++){
-		APOP_MATRIX_COL(eigenvectors, i, v);
+		Apop_col_v(&(apop_data){.matrix=eigenvectors}, i, v);
 		gsl_matrix_set_col(pc_space->matrix, i, v);
 		gsl_vector_set(pc_space->vector, i, gsl_vector_get(all_evalues, i)/eigentotals);
 	}
@@ -340,7 +340,7 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
     gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
     for (size_t i=0; i < in->size2; i++){
         if (drop[i]==0){
-            Apop_matrix_col(in, i, v);
+            Apop_col_v(&(apop_data){.matrix=in}, i, v);
             gsl_matrix_set_col(out, j, v);
             j   ++;
         }

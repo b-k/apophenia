@@ -100,7 +100,7 @@ static void prep_names (apop_model *e){
 
 static void ols_shuffle(apop_data *d){
     if (!d->vector){
-        APOP_COL(d, 0, independent);
+        Apop_col_v(d, 0, independent);
         d->vector = apop_vector_copy(independent);
         gsl_vector_set_all(independent, 1);     //affine; first column is ones.
         if (d->names->colct > 0) {		
@@ -137,7 +137,7 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
   gsl_matrix *data	 = d->matrix;
   gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
-        Apop_matrix_row(d->matrix, i, datarow);
+        Apop_row_v(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual    = apop_data_get(d,i, -1);
@@ -149,7 +149,7 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
     }
     sigma   = sqrt(apop_vector_var(errors));
 	for(size_t i=0;i< data->size1; i++){
-        Apop_matrix_row(d->matrix, i, datarow);
+        Apop_row_v(d, i, datarow);
         gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
         apop_data justarow = {.matrix=&(m.matrix)};
         if (input_distribution)
@@ -173,7 +173,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
   gsl_vector *normscore = gsl_vector_alloc(2);
   apop_data  *subdata  = apop_data_alloc(1,1);
 	for(size_t i=0;i< data->size1; i++){
-        Apop_matrix_row(d->matrix, i, datarow);
+        Apop_row_v(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);
@@ -221,10 +221,10 @@ static void xpxinvxpy(apop_data const*data, gsl_matrix *xpx, apop_data const* xp
     s_sq /= data->matrix->size1 - data->matrix->size2;  // \sigma^2 = e'e / df
 	gsl_matrix_scale(cov->matrix, s_sq);                // cov = \sigma^2 (X'X)^{-1}
 	if ((pwant && pwant->predicted) || (!pwant && p && p->want_expected_value)){
-        gsl_matrix *predicted_page = apop_data_get_page(out->info, "<Predicted>")->matrix;
-        gsl_matrix_set_col(predicted_page, 0, y_data);
-        gsl_matrix_set_col(predicted_page, 2, error->vector);
-        Apop_matrix_col(predicted_page, 1, predicted);
+        apop_data *predicted_page = apop_data_get_page(out->info, "<Predicted>");
+        gsl_matrix_set_col(predicted_page->matrix, 0, y_data);
+        gsl_matrix_set_col(predicted_page->matrix, 2, error->vector);
+        Apop_col_v(predicted_page, 1, predicted);
         gsl_vector_memcpy(predicted, y_data);
         gsl_vector_add(predicted, error->vector); //pred = y_data + error
     }
@@ -325,7 +325,7 @@ static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "<Covariance>");
     if (weights)
         for (int i = -1; i < set->matrix->size2; i++){
-            APOP_COL(set, i, v);
+            Apop_col_v(set, i, v);
             gsl_vector_mul(v, weights);
         }
 
@@ -420,8 +420,8 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     apop_data *out = apop_data_copy(x);
     if (instruments->vector)
         for (int i=0; i< instruments->vector->size; i++){
-            Apop_col(instruments, i, inv);
-            Apop_col(out, instruments->vector->data[i], outv);
+            Apop_col_v(instruments, i, inv);
+            Apop_col_v(out, instruments->vector->data[i], outv);
             gsl_vector_memcpy(outv, inv);
         }
     else if (instruments->names->colct)
@@ -429,8 +429,8 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
             int colnumber = apop_name_find(x->names, instruments->names->col[i], 'c');
             Apop_assert(colnumber != -2, "You asked me to substitute instrument column %i "
                     "for the data column named %s, but I could find no such name.",  i, instruments->names->col[i]);
-            Apop_col(instruments, i, inv);
-            Apop_col(out, colnumber, outv);
+            Apop_col_v(instruments, i, inv);
+            Apop_col_v(out, colnumber, outv);
             gsl_vector_memcpy(outv, inv);
         }
     else Apop_assert(0, "Your instrument matrix has data, but neither a vector element "
@@ -464,7 +464,7 @@ static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     if (weights){
         gsl_vector_mul(set->vector, weights);
         for (int i = 0; i < set->matrix->size2; i++){
-            APOP_COL(set, i, v);
+            Apop_col_v(set, i, v);
             gsl_vector_mul(v, weights);
         }
     }

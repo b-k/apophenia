@@ -64,7 +64,7 @@ static void probit_prep(apop_data *d, apop_model *m){
       */
     size_t matrix_cols = m->data->matrix->size2;
     for (size_t i=0; i< matrix_cols; i++){
-        Apop_col(m->data, i, onecol);
+        Apop_col_v(m->data, i, onecol);
         long double logtotal = 0;
         for (int i=0; i< onecol->size; i++){
             double val =gsl_vector_get(onecol, i);
@@ -72,7 +72,7 @@ static void probit_prep(apop_data *d, apop_model *m){
         }
         logtotal /= onecol->size; //we now have average log magnitude.
         Apop_stopif(!isfinite(logtotal), m->error='d'; return, 0, "Not-finite data (maybe NaN) in column %zu", i);
-        Apop_matrix_row(m->parameters->matrix, i, betas_i);
+        Apop_row_v(m->parameters, i, betas_i);
         gsl_vector_set_all(betas_i, expl(logtotal));
     }
     if (!sets) sets = Apop_model_add_group(m, apop_mle);
@@ -117,7 +117,7 @@ static long double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     double ll = 0;
     double *vals = val_vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
-        Apop_col(p->parameters, i, param);
+        Apop_col_v(p->parameters, i, param);
         val = vals[i];
         working_data->vector = apop_vector_map(original_outcome, unordered);
         spare_probit->parameters->matrix = apop_vector_to_matrix(param);
@@ -169,8 +169,8 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
     gsl_matrix *params = m->parameters->matrix;
     apop_data *out = apop_data_alloc(in->matrix->size1, in->matrix->size1, params->size2+1);
     for (size_t i=0; i < in->matrix->size1; i ++){
-        Apop_matrix_row(in->matrix, i, observation);
-        Apop_matrix_row(out->matrix, i, outrow);
+        Apop_row_v(in, i, observation);
+        Apop_row_v(out, i, outrow);
         double oneterm;
         int bestindex = 0;
         double bestscore = 0;
@@ -180,7 +180,7 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
                 oneterm = 0;
                 gsl_vector_set(outrow, j, 1);
             } else {
-                Apop_matrix_col(params, j-1, p);
+                Apop_col_v(m->parameters, j-1, p);
                 gsl_blas_ddot(observation, p, &oneterm);
                 gsl_vector_set(outrow, j, exp(oneterm));
             }
@@ -214,7 +214,7 @@ double one_logit_row(apop_data *thisobservation, void *factor_list){
     //get the $x\beta_j$ numerator for the appropriate choice:
     size_t index   = find_index(gsl_vector_get(thisobservation->vector, 0), 
                                 factor_list, thisobservation->matrix->size2);
-    Apop_matrix_row(thisobservation->matrix, 0, thisrow);
+    Apop_row_v(thisobservation, 0, thisrow);
     double num = (index==0) ? 0 : gsl_vector_get(thisrow, index-1);
 
     /* Get the denominator, ln(sum(exp(xbeta))) using the subtract-the-max trick 
@@ -247,7 +247,7 @@ static void dlogit_foreach(apop_data *x, apop_data *gmat, gsl_matrix *beta, apop
   //\beta_this = choice for the row.
   //dLL/d\beta_ij = [(\beta_i==\beta_this) ? x_j : 0] - x_i e^(x\beta_j)/\sum_k e^(x\beta_k)
   //that last term simplifies: x / \sum_k e^(x(\beta_k - \beta_i))
-    Apop_matrix_row(x->matrix, 0, xdata);
+    Apop_row_v(x, 0, xdata);
     assert(gmat->matrix->size1 == x->matrix->size2);     //the j index---input vars (incl. 1 column)
     assert(gmat->matrix->size2 == beta->size2); //the i index---choices
     assert(xdata->size == beta->size1);//cols of data=variables; rows of output=var.s (cols=choices)

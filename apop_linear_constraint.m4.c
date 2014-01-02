@@ -54,12 +54,12 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
     gsl_vector *pseudocandidate   = NULL;
     gsl_vector *pseudocandidate2  = NULL;
     gsl_vector *fix               = NULL;
-    Apop_matrix_row(constraint->matrix, current, cc);
+    Apop_row_v(constraint, current, cc);
     ck = gsl_vector_get(constraint->vector, current);
     find_nearest_point(beta, ck, cc, candidate);
     for (size_t i=0; i< constraint->vector->size; i++){
         if (i!=current){
-            Apop_matrix_row(constraint->matrix, i, other);
+            Apop_row_v(constraint, i, other);
             k   =apop_data_get(constraint, i, -1);
             if (binds(candidate, k, other, margin)){
                 if (!pseudobeta){
@@ -141,7 +141,7 @@ APOP_VAR_ENDHEAD
     /* Do any constraints bind?*/
     memset(bindlist, 0, sizeof(int)*constraint_ct);
     for (i=0; i< constraint_ct; i++){
-        Apop_matrix_row(constraint->matrix, i, c);
+        Apop_row_v(constraint, i, c);
         bound           +=
         bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c, margin);
     }
@@ -149,7 +149,7 @@ APOP_VAR_ENDHEAD
     gsl_vector *base_beta = apop_vector_copy(beta);
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
-        Apop_matrix_row(constraint->matrix, 0, c);
+        Apop_row_v(constraint, 0, c);
         find_nearest_point(base_beta, constraint->vector->data[0], c, beta);
         goto add_margin;
     }
@@ -172,7 +172,7 @@ APOP_VAR_ENDHEAD
 add_margin:
     for (i=0; i< constraint_ct; i++){
         if(bindlist[i]){
-            Apop_matrix_row(constraint->matrix, i, c);
+            Apop_row_v(constraint, i, c);
             gsl_vector_memcpy(fix, c);
             gsl_vector_scale(fix, magnitude(fix));
             gsl_vector_scale(fix, margin);

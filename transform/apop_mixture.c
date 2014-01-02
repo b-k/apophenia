@@ -182,7 +182,7 @@ apop_data* get_lls(apop_data *d, apop_model *m){
     apop_data *out = apop_data_alloc(maxsize, ms->model_count);
 
     for (int i=0; i< maxsize; i++){
-        Apop_data_row(d, i, onepoint);
+        Apop_row(d, i, onepoint);
         for (int j=0; j< ms->model_count; j++){
             double this_val = apop_log_likelihood(onepoint, ms->model_list[j]);
             apop_data_set(out, i, j, this_val);
@@ -217,7 +217,7 @@ static long double mixture_log_likelihood(apop_data *d, apop_model *model_in){
 
     //reweight by last round's lambda 
     for (int i=0; i< lls->matrix->size2; i++){
-        Apop_matrix_col(lls->matrix, i, onecol);
+        Apop_col_v(lls, i, onecol);
         gsl_vector_add_constant(onecol, gsl_vector_get(ms->weights, i));
     }
 
@@ -231,7 +231,7 @@ But I have logs, and want to stay in log-format for as long as possible, to prev
     gsl_vector *ps = gsl_vector_alloc(lls->matrix->size2);
     gsl_vector *cp = gsl_vector_alloc(lls->matrix->size2);
     for (int i=0; i< lls->matrix->size1; i++){
-        Apop_matrix_row(lls->matrix, i, onerow);
+        Apop_row_v(lls, i, onerow);
         total_ll += gsl_vector_max(onerow);
         for (int j=0; j < onerow->size; j++){
             gsl_vector_memcpy(cp, onerow);
@@ -249,7 +249,7 @@ But I have logs, and want to stay in log-format for as long as possible, to prev
     gsl_vector_free(ps);
 
     for (int i=0; i< lls->matrix->size2; i++){
-        Apop_matrix_col(lls->matrix, i, onecol);
+        Apop_col_v(lls, i, onecol);
         gsl_vector_set(ms->weights, i, apop_sum(onecol)/lls->matrix->size1);
     }
     return total_ll;

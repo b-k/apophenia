@@ -1,3 +1,4 @@
+#define Apop_submatrix APOP_SUBMATRIX
 /** \file 
   Some printing and output interface functions. */
 /* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */

@@ -3562,7 +3562,7 @@ Apop_settings_init(apop_loess,
         memcpy(lo->in.y, in.data->vector->data, n*sizeof(double));
     else {  //use the first col as the dep. var.
         startat =1;
-        Apop_matrix_col(in.data->matrix, 0, col);
+        Apop_col_v(in.data, 0, col);
         for (int j=0; j< col->size; j++)
             lo->in.y[j] = gsl_vector_get(col,j);
     }
@@ -3581,7 +3581,7 @@ apop_data * loess_predict (apop_data *in, apop_model *m){
     predict(eval_here, in->matrix->size1, &(Apop_settings_get(m, apop_loess, lo_s)), &pred, want_cov);
 
     //Massage FORTRAN's output to Apophenia's formats
-    Apop_col(in, 0, firstcol)
+    Apop_col_v(in, 0, firstcol)
     gsl_vector_view v = gsl_vector_view_array(pred.fit, firstcol->size);
     gsl_vector_memcpy(firstcol, &(v.vector));
     apop_data *ci =  apop_data_add_page(in, apop_data_alloc(in->matrix->size1, 3), "<Confidence>");
@@ -3613,7 +3613,7 @@ static double onerow(gsl_vector *v, void *sd){
 //Assumes one gaussian, unweighted.
 static long double loess_ll(apop_data *d, apop_model *m){
     apop_data *exp = apop_data_get_page(d, "<Predicted>");
-    Apop_col_t(exp, "residual", residuals);
+    Apop_col_tv(exp, "residual", residuals);
     double sd = sqrt(apop_vector_var(residuals));
     return apop_map_sum(exp, .param=&sd, .part='r', .fn_vp= onerow);
 }
@@ -3634,13 +3634,13 @@ static void apop_loess_est(apop_data *d, apop_model *out){
     gsl_vector *v = gsl_vector_alloc(d->matrix->size1);
     double *holding = v->data;
     v->data = Apop_settings_get(out, apop_loess, lo_s.in.y);
-    Apop_col(expect, 0, y_data)
+    Apop_col_v(expect, 0, y_data)
     gsl_vector_memcpy(y_data, v);
     v->data = Apop_settings_get(out, apop_loess, lo_s.out.fitted_values);
-    Apop_col(expect, 1, fitted)
+    Apop_col_v(expect, 1, fitted)
     gsl_vector_memcpy(fitted, v);
     v->data = Apop_settings_get(out, apop_loess, lo_s.out.fitted_residuals);
-    Apop_col(expect, 2, resid)
+    Apop_col_v(expect, 2, resid)
     gsl_vector_memcpy(resid, v);
     v->data = holding;
     gsl_vector_free(v);

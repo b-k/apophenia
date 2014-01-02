@@ -8,7 +8,7 @@ int main(void){
 
     Apop_settings_add_group(est, apop_pm, .index =1);  
     apop_model *first_param_distribution = apop_parameter_model(data, est);
-    Apop_data_row(est->parameters, 1, param);
+    Apop_row(est->parameters, 1, param);
     double area_under_p = apop_cdf(param, first_param_distribution);
     apop_data_set(param, 0, -1, 0);
     double area_under_zero = apop_cdf(param, first_param_distribution);

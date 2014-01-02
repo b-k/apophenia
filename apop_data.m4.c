@@ -196,7 +196,7 @@ char apop_data_free_base(apop_data *freeme){
 
   \li If you want space allocated, use \ref apop_data_copy.
   \li I don't follow the \c more pointer, though \ref apop_data_copy does.
-  \li You can use the subsetting macros, \ref Apop_row or \ref Apop_data_rows, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_row or \ref Apop_rows, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
@@ -972,8 +972,8 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     if (row->matrix && row->matrix->size2 > 0){
         Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
                 "an apop_data set with no matrix.");
-        Apop_matrix_row(d->matrix, row_number, a_row); 
-        Apop_matrix_row(row->matrix, 0, row_to_copy); 
+        Apop_row_v(d, row_number, a_row); 
+        Apop_row_v(row, 0, row_to_copy); 
         gsl_vector_memcpy(a_row, row_to_copy);
     }
     if (row->textsize[1]){

@@ -359,7 +359,7 @@ APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng 
 APOP_VAR_ENDHEAD
     apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
     for (int i=0; i< count; i++){
-        Apop_data_row(out, i, onerow);
+        Apop_row(out, i, onerow);
         apop_draw(onerow->matrix->data, rng, model);
     }
     return out;

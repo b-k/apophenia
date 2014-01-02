@@ -121,16 +121,16 @@ static void log_and_exp(gsl_rng *r){
         *eval = gsl_rng_uniform(r)*10;
     }
     apop_data *d2 = apop_data_copy(d);
-    Apop_col_t(d, "10", tencol);
+    Apop_col_tv(d, "10", tencol);
     apop_vector_log10(tencol);
     apop_vector_apply(tencol, v_pow10);
-    Apop_col(d2, 0, o_tencol);
+    Apop_col_v(d2, 0, o_tencol);
     assert(apop_vector_distance(tencol, o_tencol) < 1e-3);
     
-    Apop_col_t(d, "e", ecol);
+    Apop_col_tv(d, "e", ecol);
     apop_vector_log(ecol);
     apop_vector_exp(ecol);
-    Apop_col(d2, 1, o_ecol);
+    Apop_col_v(d2, 1, o_ecol);
     assert(apop_vector_distance(ecol, o_ecol) < 1e-3);
 
     apop_data *d5 = apop_data_alloc(5,5);
@@ -297,7 +297,7 @@ void test_listwise_delete(){
   assert(atoi(t3c->text[7][4])==36);
   assert(t3c->matrix->size1==8);
   //return NULL if every row has missing data.
-  APOP_COL(t1, 7, v)
+  Apop_col_v(t1, 7, v)
   gsl_vector_set_all(v, GSL_NAN);
   assert(!apop_data_listwise_delete(t1));
 }
@@ -531,7 +531,7 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     v   = gsl_matrix_column(predict_tab->matrix, apop_name_find(predict_tab->names, "residual", 'c')).vector;
     assert(fabs(apop_mean(&v)) < tol5);
 
-    Apop_col_t(predict_tab, "predicted", vv);
+    Apop_col_tv(predict_tab, "predicted", vv);
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, vv);
     assert(fabs(apop_vector_sum(prediction)) < tol5);
@@ -965,7 +965,7 @@ void test_rownames(){
 }
 
 void test_uniform(apop_data *d){
-    Apop_col_t(d, "ab", abcol);
+    Apop_col_tv(d, "ab", abcol);
     apop_data ab_d = (apop_data){.vector=abcol};
     apop_model *u = apop_estimate(&ab_d, apop_uniform);
     Diff(log(apop_p(&ab_d, u)), apop_log_likelihood(&ab_d, u), 1e-5);
@@ -1135,7 +1135,7 @@ apop_data *generate_probit_logit_sample (gsl_vector* true_params, gsl_rng *r, ap
             apop_data_set(data, i, 0, 1);
             for (j = 1; j < true_params->size; j++)
                 apop_data_set(data, i, j, (gsl_rng_uniform(r)-0.5) *2);
-            Apop_matrix_row(data->matrix, i, asample);
+            Apop_row_v(data, i, asample);
             gsl_blas_ddot(asample, true_params, &val);
             if (method == apop_probit)
                 apop_data_set(data, i, 0, (gsl_ran_gaussian(r, 1) > -val));
@@ -1182,7 +1182,7 @@ void test_probit_and_logit(gsl_rng *r){
     Apop_model_add_group(apop_logit, apop_mle, .tolerance=1e-5);
     Apop_model_add_group(apop_logit, apop_parts_wanted);
     apop_model *m = apop_estimate(data, apop_logit);
-    APOP_COL(m->parameters, 0, logit_params);
+    Apop_col_v(m->parameters, 0, logit_params);
     assert(apop_vector_distance(logit_params, true_params) < 0.07);
     apop_data_free(data);
     apop_model_free(m);
@@ -1192,7 +1192,7 @@ void test_probit_and_logit(gsl_rng *r){
     Apop_model_add_group(apop_probit, apop_mle);
     Apop_model_add_group(apop_logit, apop_parts_wanted);
     m = apop_estimate(data2, apop_probit);
-    APOP_COL(m->parameters, 0, probit_params);
+    Apop_col_v(m->parameters, 0, probit_params);
     assert(apop_vector_distance(probit_params, true_params) < 0.07);
     gsl_vector_free(true_params);
     apop_model_free(m);
@@ -1411,7 +1411,7 @@ void test_pmf_compress(gsl_rng *r){
     apop_text_add(b, 2, 0, "Type 1");
     apop_text_add(b, 3, 0, "Type 1");
     apop_text_add(b, 4, 0, "Type 2");
-    Apop_data_row(b, 0, arow);
+    Apop_row(b, 0, arow);
     apop_data *spec = apop_data_copy(arow);
     gsl_vector_set_all(spec->vector, 1);
     apop_data *c = apop_data_to_bins(b, .binspec=spec);
@@ -1466,12 +1466,10 @@ void test_ols_offset(gsl_rng *r){
     }
     apop_data *cp = apop_data_copy(useme);
     apop_model *zero_off = apop_estimate(useme, apop_ols);
-    Apop_col(cp, 1, off);
+    Apop_col_v(cp, 1, off);
     gsl_vector_add_constant(off, 20);
     apop_model *way_off = apop_estimate(cp, apop_ols);
-    Apop_col(zero_off->info, -1, zinfo);
-    Apop_col(way_off->info, -1, winfo);
-    assert(apop_vector_distance(zinfo, winfo) < 1e-4);
+    assert(apop_vector_distance(zero_off->info->vector, way_off->info->vector) < 1e-4);
     gsl_vector *zcov = apop_data_pack(apop_data_get_page(zero_off->parameters, "<covariance>"), .use_info_pages='y');
     gsl_vector *wcov = apop_data_pack(apop_data_get_page( way_off->parameters, "<covariance>"), .use_info_pages='y');
     assert(apop_vector_distance(zcov, wcov) < 1e-4);

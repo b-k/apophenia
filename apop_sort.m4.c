@@ -88,12 +88,12 @@ static void rearrange(apop_data *data, size_t height, size_t *perm){
         i     =
         start = find_min_unsorted(sorted, height, start);
         if (i==-1) break;
-        Apop_data_row(data, start, firstrow);
+        Apop_row(data, start, firstrow);
         apop_data *first_row_storage = apop_data_copy(firstrow);
         sorted[start]++;
         while (perm[i]!=start){
             //copy from perm[i] to i
-            Apop_data_row(data, perm[i], onerow);
+            Apop_row(data, perm[i], onerow);
             apop_data_set_row(data, onerow, i);
             sorted[perm[i]]++;
             i = perm[i];
@@ -213,7 +213,7 @@ APOP_VAR_ENDHEAD
             double this_val=0;
             if ((i==height || (this_val=gsl_vector_get(thiscol, i)) != last_val) 
                     && bottom != i-1){
-                Apop_data_rows(out, bottom, i-bottom, subset);
+                Apop_rows(out, bottom, i-bottom, subset);
                 apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
             }
             if (last_val != this_val) bottom = i;
@@ -225,7 +225,7 @@ APOP_VAR_ENDHEAD
             char *this_val = i==height ? NULL : is_name ? out->names->row[i] : out->text[i][(int)(*col_order-0.5)];
             if ((i==height || strcasecmp(this_val, last_val)) 
                     && bottom != i-1){
-                Apop_data_rows(out, bottom, i-bottom, subset);
+                Apop_rows(out, bottom, i-bottom, subset);
                 apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
             }
             if (this_val && strcmp(last_val, this_val)) bottom = i;

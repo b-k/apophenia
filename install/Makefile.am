@@ -36,16 +36,14 @@ pkgconfigdir = `pkg-config --variable pc_path pkg-config | cut -f1 -d:`
 SUBDIRS=. tests
 
 #The programs
-bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_plot_query apop_lookup
+bin_PROGRAMS = apop_text_to_db apop_db_to_crosstab apop_plot_query 
 apop_text_to_db_SOURCES = cmd/apop_text_to_db.c
 apop_db_to_crosstab_SOURCES = cmd/apop_db_to_crosstab.c
 apop_plot_query_SOURCES = cmd/apop_plot_query.c
-apop_lookup_SOURCES = cmd/apop_lookup.c
 
 apop_text_to_db_LDADD = libapophenia.la
 apop_db_to_crosstab_LDADD = libapophenia.la
 apop_plot_query_LDADD = libapophenia.la
-apop_lookup_LDADD = libapophenia.la
 
 VPATH= @srcdir@
 

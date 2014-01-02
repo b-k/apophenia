@@ -64,7 +64,7 @@ static long double positive_beta_constraint(apop_data *returned_beta, apop_model
     if (v->parameters->vector)
         return apop_linear_constraint(v->parameters->vector, .margin = 1e-4);
     else {
-        Apop_matrix_row(v->parameters->matrix, 0, vv);
+        Apop_row_v(v->parameters, 0, vv);
         return apop_linear_constraint(vv, .margin = 1e-4);
     }
 }

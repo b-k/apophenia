@@ -28,12 +28,12 @@ int main(){
     gsl_rng *r = apop_rng_alloc(21);
     int len = 100000;
     apop_data *d = apop_model_draws(many_humps, len, r);
-    Apop_matrix_col(d->matrix, 0, first);
+    Apop_col_v(d, 0, first);
     #ifndef Testing
     printf("mu=%g\n", apop_mean(first));
     #endif
     assert(fabs(apop_mean(first)- 0) < 5e-2);
-    Apop_matrix_col(d->matrix, 1, second);
+    Apop_col_v(d, 1, second);
     #ifndef Testing
     printf("mu=%g\n", apop_mean(second));
     #endif

@@ -54,7 +54,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     gsl_vector *pseudoval = gsl_vector_alloc(overall_params->size);
 
     //Copy the original, minus the first row.
-    Apop_data_rows(in, 1, n-1, allbutfirst);
+    Apop_rows(in, 1, n-1, allbutfirst);
     apop_data *subset = apop_data_copy(allbutfirst);
     apop_name *tmpnames = in->names; 
     in->names = NULL;  //save on some copying below.
@@ -64,8 +64,8 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     for(i = -1; i< n-1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
         if (i >= 0){
-            Apop_data_row(in, i, onerow);
-            Apop_data_row(subset, i, subsetrow);
+            Apop_row(in, i, onerow);
+            Apop_row(subset, i, subsetrow);
             apop_data_memcpy(subsetrow, onerow);
         }
         apop_model *est = apop_estimate(subset, e);
@@ -124,15 +124,15 @@ APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model *model
     gsl_rng * apop_varad_var(rng, NULL);
     if (!rng && !spare) 
         spare = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng)  rng = spare;
+    if (!rng) rng = spare;
     char apop_varad_var(keep_boots, 'n');
     char apop_varad_var(ignore_nans, 'n');
 APOP_VAR_ENDHEAD
     Get_vmsizes(data); //vsize, msize1, msize2
-    apop_model *e       = apop_model_copy(model);
-    apop_data  *subset  = apop_data_copy(data);
-    apop_data  *array_of_boots = NULL,
-               *summary;
+    apop_model *e = apop_model_copy(model);
+    apop_data *subset = apop_data_copy(data);
+    apop_data *array_of_boots = NULL,
+              *summary;
     //prevent and infinite regression of covariance calculation.
     Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
     size_t	   i, nan_draws=0;
@@ -143,8 +143,8 @@ APOP_VAR_ENDHEAD
 	for (i=0; i<iterations && nan_draws < iterations; i++){
 		for (size_t j=0; j< height; j++){       //create the data set
 			size_t row	= gsl_rng_uniform_int(rng, height);
-			Apop_data_row(data, row, random_data_row);
-			Apop_data_row(subset, j, subset_row_j);
+			Apop_row(data, row, random_data_row);
+			Apop_row(subset, j, subset_row_j);
             apop_data_memcpy(subset_row_j, random_data_row);
 		}
 		//get the parameter estimates.

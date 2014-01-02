@@ -147,7 +147,7 @@ APOP_VAR_ENDHEAD
     //Find (\underbar x)'(\underbar x), where (\underbar x) = the data with means removed
     long double means[msize2];
     for (int i=1; i< msize2; i++){
-        Apop_col(est->data, i, onecol)
+        Apop_col_v(est->data, i, onecol)
         means[i] = apop_vector_mean(onecol);
     }
     means[0]=0;// don't screw with the ones column.
@@ -195,8 +195,8 @@ APOP_VAR_ENDHEAD
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
-    Apop_matrix_row(d->matrix, row, vr);
-    Apop_matrix_col(d->matrix, col, vc);
+    Apop_row_v(d, row, vr);
+    Apop_col_v(d, col, vc);
     double rowexp  = apop_vector_sum(vr)/n;
     double colexp  = apop_vector_sum(vc)/n;
     double observed = apop_data_get(d, row, col);
@@ -305,10 +305,10 @@ APOP_VAR_ENDHEAD
     apop_name_stack(out->names, first->names, 'c');
     apop_data_add_names(out, 'r', first->names->row[0], second->names->row[0],
                                   "interaction", "residual", "total");
-    Apop_matrix_row(first->matrix, 0, firstrow);
-    Apop_matrix_row(second->matrix, 0, secondrow);
-    Apop_matrix_row(interaction->matrix, 0, interrow);
-    Apop_matrix_row(first->matrix, 2, totalrow);
+    Apop_row_v(first, 0, firstrow);
+    Apop_row_v(second, 0, secondrow);
+    Apop_row_v(interaction, 0, interrow);
+    Apop_row_v(first, 2, totalrow);
     gsl_matrix_set_row(out->matrix, 0, firstrow);
     gsl_matrix_set_row(out->matrix, 1, secondrow);
     gsl_matrix_set_row(out->matrix, 2, interrow);

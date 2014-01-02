@@ -179,7 +179,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
         *out = current;
         return;
     }
-    Apop_data_row(m->data, current, outrow);
+    Apop_row(m->data, current, outrow);
     int i = 0;
     if (outrow->vector)
         out[i++] = outrow->vector->data[0];
@@ -227,7 +227,7 @@ static int are_equal(apop_data *left, apop_data *right){
 static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one row tall.
     Get_vmsizes(searchme)
     for(int i=0; i < GSL_MAX(vsize, GSL_MAX(searchme->textsize[0], msize1)); i++){
-        Apop_data_row(searchme, i, onerow);
+        Apop_row(searchme, i, onerow);
         if (are_equal(findme, onerow))
             return i;
     }
@@ -246,7 +246,7 @@ static long double pmf_p(apop_data *d, apop_model *m){
     Get_vmsizes(d)//maxsize
     long double p = 1;
     for (int i=0; i< maxsize; i++){
-        Apop_data_row(d, i, onerow);
+        Apop_row(d, i, onerow);
         int elmt = find_in_data(m->data, onerow);
         if (elmt == -1) return 0; //Can't find one observation: prob=0;
         p *= m->data->weights
@@ -274,7 +274,7 @@ your data, do it before the first draw or CDF calculation.
  */
 static long double pmf_cmf(apop_data *d, apop_model *m){
     Get_vmsizes(m->data); //maxsize
-    Apop_data_row(d, 0, onerow);
+    Apop_row(d, 0, onerow);
     int elmt = find_in_data(m->data, onerow);
     if (elmt == -1) return 0; //Can't find one observation: prob=0;
     if (!m->data->weights) return (elmt+0.0)/maxsize;

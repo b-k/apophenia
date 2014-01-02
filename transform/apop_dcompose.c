@@ -32,11 +32,11 @@ static int unpack(apop_model *m){
            0, "Trying to use parameters for an apop_dcompose model, but they are NULL. Run apop_estimate() first?");
 
    if (generator_psize){
-       Apop_data_rows(m->parameters, 0, generator_psize, genparams);
+       Apop_rows(m->parameters, 0, generator_psize, genparams);
        apop_data_unpack(genparams->vector, cs->generator_m->parameters);
    }
    if (ll_psize){
-       Apop_data_rows(m->parameters, generator_psize, ll_psize, llparams);
+       Apop_rows(m->parameters, generator_psize, ll_psize, llparams);
        apop_data_unpack(llparams->vector, cs->ll_m->parameters);
    }
    return 0;
@@ -48,12 +48,12 @@ static int pack(apop_model *m){
    int ll_psize = cs->ll_m->vsize + cs->ll_m->msize1 + cs->ll_m->msize2;
 
    if (generator_psize){
-       Apop_data_rows(m->parameters, 0, generator_psize, genparams);
+       Apop_rows(m->parameters, 0, generator_psize, genparams);
        apop_data_pack(cs->generator_m->parameters, genparams->vector);
 
    }
    if (ll_psize){
-       Apop_data_rows(m->parameters, generator_psize, ll_psize, llparams);
+       Apop_rows(m->parameters, generator_psize, ll_psize, llparams);
        apop_data_pack(cs->ll_m->parameters, llparams->vector);
    }
    return 0;

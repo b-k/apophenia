@@ -94,7 +94,7 @@ typedef struct {
 static void unpack(apop_data *out, apop_model *m){
     //real param set --> predict table 
    apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
-   Apop_col_t(mset->predict, "value", p_in_tab);
+   Apop_col_tv(mset->predict, "value", p_in_tab);
    gsl_vector_memcpy(p_in_tab, m->parameters->vector);
    apop_data_predict_fill(out, mset->predict);
 }
@@ -111,7 +111,7 @@ static void pack(apop_data *in, apop_model *m){
                                 != apop_data_get(predict, .row= i, .colname="page"))
             in = in->more;
     }
-   Apop_col_t(mset->predict, "value", p_in_tab);
+   Apop_col_tv(mset->predict, "value", p_in_tab);
    gsl_vector_memcpy(m->parameters->vector, p_in_tab);
 }
 

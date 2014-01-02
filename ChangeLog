@@ -4,6 +4,15 @@
 !!Big.
 ]
 
+	January 2014
+**View macro reform:
+	Apop_cols       Apop_rows       A contiguous set of columns or rows as an apop_data set (with names)
+	Apop_col	    Apop_row        One column or row as an apop_data set
+	Apop_col_t      Apop_row_t      One column or row as an apop_data set, retrieved by row/col name
+	Apop_col_v      Apop_row_v      One column or row as a gsl_vector
+	Apop_col_tv     Apop_row_tv     One column or row as a gsl_vector, retrieved by row/col name
+	Apop_matrix_col Apop_matrix_row One column or row as a gsl_matrix
+
 	December 2013
 --append and replace options for apop_text_to_db
 --apop_probit bug fix
@@ -12,6 +21,8 @@
 **apop_data_transpose has an .inplace option, which is 'y' by default. Add .inplace='n' to existing uses.
 --siman checks constraints for the starting point.
 --Mixture models overhauled.
+--cleaned up the command-line utilities
+**removed apop_lookup.
 
 	November 2013
 --rewrite apop_data_sort to allow sorting by multiple columns or text or names

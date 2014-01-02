@@ -32,7 +32,7 @@ int main(){
     apop_map(d, .fn_r=test_all);
 
     //the pop variance of a Uniform[0,1]=1/12; kurtosis=1/80.
-    Apop_col_t(d, "rr", rrow);
+    Apop_col_tv(d, "rr", rrow);
     Diff(apop_var(rrow)*8191./8192., 1/12. );
     Diff(apop_vector_kurtosis(rrow)*8191./8192., 1/80.);//approx.
 

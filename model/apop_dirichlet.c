@@ -31,7 +31,7 @@ static void dirichlet_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
     int n = d->matrix->size1;
     for(size_t i=0; i < m->parameters->vector->size; i ++){
         double thisparam = gsl_vector_get(m->parameters->vector, i);
-        Apop_col(d, i, onecol);
+        Apop_col_v(d, i, onecol);
         gsl_vector_set(gradient, i,  //Psi is the derivative of the log gamma function.
                 apop_vector_map_sum(onecol, log) + n*gsl_sf_psi(param_sum) - n*gsl_sf_psi(thisparam));
     }

@@ -46,7 +46,7 @@ APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
     apop_data *outd = apop_data_alloc(draws, model->dsize); 
     for (long int i=0; i< draws; i++){
-        Apop_matrix_row(outd->matrix, i, ach);
+        Apop_row_v(outd, i, ach);
         apop_draw(ach->data, rng, model);
     }
     apop_data *outbinned = apop_data_to_bins(outd, binspec, .bin_count=bin_count);
@@ -75,7 +75,7 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
     int df = observed->data->weights->size;
     double diff = 0;
     for (int i=0; i< observed->data->weights->size; i++){
-        Apop_data_row(observed->data, i, one_obs);
+        Apop_row(observed->data, i, one_obs);
         double obs_val = gsl_vector_get(observed->data->weights, i);
         double exp_val = apop_p(one_obs, expected);
         if (exp_val == 0){
@@ -272,7 +272,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     if (m2_is_pmf){
         double sum = 0;
         for (size_t i=0; i< maxsize2; i++){     //There could be matched data rows to m1, so there is redundancy.
-            Apop_data_row(m2->data, i, arow);   // Feel free to submit a smarter version.
+            Apop_row(m2->data, i, arow);   // Feel free to submit a smarter version.
             sum += m2->data->weights ? gsl_vector_get(m2->data->weights, i) : 1./maxsize2;
             largest_diff = GSL_MAX(largest_diff, fabs(sum-apop_cdf(arow, m2)));
         }
@@ -297,7 +297,7 @@ If you want a fixed size for the bins, then the first row of the bin spec is the
 This allows you to specify a width for each dimension, or specify the same size for all with something like:
 
 \param bin_count If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: \f$\sqrt(N)\f$.  \code
-Apop_data_row(indata, 0, firstrow);
+Apop_row(indata, 0, firstrow);
 apop_data *binspec = apop_data_copy(firstrow);
 gsl_matrix_set_all(binspec->matrix, 10); //bins of size 10 for all dim.s
 apop_data_to_bins(indata, binspec);
@@ -334,13 +334,13 @@ APOP_VAR_ENDHEAD
                         apop_data_alloc(vsize? 2: 0, msize1? 2: 0, indata->matrix ? msize2: 0),
                         "<binspec>");
     for (int j= firstcol; j< msize2; j++){
-        Apop_col(out, j, onecol);
+        Apop_col_v(out, j, onecol);
         if (binspec){
            binwidth = apop_data_get(binspec, 0, j);
            offset = ((binspec->vector && binspec->vector->size==2 )
                    ||(binspec->matrix && binspec->matrix->size1==2)) ? apop_data_get(binspec, 1, j) : 0;
         } else {
-            Apop_col(bs, j, abin);
+            Apop_col_v(bs, j, abin);
             max = gsl_vector_max(onecol);
             offset = abin->data[1] = gsl_vector_min(onecol);
             binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(onecol->size));

@@ -33,6 +33,6 @@ int main(){
     assert(apop_sum(d->weights)==6);
 
     apop_model *d_as_pmf = apop_estimate(d, apop_pmf);
-    Apop_data_row(d, 0, firstrow); //1A
+    Apop_row(d, 0, firstrow); //1A
     assert(fabs(apop_p(firstrow, d_as_pmf) - 2./6 < 1e-5));
 }

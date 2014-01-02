@@ -180,12 +180,12 @@ APOP_VAR_ENDHEAD
             int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
             for (int i=0; i< smaller_dim; i++){
                 if (smaller_dim == in->matrix->size1){
-                    Apop_matrix_row(in->matrix, i, onevector);
-                    Apop_matrix_row(out->matrix, i, twovector);
+                    Apop_row_v(in, i, onevector);
+                    Apop_row_v(out, i, twovector);
                     mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
                 } else {
-                    Apop_matrix_col(in->matrix, i, onevector);
-                    Apop_matrix_col(out->matrix, i, twovector);
+                    Apop_col_v(in, i, onevector);
+                    Apop_col_v(out, i, twovector);
                     mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
                 }
             }
@@ -494,7 +494,7 @@ double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
 
      This function wraps variadic_apop_map_sum so that we're of the form pthread wants, void *(*)(void*),
      instead of double (*)(variadic_type_apop_map_sum).  The main of
-     variadic_apop_map_sum just uses Apop_data_rows (and some abuse of that macro's
+     variadic_apop_map_sum just uses Apop_rows (and some abuse of that macro's
      internals) to generate the subsets, then each thread calls this function to do the work.
 
      How does apop_map_sum know if it's in the middle of a thread? I add 1000 to the all_pages integer. 
@@ -528,11 +528,11 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
         int segment_size  = totalct/threadct;
         for (int i=0 ; i<threadct; i++){
             inputs[i] = varad_in;
-            /*Copy the inputs, use Apop_data_rows to get slices, use all_pages to mark that this is
+            /*Copy the inputs, use Apop_rows to get slices, use all_pages to mark that this is
             in-thread processing, then run this function on the subsetted copy of the inputs.  
             The tedium is in copying the substructures (but not data) so they persist past the loop. */
             int bottom=i*segment_size;
-            Apop_data_rows(varad_in.in, bottom, i==threadct-1 ? totalct-bottom : segment_size, somerows);
+            Apop_rows(varad_in.in, bottom, i==threadct-1 ? totalct-bottom : segment_size, somerows);
             slices[i] = *somerows; //copy the struct, because on the next loop it'll be different.
             v[i] = somerows->vector ? *(somerows->vector): (gsl_vector){};
             w[i] = somerows->weights ? *(somerows->weights): (gsl_vector){};

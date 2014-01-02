@@ -10,7 +10,7 @@ int main(){
     gsl_rng *r = apop_rng_alloc(1);
     apop_data *draws = apop_model_draws(mm, len, r);
     for (int i=0; i< len; i++){
-        Apop_matrix_row(draws->matrix, i, onev);
+        Apop_row_v(draws, i, onev);
         assert((int)onev->data[0] == onev->data[0]);
         assert(onev->data[1]<0);
     }
@@ -18,10 +18,10 @@ int main(){
     //The rest of the test script recovers the parameters.
     //First, set up a two-page data set: poisson data on p1, Normal on p2:
     apop_data *comeback = apop_data_alloc();
-    Apop_col(draws, 0,fishdraws)
+    Apop_col_v(draws, 0,fishdraws)
     comeback->vector = apop_vector_copy(fishdraws);
     apop_data_add_page(comeback, apop_data_alloc(), "p2");
-    Apop_col(draws, 1, meandraws)
+    Apop_col_v(draws, 1, meandraws)
     comeback->more->vector = apop_vector_copy(meandraws);
 
     //set up the un-parameterized stacked model, including

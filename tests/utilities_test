@@ -17,13 +17,6 @@ read_faith(){
     fi
 }
 
-lookups(){
-    if Diff `apop_lookup -p 3` 0.998 ; 
-        then echo "bad lookup."; return 1;
-        else return 0;
-    fi
-}
-
 crosstab(){
     if [ ! `apop_db_to_crosstab -eo ff.db "faith group by round(eruptions), waiting" waiting 'round(eruptions)' 'count(id)'|sed -n '/70/p' | cut -f 4` \
         -eq `sqlite3 ff.db "select count(*) from faith where round(eruptions)=4 and waiting=70"` ]
@@ -50,11 +43,7 @@ if [ ! `echo 123 | bc` ];
     then echo "Missing POSIX-standard bc; exiting without running tests."; exit 0; #not a fail.
 elif ! read_faith
     then echo apop_text_to_db test failed with code $?.; exit 1; 
-elif ! lookups
-    then echo lookup tests failed with code $?.; exit 2; 
 elif ! fixed_read
-    then echo read of fixed data failed with code $?.; exit 3; 
+    then echo read of fixed data failed with code $?.; exit 2; 
 fi
-    echo OK, passed.
-
 )
