@@ -45,7 +45,7 @@ group by whatever
 <li>The var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .</li>
 </ul>
 <ul>
-<li>For bonus points, there are the <code>sqrt(x)</code>, <code>pow(x,y)</code>, <code>exp(x)</code>, <code>log(x)</code>, and trig functions. They call the standard math library function of the same name to calculate <img class="formulaInl" alt="$\sqrt{x}$" src="form_9.png"/>, <img class="formulaInl" alt="$x^y$" src="form_10.png"/>, <img class="formulaInl" alt="$e^x$" src="form_11.png"/>, <img class="formulaInl" alt="$\ln(x)$" src="form_12.png"/>, <img class="formulaInl" alt="$\sin(x)$" src="form_13.png"/>, <img class="formulaInl" alt="$\arcsin(x)$" src="form_14.png"/>, et cetera.</li>
+<li>For bonus points, there are the <code>sqrt(x)</code>, <code>pow(x,y)</code>, <code>exp(x)</code>, <code>log(x)</code>, and trig functions. They call the standard math library function of the same name to calculate <img class="formulaInl" alt="$\sqrt{x}$" src="form_12.png"/>, <img class="formulaInl" alt="$x^y$" src="form_13.png"/>, <img class="formulaInl" alt="$e^x$" src="form_14.png"/>, <img class="formulaInl" alt="$\ln(x)$" src="form_15.png"/>, <img class="formulaInl" alt="$\sin(x)$" src="form_16.png"/>, <img class="formulaInl" alt="$\arcsin(x)$" src="form_17.png"/>, et cetera.</li>
 </ul>
 <ul>
 <li>The random() function keepts its own <code>gsl_rng</code>, which is intialized on first call using the value of <code>apop_ots.rng_seed</code> (which is then incremented, so the next function to use it will get a different seed).</li>
@@ -54,7 +54,7 @@ group by whatever
     sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
 from table
 </pre></div><p>Here is a test script using many of the above.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="preprocessor">#define Diff(L, R) assert(fabs((L)-(R)&lt;1e-4));</span>
 <span class="preprocessor"></span><span class="preprocessor">#define getrow(rowname) apop_data_get(row, .colname=#rowname)</span>
@@ -88,7 +88,7 @@ from table
     <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_r=test_all);
 
     <span class="comment">//the pop variance of a Uniform[0,1]=1/12; kurtosis=1/80.</span>
-    <a class="code" href="stats_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>(d, <span class="stringliteral">&quot;rr&quot;</span>, rrow);
+    <a class="code" href="apop_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a>(d, <span class="stringliteral">&quot;rr&quot;</span>, rrow);
     Diff(<a class="code" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(rrow)*8191./8192., 1/12. );
     Diff(<a class="code" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a>(rrow)*8191./8192., 1/80.);<span class="comment">//approx.</span>
 
@@ -96,10 +96,10 @@ from table
                 sqrt(1/12.)*8192./8191);
 }
 </pre></div><p>Here is some more realistic sample code:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">db_engine</a>=<span class="charliteral">&#39;s&#39;</span>; <span class="comment">//SQLite only.</span>
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">db_engine</a>=<span class="charliteral">&#39;s&#39;</span>; <span class="comment">//SQLite only.</span>
     <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;create table atab (a numeric)&quot;</span>);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 1e5; i++)
         <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;insert into atab values(ran())&quot;</span>);
@@ -111,7 +111,7 @@ from table
     <span class="comment">//database routine, the matrix routine, and math.</span>
     <span class="keywordtype">double</span> db_pop_stddev = <a class="code" href="group__queries.html#ga1ad75f9dfba696a3741e28896ed5b75d">apop_query_to_float</a>(<span class="stringliteral">&quot;select stddev_pop(a) from powa&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select * from powa&quot;</span>);
-    <a class="code" href="structapop__data.html">apop_data</a> *cov = <a class="code" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>(d);
+    <a class="code" href="structapop__data.html">apop_data</a> *cov = <a class="code" href="apop_8h.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a>(d);
     <span class="keywordtype">double</span> matrix_pop_stddev = sqrt(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(cov)*(d-&gt;matrix-&gt;size1/(d-&gt;matrix-&gt;size1-1.)));
     assert(fabs(db_pop_stddev - matrix_pop_stddev) &lt; 1e-4);
     <span class="keywordtype">double</span> actual_stddev = sqrt(2*gsl_pow_3(.5)/3);
@@ -127,4 +127,4 @@ from table
 }
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

@@ -44,7 +44,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -82,15 +82,15 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Sort an <a class="el" href="gentle.html#apop_data">apop_data</a> set on an arbitrary sequence of columns.</p>
-<p>The <code>sort_order</code> set is a one-row data set that should look like the data set being sorted. The easiest way to generate it is to use <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to pull one row of the table, then copy and fill it. For each column you want used in the sort, assign a ranking giving whether the column should be sorted first, second, .... Columns you don't want used in the sorting should be set to <code>NAN</code>. Ties are broken by the earlier element in the default order (see below).</p>
+<p>The <code>sort_order</code> set is a one-row data set that should look like the data set being sorted. The easiest way to generate it is to use <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to pull one row of the table, then copy and fill it. For each column you want used in the sort, assign a ranking giving whether the column should be sorted first, second, .... Columns you don't want used in the sorting should be set to <code>NAN</code>. Ties are broken by the earlier element in the default order (see below).</p>
 <p>E.g., to sort by the last column of a five-column matrix first, then the next-to-last column, then the next-to-next-to-last, then by the first text column, then by the second text column:</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(data, 0, so)
-<a class="code" href="structapop__data.html">apop_data</a> *sort_order = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(so);
+<div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(data, 0, so)
+<a class="code" href="structapop__data.html">apop_data</a> *sort_order = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(so);
 sort_order-&gt;vector = NULL; <span class="comment">//so it will be skipped.</span>
 Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
-<a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(sort_order, 0, 0, &quot;4&quot;);
-<a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(sort_order, 0, 1, &quot;5&quot;);
-<a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(data, sort_order);
+<a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(sort_order, 0, 0, &quot;4&quot;);
+<a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(sort_order, 0, 1, &quot;5&quot;);
+<a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(data, sort_order);
 </pre></div><p>I use only comparisons, not the actual numeric values, so you can use any sequence of numbers: (1, 2, 3) and (-1.32, 0, 27) work identically.</p>
 <ul>
 <li>Strings are sorted case-insensitively, using <code>strcasecmp</code>. [exercise for the reader: modify the source to use Glib's locale-correct string sorting.]</li>
@@ -110,7 +110,8 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to the sorted data set. If <code>inplace=='y'</code> (the default), then this is the same as the input set.</dd></dl>
 <p>A few examples:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+<span class="preprocessor">#include &lt;unistd.h&gt;</span>
 <span class="preprocessor">#ifdef Testing</span>
 <span class="preprocessor"></span><span class="preprocessor">#include &quot;sort_tests.c&quot;</span> <span class="comment">//For Apophenia&#39;s test suite, some tedious checks that the sorts worked</span>
 <span class="preprocessor">#endif</span>
@@ -128,7 +129,7 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
     <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a>(<span class="stringliteral">&quot;mntmtm&quot;</span>, <span class="stringliteral">&quot;select 1,id,party,contribs/1000.0,vote,ideology from amash_vote_analysis &quot;</span>);
 
     <span class="comment">//use the default order of columns for sorting</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *sorted = <a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(d, .inplace=<span class="charliteral">&#39;n&#39;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *sorted = <a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(d, .inplace=<span class="charliteral">&#39;n&#39;</span>);
 <span class="preprocessor">#ifndef Testing</span>
 <span class="preprocessor"></span>    <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(sorted);
 <span class="preprocessor">#else</span>
@@ -136,14 +137,14 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 <span class="preprocessor">#endif</span>
 <span class="preprocessor"></span>
     <span class="comment">//set up a specific column order</span>
-    <a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, 0, onerow);
-    <a class="code" href="structapop__data.html">apop_data</a> *perm = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(onerow);
+    <a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, 0, onerow);
+    <a class="code" href="structapop__data.html">apop_data</a> *perm = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(onerow);
     perm-&gt;vector = NULL;
-    <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(perm, 5, 3, 4);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(perm, 0, 0, <span class="stringliteral">&quot;2&quot;</span>);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(perm, 0, 1, <span class="stringliteral">&quot;1&quot;</span>);
+    <a class="code" href="apop_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(perm, 5, 3, 4);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(perm, 0, 0, <span class="stringliteral">&quot;2&quot;</span>);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(perm, 0, 1, <span class="stringliteral">&quot;1&quot;</span>);
 
-    <a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(d, perm);
+    <a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(d, perm);
 <span class="preprocessor">#ifndef Testing</span>
 <span class="preprocessor"></span>    <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(d);
 <span class="preprocessor">#else</span>
@@ -151,9 +152,9 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 <span class="preprocessor">#endif</span>
 <span class="preprocessor"></span>
     <span class="comment">//sort a list of names</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *blank = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>();
-    <a class="code" href="types_8h.html#aeca6159c82c21da0db82ae9ed0582dc6">apop_data_add_names</a>(blank, <span class="charliteral">&#39;r&#39;</span>, <span class="stringliteral">&quot;C&quot;</span>, <span class="stringliteral">&quot;E&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>);
-    <a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(blank);
+    <a class="code" href="structapop__data.html">apop_data</a> *blank = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>();
+    <a class="code" href="apop_8h.html#aeca6159c82c21da0db82ae9ed0582dc6">apop_data_add_names</a>(blank, <span class="charliteral">&#39;r&#39;</span>, <span class="stringliteral">&quot;C&quot;</span>, <span class="stringliteral">&quot;E&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>);
+    <a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(blank);
     assert(*blank-&gt;names-&gt;row[0] == <span class="charliteral">&#39;A&#39;</span>);
     assert(*blank-&gt;names-&gt;row[1] == <span class="charliteral">&#39;C&#39;</span>);
     assert(*blank-&gt;names-&gt;row[2] == <span class="charliteral">&#39;E&#39;</span>);
@@ -162,9 +163,9 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
     <span class="comment">//sort in descending order.</span>
     <a class="code" href="structapop__data.html">apop_data</a> *rowvectors = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;test_data&quot;</span>);
     <a class="code" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(rowvectors, .fn_v=get_distance, .part=<span class="charliteral">&#39;r&#39;</span>, .inplace=<span class="charliteral">&#39;y&#39;</span>);
-    <a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(rowvectors, 0, arow);
+    <a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(rowvectors, 0, arow);
     arow-&gt;matrix=NULL; <span class="comment">//sort only by the distance vector</span>
-    <a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(rowvectors, arow, .asc=<span class="charliteral">&#39;d&#39;</span>);
+    <a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(rowvectors, arow, .asc=<span class="charliteral">&#39;d&#39;</span>);
 <span class="preprocessor">#ifndef Testing</span>
 <span class="preprocessor"></span>    <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(rowvectors);
 <span class="preprocessor">#else</span>
@@ -184,4 +185,4 @@ Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

@@ -58,7 +58,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -104,7 +104,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -150,15 +150,15 @@ Functions</h2>
 <p>A utility to make a matrix of dummy variables. You give me a single vector that lists the category number for each item, and I'll produce a matrix with a single one in each row in the column specified.</p>
 <p>After that, you have to decide what to do with the new matrix and the original data column.</p>
 <ul>
-<li>You can manually join the dummy data set with your main data, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *dummies  = <a class="code" href="apop__regression_8c.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(main_regression_vars, .col=8, .type=<span class="charliteral">&#39;t&#39;</span>);
-<a class="code" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>(main_regression_vars, dummies, <span class="charliteral">&#39;c&#39;</span>, .inplace=<span class="charliteral">&#39;y&#39;</span>);
+<li>You can manually join the dummy data set with your main data, e.g.: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *dummies  = <a class="code" href="apop_8h.html#ae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a>(main_regression_vars, .col=8, .type=<span class="charliteral">&#39;t&#39;</span>);
+<a class="code" href="apop_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>(main_regression_vars, dummies, <span class="charliteral">&#39;c&#39;</span>, .inplace=<span class="charliteral">&#39;y&#39;</span>);
 </pre></div></li>
 </ul>
 <ul>
-<li>The <code>.remove='y'</code> option specifies that I should use <a class="el" href="types_8h.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> to remove the column used to generate the dummies. Implemented only for <code>type=='d'</code>.</li>
+<li>The <code>.remove='y'</code> option specifies that I should use <a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> to remove the column used to generate the dummies. Implemented only for <code>type=='d'</code>.</li>
 </ul>
 <ul>
-<li>By specifying <code>.append='y'</code> or <code>.append='e'</code> I will run the above two lines for you. Your <a class="el" href="gentle.html#apop_data">apop_data</a> pointer will not change, but its <code>matrix</code> element will be reallocated (via <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>).</li>
+<li>By specifying <code>.append='y'</code> or <code>.append='e'</code> I will run the above two lines for you. Your <a class="el" href="gentle.html#apop_data">apop_data</a> pointer will not change, but its <code>matrix</code> element will be reallocated (via <a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>).</li>
 </ul>
 <ul>
 <li>By specifying <code>.append='i'</code>, I will place the matrix of dummies in place, immediately after the data column you had specified. You will probably use this with <code>.remove='y'</code> to replace the single column with the new set of dummy columns. Bear in mind that if there are two or more dummy columns (which there probably are if you are bothering to use this function), subsequent column numbers will change.</li>
@@ -197,7 +197,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -241,13 +241,13 @@ Functions</h2>
 </dl>
 <p>For example: </p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="group__queries.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a>(<span class="stringliteral">&quot;mmt&quot;</span>, <span class="stringliteral">&quot;select 1, year, color from data&quot;</span>);
-<a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d);
+<a class="code" href="apop_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d);
 </pre></div><p> Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.</p>
 <p>Another example: </p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *d  = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;mmt&quot;</span>, <span class="stringliteral">&quot;select type, year from data&quot;</span>);
-<a class="code" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d, .intype=<span class="charliteral">&#39;d&#39;</span>, .incol=0, .outcol=0);
+<a class="code" href="apop_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d, .intype=<span class="charliteral">&#39;d&#39;</span>, .incol=0, .outcol=0);
 </pre></div><p> Here, the <code>type</code> column is converted to sequential integer factors and those factors overwrite the original data. Since a reference table is added as a second page of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, you can recover the original values as needed.</p>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A table of the factors used in the code. This is an <code><a class="el" href="structapop__data.html">apop_data</a></code> set with only one column of text. Also, I add a page named <code>"&lt;categories for your_var&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading) use <a class="el" href="stats_8h.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> to retrieve that table.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A table of the factors used in the code. This is an <code><a class="el" href="structapop__data.html">apop_data</a></code> set with only one column of text. Also, I add a page named <code>"&lt;categories for your_var&gt;"</code> giving a reference table of names and column numbers (where <code>your_var</code> is the appropriate column heading) use <a class="el" href="apop__regression_8c.html#adec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> to retrieve that table.</dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error=='a'</td><td>allocation error. </td></tr>
@@ -267,7 +267,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="stats_8h.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> </td>
+          <td class="memname">void <a class="el" href="apop__regression_8c.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>est</em></td><td>)</td>
@@ -317,7 +317,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Deprecated. Use <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>.</p>
+<p>Deprecated. Use <a class="el" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>.</p>
 <p>Convert a column of text in the text portion of an <code><a class="el" href="structapop__data.html">apop_data</a></code> set into a column of numeric elements, which you can use for a multinomial probit, for example.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -346,7 +346,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="stats_8h.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__regression_8c.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -374,7 +374,7 @@ Functions</h2>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set with a single sorted column of text, where each unique text input appears once. </dd></dl>
-<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> </dd></dl>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop__regression_8c.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> </dd></dl>
 
 </div>
 </div>
@@ -383,7 +383,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">gsl_vector* <a class="el" href="stats_8h.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> </td>
+          <td class="memname">gsl_vector* <a class="el" href="apop__regression_8c.html#a6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> </td>
           <td>(</td>
           <td class="paramtype">const gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em></td><td>)</td>
@@ -403,10 +403,10 @@ Functions</h2>
 <li>NaNs appear at the end of the sort order. </li>
 </ul>
 </dd></dl>
-<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="stats_8h.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> </dd></dl>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop__regression_8c.html#a77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

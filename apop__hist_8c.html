@@ -46,7 +46,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>indata</em>, </td>
@@ -83,20 +83,20 @@ Functions</h2>
     <tr><td class="paramname">indata</td><td>The input data that will be binned. This is copied and the copy will be modified. </td></tr>
     <tr><td class="paramname">close_top_bin</td><td>Normally, a bin covers the range from the point equal to its minimum to points strictly less than the minimum plus the width. if <code>'y'</code>, then the top bin includes points less than or equal to the upper bound. This solves the problem of displaying histograms where the top bin is just one point. </td></tr>
     <tr><td class="paramname">binspec</td><td>This is an <a class="el" href="gentle.html#apop_data">apop_data</a> set with the same number of columns as <code>indata</code>. If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column. This allows you to specify a width for each dimension, or specify the same size for all with something like:</td></tr>
-    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>. <div class="fragment"><pre class="fragment"><a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(indata, 0, firstrow);
-<a class="code" href="structapop__data.html">apop_data</a> *binspec = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(firstrow);
+    <tr><td class="paramname">bin_count</td><td>If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>. <div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(indata, 0, firstrow);
+<a class="code" href="structapop__data.html">apop_data</a> *binspec = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(firstrow);
 gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size 10 for all dim.s</span>
-<a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(indata, binspec);
-</pre></div> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_18.png"/> bins to cover the range to the max element.</td></tr>
+<a class="code" href="apop_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(indata, binspec);
+</pre></div> The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension. Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes <img class="formulaInl" alt="$\sqrt{N}$" src="form_21.png"/> bins to cover the range to the max element.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to a binned <a class="el" href="gentle.html#apop_data">apop_data</a> set. If you didn't give me a binspec, then I attach one to the output set as a page named <code>&lt;binspec&gt;</code>, so you can snap a second data set to the same grid using <div class="fragment"><pre class="fragment"><a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(first_set, NULL);
-<a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(second_set, <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(first_set, <span class="stringliteral">&quot;&lt;binspec&gt;&quot;</span>));
+<dl class="return"><dt><b>Returns:</b></dt><dd>A pointer to a binned <a class="el" href="gentle.html#apop_data">apop_data</a> set. If you didn't give me a binspec, then I attach one to the output set as a page named <code>&lt;binspec&gt;</code>, so you can snap a second data set to the same grid using <div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(first_set, NULL);
+<a class="code" href="apop_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(second_set, <a class="code" href="apop_8h.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(first_set, <span class="stringliteral">&quot;&lt;binspec&gt;&quot;</span>));
 </pre></div></dd></dl>
-<p>The text segment, if any, is not binned. I use <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> as the final step in the binning, and that does respect the text segment.</p>
-<p>Here is a sample program highlighting the difference between <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> and <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> .</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<p>The text segment, if any, is not binned. I use <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> as the final step in the binning, and that does respect the text segment.</p>
+<p>Here is a sample program highlighting the difference between <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> and <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> .</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="preprocessor">#ifdef Testing</span>
 <span class="preprocessor"></span><span class="preprocessor">    #define printdata(dataset)  ;</span>
@@ -107,15 +107,15 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
 <span class="preprocessor"></span>
 <span class="keywordtype">int</span> main(){
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(<a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(6), 6, 1);
-    <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(d,   1,   2,   3,   3,   1,   2);
-    <a class="code" href="types_8h.html#a74dca50ea16ed7bf25cb152315642769">apop_text_fill</a>(d,  <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;B&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(<a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(6), 6, 1);
+    <a class="code" href="apop_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(d,   1,   2,   3,   3,   1,   2);
+    <a class="code" href="apop_8h.html#a74dca50ea16ed7bf25cb152315642769">apop_text_fill</a>(d,  <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;A&quot;</span>, <span class="stringliteral">&quot;B&quot;</span>);
 
     asprintf(&amp;d-&gt;names-&gt;title, <span class="stringliteral">&quot;Original data set&quot;</span>);
     printdata(d);
 
         <span class="comment">//binned, where bin ends are equidistant but not necessarily in the data</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *binned = <a class="code" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(d, NULL);
+    <a class="code" href="structapop__data.html">apop_data</a> *binned = <a class="code" href="apop_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(d, NULL);
     asprintf(&amp;binned-&gt;names-&gt;title, <span class="stringliteral">&quot;Post binning&quot;</span>);
     printdata(binned);
     assert(<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(binned-&gt;weights)==6);
@@ -125,13 +125,13 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 
         <span class="comment">//compressed, where the data is as in the original, but weights </span>
         <span class="comment">//are redome to accommodate repeated observations.</span>
-    <a class="code" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a>(d);
+    <a class="code" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a>(d);
     asprintf(&amp;d-&gt;names-&gt;title, <span class="stringliteral">&quot;Post compression&quot;</span>);
     printdata(d);
     assert(<a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(d-&gt;weights)==6);
 
     <a class="code" href="structapop__model.html">apop_model</a> *d_as_pmf = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
-    <a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, 0, firstrow); <span class="comment">//1A</span>
+    <a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, 0, firstrow); <span class="comment">//1A</span>
     assert(fabs(<a class="code" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a>(firstrow, d_as_pmf) - 2./6 &lt; 1e-5));
 }
 </pre></div> 
@@ -139,4 +139,4 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

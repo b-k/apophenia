@@ -36,7 +36,7 @@ urchinTracker();
 Defines</h2>
 <ul>
 <li>#define <a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)
-<li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)
+<li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
@@ -56,11 +56,11 @@ Functions</h2>
 <span class="keywordtype">double</span> mean, var;
 
 <span class="comment">//Allocate v and fill it with data here.</span>
-mean = <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(v);
+mean = <a class="code" href="apop_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(v);
 var  = <a class="code" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a>(v, mean);
 printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g\n&quot;</span>, mean, var);
 </pre></div> <hr/><h2>Define Documentation</h2>
-<a class="anchor" id="ga0f69c8414f1d93fa15f3a631710dcd7a"></a><!-- doxytag: member="stats.h::apop_mean" ref="ga0f69c8414f1d93fa15f3a631710dcd7a" args="(in)" -->
+<a class="anchor" id="ga0f69c8414f1d93fa15f3a631710dcd7a"></a><!-- doxytag: member="apop.h::apop_mean" ref="ga0f69c8414f1d93fa15f3a631710dcd7a" args="(in)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -74,12 +74,12 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>An alias for <a class="el" href="stats_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. Returns the mean of the data in the given vector.</p>
-<p>Returns the mean of the elements of the vector <code>v</code>. </p>
+<p>Returns the mean of the elements of the vector <code>v</code>.</p>
+<p>An alias for <a class="el" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. Returns the mean of the data in the given vector. </p>
 
 </div>
 </div>
-<a class="anchor" id="gacc311abe133963c7959162a7d3d83fb8"></a><!-- doxytag: member="stats.h::apop_var" ref="gacc311abe133963c7959162a7d3d83fb8" args="(in)" -->
+<a class="anchor" id="gacc311abe133963c7959162a7d3d83fb8"></a><!-- doxytag: member="apop.h::apop_var" ref="gacc311abe133963c7959162a7d3d83fb8" args="(in)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -88,12 +88,12 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">in</td><td>)</td>
-          <td>&#160;&#160;&#160;<a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)</td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>An alias for <a class="el" href="stats_8h.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>. Returns the variance of the data in the given vector. </p>
+<p>An alias for <a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>. Returns the variance of the data in the given vector. </p>
 
 </div>
 </div>
@@ -122,7 +122,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_57.png"/> </p>
+<p>Returns the correlation coefficient of two vectors. It's just <img class="formulaInl" alt="$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.$" src="form_62.png"/> </p>
 
 </div>
 </div>
@@ -140,9 +140,9 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_51.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
+<p>Returns the sample kurtosis (divide by <img class="formulaInl" alt="$n-1$" src="form_56.png"/>) of the data in the given vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.</p>
 <ul>
-<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_52.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_53.png"/>, not three, one, or zero. </li>
+<li>This does not normalize the output: the kurtosis of a <img class="formulaInl" alt="${\cal N}(0,1)$" src="form_57.png"/> is <img class="formulaInl" alt="$3 \sigma^4$" src="form_58.png"/>, not three, one, or zero. </li>
 </ul>
 
 </div>
@@ -171,7 +171,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_56.png"/>) of the data in the given vector, with an optional weighting.</p>
+<p>Returns the population kurtosis ( <img class="formulaInl" alt="$\sum_i (x_i - \mu)^4/n)$" src="form_61.png"/>) of the data in the given vector, with an optional weighting.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -201,7 +201,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_50.png"/>) of the data in the given vector. </p>
+<p>Returns an unbiased estimate of the sample skew (population skew times y <img class="formulaInl" alt="$n^2/(n^2-1)$" src="form_55.png"/>) of the data in the given vector. </p>
 
 </div>
 </div>
@@ -229,7 +229,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_54.png"/> of the data in the given vector. Observations may be weighted.</p>
+<p>Returns the population skew <img class="formulaInl" alt="$(\sum_i (x_i - \mu)^3/n))$" src="form_59.png"/> of the data in the given vector. Observations may be weighted.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">v</td><td>The data vector </td></tr>
@@ -239,10 +239,10 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The weighted skew. No sample adjustment given weights.</dd></dl>
 <ul>
-<li>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_55.png"/>; that's not done here, so you'll have to do so separately if need be.</li>
+<li>Some people like to normalize the skew by dividing by variance <img class="formulaInl" alt="$^{3/2}$" src="form_60.png"/>; that's not done here, so you'll have to do so separately if need be.</li>
 </ul>
 <ul>
-<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_51.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_7.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly. </li>
+<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_56.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_10.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly. </li>
 </ul>
 
 </div>
@@ -275,7 +275,7 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the vector in question </td></tr>
-    <tr><td class="paramname">mean</td><td>the mean, which you've already calculated using <a class="el" href="stats_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. </td></tr>
+    <tr><td class="paramname">mean</td><td>the mean, which you've already calculated using <a class="el" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -284,4 +284,4 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

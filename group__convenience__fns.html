@@ -56,7 +56,7 @@ Functions</h2>
 <li>void <a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)
 </ul>
 <hr/><h2>Define Documentation</h2>
-<a class="anchor" id="ga7f85a98b61078ba3dc273f17eddd34a7"></a><!-- doxytag: member="stats.h::apop_sum" ref="ga7f85a98b61078ba3dc273f17eddd34a7" args="(in)" -->
+<a class="anchor" id="ga7f85a98b61078ba3dc273f17eddd34a7"></a><!-- doxytag: member="apop.h::apop_sum" ref="ga7f85a98b61078ba3dc273f17eddd34a7" args="(in)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -216,7 +216,7 @@ Functions</h2>
     <tr><td class="paramname">m1</td><td>the upper/rightmost matrix (default=<code>NULL</code>, in which case this basically copies <code>m2</code>) </td></tr>
     <tr><td class="paramname">m2</td><td>the second matrix (default = <code>NULL</code>, in which case <code>m1</code> is returned) </td></tr>
     <tr><td class="paramname">posn</td><td>if 'r', stack rows on top of other rows, else, e.g. 'c' stack columns next to columns. (default ='r') </td></tr>
-    <tr><td class="paramname">inplace</td><td>If 'y', use <a class="el" href="types_8h.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> to modify <code>m1</code> in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving <code>m1</code> unmolested. (default='n') </td></tr>
+    <tr><td class="paramname">inplace</td><td>If 'y', use <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> to modify <code>m1</code> in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving <code>m1</code> unmolested. (default='n') </td></tr>
   </table>
   </dd>
 </dl>
@@ -282,8 +282,23 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>The RNG ready for your use. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The RNG ready for your use.</dd></dl>
+<ul>
+<li>If you are confident that your code is debugged and would like a new stream of values every time your program runs (provided your runs are more than a second apart), seed with the time:</li>
+</ul>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+<span class="preprocessor">#include &lt;time.h&gt;</span>
 
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(
+            <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(
+                <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 
+                .count=10, 
+                .rng=<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(time(NULL))
+            )
+    );
+}
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="ga136ded2b6d190739deca064701cf5ca1"></a><!-- doxytag: member="apop_linear_algebra.c::apop_vector_bounded" ref="ga136ded2b6d190739deca064701cf5ca1" args="(const gsl_vector *in, long double max)" -->
@@ -319,7 +334,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_20.png"/>; zero otherwise.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>1 if everything is bounded: not Inf, -Inf, or NaN, and <img class="formulaInl" alt="$-\max < x < \max$" src="form_23.png"/>; zero otherwise.</dd></dl>
 <ul>
 <li>A <code>NULL</code> vector has no unbounded elements, so <code>NULL</code> input returns 1. You get a warning if <code>apop_opts.verbosity &gt;=1</code>. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -391,18 +406,18 @@ Functions</h2>
 <div class="memdoc">
 <p>Returns the distance between two vectors, where distance is defined based on the third (optional) parameter:</p>
 <ul>
-<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_58.png"/> where <img class="formulaInl" alt="$i$" src="form_59.png"/> iterates over dimensions.</li>
-<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_60.png"/> where <img class="formulaInl" alt="$i$" src="form_59.png"/> iterates over dimensions.</li>
-<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_61.png"/>, return zero, else return one.</li>
-<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_62.png"/> is largest, return the distance along that one dimension.</li>
-<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_63.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_64.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_17.png"/> is set by the fourth (optional) argument.</li>
+<li>'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply <img class="formulaInl" alt="$\sqrt{\sum_i{(a_i - b_i)^2}},$" src="form_63.png"/> where <img class="formulaInl" alt="$i$" src="form_64.png"/> iterates over dimensions.</li>
+<li>'m' or 'M' Returns the Manhattan metric distance between two vectors: <img class="formulaInl" alt="$\sum_i{|a_i - b_i|},$" src="form_65.png"/> where <img class="formulaInl" alt="$i$" src="form_64.png"/> iterates over dimensions.</li>
+<li>'d' or 'D' The discrete norm: if <img class="formulaInl" alt="$a = b$" src="form_66.png"/>, return zero, else return one.</li>
+<li>'s' or 'S' The sup norm: find the dimension where <img class="formulaInl" alt="$|a_i - b_i|$" src="form_67.png"/> is largest, return the distance along that one dimension.</li>
+<li>'l' or 'L' The <img class="formulaInl" alt="$L_p$" src="form_68.png"/> norm, <img class="formulaInl" alt="$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},$" src="form_69.png"/>. The value of <img class="formulaInl" alt="$p$" src="form_20.png"/> is set by the fourth (optional) argument.</li>
 </ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">ina</td><td>First vector (No default, must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">inb</td><td>Second vector (Default = zero) </td></tr>
     <tr><td class="paramname">metric</td><td>The type of metric, as above. </td></tr>
-    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_63.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_17.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
+    <tr><td class="paramname">norm</td><td>If you are using an <img class="formulaInl" alt="$L_p$" src="form_68.png"/> norm, this is <img class="formulaInl" alt="$p$" src="form_20.png"/>. Must be strictly greater than zero. (default = 2)</td></tr>
   </table>
   </dd>
 </dl>
@@ -410,7 +425,7 @@ Functions</h2>
 <div class="fragment"><pre class="fragment"> <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v);
  <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v, .metric = <span class="charliteral">&#39;s&#39;</span>);
 </pre></div><p> gives you the standard Euclidean length of <code>v</code> and its longest element.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="comment">/* Test distance calculations using a 3-4-5 triangle */</span>
 <span class="keywordtype">int</span> main(){
@@ -448,7 +463,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_19.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_19.png"/>).</p>
+<p>Replace every vector element <img class="formulaInl" alt="$v_i$" src="form_22.png"/> with exp( <img class="formulaInl" alt="$v_i$" src="form_22.png"/>).</p>
 <ul>
 <li>If the input vector is <code>NULL</code>, do nothing. </li>
 </ul>
@@ -532,7 +547,7 @@ Functions</h2>
   <table class="params">
     <tr><td class="paramname">v1</td><td>the upper vector (default=<code>NULL</code>, in which case this basically copies <code>v2</code>) </td></tr>
     <tr><td class="paramname">v2</td><td>the second vector (default=<code>NULL</code>, in which case nothing is added) </td></tr>
-    <tr><td class="paramname">inplace</td><td>If 'y', use <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>v1</code> in place; see the caveats on that function. Otherwise, allocate a new vector, leaving <code>v1</code> unmolested. (default='n') </td></tr>
+    <tr><td class="paramname">inplace</td><td>If 'y', use <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>v1</code> in place; see the caveats on that function. Otherwise, allocate a new vector, leaving <code>v1</code> unmolested. (default='n') </td></tr>
   </table>
   </dd>
 </dl>
@@ -563,4 +578,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

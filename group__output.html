@@ -100,7 +100,7 @@ Functions</h2>
   </dd>
 </dl>
 <ul>
-<li>This function gives more columns than you probably want; use <a class="el" href="types_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a> to pick the ones you want to see. <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>We should probably let this summarize rows as well. </dd></dl>
+<li>This function gives more columns than you probably want; use <a class="el" href="apop_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a> to pick the ones you want to see. <dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>We should probably let this summarize rows as well. </dd></dl>
 </li>
 </ul>
 
@@ -215,13 +215,13 @@ fclose(out);  <span class="comment">//optional in most cases.</span>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>, where <img class="formulaInl" alt="$N$" src="form_3.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>, where <img class="formulaInl" alt="$N$" src="form_6.png"/> is the length of the vector.) </td></tr>
     <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
   </table>
   </dd>
 </dl>
 <ul>
-<li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -264,7 +264,7 @@ fclose(out);  <span class="comment">//optional in most cases.</span>
 <div class="caption">
 A lattice showing three variables graphed against each other.</div></div>
  <ul>
-<li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -312,17 +312,17 @@ A lattice showing three variables graphed against each other.</div></div>
   </dd>
 </dl>
 <p>The sample program below will pull data from a database (ridership at the Silver Spring, MD Metro station; get the database in the {<em>Modeling</em> with Data} sample code, at <a href="http://modelingwithdata.org/appendices.html">http://modelingwithdata.org/appendices.html</a>), then runs OLS, and produce a Gnuplot file to write to a file named "scatter.eps". You can run the result through Gnuplot via <code> gnuplot scatter.gplot</code>, and if you don't like the results, you have the Gnuplot file ("scatter.gplot") on hand for modifications.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
     <span class="keywordtype">char</span> outfile[] = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
 
-    <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
+    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39; and riders&gt;0&quot;</span>);
-    <a class="code" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
+    <a class="code" href="apop_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
 
     <span class="comment">//The regression destroys your data, so copy it first.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
+    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
 
     <span class="comment">//Run OLS, display results on terminal</span>
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
@@ -335,7 +335,7 @@ A lattice showing three variables graphed against each other.</div></div>
     fclose(f);
 }
 </pre></div><ul>
-<li>See <a class="el" href="apop__output_8c.html#a63231ef277c172cd3ab0652b0376f66f">apop_prep_output</a> for more on how settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> for more on how settings are set. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
 
@@ -343,4 +343,4 @@ A lattice showing three variables graphed against each other.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

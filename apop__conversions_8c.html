@@ -27,6 +27,7 @@ urchinTracker();
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Defines</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -38,6 +39,15 @@ Data Structures</h2>
 <ul>
 <li>struct <a class="el" href="structline__parse__t.html">line_parse_t</a>
 <li>struct <a class="el" href="structapop__char__info.html">apop_char_info</a>
+</ul>
+<h2><a name="define-members"></a>
+Defines</h2>
+<ul>
+<li><a class="anchor" id="a2ebf400a5c61debc1b29348719cf1bec"></a><!-- doxytag: member="apop_conversions.c::DbType" ref="a2ebf400a5c61debc1b29348719cf1bec" args="" -->
+#define <b>DbType</b>&#160;&#160;&#160;apop_opts.db_engine=='m' ? &quot;text&quot; : &quot;character&quot;
+<li><a class="anchor" id="a1246181a82eca8de97c760b2d51ed997"></a><!-- doxytag: member="apop_conversions.c::DbType2" ref="a1246181a82eca8de97c760b2d51ed997" args="" -->
+#define <b>DbType2</b>&#160;&#160;&#160;apop_opts.db_engine=='m' ? &quot;double&quot; : &quot;numeric&quot;
+<li>#define <b>Textrealloc</b>(str, len)
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
@@ -73,18 +83,52 @@ char * <b>cut_at_dot</b> (char const *infile)
 <h2><a name="var-members"></a>
 Variables</h2>
 <ul>
+<li><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_conversions.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
+char * <b>apop_nul_string</b>
 <li><a class="anchor" id="ad6e663497d2c934364b3bcf07496b30b"></a><!-- doxytag: member="apop_conversions.c::db" ref="ad6e663497d2c934364b3bcf07496b30b" args="" -->
 sqlite3 * <b>db</b>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The various functions to convert from one format to another. </p>
-</div><hr/><h2>Function Documentation</h2>
+</div><hr/><h2>Define Documentation</h2>
+<a class="anchor" id="aab961ddb0cb535bbba949530d58d7c8d"></a><!-- doxytag: member="apop_conversions.c::Textrealloc" ref="aab961ddb0cb535bbba949530d58d7c8d" args="(str, len)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define Textrealloc</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">str, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">len&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<b>Value:</b><div class="fragment"><pre class="fragment">(str) =         \
+            (str) != apop_nul_string          \
+                ? realloc((str), (len))       \
+                : (((len) &gt; 0) ? malloc(len) : apop_nul_string);
+</pre></div>
+</div>
+</div>
+<hr/><h2>Function Documentation</h2>
 <a class="anchor" id="aee8c299b83b8500b8b6ecd30817353c8"></a><!-- doxytag: member="apop_conversions.c::apop_crosstab_to_db" ref="aee8c299b83b8500b8b6ecd30817353c8" args="(apop_data *in, char *tabname, char *row_col_name, char *col_col_name, char *data_col_name)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> </td>
+          <td class="memname">void <a class="el" href="apop__conversions_8c.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -121,7 +165,7 @@ sqlite3 * <b>db</b>
       </table>
 </div>
 <div class="memdoc">
-<p>See <a class="el" href="types_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> for the storyline; this is the complement, which takes a crosstab and writes its values to the database.</p>
+<p>See <a class="el" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> for the storyline; this is the complement, which takes a crosstab and writes its values to the database.</p>
 <p>For example, I would take </p>
 <table  frame="box">
 <tr>
@@ -152,7 +196,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
@@ -170,10 +214,10 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 </pre></div><p> because there are six 1s observed, four 2s observed, and two 3s observed. We call this rank format, because 1 (or zero) is typically the most common, 2 is second most common, et cetera.</p>
 <p>This function takes in a list of observations, and aggregates them into a single row in rank format.</p>
 <ul>
-<li>For the complement, see <a class="el" href="types_8h.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>.</li>
+<li>For the complement, see <a class="el" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>.</li>
 </ul>
 <ul>
-<li>You may be interested in <a class="el" href="stats_8h.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> to convert real numbers or text into a matrix of categories.</li>
+<li>You may be interested in <a class="el" href="apop__regression_8c.html#a27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> to convert real numbers or text into a matrix of categories.</li>
 </ul>
 <ul>
 <li>The number of bins is simply the largest number found. So if there are bins {0, 1, 2} and your data set happens to consist of <code>0 0 1 1 0</code>, then I won't know to generate results with three bins where the last bin has probability zero.</li>
@@ -181,21 +225,21 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="fragment"><pre class="fragment"><span class="comment">/* A round trip: generate Zipf-distributed draws, summarize them to a single list of</span>
 <span class="comment">rankings, then expand the rankings to a list of single entries. The sorted list at the end</span>
 <span class="comment">of this should be identical to the (sorted) original list. */</span>
-<span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(2342);
     <span class="keywordtype">int</span> i, length = 1e4;
     <a class="code" href="structapop__model.html">apop_model</a> *a_zipf = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea">apop_zipf</a>, 3.2);
-    <a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(length);
+    <a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(length);
     <span class="keywordflow">for</span> (i=0; i&lt; length; i++)
-        <a class="code" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(draws, i, -1), r, a_zipf);
-    <a class="code" href="structapop__data.html">apop_data</a> *by_rankings = <a class="code" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>(draws);
+        <a class="code" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(draws, i, -1), r, a_zipf);
+    <a class="code" href="structapop__data.html">apop_data</a> *by_rankings = <a class="code" href="apop_8h.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>(draws);
     <span class="comment">//The first row of the matrix is suitable for plotting.</span>
     <span class="comment">//apop_data_show(by_rankings);</span>
     assert(<a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(by_rankings-&gt;matrix) == length);
 
-    <a class="code" href="structapop__data.html">apop_data</a> *re_expanded = <a class="code" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>(by_rankings);
+    <a class="code" href="structapop__data.html">apop_data</a> *re_expanded = <a class="code" href="apop_8h.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a>(by_rankings);
     gsl_sort_vector(draws-&gt;vector);
     gsl_sort_vector(re_expanded-&gt;vector);
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(draws-&gt;vector, re_expanded-&gt;vector) &lt; 1e-5);
@@ -208,7 +252,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__conversions_8c.html#a2feb17743f8b07b8ddcf457362cabefc">apop_data_rank_expand</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
@@ -217,7 +261,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
       </table>
 </div>
 <div class="memdoc">
-<p>The complement to this is <a class="el" href="types_8h.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>; see that function's documentation for the story and an example.</p>
+<p>The complement to this is <a class="el" href="apop__conversions_8c.html#a8c4bb25171301f09a35c36306a7b9783">apop_data_rank_compress</a>; see that function's documentation for the story and an example.</p>
 <p>This function takes in a data set where the zeroth column includes the count(s) of times that zero was observed, the first gives the count(s) of times that one was observed, et cetera. It outputs a data set whose vector element includes a list that has exactly the given frequency of zeros, ones, et cetera. </p>
 
 </div>
@@ -227,7 +271,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>tabname</em>, </td>
@@ -274,11 +318,11 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <ul>
 <li>This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple <code>select</code> query to generate the data. One is to specify an ad hoc table to pull from:</li>
 </ul>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;(select row, col, count(*) ct from base_data group by row, col)&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>,  <span class="stringliteral">&quot;ct&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;(select row, col, count(*) ct from base_data group by row, col)&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>,  <span class="stringliteral">&quot;ct&quot;</span>);
 </pre></div><p>The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;base_data group by row, col&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>, <span class="stringliteral">&quot;count(*)&quot;</span>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> * out = <a class="code" href="apop_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;base_data group by row, col&quot;</span>, <span class="stringliteral">&quot;row&quot;</span>, <span class="stringliteral">&quot;col&quot;</span>, <span class="stringliteral">&quot;count(*)&quot;</span>);
 <span class="comment">//which will expand to &quot;select row, col, count(*) from base_data group by row, col&quot;</span>
-</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="types_8h.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a></dd></dl>
+</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop__conversions_8c.html#aee8c299b83b8500b8b6ecd30817353c8">apop_crosstab_to_db</a></dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error='n'</td><td>Name not found error. </td></tr>
@@ -319,4 +363,4 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

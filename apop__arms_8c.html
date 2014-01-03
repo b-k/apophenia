@@ -67,13 +67,13 @@ void <b>display</b> (FILE *f, arms_state *env, <a class="el" href="structapop__a
 <li><a class="anchor" id="abe3a7c80b8f77e9060471dc93feeb8df"></a><!-- doxytag: member="apop_arms.c::initial" ref="abe3a7c80b8f77e9060471dc93feeb8df" args="(apop_arms_settings *params, arms_state *state)" -->
 int <b>initial</b> (<a class="el" href="structapop__arms__settings.html">apop_arms_settings</a> *params, arms_state *state)
 <li><a class="anchor" id="ad5fc2842fa004d1fbf774e6f5db810fe"></a><!-- doxytag: member="apop_arms.c::Apop_settings_copy" ref="ad5fc2842fa004d1fbf774e6f5db810fe" args="(apop_arms, out&#45;&gt;state=malloc(sizeof(arms_state));*out&#45;&gt;state=*in&#45;&gt;state;) Apop_settings_free(apop_arms" -->
-<b>Apop_settings_copy</b> (apop_arms, out-&gt;state=malloc(sizeof(arms_state));*out-&gt;state=*in-&gt;state;) <a class="el" href="settings_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(apop_arms
+<b>Apop_settings_copy</b> (apop_arms, out-&gt;state=malloc(sizeof(arms_state));*out-&gt;state=*in-&gt;state;) <a class="el" href="apop_8h.html#a833e962fb042462eeadada7484671f07">Apop_settings_free</a>(apop_arms
 <li><a class="anchor" id="abfe03f2ea8ce6ef8d815825c431c04af"></a><!-- doxytag: member="apop_arms.c::if" ref="abfe03f2ea8ce6ef8d815825c431c04af" args="(in&#45;&gt;state)" -->
 <b>if</b> (in-&gt;state)
 <li><a class="anchor" id="ae5220743fba25b2ddfb4009c097b0b3f"></a><!-- doxytag: member="apop_arms.c::Apop_settings_init" ref="ae5220743fba25b2ddfb4009c097b0b3f" args="(apop_arms)" -->
 <b>Apop_settings_init</b> (apop_arms)
-<li>void <a class="el" href="apop__arms_8c.html#ad422a97e52c70bacb585a9f27a987d23">apop_arms_draw</a> (double *out, gsl_rng *r, <a class="el" href="structapop__model.html">apop_model</a> *m)
-<dl class="el"><dd class="mdescRight">Adaptive rejection metropolis sampling.  <a href="#ad422a97e52c70bacb585a9f27a987d23"></a><br/></dl></ul>
+<li>int <a class="el" href="apop__arms_8c.html#a0492d6f5ae8a73a60b651cadb113d643">apop_arms_draw</a> (double *out, gsl_rng *r, <a class="el" href="structapop__model.html">apop_model</a> *m)
+<dl class="el"><dd class="mdescRight">Adaptive rejection metropolis sampling.  <a href="#a0492d6f5ae8a73a60b651cadb113d643"></a><br/></dl></ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>adaptive rejection metropolis sampling </p>
 </div><hr/><h2>Define Documentation</h2>
@@ -92,12 +92,12 @@ int <b>initial</b> (<a class="el" href="structapop__arms__settings.html">apop_ar
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="ad422a97e52c70bacb585a9f27a987d23"></a><!-- doxytag: member="apop_arms.c::apop_arms_draw" ref="ad422a97e52c70bacb585a9f27a987d23" args="(double *out, gsl_rng *r, apop_model *m)" -->
+<a class="anchor" id="a0492d6f5ae8a73a60b651cadb113d643"></a><!-- doxytag: member="apop_arms.c::apop_arms_draw" ref="a0492d6f5ae8a73a60b651cadb113d643" args="(double *out, gsl_rng *r, apop_model *m)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="stats_8h.html#ad422a97e52c70bacb585a9f27a987d23">apop_arms_draw</a> </td>
+          <td class="memname">int <a class="el" href="apop__arms_8c.html#a0492d6f5ae8a73a60b651cadb113d643">apop_arms_draw</a> </td>
           <td>(</td>
           <td class="paramtype">double *&#160;</td>
           <td class="paramname"><em>out</em>, </td>
@@ -130,7 +130,7 @@ int <b>initial</b> (<a class="el" href="structapop__arms__settings.html">apop_ar
 <li>It accepts only functions with univariate inputs. I.e., it will put a single value in the vector part of a <a class="el" href="gentle.html#apop_data">apop_data</a> set, and then evaluate the log likelihood at that point.</li>
 </ul>
 <ul>
-<li>It is currently the default for the <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a> function, so you can just call that if you prefer.</li>
+<li>It is currently the default for the <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a> function, so you can just call that if you prefer.</li>
 </ul>
 <ul>
 <li>There are a great number of parameters, in the <code><a class="el" href="structapop__arms__settings.html">apop_arms_settings</a></code> structure. The structure also holds a history of the points tested to date. That means that the system will be more accurate as more draws are made. It also means that if the parameters change, or you use <a class="el" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>, you should call <code><a class="el" href="group__settings.html#ga4ff4361f65c1e848fabce24b4b8f44f7">Apop_settings_rm_group(your_model, apop_arms)</a></code> to clear the model of points that are not valid for a different situation.</li>
@@ -143,4 +143,4 @@ int <b>initial</b> (<a class="el" href="structapop__arms__settings.html">apop_ar
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

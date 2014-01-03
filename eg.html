@@ -32,7 +32,7 @@ urchinTracker();
 <div class="textblock"><p>Here are a few pieces of sample code, gathered from elsewhere in the documentation, for testing your installation or to give you a sense of what code with Apophenia's tools looks like. If you'd like more context or explanation, please click through to the page from which the example was taken.</p>
 <p>In the documentation for the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> model, a program to read in data and run a regression. You'll need to go to that page for the sample data and further discussion.</p>
 <p>From the <a class="el" href="setup.html">Setting up</a> page, an example of gathering data from two processes, saving the input to a database, then doing a later analysis:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="comment">//Your processes are probably a bit more complex.</span>
 <span class="keywordtype">double</span> process_one(gsl_rng *r){
@@ -49,8 +49,8 @@ urchinTracker();
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(123);
 
     <span class="comment">//create the database and the data table.</span>
-    <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;runs.db&quot;</span>);
-    <a class="code" href="apop__db_8c.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a>(<span class="stringliteral">&quot;samples&quot;</span>, <span class="charliteral">&#39;d&#39;</span>); <span class="comment">//If the table already exists, delete it.</span>
+    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;runs.db&quot;</span>);
+    <a class="code" href="apop_8h.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a>(<span class="stringliteral">&quot;samples&quot;</span>, <span class="charliteral">&#39;d&#39;</span>); <span class="comment">//If the table already exists, delete it.</span>
     <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;create table samples(iteration, process, value); begin;&quot;</span>);
 
     <span class="comment">//populate the data table with runs.</span>
@@ -63,10 +63,10 @@ urchinTracker();
     <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;commit;&quot;</span>); <span class="comment">//the begin-commit wrapper saves writes to the drive.</span>
 
     <span class="comment">//pull the data from the database, converting it into a table along the way. </span>
-    <a class="code" href="structapop__data.html">apop_data</a> *m  = <a class="code" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;samples&quot;</span>, <span class="stringliteral">&quot;iteration&quot;</span>,<span class="stringliteral">&quot;process&quot;</span>, <span class="stringliteral">&quot;value&quot;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *m  = <a class="code" href="apop_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;samples&quot;</span>, <span class="stringliteral">&quot;iteration&quot;</span>,<span class="stringliteral">&quot;process&quot;</span>, <span class="stringliteral">&quot;value&quot;</span>);
 
-    <a class="code" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 0, v1); <span class="comment">//get vector views of the two table columns.</span>
-    <a class="code" href="stats_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 1, v2);
+    <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 0, v1); <span class="comment">//get vector views of the two table columns.</span>
+    <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 1, v2);
 
     <span class="comment">//Output a table of means/variances, and t-test results.</span>
     printf(<span class="stringliteral">&quot;\t   mean\t\t   var\n&quot;</span>);
@@ -77,17 +77,17 @@ urchinTracker();
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(m, <span class="stringliteral">&quot;the_data.txt&quot;</span>);
 }
 </pre></div><p>A demonstration of <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> . You'll need a database from the {<em>Modeling</em> with Data} sample code, at <a href="http://modelingwithdata.org/appendices.html">http://modelingwithdata.org/appendices.html</a>.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
     <span class="keywordtype">char</span> outfile[] = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
 
-    <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
+    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
     <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39; and riders&gt;0&quot;</span>);
-    <a class="code" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
+    <a class="code" href="apop_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
 
     <span class="comment">//The regression destroys your data, so copy it first.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
+    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
 
     <span class="comment">//Run OLS, display results on terminal</span>
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
@@ -99,8 +99,8 @@ urchinTracker();
     <a class="code" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a>(data_copy, est, .output_pipe=f);
     fclose(f);
 }
-</pre></div><p>In the <a class="el" href="outline.html">An outline of the library</a> section on map/apply, a new <img class="formulaInl" alt="$t$" src="form_8.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+</pre></div><p>In the <a class="el" href="outline.html">An outline of the library</a> section on map/apply, a new <img class="formulaInl" alt="$t$" src="form_11.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">double</span> row_offset;
 gsl_rng *r;
@@ -110,14 +110,14 @@ gsl_rng *r;
 <span class="keywordtype">double</span> conf(<span class="keywordtype">double</span> in, <span class="keywordtype">void</span> *df){ <span class="keywordflow">return</span> gsl_cdf_tdist_P(in, *(<span class="keywordtype">int</span> *)df);}
 
 <span class="comment">//apop_vector_mean is a macro, so we can&#39;t point a pointer to it.</span>
-<span class="keywordtype">double</span> mu(gsl_vector *in){ <span class="keywordflow">return</span> <a class="code" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(in);}
+<span class="keywordtype">double</span> mu(gsl_vector *in){ <span class="keywordflow">return</span> <a class="code" href="apop_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(in);}
 
 <span class="keywordtype">int</span> main(){
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 100);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 100);
     r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){
         row_offset = gsl_rng_uniform(r)*2 -1;
-        <a class="code" href="stats_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, i, onerow);
+        <a class="code" href="apop_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, i, onerow);
         <a class="code" href="group__mapply.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(onerow, offset_rng);
     }
 
@@ -143,10 +143,10 @@ gsl_rng *r;
     }
 }
 </pre></div><p>In the documentation for <a class="el" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>, a program to list all the tables in an SQLite database. </p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">void</span> print_table_list(<span class="keywordtype">char</span> *db_file){
-    <a class="code" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(db_file);
+    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(db_file);
     <a class="code" href="structapop__data.html">apop_data</a> *tab_list= <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;select name &quot;</span>
                     <span class="stringliteral">&quot;from sqlite_master where type==&#39;table&#39;&quot;</span>);
     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt; tab_list-&gt;textsize[0]; i++)
@@ -162,24 +162,24 @@ gsl_rng *r;
     print_table_list(argv[1]);
 }
 </pre></div><p>A demonstration of fixing parameters to create a marginal distribution, via <a class="el" href="apop__fix__params_8c.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> </p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(10);
     <span class="keywordtype">size_t</span> ct = 5e4;
 
     <span class="comment">//set up the model &amp; params</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
-    <a class="code" href="types_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(params, 8,  1, 0.5,
+    <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2,2);
+    <a class="code" href="apop_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a>(params, 8,  1, 0.5,
                            2,  0.5, 1);
     <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
-    pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
+    pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
     pvm-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 2;
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(pvm, ct, r);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(pvm, ct, r);
 
     <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span>
     gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);
-    <a class="code" href="structapop__model.html">apop_model</a> *mep1 = <a class="code" href="stats_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
+    <a class="code" href="structapop__model.html">apop_model</a> *mep1 = <a class="code" href="apop_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);
     <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, mep1);
     
     <span class="comment">//compare results, via assert for the test suite, or on-screen for human use.</span>
@@ -196,7 +196,7 @@ gsl_rng *r;
 <div class="fragment"><pre class="fragment"><span class="comment">/* A demonstration of dot products and various useful </span>
 <span class="comment">   transformations among types. */</span>
 
-<span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">double</span> eps=1e-3;<span class="comment">//slow to converge series--&gt;large tolerance.</span>
 <span class="preprocessor">#define Diff(L, R) Apop_assert(fabs((L)-(R)&lt;(eps)), &quot;%g is too different from %g (abitrary limit=%g).&quot;, (double)(L), (double)(R), eps);</span>
@@ -218,14 +218,14 @@ gsl_rng *r;
 <span class="comment">       First, vector-as-data dot itself.</span>
 <span class="comment">       If one of the inputs is a vector,</span>
 <span class="comment">       apop_dot puts the output in a vector-as-data:*/</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *v_as_data = <a class="code" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a>(v);
+    <a class="code" href="structapop__data.html">apop_data</a> *v_as_data = <a class="code" href="apop_8h.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a>(v);
     <a class="code" href="structapop__data.html">apop_data</a> *vdotv = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, v_as_data);
     Diff(gsl_vector_get(vdotv-&gt;vector, 0), pi_over_six);
 
     <span class="comment">/* As a matrix-as-data, via a compound literal. </span>
 <span class="comment">       Default is a len X 1 matrix. */</span>
     gsl_matrix *v_as_matrix = <a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v);
-    <a class="code" href="structapop__data.html">apop_data</a> dm = (<a class="code" href="types_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=v_as_matrix};
+    <a class="code" href="structapop__data.html">apop_data</a> dm = (<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=v_as_matrix};
 
     <span class="comment">// (1 X len) dot (len X 1) --- OK, produce a scalar.</span>
     <a class="code" href="structapop__data.html">apop_data</a> *mdotv = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, &amp;dm);
@@ -233,23 +233,23 @@ gsl_rng *r;
     Diff(scalarval, pi_over_six);
 
     <span class="comment">//(len X 1) dot (len X 1) --- bad dimensions.</span>
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=-1; <span class="comment">//don&#39;t print an error.</span>
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=-1; <span class="comment">//don&#39;t print an error.</span>
     <a class="code" href="structapop__data.html">apop_data</a> *mdotv2 = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, v_as_data);
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=0; <span class="comment">//back to sanity.</span>
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=0; <span class="comment">//back to sanity.</span>
     assert(mdotv2-&gt;error);
 
     <span class="comment">// If we want (len X 1) dot (1 X len) --&gt; (len X len),</span>
     <span class="comment">// use apop_vector_to_matrix.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> dmr = (<a class="code" href="types_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=<a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v, .row_col=<span class="charliteral">&#39;r&#39;</span>)};
+    <a class="code" href="structapop__data.html">apop_data</a> dmr = (<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=<a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v, .row_col=<span class="charliteral">&#39;r&#39;</span>)};
     <a class="code" href="structapop__data.html">apop_data</a> *product_matrix = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, &amp;dmr);
     <span class="comment">//The trace is the sum of squares:</span>
     gsl_vector_view trace = gsl_matrix_diagonal(product_matrix-&gt;matrix);
     <span class="keywordtype">double</span> tracesum = <a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(&amp;trace.vector);
     Diff(tracesum, pi_over_six);
 
-    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(product_matrix);
+    <a class="code" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(product_matrix);
     gsl_matrix_free(dmr.matrix);
 }
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

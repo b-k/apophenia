@@ -27,7 +27,8 @@ urchinTracker();
 <div class="header">
   <div class="summary">
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">apop_asst.c File Reference</div>  </div>
 </div><!--header-->
@@ -50,6 +51,12 @@ Functions</h2>
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, gsl_rng *rng, <a class="el" href="structapop__data.html">apop_data</a> *draws)
 </ul>
+<h2><a name="var-members"></a>
+Variables</h2>
+<ul>
+<li><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_asst.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
+char * <b>apop_nul_string</b>
+</ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The odds and ends bin. Copyright (c) 2005--2007, 2010 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
 </div><hr/><h2>Function Documentation</h2>
@@ -58,7 +65,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="types_8h.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>m</em>, </td>
@@ -78,7 +85,7 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).</p>
-<p>The distribution has two parameters, typically named <img class="formulaInl" alt="$\alpha$" src="form_1.png"/> and <img class="formulaInl" alt="$\beta$" src="form_2.png"/>, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.</p>
+<p>The distribution has two parameters, typically named <img class="formulaInl" alt="$\alpha$" src="form_4.png"/> and <img class="formulaInl" alt="$\beta$" src="form_5.png"/>, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">m</td><td>The mean the Beta distribution should have. Notice that m is in [0,1].</td></tr>
@@ -101,7 +108,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="asst_8h.html#a757dd4278aac9967f9e62c3ef3c8fc69">apop_generalized_harmonic</a> </td>
+          <td class="memname">double <a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a> </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>N</em>, </td>
@@ -120,7 +127,7 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Calculate <img class="formulaInl" alt="$\sum_{n=1}^N {1\over n^s}$" src="form_0.png"/></p>
+<p>Calculate <img class="formulaInl" alt="$\sum_{n=1}^N {1\over n^s}$" src="form_3.png"/></p>
 <ul>
 <li>There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation.</li>
 </ul>
@@ -128,14 +135,14 @@ Functions</h2>
 <li>If <code>N</code> is zero or negative, return NaN. Notify the user if <code>apop_opts.verbosity &gt;=1</code></li>
 </ul>
 <p>For example:</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-    <span class="keywordtype">double</span> out = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(270, 0.0);
+    <span class="keywordtype">double</span> out = <a class="code" href="apop_8h.html#a757dd4278aac9967f9e62c3ef3c8fc69">apop_generalized_harmonic</a>(270, 0.0);
      assert (out == 270);
-     out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(370, -1.0);
+     out  = <a class="code" href="apop_8h.html#a757dd4278aac9967f9e62c3ef3c8fc69">apop_generalized_harmonic</a>(370, -1.0);
      assert (out == 370*371/2);
-     out  = <a class="code" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a>(12, -1.0);
+     out  = <a class="code" href="apop_8h.html#a757dd4278aac9967f9e62c3ef3c8fc69">apop_generalized_harmonic</a>(12, -1.0);
      assert (out == 12*13/2);
 }
 </pre></div> 
@@ -146,7 +153,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model</em>, </td>
@@ -192,6 +199,7 @@ Functions</h2>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error=='m'</td><td>Input model isn't good for making draws: it is <code>NULL</code>, or <code>m-&gt;dsize=0</code>.</td></tr>
     <tr><td class="paramname">out-&gt;error=='s'</td><td>You gave me a <code>draws</code> matrix, but its size is less than the size of a single draw from the data, <code>model-&gt;dsize</code>.</td></tr>
+    <tr><td class="paramname">out-&gt;error=='d'</td><td>Trouble drawing from the distribution for at least one row. That row is set to all <code>NAN</code>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -199,9 +207,22 @@ Functions</h2>
 <li>Prints a warning if you send in a non-<code>NULL <a class="el" href="structapop__data.html">apop_data</a></code> set, but its <code>matrix</code> element is <code>NULL</code>, when <code>apop_opts.verbose&gt;=1</code>.</li>
 </ul>
 <ul>
-<li>See also <a class="el" href="group__models.html#gaca737ed521192a76a307bbf825ab4a97">apop_draw</a>, which makes a single draw. </li>
+<li>See also <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, which makes a single draw.</li>
 </ul>
+<p>Here is a one-liner program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+<span class="preprocessor">#include &lt;time.h&gt;</span>
 
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(
+            <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(
+                <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 
+                .count=10, 
+                .rng=<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(time(NULL))
+            )
+    );
+}
+</pre></div> 
 </div>
 </div>
 <a class="anchor" id="aa9ec5e7ed223c09bec044ced54f24fad"></a><!-- doxytag: member="apop_asst.c::apop_regex" ref="aa9ec5e7ed223c09bec044ced54f24fad" args="(const char *string, const char *regex, apop_data **substrings, const char use_case)" -->
@@ -209,7 +230,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> </td>
+          <td class="memname">int <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>string</em>, </td>
@@ -263,43 +284,43 @@ Functions</h2>
 <ul>
 <li>Here is the test function. Notice that the substring-pulling function call passes <code>&amp;subs</code>, not plain <code>subs</code>. Also, the non-match has a zero-length blank in <code>subs-&gt;text[0][1]</code>.</li>
 </ul>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 <span class="keywordtype">int</span> main(){
     <span class="keywordtype">char</span> string1[] = <span class="stringliteral">&quot;Hello. I am a string.&quot;</span>;
-    assert(<a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;hell&quot;</span>));
-    <a class="code" href="structapop__data.html">apop_data</a> *subs;
-    <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;(e).*I.*(xxx)*(am)&quot;</span>, .substrings = &amp;subs);
+    assert(<a class="code" href="apop_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;hell&quot;</span>));
+    apop_data *subs;
+    <a class="code" href="apop_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string1, <span class="stringliteral">&quot;(e).*I.*(xxx)*(am)&quot;</span>, .substrings = &amp;subs);
     <span class="comment">//apop_data_show(subs);</span>
     assert(!strcmp(subs-&gt;text[0][0], <span class="stringliteral">&quot;e&quot;</span>));
     assert(!strlen(subs-&gt;text[0][1]));
     assert(!strcmp(subs-&gt;text[0][2], <span class="stringliteral">&quot;am&quot;</span>));
-    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
+    <a class="code" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 
     <span class="comment">//Split a comma-delimited list, throwing out white space.</span>
     <span class="comment">//Notice that the regex includes only one instance of a non-comma blob </span>
     <span class="comment">//ending in a non-space followed by a comma, but the function keeps </span>
     <span class="comment">//applying it until the end of string.</span>
     <span class="keywordtype">char</span> string2[] = <span class="stringliteral">&quot; one, two , three ,four&quot;</span>;
-    <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string2, <span class="stringliteral">&quot; *([^,]*[^ ]) *(,|$) *&quot;</span>, &amp;subs);
+    <a class="code" href="apop_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string2, <span class="stringliteral">&quot; *([^,]*[^ ]) *(,|$) *&quot;</span>, &amp;subs);
     assert(!strcmp(*subs-&gt;text[0], <span class="stringliteral">&quot;one&quot;</span>));
     assert(!strcmp(*subs-&gt;text[1], <span class="stringliteral">&quot;two&quot;</span>));
     assert(!strcmp(*subs-&gt;text[2], <span class="stringliteral">&quot;three&quot;</span>));
     assert(!strcmp(*subs-&gt;text[3], <span class="stringliteral">&quot;four&quot;</span>));
-    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
+    <a class="code" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 
     <span class="comment">//Get a parenthetical. For EREs, \( \) match plain parens in the text.</span>
     <span class="keywordtype">char</span> string3[] = <span class="stringliteral">&quot; one (but secretly, two)&quot;</span>;
-    <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string3, <span class="stringliteral">&quot;(\\([^)]*\\))&quot;</span>, &amp;subs);
+    <a class="code" href="apop_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(string3, <span class="stringliteral">&quot;(\\([^)]*\\))&quot;</span>, &amp;subs);
     assert(!strcmp(*subs-&gt;text[0], <span class="stringliteral">&quot;(but secretly, two)&quot;</span>));
-    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
+    <a class="code" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(subs);
 
     <span class="comment">//NULL input string ==&gt; no-op.</span>
-    <span class="keywordtype">int</span> match_count = <a class="code" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(NULL, <span class="stringliteral">&quot; *([^,]*[^ ]) *(,|$) *&quot;</span>, &amp;subs);
+    <span class="keywordtype">int</span> match_count = <a class="code" href="apop_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>(NULL, <span class="stringliteral">&quot; *([^,]*[^ ]) *(,|$) *&quot;</span>, &amp;subs);
     assert(!match_count);
     assert(!subs);
 }
 </pre></div><ul>
-<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="types_8h.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
+<li>Each set of matches will be one row of the output data. E.g., given the regex <code>([A-Za-z])([0-9])</code>, the column zero of <code>outdata</code> will hold letters, and column one will hold numbers. Use <a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> to reverse this so that the letters are in <code>outdata-&gt;text[0]</code> and numbers in <code>outdata-&gt;text[1]</code>. </li>
 </ul>
 
 </div>
@@ -309,7 +330,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="stats_8h.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> </td>
+          <td class="memname">double <a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_rng *&#160;</td>
           <td class="paramname"><em>r</em>, </td>
@@ -372,7 +393,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* <a class="el" href="asst_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a> </td>
+          <td class="memname">char* <a class="el" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> const *&#160;</td>
           <td class="paramname"><em>strings</em>, </td>
@@ -434,12 +455,12 @@ Functions</h2>
   </dd>
 </dl>
 <div class="fragment"><pre class="fragment"><span class="comment">//Just use column 3</span>
-<span class="keywordtype">int</span> is_not_col_3(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+<span class="keywordtype">int</span> is_not_col_3(apop_data *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
     <span class="keywordflow">return</span> col!=3;
 }
 
 <span class="comment">//Jump over blanks as if they don&#39;t exist.</span>
-<span class="keywordtype">int</span> is_blank(<a class="code" href="structapop__data.html">apop_data</a> *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
+<span class="keywordtype">int</span> is_blank(apop_data *indata, <span class="keywordtype">int</span> row, <span class="keywordtype">int</span> col, <span class="keywordtype">void</span> *ignore){
     <span class="keywordflow">return</span> strlen(indata-&gt;text[row][col])==0;
 }
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
@@ -455,7 +476,7 @@ Functions</h2>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs.</li>
 </ul>
 <p>The sample snippet generates the SQL for a query using a list of column names (where the query begins with <code>select </code>, ends with <code>from datatab</code>, and has commas in between each element), re-processes the same list to produce the head of an HTML table, then produces the body of the table with the query result (pasting the <code>tr</code>s and <code> td</code>s into the right places).</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
     <a class="code" href="group__queries.html#ga236452b3305ea7b791c781d91a819e3b">apop_query</a>(<span class="stringliteral">&quot;create table datatab(name, age, sex);&quot;</span>
@@ -464,15 +485,15 @@ Functions</h2>
                 <span class="stringliteral">&quot;insert into datatab values (&#39;Michael&#39;, 41, &#39;f&#39;);&quot;</span>
                 <span class="stringliteral">&quot;insert into datatab values (&#39;Michael&#39;, 14, &#39;m&#39;);&quot;</span>);
 
-    <a class="code" href="structapop__data.html">apop_data</a> *cols = <a class="code" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(NULL, 3, 1);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 0, 0, <span class="stringliteral">&quot;name&quot;</span>);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 1, 0, <span class="stringliteral">&quot;age&quot;</span>);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 2, 0, <span class="stringliteral">&quot;sex&quot;</span>);
-    <span class="keywordtype">char</span> *query= <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;select &quot;</span>, .between=<span class="stringliteral">&quot;, &quot;</span>);
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;%s from datatab&quot;</span>, query);
-    <span class="keywordtype">char</span> *html_head = <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&quot;</span>,
+    apop_data *cols = <a class="code" href="apop_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(NULL, 3, 1);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 0, 0, <span class="stringliteral">&quot;name&quot;</span>);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 1, 0, <span class="stringliteral">&quot;age&quot;</span>);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(cols, 2, 0, <span class="stringliteral">&quot;sex&quot;</span>);
+    <span class="keywordtype">char</span> *query= <a class="code" href="apop_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;select &quot;</span>, .between=<span class="stringliteral">&quot;, &quot;</span>);
+    apop_data *d = <a class="code" href="group__queries.html#ga2fbd580cd71f481ae04ee03b5cf64ff5">apop_query_to_text</a>(<span class="stringliteral">&quot;%s from datatab&quot;</span>, query);
+    <span class="keywordtype">char</span> *html_head = <a class="code" href="apop_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a>(cols, .before=<span class="stringliteral">&quot;&lt;table&gt;&lt;tr&gt;&lt;td&gt;&quot;</span>,
                                 .between=<span class="stringliteral">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span>, .after=<span class="stringliteral">&quot;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;&quot;</span>);
-    <span class="keywordtype">char</span> *html_table = <a class="code" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a>(d, .before=html_head, .after=<span class="stringliteral">&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;</span>,
+    <span class="keywordtype">char</span> *html_table = <a class="code" href="apop_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a>(d, .before=html_head, .after=<span class="stringliteral">&quot;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;\n&quot;</span>,
                                 .between=<span class="stringliteral">&quot;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;&quot;</span>, .between_cols=<span class="stringliteral">&quot;&lt;/td&gt;&lt;td&gt;&quot;</span>);
     FILE *outfile = fopen(<span class="stringliteral">&quot;yourdata.html&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);                                                                                                                              fprintf(outfile, <span class="stringliteral">&quot;%s&quot;</span>, html_table);
     fclose(outfile);
@@ -485,7 +506,7 @@ Functions</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double* <a class="el" href="asst_8h.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> </td>
+          <td class="memname">double* <a class="el" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_vector *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -521,4 +542,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

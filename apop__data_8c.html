@@ -28,7 +28,8 @@ urchinTracker();
   <div class="summary">
 <a href="#define-members">Defines</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">apop_data.c File Reference</div>  </div>
 </div><!--header-->
@@ -81,6 +82,12 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char free_p)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int *drop, apop_fn_ir do_drop, void *drop_parameter)
 </ul>
+<h2><a name="var-members"></a>
+Variables</h2>
+<ul>
+<li><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_data.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
+char * <b>apop_nul_string</b> = &quot;&quot;
+</ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="structapop__data.html">apop_data</a> structure joins together a gsl_matrix, <a class="el" href="structapop__name.html">apop_name</a>, and a table of strings. </p>
 </div><hr/><h2>Function Documentation</h2>
@@ -89,7 +96,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="types_8h.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a> </td>
+          <td class="memname">void <a class="el" href="apop__data_8c.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -117,7 +124,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <p>A convenience function to add a named element to a data set. Many of Apophenia's testing procedures use this to easily produce a column of named parameters. It is public as a convenience.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">d</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure. Must not be <code>NULL</code>, but may be blank (as per allocation via <a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> <code>( )</code> ). </td></tr>
+    <tr><td class="paramname">d</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure. Must not be <code>NULL</code>, but may be blank (as per allocation via <a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> <code>( )</code> ). </td></tr>
     <tr><td class="paramname">name</td><td>The name to add </td></tr>
     <tr><td class="paramname">val</td><td>the value to add to the set.</td></tr>
   </table>
@@ -125,12 +132,12 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </dl>
 <ul>
 <li>I use the position of the last non-empty row name to know where to put the value. If there are two names in the data set, then I will put the new name in the third name slot and the data in the third slot in the vector. If you use this function from start to finish in building your list, then you'll be fine. </li>
-<li>If the vector is too short (or <code>NULL</code>), I will call <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> internally to make space. </li>
+<li>If the vector is too short (or <code>NULL</code>), I will call <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> internally to make space. </li>
 <li>This fits well with the defaults for <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>. An example:</li>
 </ul>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *list = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>();
-<a class="code" href="apop__data_8c.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>(list, <span class="stringliteral">&quot;height&quot;</span>, 165);
-<a class="code" href="apop__data_8c.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>(list, <span class="stringliteral">&quot;weight&quot;</span>, 60);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *list = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>();
+<a class="code" href="apop_8h.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>(list, <span class="stringliteral">&quot;height&quot;</span>, 165);
+<a class="code" href="apop_8h.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a>(list, <span class="stringliteral">&quot;weight&quot;</span>, 60);
 
 <span class="keywordtype">double</span> height = <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(list, .rowname=<span class="stringliteral">&quot;height&quot;</span>);
 </pre></div> 
@@ -141,7 +148,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>dataset</em>, </td>
@@ -180,12 +187,12 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li>Some data is fundamentally multi-page; an optimization search over multi-page parameters would search the space given by all pages, for example. Also, pages may be appended as output or auxiliary information, such as covariances---an MLE would not search over these elements. Generally, any page with a name in XML-ish brackets, such as <code>&lt;Covariance&gt;</code>, will be considered informational and ignored by search routines, missing data routines, et cetera. This is achieved by a rule in <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> and <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>.</li>
 </ul>
 <p>Here is a toy example that establishes a baseline data set, adds a page, modifies it, and then later retrieves it. </p>
-<div class="fragment"><pre class="fragment">  <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 10, 10); <span class="comment">//the base data set.</span>
-  <a class="code" href="structapop__data.html">apop_data</a> *a_new_page = <a class="code" href="apop__data_8c.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a>(d, <a class="code" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2), <span class="stringliteral">&quot;new 2 x 2 page&quot;</span>);
+<div class="fragment"><pre class="fragment">  <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 10, 10); <span class="comment">//the base data set.</span>
+  <a class="code" href="structapop__data.html">apop_data</a> *a_new_page = <a class="code" href="apop_8h.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a>(d, <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2), <span class="stringliteral">&quot;new 2 x 2 page&quot;</span>);
   gsl_vector_set_all(a_new_page-&gt;matrix, 3);
 
   <span class="comment">//later:</span>
-  <a class="code" href="structapop__data.html">apop_data</a> *retrieved = <a class="code" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(d, <span class="stringliteral">&quot;new&quot;</span>, <span class="charliteral">&#39;r&#39;</span>); <span class="comment">//use regexes, not literal match.</span>
+  <a class="code" href="structapop__data.html">apop_data</a> *retrieved = <a class="code" href="apop_8h.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(d, <span class="stringliteral">&quot;new&quot;</span>, <span class="charliteral">&#39;r&#39;</span>); <span class="comment">//use regexes, not literal match.</span>
   <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(retrieved); <span class="comment">//print a 2x2 grid of 3s.</span>
 </pre></div> 
 </div>
@@ -195,7 +202,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> </td>
           <td>(</td>
           <td class="paramtype">const size_t&#160;</td>
           <td class="paramname"><em>size1</em>, </td>
@@ -225,12 +232,12 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li>The typical case is three arguments, like <code>apop_data_alloc(2,3,4)</code>: vector size, matrix rows, matrix cols. If the first argument is zero, you get a <code>NULL</code> vector. </li>
 <li>Two arguments, <code>apop_data_alloc(2,3)</code>, would allocate just a matrix, leaving the vector <code>NULL</code>. </li>
 <li>One argument, <code>apop_data_alloc(2)</code>, would allocate just a vector, leaving the matrix <code>NULL</code>. </li>
-<li>Zero arguments, <code><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, will produce a basically blank set, with <code>out-&gt;matrix==out-&gt;vector==NULL</code>.</li>
+<li>Zero arguments, <code><a class="el" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, will produce a basically blank set, with <code>out-&gt;matrix==out-&gt;vector==NULL</code>.</li>
 </ul>
-<p>For allocating the text part, see <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>.</p>
+<p>For allocating the text part, see <a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>.</p>
 <p>The <code>weights</code> vector is set to <code>NULL</code>. If you need it, allocate it via </p>
 <div class="fragment"><pre class="fragment"> d-&gt;weights   = gsl_vector_alloc(row_ct); 
-</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="types_8h.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a></dd></dl>
+</pre></div><dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop__data_8c.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a></dd></dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure, allocated and ready. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -252,7 +259,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> </td>
           <td>(</td>
           <td class="paramtype">const size_t&#160;</td>
           <td class="paramname"><em>size1</em>, </td>
@@ -277,7 +284,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
       </table>
 </div>
 <div class="memdoc">
-<p>Allocate a <a class="el" href="gentle.html#apop_data">apop_data</a> structure, to be filled with data; set everything in the allocated portion to zero. See <a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> for details.</p>
+<p>Allocate a <a class="el" href="gentle.html#apop_data">apop_data</a> structure, to be filled with data; set everything in the allocated portion to zero. See <a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> for details.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure, allocated and zeroed out. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -285,7 +292,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   </table>
   </dd>
 </dl>
-<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a></dd></dl>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a></dd></dl>
 <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -297,7 +304,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em></td><td>)</td>
@@ -307,8 +314,8 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 <div class="memdoc">
 <p>Copy one <a class="el" href="gentle.html#apop_data">apop_data</a> structure to another. That is, all data is duplicated.</p>
-<p>Basically a front-end for <a class="el" href="types_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> for those who prefer this sort of syntax.</p>
-<p>Unlike <a class="el" href="types_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>, I do follow the <code>more</code> pointer.</p>
+<p>Basically a front-end for <a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> for those who prefer this sort of syntax.</p>
+<p>Unlike <a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>, I do follow the <code>more</code> pointer.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>the input data </td></tr>
@@ -336,7 +343,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char <a class="el" href="types_8h.html#a3e8377359d46c9bd02ea57205e7968d3">apop_data_free_base</a> </td>
+          <td class="memname">char <a class="el" href="apop__data_8c.html#a3e8377359d46c9bd02ea57205e7968d3">apop_data_free_base</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>freeme</em></td><td>)</td>
@@ -345,9 +352,9 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
       </table>
 </div>
 <div class="memdoc">
-<p>Free the elements of the given <a class="el" href="gentle.html#apop_data">apop_data</a> set and then the <a class="el" href="gentle.html#apop_data">apop_data</a> set itself. Intended to be used by <a class="el" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>, a macro that calls this to free elements, then sets the value to <code>NULL</code>.</p>
+<p>Free the elements of the given <a class="el" href="gentle.html#apop_data">apop_data</a> set and then the <a class="el" href="gentle.html#apop_data">apop_data</a> set itself. Intended to be used by <a class="el" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>, a macro that calls this to free elements, then sets the value to <code>NULL</code>.</p>
 <ul>
-<li><a class="el" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> is a macro that calls this function and, on success, sets the input pointer to <code>NULL</code>. For typical cases, that's slightly more useful than this function.</li>
+<li><a class="el" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> is a macro that calls this function and, on success, sets the input pointer to <code>NULL</code>. For typical cases, that's slightly more useful than this function.</li>
 </ul>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -364,7 +371,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a> </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -394,7 +401,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   <table class="params">
     <tr><td class="paramname">data</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> set to use. No default; if <code>NULL</code>, gives a warning if <code>apop_opts.verbose &gt;=1</code> and returns <code>NULL</code>.</td></tr>
     <tr><td class="paramname">title</td><td>The name of the page to retrieve. Default=<code>"Info"</code>, which is the name of the page of additional estimation information returned by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).</td></tr>
-    <tr><td class="paramname">match</td><td>If <code>'c'</code>, case-insensitive match (via <code>strcasecmp</code>); if <code>'e'</code>, exact match, if <code>'r'</code> regular expression substring search (via <a class="el" href="asst_8h.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>). Default=<code>'c'</code>.</td></tr>
+    <tr><td class="paramname">match</td><td>If <code>'c'</code>, case-insensitive match (via <code>strcasecmp</code>); if <code>'e'</code>, exact match, if <code>'r'</code> regular expression substring search (via <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a>). Default=<code>'c'</code>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -410,7 +417,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="types_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> </td>
+          <td class="memname">void <a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>out</em>, </td>
@@ -432,14 +439,14 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <p>Copy one <a class="el" href="gentle.html#apop_data">apop_data</a> structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a <code>for</code> loop over the data set's pages.]</p>
 <p>This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.</p>
 <ul>
-<li>If you want space allocated, use <a class="el" href="types_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>. </li>
-<li>I don't follow the <code>more</code> pointer, though <a class="el" href="types_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> does. </li>
-<li>You can use the subsetting macros, <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> or <a class="el" href="stats_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, to copy within a data set:</li>
+<li>If you want space allocated, use <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>. </li>
+<li>I don't follow the <code>more</code> pointer, though <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> does. </li>
+<li>You can use the subsetting macros, <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> or <a class="el" href="apop_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, to copy within a data set:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="comment">//Copy the contents of row i of mydata to row j.</span>
-<a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, i, fromrow);
-<a class="code" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, j, torow);
-<a class="code" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>(torow, fromrow);
+<a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, i, fromrow);
+<a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, j, torow);
+<a class="code" href="apop_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>(torow, fromrow);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">out</td><td>a structure that this function will fill. Must be preallocated with the appropriate sizes. </td></tr>
@@ -462,7 +469,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -481,11 +488,11 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
       </table>
 </div>
 <div class="memdoc">
-<p>Keep only the columns of a data set that you name. This is the function called internally by the <a class="el" href="types_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a> macro. In most cases, you'll want to use that macro. An example of the two uses demonstrating the difference:</p>
-<div class="fragment"><pre class="fragment">    <a class="code" href="types_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a>(d, <span class="stringliteral">&quot;mean&quot;</span>, <span class="stringliteral">&quot;median&quot;</span>);
+<p>Keep only the columns of a data set that you name. This is the function called internally by the <a class="el" href="apop_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a> macro. In most cases, you'll want to use that macro. An example of the two uses demonstrating the difference:</p>
+<div class="fragment"><pre class="fragment">    <a class="code" href="apop_8h.html#a5ea849ee3c044e95eafb7b79124ce844">apop_data_prune_columns</a>(d, <span class="stringliteral">&quot;mean&quot;</span>, <span class="stringliteral">&quot;median&quot;</span>);
 
     <span class="keywordtype">char</span> *list[] = {<span class="stringliteral">&quot;mean&quot;</span>, <span class="stringliteral">&quot;median&quot;</span>, NULL};
-    <a class="code" href="apop__data_8c.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a>(d, list);
+    <a class="code" href="apop_8h.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a>(d, list);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">d</td><td>The data set to prune. </td></tr>
@@ -502,7 +509,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="types_8h.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> </td>
+          <td class="memname">void <a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -537,7 +544,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
@@ -567,7 +574,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   <table class="params">
     <tr><td class="paramname">data</td><td>The input data set, to which a page will be added. No default. If <code>NULL</code>, I return silently if <code> apop_opts.verbose &lt; 1 </code>; print an error otherwise. </td></tr>
     <tr><td class="paramname">title</td><td>The case-insensitive name of the page to remove. Default: <code>"Info"</code> </td></tr>
-    <tr><td class="paramname">free_p</td><td>If <code>'y'</code>, then <a class="el" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> the page. Default: <code>'y'</code>.</td></tr>
+    <tr><td class="paramname">free_p</td><td>If <code>'y'</code>, then <a class="el" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> the page. Default: <code>'y'</code>.</td></tr>
   </table>
   </dd>
 </dl>
@@ -586,7 +593,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ae2ab3a4f332adb368fe970619a8c0252">apop_data_rm_rows</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -625,7 +632,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
     <tr><td class="paramname">do_drop</td><td>A function that returns one for rows to drop and zero for rows to not drop. A sample function: <div class="fragment"><pre class="fragment">  <span class="keywordtype">int</span> your_drop_function(<a class="code" href="structapop__data.html">apop_data</a> *onerow, <span class="keywordtype">void</span> *extra_param){
     <span class="keywordflow">return</span> gsl_isnan(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(onerow)) || !strcmp(onerow-&gt;text[0][0], <span class="stringliteral">&quot;Uninteresting data point&quot;</span>);
   }
-</pre></div> <a class="el" href="types_8h.html#ae2ab3a4f332adb368fe970619a8c0252">apop_data_rm_rows</a> uses <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> <code>(onerow, .row=0, .col=0)</code>, which can help to keep things readable). </td></tr>
+</pre></div> <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> uses <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> <code>(onerow, .row=0, .col=0)</code>, which can help to keep things readable). </td></tr>
     <tr><td class="paramname">drop_parameter</td><td>If your <code>do_drop</code> function requires additional input, put it here and it will be passed through.</td></tr>
   </table>
   </dd>
@@ -646,7 +653,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="types_8h.html#a47313d1f22af539e43f5ff02dd0e8f90">apop_data_set_row</a> </td>
+          <td class="memname">int <a class="el" href="apop__data_8c.html#a5acc9328f9c043be4cd6c12f57509df1">apop_data_set_row</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -671,7 +678,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
       </table>
 </div>
 <div class="memdoc">
-<p>Now that you've used <a class="el" href="stats_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to pull a row from an <a class="el" href="gentle.html#apop_data">apop_data</a> set, this function lets you write that row to another position in the same data set or a different data set entirely.</p>
+<p>Now that you've used <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to pull a row from an <a class="el" href="gentle.html#apop_data">apop_data</a> set, this function lets you write that row to another position in the same data set or a different data set entirely.</p>
 <p>The set written to must have the same form as the original: </p>
 <ul>
 <li>a vector element has to be present if one existed in the original, </li>
@@ -694,7 +701,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>** <a class="el" href="types_8h.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>** <a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -720,7 +727,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 <div class="memdoc">
 <p>Split one input <a class="el" href="gentle.html#apop_data">apop_data</a> structure into two.</p>
-<p>For the opposite operation, see <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>.</p>
+<p>For the opposite operation, see <a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure to split </td></tr>
@@ -735,7 +742,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li><code>more</code> pointer is ignored. </li>
 <li>The <code>apop_data-&gt;vector</code> is taken to be the -1st element of the matrix. </li>
 <li>Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts. </li>
-<li>Data is copied, so you may want to call <code><a class="el" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free(in)</a></code> after this. </li>
+<li>Data is copied, so you may want to call <code><a class="el" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free(in)</a></code> after this. </li>
 </ul>
 
 </div>
@@ -745,7 +752,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>m1</em>, </td>
@@ -777,8 +784,8 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 <div class="memdoc">
 <p>Put the first data set either on top of or to the left of the second data set.</p>
-<p>The fn returns a new data set, meaning that at the end of this function, until you <a class="el" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free()</a> the original data sets, you will be taking up twice as much memory. Plan accordingly.</p>
-<p>For the opposite operation, see <a class="el" href="types_8h.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a>.</p>
+<p>The fn returns a new data set, meaning that at the end of this function, until you <a class="el" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free()</a> the original data sets, you will be taking up twice as much memory. Plan accordingly.</p>
+<p>For the opposite operation, see <a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">m1</td><td>the upper/rightmost data set (default = <code>NULL</code>) </td></tr>
@@ -786,7 +793,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
     <tr><td class="paramname">posn</td><td>If 'r', stack rows of m1's matrix above rows of m2's<br/>
  if 'c', stack columns of m1's matrix to left of m2's<br/>
  (default = 'r') </td></tr>
-    <tr><td class="paramname">inplace</td><td>If <code>'y'</code>, use <a class="el" href="types_8h.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> and <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>m1</code> in place; see the caveats on those function. Otherwise, allocate a new vector, leaving <code>m1</code> unmolested. (default='n') </td></tr>
+    <tr><td class="paramname">inplace</td><td>If <code>'y'</code>, use <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> and <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> to modify <code>m1</code> in place; see the caveats on those function. Otherwise, allocate a new vector, leaving <code>m1</code> unmolested. (default='n') </td></tr>
   </table>
   </dd>
 </dl>
@@ -815,7 +822,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -869,7 +876,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">gsl_matrix* <a class="el" href="types_8h.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> </td>
+          <td class="memname">gsl_matrix* <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>m</em>, </td>
@@ -914,7 +921,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_matrix *&#160;</td>
           <td class="paramname"><em>m</em></td><td>)</td>
@@ -931,7 +938,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure whose <code>matrix</code> pointer points to the input matrix. The rest of the struct is basically blank. <ul>
-<li>If you give me a <code>NULL</code> matrix, I return a blank <a class="el" href="gentle.html#apop_data">apop_data</a> set, equivalent to <code><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, and print a warning if <code>apop_opts.verbosity &gt;=1</code> </li>
+<li>If you give me a <code>NULL</code> matrix, I return a blank <a class="el" href="gentle.html#apop_data">apop_data</a> set, equivalent to <code><a class="el" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, and print a warning if <code>apop_opts.verbosity &gt;=1</code> </li>
 </ul>
 </dd></dl>
 
@@ -942,7 +949,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="types_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> </td>
+          <td class="memname">int <a class="el" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -994,14 +1001,14 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <ul>
 <li>UTF-8 or ASCII text is correctly handled. </li>
 <li>Apophenia follows a general rule of not reallocating behind your back: if your text matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display an error rather than reallocating the text matrix. </li>
-<li>Resizing a text matrix is annoying in C, so note that <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> will reallocate to a new size if you need. For example, this code will fill the diagonals of the text array with a message, resizing as it goes: </li>
+<li>Resizing a text matrix is annoying in C, so note that <a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> will reallocate to a new size if you need. For example, this code will fill the diagonals of the text array with a message, resizing as it goes: </li>
 <li>The string added is a copy (via <code>asprintf</code>), not a pointer to the input(s). </li>
-<li>If there had been a string at the grid point you are writing to, the old one is effectively lost when the new one is placed. So, I free the old string to prevent leaks. Remember this if you had other pointers aliasing that string, in which case you may as well avoid this function and just use <code> asprintf(&amp;(your_dataset-&gt;text[row][col]), "your string")</code>.</li>
+<li>If there had been a string at the grid point you are writing to, the old one is effectively lost when the new one is placed. So, I free the old string to prevent leaks if necessary. Remember this if you had other pointers aliasing that string, in which case you may as well avoid this function and just use <code> asprintf(&amp;(your_dataset-&gt;text[row][col]), "your string")</code>.</li>
 </ul>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *list = (something already allocated.);
 <span class="keywordflow">for</span> (<span class="keywordtype">int</span> n=0; n &lt; 10; n++){
-    <a class="code" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(list, n+1, n+1);
-    <a class="code" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(list, n, n, <span class="stringliteral">&quot;This is cell (%i, %i)&quot;</span>, n, n);
+    <a class="code" href="apop_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>(list, n+1, n+1);
+    <a class="code" href="apop_8h.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a>(list, n, n, <span class="stringliteral">&quot;This is cell (%i, %i)&quot;</span>, n, n);
 }
 </pre></div> 
 </div>
@@ -1011,7 +1018,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>in</em>, </td>
@@ -1061,7 +1068,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="types_8h.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> </td>
+          <td class="memname">void <a class="el" href="apop__data_8c.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> </td>
           <td>(</td>
           <td class="paramtype">char ***&#160;</td>
           <td class="paramname"><em>freeme</em>, </td>
@@ -1087,7 +1094,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 <div class="memdoc">
 <p>Free a matrix of chars* (i.e., a char***). This is the form of the text element of the <a class="el" href="gentle.html#apop_data">apop_data</a> set, so you can use this for: </p>
-<div class="fragment"><pre class="fragment"> <a class="code" href="apop__data_8c.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a>(yourdata-&gt;text, yourdata-&gt;textsize[0], yourdata-&gt;textsize[1]);
+<div class="fragment"><pre class="fragment"> <a class="code" href="apop_8h.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a>(yourdata-&gt;text, yourdata-&gt;textsize[0], yourdata-&gt;textsize[1]);
 </pre></div><p> This is what <code>apop_data_free</code> uses internally. </p>
 
 </div>
@@ -1097,7 +1104,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">gsl_vector* <a class="el" href="types_8h.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> </td>
+          <td class="memname">gsl_vector* <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em>, </td>
@@ -1136,7 +1143,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="types_8h.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> </td>
           <td>(</td>
           <td class="paramtype">gsl_vector *&#160;</td>
           <td class="paramname"><em>v</em></td><td>)</td>
@@ -1153,7 +1160,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>an allocated, ready-to-use <a class="el" href="gentle.html#apop_data">apop_data</a> structure. <ul>
-<li>If you give me a <code>NULL</code> vector, I return a blank <a class="el" href="gentle.html#apop_data">apop_data</a> set, equivalent to <code><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, and print a warning if <code>apop_opts.verbosity &gt;=1</code> </li>
+<li>If you give me a <code>NULL</code> vector, I return a blank <a class="el" href="gentle.html#apop_data">apop_data</a> set, equivalent to <code><a class="el" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc()</a></code>, and print a warning if <code>apop_opts.verbosity &gt;=1</code> </li>
 </ul>
 </dd></dl>
 
@@ -1161,4 +1168,4 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

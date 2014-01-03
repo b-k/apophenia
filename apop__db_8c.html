@@ -43,11 +43,11 @@ Data Structures</h2>
 Defines</h2>
 <ul>
 <li><a class="anchor" id="a65ecb3cc386e0c837b2a84ca829e8a7e"></a><!-- doxytag: member="apop_db.c::ERRCHECK" ref="a65ecb3cc386e0c837b2a84ca829e8a7e" args="" -->
-#define <b>ERRCHECK</b>&#160;&#160;&#160;{<a class="el" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, return 1, 0, &quot;%s: %s&quot;,query, err); }
+#define <b>ERRCHECK</b>&#160;&#160;&#160;{<a class="el" href="apop_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, return 1, 0, &quot;%s: %s&quot;,query, err); }
 <li><a class="anchor" id="a7ae9f2adfaf130062621be98ab895fe1"></a><!-- doxytag: member="apop_db.c::ERRCHECK_NR" ref="a7ae9f2adfaf130062621be98ab895fe1" args="" -->
-#define <b>ERRCHECK_NR</b>&#160;&#160;&#160;{<a class="el" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, return NULL, 0, &quot;%s: %s&quot;,query, err); }
+#define <b>ERRCHECK_NR</b>&#160;&#160;&#160;{<a class="el" href="apop_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, return NULL, 0, &quot;%s: %s&quot;,query, err); }
 <li><a class="anchor" id="a702b43d0c63676805d33c7cd27f64002"></a><!-- doxytag: member="apop_db.c::ERRCHECK_SET_ERROR" ref="a702b43d0c63676805d33c7cd27f64002" args="(outdata)" -->
-#define <b>ERRCHECK_SET_ERROR</b>(outdata)&#160;&#160;&#160;{<a class="el" href="asst_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, if (!(outdata)) (outdata)=<a class="el" href="types_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(); (outdata)-&gt;error='q'; sqlite3_free(err); return outdata, 0, &quot;%s: %s&quot;,query, err); }
+#define <b>ERRCHECK_SET_ERROR</b>(outdata)&#160;&#160;&#160;{<a class="el" href="apop_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(err, if (!(outdata)) (outdata)=<a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(); (outdata)-&gt;error='q'; sqlite3_free(err); return outdata, 0, &quot;%s: %s&quot;,query, err); }
 <li>#define <b>Fillin</b>(query, fmt)
 </ul>
 <h2><a name="func-members"></a>
@@ -104,7 +104,7 @@ Variables</h2>
 <b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordtype">char</span> *query;                  \
     va_list argp;                 \
      va_start(argp, fmt);          \
-     vasprintf(&amp;query, fmt, argp); \
+     Apop_stopif(vasprintf(&amp;query, fmt, argp)==-1, , 0, <span class="stringliteral">&quot;Trouble writing to a string.&quot;</span>); \
      va_end(argp);                 \
      Apop_notify(2, <span class="stringliteral">&quot;%s&quot;</span>, query);
 </pre></div>
@@ -116,7 +116,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="db_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> </td>
+          <td class="memname">int <a class="el" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> </td>
           <td>(</td>
           <td class="paramtype">char&#160;</td>
           <td class="paramname"><em>vacuum</em></td><td>)</td>
@@ -145,7 +145,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="db_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a> </td>
+          <td class="memname">int <a class="el" href="apop__db_8c.html#a4d81aff912df2982697038c51795e358">apop_db_open</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>filename</em></td><td>)</td>
@@ -159,7 +159,7 @@ Variables</h2>
 <p>The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<code>sqlite3</code>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&amp;q=sqlite+gui">SQLite GUI</a>.</p>
 <p>MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set <code>apop_opts.db_engine</code> = 'm'.</p>
 <p>The Apophenia package assumes you are only using a single SQLite database at a time. You can use the SQL <code>attach</code> function to load other databases, or see <a href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further suggestions and sample code.</p>
-<p>When you are done doing your database manipulations, be sure to call <a class="el" href="db_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> if writing to disk.</p>
+<p>When you are done doing your database manipulations, be sure to call <a class="el" href="apop__db_8c.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a> if writing to disk.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">filename</td><td>The name of a file on the hard drive on which to store the database. If <code>NULL</code>, then the database will be kept in memory (in which case, the other database functions will call this function for you and you don't need to bother).</td></tr>
@@ -176,7 +176,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="db_8h.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> </td>
+          <td class="memname">int <a class="el" href="apop__db_8c.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>name</em>, </td>
@@ -225,7 +225,7 @@ Variables</h2>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="types_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td>
+          <td class="memname"><a class="el" href="structapop__opts__type.html">apop_opts_type</a> <a class="el" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a></td>
         </tr>
       </table>
 </div>
@@ -244,4 +244,4 @@ Variables</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

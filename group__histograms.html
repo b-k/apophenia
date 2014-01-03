@@ -64,8 +64,8 @@ Functions</h2>
 </div>
 <div class="memdoc">
 <p>Test the goodness-of-fit between two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models.</p>
-<p>If you send two histograms, I assume that the histograms are synced: for PMFs, you've used <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="asst_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_16.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
+<p>If you send two histograms, I assume that the histograms are synced: for PMFs, you've used <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set.</p>
+<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
 <ul>
 <li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
 </ul>
@@ -114,14 +114,14 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>Make random draws from an <a class="el" href="structapop__model.html">apop_model</a>, and bin them using a binspec in the style of <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.</p>
+<p>Make random draws from an <a class="el" href="structapop__model.html">apop_model</a>, and bin them using a binspec in the style of <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.</p>
 <p>The output is normalized to integrate to one.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
+    <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
     <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
     <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="asst_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_15.png"/>) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
     <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: see note on <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
   </table>
   </dd>
@@ -164,14 +164,14 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(input_data), <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(input_data), <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">m2</td><td>Another <a class="el" href="structapop__model.html">apop_model</a>. If it is a PMF, then I will use a two-sample test, which is different from the one-sample test used if this is not a PMF.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_17.png"/>-value from the Kolmogorov-Smirnov test that the two distributions are equal.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov-Smirnov test that the two distributions are equal.</dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error='m'</td><td>Model error: <code>m1</code> is not an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>. I verify this by checking whether <code>m1-&gt;cdf == apop_pmf-&gt;cdf</code>.</td></tr>
@@ -179,16 +179,16 @@ Functions</h2>
   </dd>
 </dl>
 <ul>
-<li>If you are using a <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model, <b>the data set(s) must be sorted before you call this.</b> See <a class="el" href="asst_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> and the discussion of CDFs in the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> documentation. If you don't do this, the test will almost certainly reject the null hypothesis that <code>m1</code> and <code>m2</code> are identical.</li>
+<li>If you are using a <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model, <b>the data set(s) must be sorted before you call this.</b> See <a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> and the discussion of CDFs in the <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> documentation. If you don't do this, the test will almost certainly reject the null hypothesis that <code>m1</code> and <code>m2</code> are identical.</li>
 </ul>
 <p>Here is an example, which tests whether a set of draws from a Normal(0, 1) matches a sequence of Normal distributions with increasing mean.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;apop.h&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 <span class="comment">//This program finds the p-value of a K-S test between</span>
 <span class="comment">//500 draws from a N(0, 1) and a N(x, 1), where x grows from 0 to 1.</span>
 
 <a class="code" href="structapop__model.html">apop_model</a> * model_to_pmfs(<a class="code" href="structapop__model.html">apop_model</a> *m1, <span class="keywordtype">int</span> size, gsl_rng *r){
-    <a class="code" href="structapop__data.html">apop_data</a> *outd1 = <a class="code" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(m1, size, r);
-    <span class="keywordflow">return</span> <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<a class="code" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(outd1), <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
+    <a class="code" href="structapop__data.html">apop_data</a> *outd1 = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(m1, size, r);
+    <span class="keywordflow">return</span> <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(outd1), <a class="code" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>);
 }
 
 <span class="preprocessor">#ifndef Testing</span>
@@ -231,4 +231,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

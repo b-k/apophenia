@@ -139,8 +139,8 @@ Functions</h2>
 </ul>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">d1</td><td>the left part of <img class="formulaInl" alt="$ d1 \cdot d2$" src="form_21.png"/> </td></tr>
-    <tr><td class="paramname">d2</td><td>the right part of <img class="formulaInl" alt="$ d1 \cdot d2$" src="form_21.png"/> </td></tr>
+    <tr><td class="paramname">d1</td><td>the left part of <img class="formulaInl" alt="$ d1 \cdot d2$" src="form_24.png"/> </td></tr>
+    <tr><td class="paramname">d2</td><td>the right part of <img class="formulaInl" alt="$ d1 \cdot d2$" src="form_24.png"/> </td></tr>
     <tr><td class="paramname">form1</td><td>'t' or 'p': transpose or prime <code>d1-&gt;matrix</code>, or, if <code>d1-&gt;matrix</code> is <code>NULL</code>, read <code>d1-&gt;vector</code> as a row vector.<br/>
  'n' or 0: no transpose. (the default)<br/>
  'v': ignore the matrix and use the vector.</td></tr>
@@ -159,16 +159,16 @@ Functions</h2>
   </dd>
 </dl>
 <ul>
-<li>Some systems auto-transpose non-conforming matrices. You input a <img class="formulaInl" alt="$3 \times 5$" src="form_22.png"/> and a <img class="formulaInl" alt="$3 \times 5$" src="form_22.png"/> matrix, and the system assumes that you meant to transpose the second, producing a <img class="formulaInl" alt="$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3$" src="form_23.png"/> output. Apophenia does not do this. First, it's ambiguous whether the output should be <img class="formulaInl" alt="$3 \times 3$" src="form_24.png"/> or <img class="formulaInl" alt="$5 \times 5$" src="form_25.png"/>. Second, your next run might have three observations, and two <img class="formulaInl" alt="$3 \times 3$" src="form_24.png"/> matrices don't require transposition; auto-transposition thus creates situations where bugs can pop up on only some iterations of a loop.</li>
+<li>Some systems auto-transpose non-conforming matrices. You input a <img class="formulaInl" alt="$3 \times 5$" src="form_25.png"/> and a <img class="formulaInl" alt="$3 \times 5$" src="form_25.png"/> matrix, and the system assumes that you meant to transpose the second, producing a <img class="formulaInl" alt="$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3$" src="form_26.png"/> output. Apophenia does not do this. First, it's ambiguous whether the output should be <img class="formulaInl" alt="$3 \times 3$" src="form_27.png"/> or <img class="formulaInl" alt="$5 \times 5$" src="form_28.png"/>. Second, your next run might have three observations, and two <img class="formulaInl" alt="$3 \times 3$" src="form_27.png"/> matrices don't require transposition; auto-transposition thus creates situations where bugs can pop up on only some iterations of a loop.</li>
 </ul>
 <ul>
-<li>For a vector <img class="formulaInl" alt="$cdot$" src="form_26.png"/> a matrix, the vector is always treated as a row vector, meaning that a <img class="formulaInl" alt="$3\times 1$" src="form_27.png"/> dot a <img class="formulaInl" alt="$3\times 4$" src="form_28.png"/> matrix is correct, and produces a <img class="formulaInl" alt="$1 \times 4$" src="form_29.png"/> vector. For a vector <img class="formulaInl" alt="$cdot$" src="form_26.png"/> a matrix, the vector is always treated as a column vector. Requests for transposition are ignored.</li>
+<li>For a vector <img class="formulaInl" alt="$cdot$" src="form_29.png"/> a matrix, the vector is always treated as a row vector, meaning that a <img class="formulaInl" alt="$3\times 1$" src="form_30.png"/> dot a <img class="formulaInl" alt="$3\times 4$" src="form_31.png"/> matrix is correct, and produces a <img class="formulaInl" alt="$1 \times 4$" src="form_32.png"/> vector. For a vector <img class="formulaInl" alt="$cdot$" src="form_29.png"/> a matrix, the vector is always treated as a column vector. Requests for transposition are ignored.</li>
 </ul>
 <ul>
 <li>As a corrollary to the above rule, a vector dot a vector always produces a scalar, which will be put in the zeroth element of the output vector; see the example.</li>
 </ul>
 <ul>
-<li>If you want to multiply an <img class="formulaInl" alt="$N \times 1$" src="form_30.png"/> vector <img class="formulaInl" alt="$\cdot$" src="form_31.png"/> a <img class="formulaInl" alt="$1 \times N$" src="form_32.png"/> matrix produce an <img class="formulaInl" alt="$N \times N$" src="form_33.png"/> matrix, then use <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> to turn your vectors into matrices; see the example.</li>
+<li>If you want to multiply an <img class="formulaInl" alt="$N \times 1$" src="form_33.png"/> vector <img class="formulaInl" alt="$\cdot$" src="form_34.png"/> a <img class="formulaInl" alt="$1 \times N$" src="form_35.png"/> matrix produce an <img class="formulaInl" alt="$N \times N$" src="form_36.png"/> matrix, then use <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> to turn your vectors into matrices; see the example.</li>
 </ul>
 <ul>
 <li>A note for readers of <em>Modeling with Data</em>: the awkward instructions on using this function on p 130 are now obsolete, thanks to the designated initializer syntax for function calls. Notably, in the case where <code>d1</code> is a vector and <code>d2</code> a matrix, then <code>apop_dot(d1,d2,'t')</code> won't work, because <code>'t'</code> now refers to <code>d1</code>. Instead use <code>apop_dot(d1,d2,.form2='t')</code> or <code>apop_dot(d1,d2,0, 't')</code></li>
@@ -177,7 +177,7 @@ Functions</h2>
 <div class="fragment"><pre class="fragment"><span class="comment">/* A demonstration of dot products and various useful </span>
 <span class="comment">   transformations among types. */</span>
 
-<span class="preprocessor">#include &lt;apop.h&gt;</span>
+<span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">double</span> eps=1e-3;<span class="comment">//slow to converge series--&gt;large tolerance.</span>
 <span class="preprocessor">#define Diff(L, R) Apop_assert(fabs((L)-(R)&lt;(eps)), &quot;%g is too different from %g (abitrary limit=%g).&quot;, (double)(L), (double)(R), eps);</span>
@@ -199,14 +199,14 @@ Functions</h2>
 <span class="comment">       First, vector-as-data dot itself.</span>
 <span class="comment">       If one of the inputs is a vector,</span>
 <span class="comment">       apop_dot puts the output in a vector-as-data:*/</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *v_as_data = <a class="code" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a>(v);
+    <a class="code" href="structapop__data.html">apop_data</a> *v_as_data = <a class="code" href="apop_8h.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a>(v);
     <a class="code" href="structapop__data.html">apop_data</a> *vdotv = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, v_as_data);
     Diff(gsl_vector_get(vdotv-&gt;vector, 0), pi_over_six);
 
     <span class="comment">/* As a matrix-as-data, via a compound literal. </span>
 <span class="comment">       Default is a len X 1 matrix. */</span>
     gsl_matrix *v_as_matrix = <a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v);
-    <a class="code" href="structapop__data.html">apop_data</a> dm = (<a class="code" href="types_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=v_as_matrix};
+    <a class="code" href="structapop__data.html">apop_data</a> dm = (<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=v_as_matrix};
 
     <span class="comment">// (1 X len) dot (len X 1) --- OK, produce a scalar.</span>
     <a class="code" href="structapop__data.html">apop_data</a> *mdotv = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, &amp;dm);
@@ -214,21 +214,21 @@ Functions</h2>
     Diff(scalarval, pi_over_six);
 
     <span class="comment">//(len X 1) dot (len X 1) --- bad dimensions.</span>
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=-1; <span class="comment">//don&#39;t print an error.</span>
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=-1; <span class="comment">//don&#39;t print an error.</span>
     <a class="code" href="structapop__data.html">apop_data</a> *mdotv2 = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, v_as_data);
-    <a class="code" href="apop__db_8c.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=0; <span class="comment">//back to sanity.</span>
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=0; <span class="comment">//back to sanity.</span>
     assert(mdotv2-&gt;error);
 
     <span class="comment">// If we want (len X 1) dot (1 X len) --&gt; (len X len),</span>
     <span class="comment">// use apop_vector_to_matrix.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> dmr = (<a class="code" href="types_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=<a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v, .row_col=<span class="charliteral">&#39;r&#39;</span>)};
+    <a class="code" href="structapop__data.html">apop_data</a> dmr = (<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=<a class="code" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v, .row_col=<span class="charliteral">&#39;r&#39;</span>)};
     <a class="code" href="structapop__data.html">apop_data</a> *product_matrix = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, &amp;dmr);
     <span class="comment">//The trace is the sum of squares:</span>
     gsl_vector_view trace = gsl_matrix_diagonal(product_matrix-&gt;matrix);
     <span class="keywordtype">double</span> tracesum = <a class="code" href="group__convenience__fns.html#ga7f85a98b61078ba3dc273f17eddd34a7">apop_sum</a>(&amp;trace.vector);
     Diff(tracesum, pi_over_six);
 
-    <a class="code" href="types_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(product_matrix);
+    <a class="code" href="apop_8h.html#a459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(product_matrix);
     gsl_matrix_free(dmr.matrix);
 }
 </pre></div> 
@@ -313,7 +313,7 @@ Functions</h2>
 <p>You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">data</td><td>The input matrix. (No default. If <code>NULL</code>, I'll return <code>NULL</code>.) I modify int in place so that each column has mean zero.</td></tr>
+    <tr><td class="paramname">data</td><td>The input matrix. (No default. If <code>NULL</code>, return <code>NULL</code> and print a warning iff <code>apop_opts.verbose &gt;= 1</code>.) I modify int in place so that each column has mean zero.</td></tr>
     <tr><td class="paramname">dimensions_we_want</td><td>(default: the size of the covariance matrix, i.e. <code>data-&gt;size2</code>) The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.</td></tr>
   </table>
   </dd>
@@ -376,4 +376,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>

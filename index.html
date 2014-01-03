@@ -39,7 +39,7 @@ urchinTracker();
 <li>moments, percentiles, and other basic stats utilities </li>
 <li>t-tests, F-tests, et cetera </li>
 <li>Several optimization methods available for your own new models </li>
-<li>It does <em>not</em> re-implement basic matrix operations or build yet another database engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL is also supported.</li>
+<li>It does <em>not</em> re-implement basic matrix operations or build yet another database engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/mariaDB is also supported.</li>
 </ul>
 <p>For the full list, click the <a href="globals.html">index</a> link from the header.</p>
 <h5><a href="http://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download Apophenia here</a>.</h5>
@@ -53,7 +53,7 @@ urchinTracker();
 <p>To really go in depth, download or pick up a copy of <a href="http://modelingwithdata.org">Modeling with Data</a>, which discusses general methods for doing statistics in C with the GSL and SQLite, as well as Apophenia itself. <a href="http://ben.klemens.org/pdfs/klemens-modelcats.pdf"><em>A Cross-paradigm Modeling Framework</em></a> (PDF) discusses some of the theoretical structures underlying the library.</p>
 <p>There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience functions, tips, and so on.</p>
 <h5>Notable features</h5>
-<p>Much of what Apophenia does can be done in any typical statistics package. The <a class="el" href="gentle.html#apop_data">apop_data</a> element is much like an R data frame, for example, and there is nothing special about being able to invert a matrix or take the product of two matrices with a single function call (<a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> and <a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>, respectively). Even more advanced features like Loess smoothing (<a class="el" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>) and the Fisher Exact Test (<a class="el" href="stats_8h.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>) are not especially Apophenia-specific. But here are some things that are noteworthy.</p>
+<p>Much of what Apophenia does can be done in any typical statistics package. The <a class="el" href="gentle.html#apop_data">apop_data</a> element is much like an R data frame, for example, and there is nothing special about being able to invert a matrix or take the product of two matrices with a single function call (<a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> and <a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>, respectively). Even more advanced features like Loess smoothing (<a class="el" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a>) and the Fisher Exact Test (<a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>) are not especially Apophenia-specific. But here are some things that are noteworthy.</p>
 <ul>
 <li>The text file parser is flexible and effective. Such data files are typically called `CSV files', meaning <em>comma-separated values</em>, but the delimiter can be anything (or even some mix of things), and there is no requirement that text have "special delimiters". Missing data can be specified by a simple blank or a marker of your choosing (e.g., <code>apop_opts.nan_string = "N/A";</code>). Or there can be no delimiters, as in the case of fixed-width files. If you are a heavy SQLite user, Apophenia may be useful to you simply for its <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> function.</li>
 </ul>
@@ -61,13 +61,13 @@ urchinTracker();
 <li>The maximum likelihood system combines a lot of different subsystems into one form: it will do a few flavors of conjugate gradient search, Nelder-Mead Simplex, Newton's Method, or Simulated Annealing. You pick the method by a setting attached to your model. If you want to use a method that requires derivatives and you don't have a closed-form derivative, the ML subsystem will estimate a numerical gradient for you. If you would like to do EM-style maximization (all but the first parameter are fixed, that parameter is optimized, then all but the second parameter are fixed, that parameter is optimized, ..., looping through dimensions until the change in objective across cycles is less than <code>eps</code>), just add a settings group specifying the tolerance at which the cycle should stop: <code>Apop_settings_add_group(your_model, apop_mle, .dim_cycle_tolerance=eps)</code>.</li>
 </ul>
 <ul>
-<li>The Iterative Proportional Fitting algorithm, <a class="el" href="asst_8h.html#ac1bae5dffbbd4bc82c7369211c36f934">apop_rake</a>, is best-in-breed, designed to handle large, sparse matrices.</li>
+<li>The Iterative Proportional Fitting algorithm, <a class="el" href="apop_8h.html#ac1bae5dffbbd4bc82c7369211c36f934">apop_rake</a>, is best-in-breed, designed to handle large, sparse matrices.</li>
 </ul>
 <ul>
 <li>As well as the <a class="el" href="gentle.html#apop_data">apop_data</a> structure, Apophenia is built around a model object, the <a class="el" href="structapop__model.html">apop_model</a>. This allows for consistent treatment of distributions, regressions, simulations, machine learning models, and who knows what other sorts of models you can dream up. By transforming and combining existing models, it is easy to build complex models from simple sub-models.</li>
 </ul>
 <ul>
-<li>For example, the <a class="el" href="asst_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> function does Bayesian updating on any two well-formed models. If they are on the table of conjugates, that is correctly handled, and if they are not, a variant of MCMC appropriate for any compatible pair of models produces an empirical distribution. The output is yet another model, from which you can make random draws, or which you can use as a prior for another round of Bayesian updating.</li>
+<li>For example, the <a class="el" href="apop__update_8c.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> function does Bayesian updating on any two well-formed models. If they are on the table of conjugates, that is correctly handled, and if they are not, an appropriate variant of MCMC produces an empirical distribution. The output is yet another model, from which you can make random draws, or which you can use as a prior for another round of Bayesian updating.</li>
 </ul>
 <ul>
 <li>Of course, it's a C library, meaning that you can build applications using Apophenia for the data-processing back-end of your program. For example, it is currently used in production for certain aspects of processing for the U.S. Census Bureau's American Community Survey.</li>
@@ -83,4 +83,4 @@ urchinTracker();
 <p>If you're interested, <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the <a href="https://github.com/b-k/Apophenia">GitHub</a> project. </p>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jan 3 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
