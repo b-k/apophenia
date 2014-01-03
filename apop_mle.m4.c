@@ -58,7 +58,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(starting_pt, NULL);
     Apop_varad_set(tolerance, 1e-5);
     Apop_varad_set(max_iterations, 5000);
-    Apop_varad_set(method, APOP_UNKNOWN_ML);//default picked in apop_maximum_likelihood
+    Apop_varad_set(method, "");//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
     Apop_varad_set(step_size, 0.05);
     Apop_varad_set(delta, default_delta);
@@ -419,12 +419,12 @@ Inside the infostruct, you'll find these elements:
 	    status  = 0,
 	    apopstatus  = 0,
 	    betasize= i->beta->size;
-    if (mp->method == APOP_CG_BFGS)
-	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs, betasize);
-    else if (mp->method == APOP_CG_PR)
-	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
-    else //Default:    APOP_CG_FR      conjugate gradient (Fletcher-Reeves)
-	    s	= gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
+    if (!strcasecmp(mp->method, "BFGS cg"))
+	    s = gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_vector_bfgs2, betasize);
+    else if (!strcasecmp(mp->method, "PR cg"))
+	    s = gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_pr, betasize);
+    else //Default:    "FR CG"      conjugate gradient (Fletcher-Reeves)
+	    s = gsl_multimin_fdfminimizer_alloc(gsl_multimin_fdfminimizer_conjugate_fr, betasize);
     gsl_multimin_function_fdf minme = {
         .f		= negshell,
         .df	    = (apop_df_with_void) dnegshell,
@@ -564,6 +564,20 @@ void get_desires(apop_model *m, infostruct *info){
     info->want_predicted = (want && want->predicted =='y') ? 'y' : 'n';
 }
 
+int check_method (char *m){
+#define Onecheck(str) if (!strcasecmp(m, #str)) return 0;
+if(!m || strlen(m)==0) return 0;
+Onecheck(NM simplex)
+Onecheck(FR cg)
+Onecheck(BFGS cg)
+Onecheck(PR cg)
+Onecheck(Annealing)
+Onecheck(Newton)
+Onecheck(Newton hybrid)
+Onecheck(Newton hybrid no scale)
+return 1;
+}
+
 /** The maximum likelihood calculations. 
 
 \li I assume that \c apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
@@ -579,7 +593,7 @@ void get_desires(apop_model *m, infostruct *info){
 
 \param	dist	The \ref apop_model object: \ref apop_gamma, \ref apop_probit, \ref apop_zipf, &amp;c. You can add
     an \c apop_mle_settings struct to it (<tt>Apop_model_add_group(your_model, apop_mle,
-    .verbose=1, .method=APOP_CG_FR, and_so_on)</tt>). So, see the \c apop_mle_settings
+    .verbose=1, .method="PR cg", and_so_on)</tt>). So, see the \c apop_mle_settings
     documentation for the many options, such as choice of method and tuning parameters.
 
 \return	None, but the input model is modified to include the parameter estimates, &c. 
@@ -600,8 +614,10 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
     apop_score_type ms = apop_score_vtable_get(dist);
-    if (mp->method == APOP_UNKNOWN_ML)
-        mp->method = ms ? APOP_CG_FR : APOP_SIMPLEX_NM;
+    Apop_stopif(check_method(mp->method), return, 0, "You set the method='%s', "
+            "which is not on my list of allowable methods. See the apop_mle_settings "
+            "documentation for the list of options", mp->method);
+    if (!mp->method || !strlen(mp->method)) mp->method = ms ? "FR cg" : "NM simplex";
 
     Apop_stopif(!dist->parameters, dist->error='p'; return, 0, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
     infostruct info = {.data           = data,
@@ -614,12 +630,12 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     if (setup_starting_point(mp, info.beta)) return;
     info.model->data = data;
     if (mp->dim_cycle_tolerance)            dim_cycle(data, dist, info);
-    else if (mp->method == APOP_SIMAN)      apop_annealing(&info);  //below.
-    else if (mp->method==APOP_SIMPLEX_NM)   apop_maximum_likelihood_no_d(data, &info);
-    else if (mp->method == APOP_RF_NEWTON ||
-            mp->method == APOP_RF_HYBRID_NOSCALE ||
-            mp->method == APOP_RF_HYBRID)   find_roots (info);
-    else   /* Conjugate Gradient*/          apop_maximum_likelihood_w_d(data, &info);
+    else if (!strcasecmp(mp->method, "annealing"))   apop_annealing(&info);  //below.
+    else if (!strcasecmp(mp->method, "NM simplex"))  apop_maximum_likelihood_no_d(data, &info);
+    else if (!strcasecmp(mp->method, "Newton") ||
+            !strcasecmp(mp->method, "Newton hybrid")||
+            !strcasecmp(mp->method, "Newton hybrid no scale")) find_roots (info);
+    else   /* Conjugate Gradient*/   apop_maximum_likelihood_w_d(data, &info);
 }
 
 /** 
@@ -861,8 +877,8 @@ static apop_model * find_roots (infostruct p) {
               apopstatus = -1;   //assume failure until we score a success.
     size_t iter = 0;
     gsl_multiroot_function f = {dnegshell, betasize, &p};
-    T =   (mlep->method == APOP_RF_NEWTON)         ? gsl_multiroot_fsolver_dnewton
-        : (mlep->method == APOP_RF_HYBRID_NOSCALE) ? gsl_multiroot_fsolver_hybrids
+    T =   !strcasecmp(mlep->method, "Newton")         ? gsl_multiroot_fsolver_dnewton
+        : !strcasecmp(mlep->method, "Newton hybrid no scale") ? gsl_multiroot_fsolver_hybrids
                                                    : gsl_multiroot_fsolver_hybrid;
     s = gsl_multiroot_fsolver_alloc (T, betasize);
     gsl_multiroot_fsolver_set (s, &f, p.beta);

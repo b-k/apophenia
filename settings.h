@@ -174,18 +174,6 @@ Apop_settings_copy (ysg,
 
         //Part II: the details of extant settings groups.
 
-typedef enum {
-    APOP_SIMPLEX_NM     =0, /**< Nelder-Mead simplex (gradient handling rule is irrelevant) */
-    APOP_CG_FR     =1,      /**<  Conjugate gradient (Fletcher-Reeves) (default) */
-    APOP_CG_BFGS   =2,      /**<  Conjugate gradient (BFGS: Broyden-Fletcher-Goldfarb-Shanno) */
-    APOP_CG_PR     =3,      /**<  Conjugate gradient (Polak-Ribiere) */
-    APOP_SIMAN      =5,         /**<  \ref simanneal "simulated annealing" */
-    APOP_RF_NEWTON  =10,        /**<  Find a root of the derivative via Newton's method */
-//    APOP_RF_BROYDEN =11,        //  Find a root of the derivative via the Broyden Algorithm
-    APOP_RF_HYBRID  =12,        /**<  Find a root of the derivative via the Hybrid method */
-    APOP_RF_HYBRID_NOSCALE = 13, /**<  Find a root of the derivative via the Hybrid method; no internal scaling */
-    APOP_UNKNOWN_ML = -1       /**<  For internal use */
-} apop_optimization_enum;
 
 /** The settings for maximum likelihood estimation (including simulated annealing).
 \ingroup settings */
@@ -193,7 +181,31 @@ typedef struct{
     double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
                                   If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
                                   \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
-    apop_optimization_enum method; /**< See the  \ref apop_optimization_enum documentation for options. */
+    char *method; /**< The method to be used for the optimization. All strings are case-insensitive.
+
+        <table>
+<tr>
+<td> String <td></td> Name  <td></td>  Notes
+</td> </tr>
+                                     
+<tr><td> "NM simplex" </td><td> Nelder-Mead simplex </td><td> Does not use gradients at all. Can sometimes get stuck.</td></tr>
+
+<tr><td> "FR cg"  </td><td> Conjugate gradient (Fletcher-Reeves) (default) </td><td> CG methods use derivatives. The converge to the optimum of a quadratic function in one step; performance degrades as the objective digresses from quadratic.</td></tr>
+
+<tr><td> "BFGS cg" </td><td> Broyden-Fletcher-Goldfarb-Shanno conjugate gradient        </td><td>  </td></tr>
+
+<tr><td> "PR cg"  </td><td> Polak-Ribiere conjugate gradient  </td><td>  </td></tr>
+
+<tr><td> "Annealing"  </td><td> \ref simanneal "simulated annealing"         </td><td> Slow but works for objectives of arbitrary complexity, including stochastic objectives.</td></tr>
+
+<tr><td> "Newton"</td><td> Newton's method  </td><td> Search by finding a root of the derivative. Expects that gradient is reasonably well-behaved. </td></tr>
+
+<tr><td> "Newton hybrid"</td><td> Newton's method/gradient descent hybrid        </td><td>  Find a root of the derivative via the Hybrid method </td> If Newton proposes stepping outside of a certain interval, use an alternate method. See <a href="https://www.gnu.org/software/gsl/manual/gsl-ref_35.html#SEC494">the GSL manual</a> for discussion.</tr>
+
+<tr><td> "Newton hybrid no scale"</td><td>  Newton's method/gradient descent hybrid with spherical scale</td><td>  As above, but use a simplified trust region. </td></tr>
+</table>
+
+                                     See the  \ref apop_optimization_enum documentation for options. */
     double      step_size, /**< the initial step size. */
                 tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
 delta;

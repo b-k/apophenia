@@ -22,7 +22,7 @@ void tfloor(apop_model *dce){
     if (is_t(dce)) dce->parameters->vector->data[2] = round(dce->parameters->vector->data[2]);
 }
 
-int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *true_params){
+int estimate_model(apop_data *data, apop_model *dist, char *method, apop_data *true_params){
     double *starting_pt;
     if(is_bernie(dist))
         starting_pt = (double[]){.5};
@@ -38,7 +38,7 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
     Apop_model_add_group(dist, apop_parts_wanted);
 
     if((is_bernie(dist) || is_beta(dist))
-       && method==APOP_RF_HYBRID)
+       && !strcasecmp(method, "Newton hybrid"))
         return 0;
     apop_model *e = apop_estimate(data, dist);
     tfloor(e);
@@ -51,7 +51,7 @@ int estimate_model(apop_data *data, apop_model *dist, int method, apop_data *tru
 
         if (!strcmp(e->name, "Dirichlet distribution")
             || !strcmp(e->name, "Gamma distribution") //just doesn't work.
-            ||(is_bernie(e) && method==APOP_RF_HYBRID)
+            ||(is_bernie(e) && !strcasecmp(method, "Newton hybrid"))
             ||(is_t(e)) //requires several restarts to work.
             ||(!strcmp(e->name, "Exponential distribution")) //imprecise
             || !strcmp(e->name, "Yule distribution")){
@@ -89,12 +89,12 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
             assert(!isnan(apop_sum(v)));
         }
     }
-    if (model->estimate) estimate_model(data, model, -3, true_params->parameters);
+    if (model->estimate) estimate_model(data, model, "", true_params->parameters);
     else { //try all the MLEs.
-        estimate_model(data, model,APOP_SIMPLEX_NM, true_params->parameters);
+        estimate_model(data, model, "NM simplex", true_params->parameters);
         if(is_t(model)) return; //t distribution still v. slow to converge.
-        estimate_model(data, model,APOP_CG_PR, true_params->parameters);
-        estimate_model(data, model,APOP_RF_HYBRID, true_params->parameters);
+        estimate_model(data, model, "PR cg", true_params->parameters);
+        estimate_model(data, model, "Newton Hybrid", true_params->parameters);
     }
     apop_data_free(data);
 }

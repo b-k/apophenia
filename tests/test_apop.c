@@ -213,7 +213,7 @@ void test_score(){
     for (size_t j=0; j< len; j++)
         apop_draw(gsl_matrix_ptr(data->matrix, j, 0), r, source);
     apop_model *estme = apop_model_copy(apop_normal);
-    Apop_model_add_group(estme, apop_mle, .method= APOP_SIMAN);
+    Apop_model_add_group(estme, apop_mle, .method= "annealing");
     apop_prep(data, estme);
     apop_maximum_likelihood(data, estme);
 
@@ -740,7 +740,7 @@ void test_model_fix_parameters(gsl_rng *r){
     apop_model *mep2  = apop_model_fix_params(pp);
     apop_model_free(pp);
     Apop_settings_add(mep2, apop_mle, starting_pt, start2);
-    Apop_settings_add(mep2, apop_mle, method, APOP_CG_PR);
+    Apop_settings_add(mep2, apop_mle, method, "PR cg");
 
     apop_model *e2 = apop_estimate(d, mep2);
     apop_model_free(mep2);
