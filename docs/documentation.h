@@ -96,7 +96,8 @@ a closed-form derivative, the ML subsystem will estimate a numerical gradient fo
 you. If you would like to do EM-style maximization (all but the first parameter are
 fixed, that parameter is optimized, then all but the second parameter are fixed, that
 parameter is optimized, ..., looping through dimensions until the change in objective
-across cycles is less than <tt>eps</tt>), just set <tt>Apop_settings_add_group(your_model,
+across cycles is less than <tt>eps</tt>), just add a settings group specifying the
+tolerance at which the cycle should stop: <tt>Apop_settings_add_group(your_model,
 apop_mle, .dim_cycle_tolerance=eps)</tt>.
 
 \li The Iterative Proportional Fitting algorithm, \ref apop_rake, is best-in-breed,
@@ -110,9 +111,10 @@ models from simple sub-models.
 
 \li For example, the \ref apop_update function does Bayesian updating on any two
 well-formed models. If they are on the table of conjugates, that is correctly handled,
-and if they are not, Gibbs sampling produces an empirical distribution. The output is
-yet another model, from which you can make random draws, or which you can use as
-a prior for another round of Bayesian updating.
+and if they are not, a variant of MCMC appropriate for any compatible pair of models
+produces an empirical distribution. The output is yet another model, from which you
+can make random draws, or which you can use as a prior for another round of Bayesian
+updating.
 
 \li Of course, it's a C library, meaning that you can build applications using Apophenia
 for the data-processing back-end of your program. For example, it is currently used
@@ -126,7 +128,10 @@ Community Survey.
 \li Contribute your favorite statistical routine.
 \li Package Apophenia into an RPM, apt, portage, cygwin package.
 \li Report bugs or suggest features.
-\li Write bindings for your preferred language, which may just mean modifying the existing SWIG interface file.
+\li Write bindings for your preferred language. For example, here are early versions of <a
+href="http://modelingwithdata.org/arch/00000173.htm"> a Julia
+wrapper</a> and <a href="https://r-forge.r-project.org/projects/rapophenia/">an R
+wrapper</a> which you could expand upon.
 
 If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
 <a href="https://github.com/b-k/Apophenia">GitHub</a> project.
@@ -189,7 +194,7 @@ sudo yum install make gcc gsl-devel libsqlite3x-devel
 \li Once you have the library downloaded, compile it using 
 
 \code
-tar xvzf apop*tgz && cd apophenia-0.99
+tar xvzf apop*tgz && cd apophenia-0.998
 ./configure && make && sudo make install && make check
 \endcode
 
@@ -317,7 +322,7 @@ If an un-named element follows a named element, then that value is given to the 
 apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
 \endcode
 
-\li There is some overhead to checking for defaults; in cases that are more function-calling than actual calculation, this could slow the code by up to 25\%. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
+\li There is some overhead to checking for defaults. If this is noticeable for your situation, you can pass on this convenient form and call the underlying function directly, by adding \c _base to the name and giving all arguments:
 
 \code
 apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
@@ -385,7 +390,7 @@ Outlineheader c Some notes on C and Apophenia's use of C utilities.
  
 Outlineheader learning  Learning C
 
-<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages.  More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://www.youtube.com/watch?v=6pmWojisM_E">claymation cartoon</a> which clarifies everything.
+<a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages. More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://www.youtube.com/watch?v=6pmWojisM_E">claymation cartoon</a> which clarifies everything.
 
 Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apophenia builds.
 
@@ -554,13 +559,13 @@ endofdiv
 
 Outlineheader status What is the status of the code?
 
-[This section last updated 17 April 2013.]
+[This section last updated 3 January 2014.]
 
 Apophenia was first posted to SourceForge in February 2005, which means that we've had
 several years to develop and test the code in real-world applications. 
 
 The test suite, including the sample code and solution set for _Modeling with Data_,
-is about 5,500 lines over 135 files. gprof reports that it covers over 85% of the
+is about 5,500 lines over 135 files. gprof reports that it covers about 90% of the
 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is
 that the well-worn parts, in this case functions like \ref apop_data_get and \ref
 apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
@@ -568,7 +573,7 @@ out-of-the-way functions (maybe the score for the Beta distribution) are worth a
 of caution. Close to all of the code has been used in production, so all of it was at
 least initially tested against real-world data.
 
-It is currently at version 0.99, which is intended to indicate that it is substantially
+It is currently at version 0.998, which is intended to indicate that it is substantially
 complete. Of course, a library for scientific computing, or even for that small subset
 that is statistics, will never cover all needs and all methods. But as it stands
 Apophenia's framework, based on the \ref apop_data and \ref apop_model, is basicaly
@@ -579,22 +584,18 @@ The \ref apop_data structure is set, and there are enough functions there that y
 use it as a subpackage by itself (along with the database functions) for nontrivial
 dealings with data.
 
-The \ref apop_model structure is much more ambitious, and although its interface is
-largely set, its internal system can still be improved.  The promise underlying the
-structure is that you can provide just one item, such as an RNG or a likelihood function,
-and the structure will do all of the work to fill in computationally-intensive methods
-for everything else. Some directions aren't quite there yet (such as RNG -> most other
+The \ref apop_model structure is much more ambitious---Apophenia is really intended
+to be a novel system for developing models---and its internals can still be improved.
+The promise underlying the structure is that you can provide just one item, such as
+an RNG or a likelihood function, and the structure will do all of the work to fill in
+computationally-intensive methods for everything else; see \ref settingswriting for
+the gory details. Some directions aren't quite there yet (such as RNG -> most other
 things); the default likelihood -> RNG function only works for models with a domain of
 unidimensional reals; the PMF model (the essential bridge from data sets to empirical
-models) needs an internal index for faster lookups. 
-
-The next step is providing better tools for transforming
-models. For example, the \ref apop_model_fix_params function takes in a model with
-several parameters, and returns one with fewer; or the apop_update function produces
-a more complex model by convoluting together a prior model and a likelihood model.
-When these transformations are more complete and usable, Apophenia will be at 1.0,
-and at that point it will be more than a library for conveniently estimating and
-drawing from distributions, but a language for expressing how models are developed.
+models) needs an internal index for faster lookups.  Readers are invited perhaps
+contribute better methods (such as an alternate means of estimating mixture models),
+or filling in more of existing models (write a dlog likelihood function for a model
+that does not currently have one), or submit new standard models not yet included.
 
 
 endofdiv
@@ -724,7 +725,6 @@ You may need to pull a row of a matrix as a distinct vector. The GSL makes it ea
 
 \code
 apop_data *d = apop_query_to_data("select obs1, obs2, obs3 from a_table");
-gsl_matrix *m = d->matrix;
 
 //Get a column using its name
 Apop_col_t(d, "obs1", ov);
@@ -736,17 +736,17 @@ double first_row_sum = apop_vector_sum(v);
 
 //Get a row or rows as a standalone one-row apop_data set
 Apop_row(d, 0, d1);
-apop_data_show(d1);
+apop_data_print(d1);
 
 //ten rows starting at row 3:
 Apop_data_rows(d, 3, 10, d10);
 apop_data_show(d10);
 
-//First column's sum, matrix format
-Apop_matrix_col(m, 0, mv);
-double first_col_sum = apop_vector_sum(mv);
+//First column's sum
+Apop_col_v(d, 0, colone);
+double first_col_sum = apop_vector_sum(colone);
 
-//Pull a ten by five submatrix, whose first element is the (2,3)rd
+//Pull a 10x5 submatrix, whose first element is the (2,3)rd
 //element of the parent data set's matrix
 Apop_submatrix(d, 2,3, 10,5, subm);
 double first_col_sum = apop_matrix_sum(subm);
@@ -754,13 +754,17 @@ double first_col_sum = apop_matrix_sum(subm);
 
 \li\ref Apop_col
 \li\ref Apop_row
+\li\ref Apop_cols
+\li\ref Apop_rows
+\li\ref Apop_col_v
+\li\ref Apop_row_v
 \li\ref Apop_col_t
-\li\ref Apop_matrix_row_t
-\li\ref Apop_matrix_col
+\li\ref Apop_row_t
+\li\ref Apop_col_tv
+\li\ref Apop_row_tv
 \li\ref Apop_matrix_row
+\li\ref Apop_matrix_col
 \li\ref Apop_submatrix
-\li\ref Apop_row
-\li\ref Apop_data_rows
 
 These macros make use of a set of GSL matrices that produce output of type <tt>gsl_matrix_view</tt> and <tt>gsl_vector_view</tt>. These types point to the source data, and add metadata to turn the data into a coherent matrix/vector. Apophenia's macros generate these views, then pull the matrix/vector from them, so you never have to deal with the <tt>_view</tt> structs directly.
 
@@ -1192,11 +1196,7 @@ the parameters, calculate statistics like log likelihood, and so on, which the f
 The <tt>apop_probit</tt> model that ships with Apophenia is unparameterized:
 <tt>apop_probit.parameters==NULL</tt>. The output from the estimation,
 <tt>the_estimate</tt>, has the same form as <tt>apop_probit</tt>, but
-<tt>the_estimate->parameters</tt> has a meaningful value. It is easy to forget whether a
-model does or does not have parameters set, but as a general rule, an <tt>apop_model</tt>
-never has set parameters on startup, so if you find yourself using the <tt>&amp;</tt>
-to fit a model where a pointer-to-model is required, check that you are not using an
-un-parameterized model where parameters are needed.
+<tt>the_estimate->parameters</tt> has a meaningful value.
 
 Outlineheader covandstuff More estimation output
 
@@ -1256,7 +1256,7 @@ There are also linear models like \ref apop_ols, \ref apop_probit, and \ref apop
 
 Simulation models seem to not fit this form, but you will see below that if you can write an objective function for the \c p method of the model, you can use the above tools. Notably, you can estimate parameters via maximum likelihood and then give confidence intervals around those parameters.
 
-But some models have to break uniformity, like how a histogram has a list of bins that makes no sense for a Normal distribution. These are held in <em>settings groups</em>, which you will occasionally need to tweak to modify how a model is handled or estimated. The most common example would be for maximum likelihood,
+But some models have to break uniformity, like how a histogram has a list of bins that makes no sense for a Normal distribution. These are held in <em>settings groups</em>, which you will occasionally need to tweak to modify how a model is handled or estimated. The most common example would be for maximum likelihood, eg.
 
 \code
 //Probit uses MLE. Redo the estimation using Newton's Method
@@ -1267,12 +1267,8 @@ apop_model *re_est = apop_estimate(data, the_estimate);
 
 See below for the details of using settings groups.
 
-Where to from here? You will find a list of the canned models already available below,
-along with a list of basic functions that make use of them. If your model is there, then
-you are encouraged to not delve into the internal details of the model structure. For
-example, the \ref apop_probit structure has an \c apop_probit.estimate function, but
-don't call it directly. Always use \ref apop_estimate and let it call the model-internal
-method.
+Where to from here? See the \ref models page for a list of the canned models,
+along with a list of basic functions that make use of them. 
 
 If you need to write a new model, see \ref modeldetails.
 
@@ -1347,23 +1343,22 @@ endofdiv
 
 Outlineheader Update Filtering & updating
 
-It's easy to generate new models that are variants of prior models. Bayesian updating,
+The model structure makes it
+easy to generate new models that are variants of prior models. Bayesian updating,
 for example, takes in one \ref apop_model that we call the prior, one \ref apop_model
 that we call a likelihood, and outputs an \ref apop_model that we call the posterior.
-
-Many of these (after the first two) are undergoing active development right now.
 
 \li\ref apop_update() : Bayesian updating
 \li\ref apop_model_coordinate_transform() : apply an invertible transformation to the data space
 \li\ref apop_model_dconstrain() : constrain the data space of a model to a subspace. E.g., truncate a Normal distribution so \f$x>0\f$.
 \li\ref apop_model_fix_params() : hold some parameters constant
 \li\ref apop_model_mixture() : a linear combination of models
-\li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has a <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
+\li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has an <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
 \li\ref apop_model_dcompose() : use the output of one model as a data set for another
 
 endofdiv
 
-Outlineheader modelsettings Model settings
+Outlineheader modelsettings Settings groups
 
 [For info on specific settings groups and their contents and use, see the \ref settings page.]
 
@@ -1590,11 +1585,10 @@ endofdiv
 
 Outlineheader Maxi Maximum likelihood methods
 
-This section includes some notes on the maximum likelihood routine, but if you read
-the section on writing models, then you already know how to do maximum likelihood
-on exotic setups. Just write a model that has a \c p or \c log_likelihood function,
-and call \c apop_estimate(your_data, your_model).  The default estimation routine is
-maximum likelihood.
+This section includes some notes on the maximum likelihood routine. As in the section
+on writing models above, if a model has a \c p or \c log_likelihood function, then
+calling \c apop_estimate(your_data, your_model) executes the default estimation routine
+of maximum likelihood.
 
 If you are a not a statistician, then there are a few things you will need to keep in
 mind:
@@ -1605,8 +1599,7 @@ function's value.
 
 \li The overall setup is about estimating the parameters of a model with data. The user
 provides a data set and an unparameterized model, and the system tries parameterized
-models until one of them is found to be optimal. The data is fixed---it was observed
-before the statistician sat down to the computer. The parameters make sense only in the
+models until one of them is found to be optimal. The data is fixed. The parameters make sense only in the
 context of a model, so the optimization sends around a series of parameterized models,
 searching for the one that is most likely.
 In a non-stats setting, you will probably have \c NULL data, and will be optimizing the
@@ -1629,10 +1622,10 @@ scaling factor \f$s\f$ is fixed ahead of time, say at 100.
     }
 \endcode
 
-The function returns a single number, which you are attempting to miniminze.
-You will need to write an \ref apop_model, which you will send to the optimizer, which is
-a two step process: write a log likelihood function wrapping the real objective function,
-and a model that uses that log likelihood. Here they are:
+The function returns a single number to be minimized.  You will need to write an
+\ref apop_model to send to the optimizer, which is a two step process: write a log
+likelihood function wrapping the real objective function, and a model that uses that
+log likelihood. Here they are:
 
 \code
 double ll (apop_data *d, apop_model *in){
@@ -1657,20 +1650,19 @@ the <tt>--std=gnu99</tt> flag on the \c gcc command line.
 it maximizes the log of the likelihood function. You can define your objective function
 to be either the <tt>p</tt> or the <tt>log_likelihood</tt> element of your model, and
 there is really only one difference: if you give me a <tt>p</tt> function, I may take
-its log somewhere along the way. Thus, the return value from <tt>p</tt> must always
-be non-negative.
+its log somewhere along the way, so the return value from <tt>p</tt> must always be non-negative.
 
 \li Statisticians want the covariance and basic tests about the parameters. If you just
 want the optimal value, then adding this line will shut off all auxiliary calculations:
 \code
 Apop_settings_add_group(your_model, apop_parts_wanted);
 \endcode
-See the documentation for \ref apop_parts_wanted_settings for details about how this works. 
-It can also offer quite the speedup: finding the covariance matrix without any information can 
-take maybe 70 evaluations of the objective funtion for each evaluation that is part of the
-search itself, and thus produce an order-of-magnitude speedup.
+See the documentation for \ref apop_parts_wanted_settings for details about how this
+works.  It can also offer quite the speedup: especially for high-dimensional problems,
+finding the covariance matrix without any information can take dozens of evaluations
+of the objective funtion for each evaluation that is part of the search itself.
 
-\li MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above.
+\li MLEs have an especially large number of parameter tweaks that could be made; see the section on MLE settings above or the \ref apop_mle_settings page.
 
 \li Putting it all together, here is a full program to minimize Rosenbrock's banana
 function. There are some extras: it uses two methods (notice how easy it is to re-run an
@@ -1702,16 +1694,18 @@ A constraint function must do three things:
 \li If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint.
 \li if the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.
 
-The idea is that if the constraint returns zero, the log likelihood function will return the log likelihood as usual, and if not, it will return the log likelihood at the constraint's return vector minus the penalty. To give a concrete example, here is a constraint function that will ensure that both parameters of a two-dimensional input are both greater than zero:
+The idea is that if the constraint returns zero, the log likelihood function will
+return the log likelihood as usual, and if not, it will return the log likelihood at
+the constraint's return vector minus the penalty. To give a concrete example, here
+is a constraint function that will ensure that both parameters of a two-dimensional
+input are both greater than zero. As with the constraints for many of the models that
+ship with Apophenia, it is a wrapper for \ref apop_linear_constraint.
 
 \code
 static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
     //constraint is 0 < beta_2
     static apop_data *constraint = NULL;
-    if (!constraint){
-        constraint= apop_data_calloc(1,1,1);
-        apop_data_set(constraint, 0, 0, 1);
-    }
+    if (!constraint) constraint= apop_data_falloc((1,1,1), 0, 1);
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 \endcode
@@ -1996,7 +1990,7 @@ Thus, the macro declares each not-in-struct variable, and so there will need to 
 The setup goes out of its way to leave the \c _base function in the public namespace, so that those who would prefer speed to bounds-checking can simply call that function directly, using standard notation. You could eliminate this feature by just merging the two functions.
 
 
-<b>The sed script</b>
+<b>The m4 script</b>
 
 The above is all you need to make this work: the varad.h file, and the above structures. But there is still a lot of redundancy, which can't be eliminated by the plain C preprocessor.
 
@@ -2019,23 +2013,22 @@ APOP_VAR_END_HEAD
 
 It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.
 
-The sed script inserts a <tt>return function_base(...)</tt> at the end of the header
+The m4 script inserts a <tt>return function_base(...)</tt> at the end of the header
 function, so you don't have to. If you want to call the funtion before the last line, you
 can do so explicitly, as in the expansion above, and add a bare <tt>return;</tt> to
-guarantee that the call to the base function that the sed script will insert won't ever be
+guarantee that the call to the base function that the m4 script will insert won't ever be
 reached.
 
-One final detail: it is valid to have types with commas in them---function arguments. Because commas get turned to semicolons, and sed isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
+One final detail: it is valid to have types with commas in them---function arguments. Because commas get turned to semicolons, and m4 isn't a real parser, there is an exception built in: you will have to replace commas with exclamation marks in the header file (only). E.g.,
 
 \code
 APOP_VAR_DECLARE apop_data * f_of_f(apop_data *in, void *param, int n, double (*fn_d)(double ! void * !int));
 \endcode
 
-Sed is POSIX standard, so even if you can't read the script, you have the program needed to run it. For example, if you name it \c prep_variadics.sed, then run
+m4 is POSIX standard, so even if you can't read the script, you have the program needed to run it. For example, if you name it \c prep_variadics.m4, then run
 \code
-./prep_variadics.sed < myfile.pre.c > myfile.c
+m4 prep_variadics.m4 myfile.m4.c > myfile.c
 \endcode
-
 */
 
 /** \page dataprep Data prep rules 
@@ -2099,13 +2092,8 @@ To my knowledge, Apophenia is the only open source system for doing statistical
 analysis that is not a walled-garden stats package. Its data structures, syntax, and use 
 reflect its unique position.
 
-You will see below that Apophenia provides many of the conveniences that stats package
-users are used to in simply fitting a regression-style model, while still being
-structured in a manner that facilitates and encourages building new types of model,
-using fitted models to generate agents in your simulation, or designing hierarchical
-models built from simpler base models.
-
-The workflow of a typical fitting-a-model project using Apophenia's tools goes something like this:
+Setting aside the more advanced applications and model-building tasks, let us begin with
+the workflow of a typical fitting-a-model project using Apophenia's tools:
 
 \li Read the raw data into the database using \ref apop_text_to_db.
 \li Use SQL queries handled by \ref apop_query to massage the data as needed.
@@ -2120,8 +2108,10 @@ The program:
 
 \include ols.c
 
-To run this, you
-will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent:
+To run this, you will need a file named <tt>data</tt> in comma-separated form, so
+here is a set sufficient for the demonstration. The first column is the dependent variable; the
+remaining columns are the independent:
+
 \code
 Y, X_1, X_2, X_3
 2,3,4,5
@@ -2145,7 +2135,7 @@ points---but it does give us some lines of code to dissect.
 
 The first two lines in \c main() make use of a database.  
 I'll discuss the value of the database step more at the end of this page, but for
-now, note that there are there are several functions, \ref apop_query, and \ref
+now, note that there are several functions, \ref apop_query, and \ref
 apop_query_to_data being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL database. 
 
 \par Designated initializers
@@ -2176,26 +2166,24 @@ Default values mean that the \ref apop_data_get, \ref apop_data_set, and \ref ap
 //Let v be a vector or a one-column matrix:
 double x1 = apop_data_get(v, 1);
 apop_data_set(v, 2, .val=x1);
+\endcode
 
-//let s be a scalar stored in an \ref apop_data set:
+\code
+//let s be a scalar stored in a 1x1 apop_data set:
 double *scalar = apop_data_ptr(s);
 \endcode
 
-\ref apop_vector_distance offers another nice example of the utility of the named-argument mechanism.
-
-Those of you coming from stats packages will enjoy 
-working in C without having to give up all the conveniences of stats packages, such as
-the awesomeness of not having to think about arguments that will take their default value.
-C traditionalists may be surprised by this unfamiliar form, but can rest assured that
-the Apophenia internals build this with entirely standards-compliant C.  Everybody can
-see the \ref designated page for details.
+Those of you coming from stats packages will enjoy working in C without having to give
+up the convenience of not having to think about arguments that will take their default
+value.  C traditionalists can rest assured that the Apophenia internals build this with
+entirely standards-compliant C. Everybody can see the \ref designated page for details.
 
 
 \section apop_data
 
-The \ref apop_data set naturally represents a data set. It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its \ref apop_data set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.
+It turns out that a lot of real-world data processing is about quotidian annoyances about text versus numeric data or dealing with missing values, and the the \ref apop_data set and its many support functions are intended to make data processing in C easy. Some users of Apophenia use the library only for its \ref apop_data set and associated functions. See the "data sets" section of the outline page (linked from the header of this page) for extensive notes on using the structure.
 
-The structure basically includes six parts:
+The structure includes seven parts:
 
 \li a vector
 \li a matrix
@@ -2203,10 +2191,10 @@ The structure basically includes six parts:
 \li a vector of weights
 \li names for everything: row names, a vector name, matrix column names, text names.
 \li a link to a second page of data
-
+\li an error marker
 
 This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For
-example, here is some dummy data for a weighted OLS regression. It includes an outcome
+example, here is some data for a weighted OLS regression. It includes an outcome
 variable in the vector, dependent variables in the matrix and text grid,
 replicate weights, and column names in bold labeling the variables:
 
@@ -2214,6 +2202,8 @@ replicate weights, and column names in bold labeling the variables:
 
 As per the example above, Apophenia will generally assume that one row across all of these elements
 describes a single observation or data point.
+
+See above for some examples of getting and setting individual elements.
 
 Also, \ref apop_data_get, \ref apop_data_set, and \ref apop_data_ptr consider the vector to be the -1st column,
 so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, .col=-1) == 1</tt>.
@@ -2229,35 +2219,14 @@ considered to be a disposable view: once the variable goes out of scope (by the 
 rules of scoping), it is no longer valid. However, these structures are all wrappers for pointers
 to the base data, so all operations on the data view affect the base data. 
 
-\code
-#include <apop.h>
-
-int main(){
-  apop_data *d = apop_text_to_data("data");
-
-  //tally row zero of the data set's matrix by viewing it as a vector:
-  Apop_matrix_row(d->matrix, 0, one_row);
-  double sigma = apop_vector_sum(one_row);
-  printf("Sum of the first row: %g\n", sigma);
-
-  //view the first column as a vector; take its mean
-  Apop_col(d, 0, one_col);
-  double mu = apop_vector_mean(one_col);
-  printf("Mean of the first col: %g\n", mu);
-
-  //get a sub-data set of rows 3 through 8; print to screen
-  Apop_data_rows(d, 3, 8, six_elmts);
-  apop_data_print(six_elmts);
-}
-\endcode
+\include simple_subsets.c
 
 All of these slicing routines are macros, because they generate several
 background variables in the current scope (something a function can't do). Traditional
 custom is to put macro names in all caps, like \c APOP_DATA_ROWS, which to modern
 sensibilities looks like yelling. The custom has a logic: there are ways to hang
-yourself with macros, so it is worth distinguishing them typographically. Apophenia
-lets you choose the level of careful/pedantic you prefer: any of \c
-APOP_ROW, \c Apop_row, or \c apop_row are valid. The documentation always uses a single capital.
+yourself with macros, so it is worth distinguishing them typographically. 
+The documentation always uses a single capital.
 
 Notice that all of the slicing macros return nothing, so there is nothing to do with one
 but put it on a line by itself. This limits the number of misuses.
@@ -2266,15 +2235,15 @@ but put it on a line by itself. This limits the number of misuses.
 
 The outline page (which you can get to via a link next to the snowflake header at the top of every page on this site) lists a number of other manipulations of data sets, such as 
 \ref apop_data_listwise_delete for quick-and-dirty removal of observations with <tt>NaN</tt>s,
-\ref apop_data_split / \ref apop_data_stack to cleave apart or cleave together data
-sets, or \ref apop_data_sort to sort all elements by a single column.
+\ref apop_data_split / \ref apop_data_stack,
+or \ref apop_data_sort to sort all elements by a single column.
 
 \par Apply and map
 
 If you have an operation of the form <em>for each element of my data set, call this
 function</em>, then you can use \ref apop_map to do it. You could basically do everything you
 can do with an apply/map function via a \c for loop, but the apply/map approach is clearer
-and more fun. Also, if you set the global <tt>apop_opts.thread_count = n</tt> for any \c n greater than 1,
+and more fun. Also, if you set the global <tt>apop_opts.thread_count = N</tt> for any \c N greater than 1,
 then the work of mapping will be split across multiple CPU threads.  See the outline \> data sets \> map/apply
 section for a number of examples.
 
@@ -2284,9 +2253,17 @@ Text in C is annoying. C already treats strings as pointer-to-characters, so a g
 
 The text grid in the \ref apop_data structure actually takes this form, but functions are provided so that most or all the pointer work is handled for you.  The \ref apop_text_alloc function is really a realloc function: you can use it to resize the text grid as necessary. The \ref apop_text_add function will do the pointer work in copying a single string to the grid. Functions that act on entire data sets, like \ref apop_data_rm_rows, handle the text part as well.
 
-
 You have <tt>your_data->textsize[0]</tt> rows and <tt>your_data->textsize[1]</tt> columns. If you are using only the functions to this point, then empty elements are a blank string (<tt>""</tt>), not \c NULL.
 For reading individual elements, refer to the \f$(i,j)\f$th text element via <tt>your_data->text[i][j]</tt>.
+
+\par Errors
+
+Many functions will set the <tt>error</tt> element of the \ref apop_data structure being operated on if anything goes wrong. You can use this to halt the program or take corrective action:
+
+\code 
+apop_data *the_data = apop_query_to_data("select * from d");
+if (the_data->error) exit(0);
+\endcode 
 
 \par The whole structure
 
@@ -2321,7 +2298,7 @@ Now let us move up the structure diagram to the \ref apop_model structure.
 
 Even restricting ourselves to the most basic operations, there are a lot of things that 
 we want to do with our models: estimating the parameters of a model (like the mean and
-variance of a Normal distribution) from data, or drawing random numbers, or showing the
+variance of a Normal distribution) given data, or drawing random numbers, or showing the
 expected value, or showing the expected value of one part of the data given fixed values
 for the rest of it. The \ref apop_model is intended to encapsulate most of these desires
 into one object, so that models can easily be swapped around, modified to create new models, 
@@ -2352,6 +2329,7 @@ functions like \ref apop_estimate, \ref apop_draw, or \ref apop_predict; more ex
 After \ref apop_estimate, most require a parameterized model like \c est. After all, it doesn't make sense to
 draw from a Normal distribution until you've specified its mean and standard deviation.
 \li You can use \ref apop_model_print to print the various elements to screen.
+\li You can combine and transform models with functions such as \ref apop_model_fix_params, \ref apop_model_coordinate_transform, or \ref apop_model_mixture. Each of these functions produce a new model, which can be estimated, re-combined, or otherwise used like any other model.
 \li Writing your own models won't be covered in this introduction, but it can be pretty easy to
 copy and modify the procedures of an existing model to fit your needs. When in doubt, delete a procedure, because any procedures that are missing will have
 defaults filled when used by functions like \ref apop_estimate (which uses \ref
@@ -2363,10 +2341,9 @@ Apophenia's functions, including \ref apop_estimate : the data always comes firs
 
 Every model, and every method one would apply to a model, is prone to have a list of
 settings: how many bins in the histogram, at what tolerance does the maximum likelihood
-search end, what percent of the Gibbs sampling run should be thrown out as a burn-in period.
-These can become an overwhelming mess if not controlled.
+search end, what are the models being combined in the mixture?
 
-Apophenia organizes settings in settings groups, which are then attached to models. 
+Apophenia organizes settings in <em>settings groups</em>, which are then attached to models. 
 In the following snippet, we specify a Beta distribution prior, and attach a settings group to it with
 information about how Bayesian updating should be done with this specific copy of the
 Beta. For a likelihood, we generate an empirical distribution---a PMF---from an input 
@@ -2409,12 +2386,12 @@ the \ref apop_model. Instead, the data is assumed to be correctly formatted, sca
 before being passed to the model. This is where part (1), the database,
 comes in, because it provides a proxy for the sort of formula specification language above:
  \code
-apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3,2) from data");
+apop_data *testme= apop_query_to_data("select y, x1, log(x2), pow(x3, 2) from data");
 apop_model *est = apop_estimate(testme, apop_ols);
 \endcode
 
 Generating factors and dummies is also considered data prep, not model
-internals. See \ref apop_data_to_dummies and \ref apop_text_to_factors.
+internals. See \ref apop_data_to_dummies and \ref apop_data_to_factors.
 
 Now that you have \c est, an estimated model, you can interrogate it. This is really where Apophenia and its encapsulated
 model objects shine, because you can do more than just admire the parameter estimates on
@@ -2423,7 +2400,7 @@ as an input to the parent distribution of a hierarchical model, et cetera. Some 
 examples:
 
  \code
- //If you have a new data set, you can fill in predicted values:
+ //If you have a new data set with missing elements (represented by NaN), you can fill in predicted values:
 apop_predict(new_data_set, est);
 apop_data_show(new_data_set)
 
@@ -2512,7 +2489,7 @@ Framework</em></a> (PDF).
 This page includes:
 
 \li \ref write_likelihoods, giving a quick overview of how to write a new model from scratch.
-\li \ref settingswriting, covering the writing of <em>ad hoc</em> structures to hold model- or method-specific details, like the number of periods for burning for an MCMC run or the number of bins in a histogram.
+\li \ref settingswriting, covering the writing of <em>ad hoc</em> structures to hold model- or method-specific details, like the number of periods for burning in an MCMC run or the number of bins in a histogram.
 \li \ref vtables, covering the means of writing special-case routines for functions that are not part of the \ref apop_model itself, including the score.
 \li \ref modeldataparts, a detailed list of the requirements for the data (non-function) elements of an \ref apop_model.
 \li \ref methodsection, a detailed list of requirements for the method (function) elements of an \ref apop_model.
@@ -2545,7 +2522,7 @@ This function will return the value of the log likelihood function at the given 
 
 \code
 apop_model *your_new_model = &(apop_model){"The Me distribution", 
-            .vsize=n0, .msize1=n1, .msize2=n2, .dbase=nd,
+            .vsize=n0, .msize1=n1, .msize2=n2, .dsize=nd,
             .log_likelihood = new_log_likelihood };
 \endcode
 
@@ -2559,7 +2536,7 @@ count will be filled in if you specify \c -1 for \c vsize, <tt>msize(1|2)</tt>, 
 need to allocate parameters by writing a custom \c prep method for the model.
 \li If there are constraints, add an element for those too.
 
-You already have enough that something like this will work:
+You already have more than enough that something like this will work (the \c dsize is used for random draws):
 \code
 apop_model *estimated = apop_estimate(your_data, your_new_model);
 \endcode
@@ -2596,10 +2573,10 @@ it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied
 memcpy by \ref apop_model_copy, and freed by \ref apop_model_free. Apophenia's
 estimation routines will never impinge on this item, so do what you wish with it.
 
-The remainder of this section describes the information you'll have to provide to make
+The remainder of this subsection describes the information you'll have to provide to make
 use of the conveniences described to this point: initialization of defaults, smarter
 copying and freeing, and adding to an arbitrarily long list of settings groups attached
-to a model.  You will need four items: the structure itself, plus init, copy, and
+to a model.  You will need four items: a typedef for the structure itself, plus init, copy, and
 free functions.  This is the sort of boilerplate that will be familiar to users of
 object oriented languages in the style of C++ or Java, but it's really a list of
 arbitrarily-typed elements, which makes this feel more like LISP. [And being a
@@ -2610,7 +2587,8 @@ here is a sample header for a new settings group named \c ysg_settings, with a d
 
 \code
 typedef struct {
-    int size1, size2, owner;
+    int size1, size2;
+    char *refs;
     apop_data *dataset;
 } ysg_settings;
 
@@ -2622,9 +2600,9 @@ three functions below. This is everything you would
 need in a header file, should you need one. These are just declarations; we'll write
 the actual init/copy/free functions below.
 
-The structure itself gets the full name, \c ysg_settings. Everything else is a macro, and so you need only specify \c ysg, and the \c _settings part is implied. Because of these macros, your \c struct name must end in \c _settings.
+The structure itself gets the full name, \c ysg_settings. Everything else is a macro, and so you need only specify \c ysg, and the \c _settings part is filled in. Because of these macros, your \c struct name must end in \c _settings.
 
-If you have an especially simple structure, then you can generate the three functions with these three macros in your code:
+If you have an especially simple structure, then you can generate the three functions with these three macros in your <tt>.c</tt> file:
 
 \code
 Apop_settings_init(ysg, )
@@ -2654,7 +2632,8 @@ Apop_settings_init (ysg,
       Apop_assert(in.size1, "I need you to give me a value for size1. Stopping.");
       Apop_varad_set(size2, 10);
       Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
-      Apop_varad_set(owner, 1);
+      Apop_varad_set(refs, malloc(sizeof(int)));
+      *refs=1;
 )
 \endcode
 
@@ -2663,28 +2642,28 @@ Now, <tt>Apop_settings_add(a_model, ysg, .size1=100)</tt> would set up a group w
 \li Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to \ref apop_model_copy. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. We have to be careful to prevent double-freeing later.
 
 \code
-//alternative one: mark that the copy doesn't own the data.
-//From the defaults, out->dataset is a copy of the in->dataset pointer.
+//The elements of the set to copy are all copied, and then make one additional modification:
 Apop_settings_copy (ysg,
-        out->owner = 0;
-)
-
-//alternative two: just copy the data. 
-//owner will be 1, a value copied from the original.
-Apop_settings_copy (ysg,
-        out->dataset = apop_data_copy(in->dataset);
+        (*refs)++;
 )
 \endcode
 
-\li Add code in the free function to free data pointed to by pointers in the main struture. The macro defines a pointer-to-struct named \c in for your use. Continuing the example (for either copying alternative):
+\li The struct itself is freed by boilerplate code, but add code in the free function
+to free data pointed to by pointers in the main struture. The macro defines a
+pointer-to-struct named \c in for your use. Continuing the example:
 
 \code
 Apop_settings_free (ysg,
-    if (in->owner) free(in->dataset);
+    if (!(--in->refs)) {
+        free(in->dataset);
+        free(in->refs);
+    }
 )
 \endcode
 
-With those three macros in place, Apophenia will treat your settings group like any other.
+With those three macros in place and the header as above, Apophenia will treat your
+settings group like any other, and users can use \ref Apop_settings_add_group to
+populate it and attach it to any model.
 
 \section vtables Registering new methods in vtables
 
@@ -2693,7 +2672,8 @@ probably a special case for well-known models like the Normal distribution. Rath
 any procedure that could have a special-case calculation to the \c apop_model struct,
 functions may maintain a registry of models and associated special-case procedures.
 
-This section will discuss how to add a function to an existing vtable. Generating a new vtable is not difficult, but is still in beta and may be revised in the future.
+This subsection will discuss how to add
+a function to an existing vtable.
 
 \li See \ref apop_update, \ref apop_score, \ref apop_predict, \ref apop_model_print, and \ref
 apop_parameter_model for examples and procedure-specific details.
@@ -2711,6 +2691,16 @@ same special-case function.
 \li If you need to deregister the function, use the associated deregister function,
 e.g. <tt>apop_update_vtable_drop(apop_beta, apop_binomial)</tt>. You can guarantee that a method will not be re-added by following up the <tt>_drop</tt> with, e.g., <tt>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</tt>.
 \li Calls to <tt>..._vtable_add</tt> are typically placed in the \c prep method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to \ref apop_estimate.
+
+This overview will not go into detail about setting up a new vtable. Briefly:
+
+\li See the existing setups in vtables.h. 
+\li Cut/paste one and do a search and replace to change the name to match your desired use.
+\li Set the typedef to describe the functions that get added to the vtable.
+\li Rewrite the hash function to check the part of the inputs that interest you. For
+example, the update vtable associates functions with the \c draw, \c log_likelihood,
+and \p methods of the model. A model where these elements are identical but the name
+is changed will still match.
 
 \section modeldataparts The data elements
 
@@ -2774,7 +2764,7 @@ When writing for any arbitrary function, be prepared to get \c NaN, indicating t
     \li predicted
     \li residual
 
-For OLS-type estimations, each row correspondes to the row in the original data. For
+For OLS-type estimations, each row corresponds to the row in the original data. For
 filling in of missing data, the elements may appear anywhere, so the row/col indices are
 essential.
 
@@ -2785,6 +2775,9 @@ to be pulled out in certain contexts, and ignored in all others. Therefore, ther
 no rules about internal use. The \c more element of the \ref apop_model provides a lightweight
 means of attaching an arbitrary struct to a model. See \ref settingswriting above for details.
 
+\li As many settings groups of different types as desired can be added to a single \ref apop_model.
+\li One \ref apop_model can not hold two settings groups of the same type. Re-additions cause the removal of the previous version of the group.
+
 
 \section methodsection Methods
 
@@ -2792,9 +2785,9 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 
 \li The inputs are an \ref apop_data set and an \ref apop_model, which should include a filled <tt>->parameters</tt> element.
 \li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are.
-\li Return \c NAN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
+\li Return \c NaN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
 \li If observations are assumed to be iid, you can probably use \ref apop_map_sum to write the core of the log likelihood function.
-\li You need only write one of the \c p or \c log_likelihood functions. It must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
+\li If your model includes both \ log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
 
 \subsection prepsubsection prep
 
@@ -2804,7 +2797,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \li The model's <tt>data</tt> pointer shall be set to point to the input data.
 \li The input data may be modified by the prep routine. For example, the OLS prep routine shuffles a single input matrix as described above under \c data.
 \li The \c info element shall be allocated and its title set to "<Info>".
-\li The default is \ref apop_model_clear.
+\li The default is \ref apop_model_clear. It does all of the above.
 \li The prep routine may initialize any desired settings groups. Unless otherwise
 stated, these should not be removed if they are already there, so that users can override defaults by adding a settings group before starting an estimation.
 \li If any functions associated with the model need to be added to 
@@ -2813,17 +2806,19 @@ a vtable (see above), the registration shall happen here. Registration may also 
 \subsection estimatesubsection estimate
 
 \li Assume that the prep routine has already been run. Notably, this means that parameters have been allocated.
+\li Assume that the \c parmaeters hold garbage (as in a \c malloc without a subsequent assignment to the <tt>malloc</tt>-ed space).
 \li The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, \ref apop_estimate, which makes a copy of its input model, preps it, and then calls the \c estimate function with the prepeped copy.
 \li The function shall set the \c parameters of the input model. For consistency with other models, the estimate should be the maximum likelihood estimate, unless otherwise documented.
 \li Additional settings may be set.
 \li The model's \c &lt;Info&gt; page may be filled with data. For scalars like log likelihood and AIC, use \ref apop_data_add_named_elmt.
 \li Data should not be modified by the \c estimate routine; any changes to the data made by \c estimate must be documented.
 \li The default called by \ref apop_estimate is \ref apop_maximum_likelihood.
+\li If errors occur during processing, set the model's \c error element to a single character. Documentation should include the list of error characters and their meaning.
 
 \subsection drawsubsection draw
 
 \li Assume that model \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the draw method should check that \c parameters are not \c NULL and fill the output with NaNs if necessary parameters are not set.
-\li User inputs a pointer to \c double of length \c dsize; user is expected to make sure that there is adequate space.  User also inputs a \c gsl_rng, already allocated (probably via \ref apop_rng_alloc).
+\li User inputs a pointer-to-<tt>double</tt> of length \c dsize; user is expected to make sure that there is adequate space.  User also inputs a \c gsl_rng, already allocated (probably via \ref apop_rng_alloc).
 \li The function shall fill the space pointed to by the input pointer with a random draw from the data space, where the likelihood of any given observation is proportional to its likelihood as given by the \c p method. Data shall be reduced to a single vector via \ref apop_data_pack if it is not already a single vector.
 
 \subsection cdfsubsection cdf

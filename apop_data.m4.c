@@ -190,6 +190,15 @@ char apop_data_free_base(apop_data *freeme){
     return 0;
 }
 
+/*For a touch of space saving, blank strings in a text grid 
+all point to the same nul string. */
+static char static_nul[] = "";
+
+static void apop_text_blank(apop_data *in, const size_t row, const size_t col){
+    if (in->text[row][col] != static_nul) free(in->text[row][col]);
+    in->text[row][col] = static_nul;
+}
+
 /** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
 
   This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.
@@ -260,7 +269,9 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                     in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
         for (size_t i=0; i< in->textsize[0]; i++)
             for(size_t j=0; j < in->textsize[1]; j ++)
-				apop_text_add(out, i, j, "%s", in->text[i][j]);
+                if (in->text[i][j] == static_nul)
+                     apop_text_blank(out, i, j);
+                else apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
 }
 
@@ -405,7 +416,9 @@ APOP_VAR_ENDHEAD
             Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
-                    apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
+                    if (m2->text[i][j] == static_nul)
+                         apop_text_blank(out, i+basetextsize, j);
+                    else apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
         } else {
             Apop_stopif(out->text && m2->textsize[0]!=out->textsize[0], 
                     out->error='d'; return out, 0,
@@ -416,7 +429,9 @@ APOP_VAR_ENDHEAD
             Apop_stopif(out->error, out->error='a'; return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
-                    apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
+                    if (m2->text[i][j] == static_nul)
+                         apop_text_blank(out, i, j+basetextsize);
+                    else apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
             apop_name_stack(out->names, m2->names, 't');
         }
     }
@@ -940,7 +955,6 @@ APOP_VAR_ENDHEAD
 }
 /** \} //End data_set_get group */
 
-
 /** Now that you've used \ref Apop_row to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
@@ -981,7 +995,10 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
                 "an apop_data set with no text element.");
         for (int i=0; i < row->textsize[1]; i++){
             free(d->text[row_number][i]);
-            d->text[row_number][i]= strdup(row->text[0][i]);
+            d->text[row_number][i]= 
+                row->text[0][i] == static_nul
+                    ? static_nul
+                    : strdup(row->text[0][i]);
         }
     }
     if (row->weights){
@@ -1065,7 +1082,7 @@ the text array with a message, resizing as it goes:
 \li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
 \li If there had been a string at the grid point you are writing to, 
 the old one is effectively lost when the new one is placed. So, I free
-the old string to prevent leaks. Remember this if you had other pointers aliasing that
+the old string to prevent leaks if necessary. Remember this if you had other pointers aliasing that
 string, in which case you may as well avoid this function and just use <tt>
 asprintf(&(your_dataset->text[row][col]), "your string")</tt>.
 
@@ -1078,10 +1095,10 @@ for (int n=0; n < 10; n++){
 \endcode
 */
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
-    Apop_assert_negone((in->textsize[0] >= (int)row+1) && (in->textsize[1] >= (int)col+1), "You asked me to put the text "
+    Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
-    free (in->text[row][col]);
+    if (in->text[row][col] != static_nul) free(in->text[row][col]);
     if (!fmt){
         asprintf(&(in->text[row][col]), "%s", apop_opts.nan_string);
         return 0;
@@ -1118,7 +1135,7 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (size_t j=0; j< col; j++)
-                    in->text[i][j] = strdup("");
+                    in->text[i][j] = static_nul;
             }
     } else { //realloc
         size_t rows_now = in->textsize[0];
@@ -1126,7 +1143,8 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
         if (rows_now > row){
             for (int i=row; i < rows_now; i++){
                 for (int j=0; j < cols_now; j++)
-                    free(in->text[i][j]);
+                    if (in->text[i][j] != static_nul) 
+                        free(in->text[i][j]);
                 free(in->text[i]);
             }
             in->text = realloc(in->text, sizeof(char**)*row);
@@ -1143,18 +1161,19 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (int j=0; j < cols_now; j++)
-                    in->text[i][j] = strdup("");
+                    in->text[i][j] = static_nul;
             }
         }
         if (cols_now > col)
             for (int i=0; i < row; i++)
                 for (int j=col; j < cols_now; j++)
-                    free(in->text[i][j]);
+                    if (in->text[i][j]!=static_nul) 
+                        free(in->text[i][j]);
         if (cols_now != col)
             for (int i=0; i < row; i++){
                 in->text[i] = realloc(in->text[i], sizeof(char*)*col);
                 for (int j=cols_now; j < col; j++) //happens iff cols_now < col
-                    in->text[i][j] = strdup("");
+                    in->text[i][j] = static_nul;
             }
     }
     in->textsize[0] = row;
@@ -1232,7 +1251,9 @@ APOP_VAR_ENDHEAD
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
                 for (int j=ocols; j < orows; j++)
-                    in->text[i][j] = strdup(in->text[j][i]);
+                    in->text[i][j] = in->text[j][i] == static_nul
+                                        ? static_nul
+                                        : strdup(in->text[j][i]);
             }
         }
         if (ocols > orows){ //add rows.
@@ -1244,7 +1265,9 @@ APOP_VAR_ENDHEAD
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
                 for (int j=0; j < orows; j++)
-                    in->text[i][j] = strdup(in->text[j][i]);
+                    in->text[i][j] = in->text[j][i] == static_nul
+                                        ? static_nul
+                                        : strdup(in->text[j][i]);
             }
         }
         size_t squaresize = GSL_MIN(orows, ocols);
@@ -1260,7 +1283,9 @@ APOP_VAR_ENDHEAD
         apop_text_alloc(out, in->textsize[1], in->textsize[0]);
         for (int r=0; r< in->textsize[0]; r++)
             for (int c=0; c< in->textsize[1]; c++)
-                apop_text_add(out, c, r, in->text[r][c]);
+                if (in->text[r][c] == static_nul)
+                     apop_text_blank(out, c, r);
+                else apop_text_add(out, c, r, in->text[r][c]);
     }
     if (in->names && in->names->textct && !in->names->colct)
         apop_name_stack(out->names, in->names, 't', 'r');

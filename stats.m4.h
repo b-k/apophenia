@@ -321,13 +321,13 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_matrix_
 
 /** \def Apop_row_v(m, row, v)
  After this call, \c v will hold a vector view of the <tt>row</tt>th row of the \ref apop_data set \c m.
- This is like \ref Apop_row, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref apop_matrix_row, but the input is a \ref apop_data set, not a \ref gsl_matrix.
+ This is like \ref Apop_row, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref Apop_matrix_row, but the input is a \ref apop_data set, not a \c gsl_matrix.
 \see Apop_rows, Apop_row, Apop_row_tv, Apop_row_t, Apop_matrix_row
 \hideinitializer */
 
 /** \def Apop_col_v(m, col, v)
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- This is like \ref Apop_col, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref apop_matrix_col, but the input is a \ref apop_data set, not a \ref gsl_matrix.
+ This is like \ref Apop_col, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref Apop_matrix_col, but the input is a \ref apop_data set, not a \c gsl_matrix.
 \see Apop_cols, Apop_col, Apop_col_tv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 

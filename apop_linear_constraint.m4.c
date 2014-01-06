@@ -89,23 +89,37 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
 }
 
 /** This is designed to be called from within the constraint method of your \ref
-  apop_model. Just write the constraint vector+matrix and this will do the rest.
+apop_model. Just write the constraint vector+matrix and this will do the rest.
+See the outline page for detailed discussion on setting contrasts. 
  
- \param beta    The proposed vector about to be tested. No default, must not be \c NULL.
+\param beta    The proposed vector about to be tested. No default, must not be \c NULL.
 
- \param constraint  See  the outline page for detailed discussion on setting
- contrasts. To give a quick example, say your constraint is \f$3 < 2x +
- 4y - 7z\f$; then the first row of your \c data->vector element would be 3, and the
- first row of the \c data->matrix element would be [2 4 -7]. Default: each elements is greater than zero
+\param constraint  
+A vector/matrix pair [v | m1 m2 ... mn] where each row is interpreted as a less-than inequality:
+\f$v < m1x1+ m2x2 + ... + mnxn\f$.  For example, say your constraints are 
+\f$3 < 2x + 4y - 7z\f$ and \f$y\f$ is positive, i.e. \f$0 < y\f$.
+Allocate and fill the matrix representing these two constraints via:
+\code
+apop_data *constr = apop_data_falloc((2,2,3), 3,  2, 4, 7,
+                                              0,  0, 1, 0);
+\endcode
+. Default: each elements is greater than zero. E.g., for three parameters:
+\code
+apop_data *constr = apop_data_falloc((3,3,3), 0,  1, 0, 0,
+                                              0,  0, 1, 0,
+                                              0,  0, 0, 1);
+\endcode
 
- \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3. Default = 0.
+\param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3. Default = 0.
 
-\return The penalty = the distance between beta and the closest point that meets the constraints.
- If the constraint is not met, this \c beta is shifted by \c margin (Euclidean distance) to meet the constraints. 
+return The penalty = the distance between beta and the closest point that meets the constraints.
+If the constraint is not met, this \c beta is shifted by \c margin (Euclidean distance) to meet the constraints. 
+
+\li If your \ref apop_data is not just a vector, try \ref apop_data_pack to pack it into a vector. This is what \ref apop_maximum_likelihood does.
 
 \li This function uses the \ref designated syntax for inputs.
-\todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
- */
+todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
+*/
 APOP_VAR_HEAD long double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
     static apop_data *default_constraint;
     gsl_vector * apop_varad_var(beta, NULL);

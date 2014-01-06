@@ -40,6 +40,12 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
  attaching to and the settings group name) are mandatory, and then you
  can use the \ref designated syntax to specify default values (if any).
  \return A pointer to the newly-prepped group.
+
+\li If a settings group of the given type is already attached to the model, 
+the previous version is removed. Use \ref Apop_settings_get to check whether a group
+of the given type is already attached to a model, and \ref Apop_settings_set to modify
+an existing group.
+
 \hideinitializer \ingroup settings
  */
 #define Apop_settings_add_group(model, type, ...)  \
@@ -203,9 +209,7 @@ typedef struct{
 <tr><td> "Newton hybrid"</td><td> Newton's method/gradient descent hybrid        </td><td>  Find a root of the derivative via the Hybrid method </td> If Newton proposes stepping outside of a certain interval, use an alternate method. See <a href="https://www.gnu.org/software/gsl/manual/gsl-ref_35.html#SEC494">the GSL manual</a> for discussion.</tr>
 
 <tr><td> "Newton hybrid no scale"</td><td>  Newton's method/gradient descent hybrid with spherical scale</td><td>  As above, but use a simplified trust region. </td></tr>
-</table>
-
-                                     See the  \ref apop_optimization_enum documentation for options. */
+</table> */
     double      step_size, /**< the initial step size. */
                 tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
 delta;
