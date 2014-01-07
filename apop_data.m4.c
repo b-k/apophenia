@@ -138,6 +138,15 @@ apop_data * apop_vector_to_data(gsl_vector *v){
     return setme;
 }
 
+/*For a touch of space saving, blank strings in a text grid 
+all point to the same nul string. */
+char *apop_nul_string = "";
+
+static void apop_text_blank(apop_data *in, const size_t row, const size_t col){
+    if (in->text[row][col] != apop_nul_string) free(in->text[row][col]);
+    in->text[row][col] = apop_nul_string;
+}
+
 /** Free a matrix of chars* (i.e., a char***). This is the form of the
  text element of the \ref apop_data set, so you can use this for:
  \code
@@ -149,7 +158,8 @@ void apop_text_free(char ***freeme, int rows, int cols){
     if (rows && cols)
         for (int i=0; i < rows; i++){
             for (int j=0; j < cols; j++)
-                free(freeme[i][j]);
+                if(freeme[i][j]!=apop_nul_string) 
+                    free(freeme[i][j]);
             free(freeme[i]);
         }
     free(freeme);
@@ -188,15 +198,6 @@ char apop_data_free_base(apop_data *freeme){
     apop_text_free(freeme->text, freeme->textsize[0] , freeme->textsize[1]);
     free(freeme);
     return 0;
-}
-
-/*For a touch of space saving, blank strings in a text grid 
-all point to the same nul string. */
-static char static_nul[] = "";
-
-static void apop_text_blank(apop_data *in, const size_t row, const size_t col){
-    if (in->text[row][col] != static_nul) free(in->text[row][col]);
-    in->text[row][col] = static_nul;
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
@@ -269,7 +270,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                     in->textsize[0] , in->textsize[1] , out->textsize[0] , out->textsize[1]);
         for (size_t i=0; i< in->textsize[0]; i++)
             for(size_t j=0; j < in->textsize[1]; j ++)
-                if (in->text[i][j] == static_nul)
+                if (in->text[i][j] == apop_nul_string)
                      apop_text_blank(out, i, j);
                 else apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
@@ -416,7 +417,7 @@ APOP_VAR_ENDHEAD
             Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
-                    if (m2->text[i][j] == static_nul)
+                    if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i+basetextsize, j);
                     else apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
         } else {
@@ -429,7 +430,7 @@ APOP_VAR_ENDHEAD
             Apop_stopif(out->error, out->error='a'; return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
-                    if (m2->text[i][j] == static_nul)
+                    if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i, j+basetextsize);
                     else apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
             apop_name_stack(out->names, m2->names, 't');
@@ -996,8 +997,8 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
         for (int i=0; i < row->textsize[1]; i++){
             free(d->text[row_number][i]);
             d->text[row_number][i]= 
-                row->text[0][i] == static_nul
-                    ? static_nul
+                row->text[0][i] == apop_nul_string
+                    ? apop_nul_string
                     : strdup(row->text[0][i]);
         }
     }
@@ -1098,7 +1099,7 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
     Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
-    if (in->text[row][col] != static_nul) free(in->text[row][col]);
+    if (in->text[row][col] != apop_nul_string) free(in->text[row][col]);
     if (!fmt){
         asprintf(&(in->text[row][col]), "%s", apop_opts.nan_string);
         return 0;
@@ -1135,7 +1136,7 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (size_t j=0; j< col; j++)
-                    in->text[i][j] = static_nul;
+                    in->text[i][j] = apop_nul_string;
             }
     } else { //realloc
         size_t rows_now = in->textsize[0];
@@ -1143,7 +1144,7 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
         if (rows_now > row){
             for (int i=row; i < rows_now; i++){
                 for (int j=0; j < cols_now; j++)
-                    if (in->text[i][j] != static_nul) 
+                    if (in->text[i][j] != apop_nul_string) 
                         free(in->text[i][j]);
                 free(in->text[i]);
             }
@@ -1161,19 +1162,19 @@ apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, col);
                 for (int j=0; j < cols_now; j++)
-                    in->text[i][j] = static_nul;
+                    in->text[i][j] = apop_nul_string;
             }
         }
         if (cols_now > col)
             for (int i=0; i < row; i++)
                 for (int j=col; j < cols_now; j++)
-                    if (in->text[i][j]!=static_nul) 
+                    if (in->text[i][j]!=apop_nul_string) 
                         free(in->text[i][j]);
         if (cols_now != col)
             for (int i=0; i < row; i++){
                 in->text[i] = realloc(in->text[i], sizeof(char*)*col);
                 for (int j=cols_now; j < col; j++) //happens iff cols_now < col
-                    in->text[i][j] = static_nul;
+                    in->text[i][j] = apop_nul_string;
             }
     }
     in->textsize[0] = row;
@@ -1251,8 +1252,8 @@ APOP_VAR_ENDHEAD
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
                 for (int j=ocols; j < orows; j++)
-                    in->text[i][j] = in->text[j][i] == static_nul
-                                        ? static_nul
+                    in->text[i][j] = in->text[j][i] == apop_nul_string
+                                        ? apop_nul_string
                                         : strdup(in->text[j][i]);
             }
         }
@@ -1265,8 +1266,8 @@ APOP_VAR_ENDHEAD
                 Apop_stopif(!in->text[i], in->error='a'; return in, 
                         0, "malloc failed setting up row %zu (with %zu columns). Probably out of memory.", i, orows);
                 for (int j=0; j < orows; j++)
-                    in->text[i][j] = in->text[j][i] == static_nul
-                                        ? static_nul
+                    in->text[i][j] = in->text[j][i] == apop_nul_string
+                                        ? apop_nul_string
                                         : strdup(in->text[j][i]);
             }
         }
@@ -1283,7 +1284,7 @@ APOP_VAR_ENDHEAD
         apop_text_alloc(out, in->textsize[1], in->textsize[0]);
         for (int r=0; r< in->textsize[0]; r++)
             for (int c=0; c< in->textsize[1]; c++)
-                if (in->text[r][c] == static_nul)
+                if (in->text[r][c] == apop_nul_string)
                      apop_text_blank(out, c, r);
                 else apop_text_add(out, c, r, in->text[r][c]);
     }

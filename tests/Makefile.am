@@ -11,5 +11,5 @@ LDADD=../libapophenia.la
 #AM_CFLAGS = -DTesting $(CFLAGS) -I$(top_build_prefix)/$(top_builddir) -DDatadir=\"$(srcdir)/\"
 AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\"
 
-EXTRA_DIST = utilities_test Readme numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
+EXTRA_DIST = utilities_test Readme ../eg/data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
 		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c

@@ -707,7 +707,7 @@ Outlineheader datalloc Alloc/free
 \li\ref apop_data_alloc()
 \li\ref apop_data_calloc()
 \li\ref apop_data_free()
-\li\ref apop_text_alloc()
+\li\ref apop_text_alloc() : allocate or resize the text part of an \ref apop_data set.
 \li\ref apop_text_free()
 
     See also:
@@ -1095,6 +1095,13 @@ There are a few simple forms for handling the \c text element of an \c apop_data
 the number of columns is <tt>tdata->textsize[1]</tt>.
 \li Refer to individual elements using the usual 2-D array notation, <tt>tdata->text[row][col]</tt>.
 \li <tt>x[0]</tt> can always be written as <tt>*x</tt>, which may save some typing. The number of rows is <tt>*tdata->textsize</tt>. If you have a single column of text data (i.e., all data is in column zero), then item \c i is <tt>*tdata->text[i]</tt>. If you know you have exactly one cell of text, then its value is <tt>**tdata->text</tt>.
+\li After \ref apop_text_alloc, all elements are the empty string <tt>""</tt>, which
+you can check via <tt>if (!strlen(dataset->text[i][j])) printf("<blank>")</tt> or
+<tt>if (!*dataset->text[i][j]) printf("<blank>")</tt>. For the sake of efficiency
+when dealing with large, sparse data sets, all blank cells point to <em>the same</em>
+static empty string, meaning that freeing cells must be done with care. Your best bet
+is to rely on \ref apop_text_add, \ref apop_text_alloc, and \ref apop_text_free to do
+the memory management for you.
 
 Here is a sample program that uses these forms, plus a few text-handling functions.
 
@@ -1108,7 +1115,7 @@ sequence of strings, <tt>d->text[0][0], d->text[1][0], </tt>.... After <tt>apop_
 functions.
 
 \li\ref apop_query_to_text()
-\li\ref apop_text_alloc()
+\li\ref apop_text_alloc() : allocate or resize the text part of an \ref apop_data set.
 \li\ref apop_text_add()
 \li\ref apop_text_paste() : convert a table of little strings into one long string.
 \li\ref apop_text_unique_elements() : geta sorted list of unique elements for one column of text.

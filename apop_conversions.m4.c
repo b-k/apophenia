@@ -416,6 +416,12 @@ static int prep_text_reading(char const *text_file, FILE **infile){
 }
 
 /////New text file reading
+extern char *apop_nul_string;
+
+#define Textrealloc(str, len) (str) =         \
+            (str) != apop_nul_string          \
+                ? realloc((str), (len))       \
+                : (((len) > 0) ? malloc(len) : apop_nul_string);
 
 typedef struct {int ct; int eof;} line_parse_t;
 
@@ -432,11 +438,12 @@ static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *f
         }
 
         //extend field:
-        *fn->text[ct-1] = realloc(*fn->text[ct-1], ++thisflen);
+        thisflen++;
+        Textrealloc(*fn->text[ct-1], thisflen);
         fn->text[ct-1][0][thisflen-1] = c;
 
         if (posn==*field_ends){ //close off this field.
-            *fn->text[ct-1] = realloc(*fn->text[ct-1], thisflen+1);
+            Textrealloc(*fn->text[ct-1], thisflen+1);
             fn->text[ct-1][0][thisflen] = '\0';
             thisflen = 0;
             field_ends++;
@@ -445,7 +452,7 @@ static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *f
         c = fgetc(infile);
     }
     if (needfield==0){//user didn't give last field end.
-        *fn->text[ct-1] = realloc(*fn->text[ct-1], thisflen+1);
+        Textrealloc(*fn->text[ct-1], thisflen+1);
         fn->text[ct-1][0][thisflen] = '\0';
     }
     return (line_parse_t) {.ct=ct, .eof= (c == EOF)};
@@ -519,7 +526,7 @@ static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_d
             if (ci.type=='r' || ci.type=='d'             //new field; if 'dnE', blank field. 
                    || (strchr("nE", ci.type) && ct>0)){  //Blank fields only at end of lines that already have data; else all-blank line to ignore.
                 if (++ct > fn->textsize[0]) apop_text_alloc(fn, ct, 1);//realloc text portion.
-                *fn->text[ct-1] = realloc(*fn->text[ct-1], 5);
+                Textrealloc(*fn->text[ct-1], 5);
                 thisflen = 0;
                 mlen=5;
                 infield=1;
@@ -536,7 +543,7 @@ static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_d
                 thisflen++; //length of string
                 if (thisflen+2 > mlen){
                     mlen *=2; //length of allocated memory
-                    *fn->text[ct-1] = realloc(*fn->text[ct-1], mlen);
+                    Textrealloc(*fn->text[ct-1], mlen);
                 }
                 fn->text[ct-1][0][thisflen-1] = ci.c;
                 if (ci.type!='w')

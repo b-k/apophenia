@@ -6,6 +6,8 @@ Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_randist.h>
 #include <regex.h>
 
+extern char *apop_nul_string;
+
 //more efficient than xprintf, but a little less versatile.
 static void apop_tack_on(char **in, char *addme){
     if (!addme) return;
@@ -262,7 +264,7 @@ APOP_VAR_ENDHEAD
             for (int i=0; i< matchcount; i++){
                 if (result[i+1].rm_eo > 0){//GNU peculiarity: match-to-empty marked with -1.
                     int length_of_match = result[i+1].rm_eo - result[i+1].rm_so;
-                    free((*substrings)->text[matchrow][i]);
+                    if ((*substrings)->text[matchrow][i] != apop_nul_string) free((*substrings)->text[matchrow][i]);
                     (*substrings)->text[matchrow][i] = malloc(strlen(string)+1);
                     memcpy((*substrings)->text[matchrow][i], string + result[i+1].rm_so, length_of_match);
                     (*substrings)->text[matchrow][i][length_of_match] = '\0';

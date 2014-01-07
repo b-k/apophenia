@@ -300,6 +300,25 @@ void test_listwise_delete(){
   Apop_col_v(t1, 7, v)
   gsl_vector_set_all(v, GSL_NAN);
   assert(!apop_data_listwise_delete(t1));
+
+    //btw, check non-square transpose with blanks.
+    t1 = apop_data_calloc();
+    apop_text_alloc(t1, 12, 10);
+    for (int i=0; i< 10; i++)
+        for (int j=0; j< 9; j++)
+            apop_text_add(t1, i, j, "%i", i*j);
+    apop_data_transpose(t1);
+    assert(!strlen(t1->text[7][11]));
+    apop_data_free(t1);
+    t1 = apop_text_alloc(NULL, 10, 12);
+    for (int i=0; i< 9; i++)
+        for (int j=0; j< 10; j++)
+            apop_text_add(t1, i, j, "%i", i*j);
+    apop_data *t4 = apop_data_transpose(t1, .inplace='n');
+    assert(!strlen(t4->text[11][7]));
+    assert(atoi(t4->text[9][8])==72);
+    assert(t4->textsize[0]==12);
+    assert(t4->textsize[1]==10);
 }
 
 void test_nan_data(){
@@ -1510,6 +1529,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, an_ols_model);
 
+    do_test("test listwise delete", test_listwise_delete());
     do_test("db_to_text", db_to_text());
     do_test("rownames", test_rownames());
     do_test("apop_dot", test_dot());
@@ -1530,7 +1550,6 @@ int main(int argc, char **argv){
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
     do_test("test adaptive rejection sampling", test_arms(r));
-    do_test("test listwise delete", test_listwise_delete());
     //do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
     do_test("test binomial estimations", test_binomial(r));
