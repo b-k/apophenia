@@ -1123,6 +1123,8 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
   \exception out->error=='a'  Allocation error.
   */
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col){
+    Apop_stopif(!row || !col, return in, 1, "Not allocating a %zu x %zu text grid. "
+                                            "Returning the input apop_data set.", row, col);
     if (!in) in  = apop_data_alloc();
     if (!in->text){
         if (row){

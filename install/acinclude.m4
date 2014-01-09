@@ -318,6 +318,9 @@ AC_LANG_RESTORE
 
 AC_DEFUN([AX_LIB_MYSQL],
 [
+mysql_message="Compiling without mySQL/mariadb support. If desired, check that
+the mysql-devel (or dev-mysql, mariadb-devel, ...)  package is installed."
+
     AC_ARG_WITH([mysql],
         AC_HELP_STRING([--with-mysql=@<:@ARG@:>@],
             [use MySQL client library @<:@default=yes@:>@, optionally specify path to mysql_config]
@@ -357,11 +360,23 @@ AC_DEFUN([AX_LIB_MYSQL],
 
             MYSQL_VERSION=`$MYSQL_CONFIG --version`
 
-            AC_DEFINE([HAVE_MYSQL], [1],
-                [Define to 1 if MySQL libraries are available])
+            #BK hack: the above doesn't verify that my_global.h is present.
+            mysql_config_path=`mysql_config --include | sed 's/-I//'`
+            AC_CHECK_FILE([$mysql_config_path/my_global.h], [
+                    AC_DEFINE([HAVE_MYSQL], [1], [Define to 1 if MySQL libraries are available])
 
-            found_mysql="yes"
-            AC_MSG_RESULT([yes])
+                    mysql_message="Compiling with mySQL/mariadb support."
+                ], [
+                    found_mysql="yes"
+                    AC_MSG_RESULT([yes])
+                ], [
+                    unset MYSQL_CFLAGS
+                    unset MYSQL_LDFLAGS
+                    unset MYSQL_VERSION
+
+                    found_mysql="no"
+                    AC_MSG_RESULT([no])
+                ])
         else
             found_mysql="no"
             AC_MSG_RESULT([no])

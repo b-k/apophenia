@@ -1,6 +1,7 @@
 #include <apop.h>
 
 int main(){
+    apop_table_exists("data", 'd');
     apop_data *d = apop_text_to_data("data");
   
     //tally row zero of the data set's matrix by viewing it as a vector:

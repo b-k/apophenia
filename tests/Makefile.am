@@ -1,4 +1,4 @@
-check_PROGRAMS= test_apop distribution_tests error_test nist_tests rake_test sort_example \
+check_PROGRAMS= db_tests distribution_tests error_test nist_tests rake_test sort_example test_apop \
 ../eg/apop_map_row ../eg/binning ../eg/dconstrain ../eg/draw_to_db ../eg/db_fns ../eg/dot_products  			 \
 ../eg/fake_logit ../eg/fix_params ../eg/hills2 ../eg/iv ../eg/ks_tests ../eg/jacobian ../eg/normalizations \
 ../eg/pmf_test ../eg/simple_subsets ../eg/some_cdfs ../eg/stack_models 		 \
@@ -11,5 +11,5 @@ LDADD=../libapophenia.la
 #AM_CFLAGS = -DTesting $(CFLAGS) -I$(top_build_prefix)/$(top_builddir) -DDatadir=\"$(srcdir)/\"
 AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\"
 
-EXTRA_DIST = utilities_test Readme ../eg/data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
+EXTRA_DIST = utilities_test Readme data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
 		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c

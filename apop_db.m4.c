@@ -15,15 +15,23 @@ apop_opts_type apop_opts	=
             .log_file = NULL,
             .rng_seed = 479901,            .version = m4_apop_version };
 
-#ifdef HAVE_LIBMYSQLCLIENT
-#include "apop_db_mysql.c"
-#endif
-
 #define ERRCHECK {Apop_stopif(err, return 1, 0, "%s: %s",query, err); }
 #define ERRCHECK_NR {Apop_stopif(err, return NULL, 0, "%s: %s",query, err); }
 #define ERRCHECK_SET_ERROR(outdata) {Apop_stopif(err, if (!(outdata)) (outdata)=apop_data_alloc(); (outdata)->error='q'; sqlite3_free(err); return outdata, 0, "%s: %s",query, err); }
 
 #include "apop_db_sqlite.c" // callback_t is defined here, btw.
+
+#ifdef HAVE_MYSQL
+#include "apop_db_mysql.c"
+#endif
+
+//if !apop_opts.db_engine, run this to assign a value.
+static void get_db_type(){
+    if (getenv("APOP_DB_ENGINE") && (!strcasecmp(getenv("APOP_DB_ENGINE"), "mysql") || !strcasecmp(getenv("APOP_DB_ENGINE"), "mariadb")))
+        apop_opts.db_engine = 'm';
+    else
+        apop_opts.db_engine = 's';
+}
 
 //This macro declares the query string and fills it from the printf part of the call.
 #define Fillin(query, fmt)        \
@@ -59,15 +67,14 @@ don't need to bother).
 \ingroup db
 */
 int apop_db_open(char const *filename){
+    if (!apop_opts.db_engine) get_db_type();
     if (!db) //check the environment.
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
        if(!mysql_db)  
 #endif
-        if (getenv("APOP_DB_ENGINE") && !strcasecmp(getenv("APOP_DB_ENGINE"), "mysql"))
-            apop_opts.db_engine = 'm';
 
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         return apop_mysql_db_open(filename);
 #else
         {Apop_stopif(1, return -1, 0, "Apophenia was compiled without mysql support.");}
@@ -110,8 +117,9 @@ APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
     Apop_stopif(!name, return -1, 0, "You gave me a NULL table name.");
     char apop_varad_var(remove, 'n')
 APOP_VAR_END_HEAD
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         return apop_mysql_table_exists(name, remove);
 #else
         Apop_stopif(1, return -1, 0, "Apophenia was compiled without mysql support.");
@@ -149,8 +157,8 @@ Closes the database on disk. If you opened the database with \c apop_db_open(NUL
 APOP_VAR_HEAD int apop_db_close(char vacuum){
     char apop_varad_var(vacuum, 'q')
 APOP_VAR_END_HEAD
-    if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+    if (apop_opts.db_engine == 'm') //assume this is set by now...
+#ifdef HAVE_MYSQL
         {apop_mysql_db_close(0);
         return 0;}
 #else
@@ -196,10 +204,11 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 int apop_query(const char *fmt, ...){
     char *err=NULL;
     Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         {Apop_stopif(!mysql_db, return 1, 0, "No mySQL database is open.");
-        apop_mysql_query(query);}
+        return apop_mysql_query(query);}
 #else
         Apop_stopif(1, return 1, 0, "Apophenia was compiled without mysql support.")
 #endif
@@ -238,8 +247,9 @@ could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 apop_data * apop_query_to_text(const char * fmt, ...){
     apop_data *out = NULL;
     Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm'){
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         out = apop_mysql_query_core(query, process_result_set_chars);
 #else
         Apop_stopif(1, apop_return_data_error('d'), 0, "Apophenia was compiled without mysql support.");
@@ -297,9 +307,10 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
-  Fillin(query, fmt)
+    Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         return apop_mysql_query_core(query, process_result_set_data);
 #else
         Apop_stopif(1, apop_return_data_error('d'), 0, "Apophenia was compiled without mysql support.");
@@ -340,12 +351,6 @@ apop_data * apop_query_to_data(const char * fmt, ...){
  */
 gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
     Fillin(query, fmt)
-    if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
-        return apop_mysql_query_core(query, process_result_set_matrix);
-#else
-        Apop_stopif(1, return NULL, 0, "Apophenia was compiled without mysql support.");
-#endif
     Store_settings
     apop_data * outd = apop_query_to_data("%s", query);
     Restore_settings
@@ -375,8 +380,9 @@ gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL. */
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         return apop_mysql_query_core(query, process_result_set_vector);
 #else
         Apop_stopif(1, return NULL, 0, "Apophenia was compiled without mysql support.");
@@ -415,8 +421,9 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 double apop_query_to_float(const char * fmt, ...){
     double out;
     Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm'){
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         out = apop_mysql_query_to_float(query);
 #else
         Apop_stopif(1, return NAN, 0, "Apophenia was compiled without mysql support.")
@@ -429,7 +436,7 @@ double apop_query_to_float(const char * fmt, ...){
         Restore_settings
         Apop_stopif(!d, return GSL_NAN, 2, "Query [%s] turned up a blank table. Returning NaN.", query);
         Apop_stopif(d->error, return GSL_NAN, 0, "Query [%s] failed. Returning NaN.", query);
-        out	= apop_data_get(d, 0, 0);
+        out	= apop_data_get(d);
         apop_data_free(d);
     }
     free(query);
@@ -446,7 +453,7 @@ The first argument is a character string consisting of the letters \c nvmtw, one
 
 If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).
 
-The 'n' character indicates rownames, meaning that \ref apop_opts_type "apop_opts.db_name_column" is ignored).
+\li \ref apop_opts_type "apop_opts.db_name_column" is ignored.  Use the \c 'n' character to indicate the output column with row names.
 
 \li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_mixed_data("tv", "select name, age from %s where id=%i", tablename, id_number)</tt>.
 
@@ -457,14 +464,14 @@ The 'n' character indicates rownames, meaning that \ref apop_opts_type "apop_opt
 */
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...){
     Fillin(query, fmt)
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
-        {Apop_notify(0, "Sorry, this function has only been written for SQLITE so far.");
-        return 0;}
-        //return apop_mysql_query_to_text(query);
+#ifdef HAVE_MYSQL
+        {apop_data* out = apop_mysql_mixed_query(typelist, query);
+        free(query);
+        return out;}
 #else
         {Apop_notify(0, "Apophenia was compiled without mysql support.");
-        Apop_notify(0, "Also, this function has only been written for SQLITE so far.");
         return 0;}
 #endif
     //else
@@ -585,10 +592,11 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 
+    if (!apop_opts.db_engine) get_db_type();
     if (apop_table_exists(tabname))
         asprintf(&q, " ");
     else if (apop_opts.db_engine == 'm')
-#ifdef HAVE_LIBMYSQLCLIENT
+#ifdef HAVE_MYSQL
         if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname)))
             asprintf(&q, " ");
         else {
@@ -601,7 +609,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 if(!set->names->vector) 
                     qxprintf(&q, "%s%c\n vector double ", q, comma);
                 else
-                    qxprintf(&q, "%s%c\n \"%s\" double ", q,comma, set->names->vector);
+                    qxprintf(&q, "%s%c\n %s double ", q,comma, set->names->vector);
                 comma = ',';
             }
             if (set->matrix)
@@ -710,10 +718,10 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
 \ingroup ttest
 */
 double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
-  gsl_matrix	*result1, *result2;
+    gsl_matrix *result1, *result2;
 	result1	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col1, col1, tab1);
 	result2	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col2, col2, tab2);
-  double		a_avg	= gsl_matrix_get(result1, 0, 0),
+    double a_avg = gsl_matrix_get(result1, 0, 0),
 		a_var	= gsl_matrix_get(result1, 0, 1),
 		a_count	= gsl_matrix_get(result1, 0, 2),
 		b_avg	= gsl_matrix_get(result2, 0, 0),
@@ -728,12 +736,12 @@ double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
 \ingroup ttest
 */
 double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
-  gsl_matrix	*result;
-	result	= apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1", 
-						   col1,col2,   col1, col2,          tab1);
-  double		avg	    = gsl_matrix_get(result, 0, 0),
-		        var	    = gsl_matrix_get(result, 0, 1),
-		        count	= gsl_matrix_get(result, 0, 2),
-		        stat	= avg/ sqrt(var/(count-1));
+    gsl_matrix	*result=
+	        apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1",
+                                            col1,col2,   col1, col2,             tab1);
+    double avg	 = gsl_matrix_get(result, 0, 0),
+		   var	 = gsl_matrix_get(result, 0, 1),
+		   count = gsl_matrix_get(result, 0, 2),
+		   stat	 = avg/ sqrt(var/(count-1));
 	return 2*GSL_MIN(gsl_cdf_tdist_P(stat, count-1),gsl_cdf_tdist_Q(stat, count-1));
 }

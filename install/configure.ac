@@ -24,7 +24,7 @@ AC_PROG_CC_C99
 AC_CHECK_LIB([m],[cos])
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
-AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
+#AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
 AC_CHECK_LIB([sqlite3], [sqlite3_exec])
 
 AC_CHECK_HEADER([gsl/gsl_matrix.h], , [AC_MSG_ERROR(
@@ -74,10 +74,14 @@ echo \
 
 Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
 
- Root for the install: '${prefix}'.
+Root for the install: '${prefix}'.
  Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+"
+echo $mysql_message
 
- Now type 'make @<:@<target>@:>@'
+echo \
+"
+Now type 'make @<:@<target>@:>@'
    where the optional <target> is:
      all      - build all binaries
      install  - install everything [e.g., sudo make install]

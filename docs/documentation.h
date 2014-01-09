@@ -25,7 +25,7 @@ The library has been growing and improving since 2005, and has been downloaded o
 \li Several optimization methods available for your own new models
 \li It does <em>not</em> re-implement basic matrix operations or build yet another database
 engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU
-Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL is also supported.
+Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/mariaDB is also supported.
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
@@ -527,11 +527,29 @@ endofdiv
 
 Outlineheader About SQL, the syntax for querying databases
 
- For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.
+For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.
 
-Apophenia currently supports two database engines: SQLite and mySQL. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
+Apophenia currently supports two database engines: SQLite and mySQL/mariaDB. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.
 
-You can switch to mySQL two ways: set <tt>apop_opts.db_engine = 'm'</tt>, or set the environment variable <tt>APOP_DB_ENGINE=mysql</tt>. Otherwise, the system will use SQLite. Ideally, after you make this switch, you need make no other changes--- \ref apop_query, \ref apop_query_to_data, \ref apop_table_exists, et cetera, will work as before. 
+The global <tt>apop_opts.db_engine</tt> is initially \c NUL, indicating no preference
+for a database engine. You can explicitly set it:
+
+\code
+apop_opts.db_engine='s' //use SQLite
+apop_opts.db_engine='m' //use mySQL/mariaDB
+\endcode
+
+If \c apop_opts.db_engine is still \c NUL on your first database operation, then I will check
+for an environment variable <tt>APOP_DB_ENGINE</tt>, and set 
+<tt>apop_opts.db_engine='m'</tt> if it is found and matches (case insensitive) \c mariadb or \c mysql.
+
+\code
+export APOP_DB_ENGINE=mariadb
+apop_text_to_db indata mtab db_for_maria
+
+unset APOP_DB_ENGINE
+apop_text_to_db indata stab db_for_sqlite.db
+\endcode
 
 Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
 endofdiv
@@ -1141,7 +1159,7 @@ endofdiv
 
 Outlineheader dbs Databases
 
-These are convenience functions to handle interaction with SQLite or mySQL. They open one and only one database, and handle most of the interaction therewith for you.
+These are convenience functions to handle interaction with SQLite or mySQL/mariaDB. They open one and only one database, and handle most of the interaction therewith for you.
 
 You will probably first use \ref apop_text_to_db to pull data into the database, then \ref apop_query to clean the data in the database, and finally \ref apop_query_to_data to pull some subset of the data out for analysis.
 
@@ -2143,7 +2161,7 @@ points---but it does give us some lines of code to dissect.
 The first two lines in \c main() make use of a database.  
 I'll discuss the value of the database step more at the end of this page, but for
 now, note that there are several functions, \ref apop_query, and \ref
-apop_query_to_data being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL database. 
+apop_query_to_data being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL/mariaDB database. 
 
 \par Designated initializers
 

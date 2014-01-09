@@ -195,17 +195,19 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
     int maxcol= GSL_MAX(msize2, in->textsize[1]);
     char sparerow[msize1 > 0 ? (int)log10(msize1)+1 : 0];
     char sparecol[maxcol > 0 ? (int)log10(maxcol)+1 : 0];
-	apop_query("CREATE TABLE %s (%s , %s , %s);", tabname, 
-                        row_col_name, col_col_name, data_col_name);
-	apop_query("begin;");
+#define DbType apop_opts.db_engine=='m' ? "text" : "character"
+#define DbType2 apop_opts.db_engine=='m' ? "double" : "numeric"
+	apop_query("CREATE TABLE %s (%s %s, %s %s, %s %s)", tabname, 
+                        row_col_name, DbType, col_col_name, DbType, data_col_name, DbType2);
+	apop_query("begin");
     for (int i=0; i< msize1; i++){
         rowname = (n->rowct > i) ?  n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
         for (int j=0; j< msize2; j++){
             colname = (n->colct > j) ? n->col[j] : (sprintf(sparecol, "c%i", j), sparecol);
             double x = gsl_matrix_get(in->matrix, i, j); 
-            if (!isnan(x)) apop_query("INSERT INTO %s VALUES ('%s', '%s', %g);", 
+            if (!isnan(x)) apop_query("INSERT INTO %s VALUES ('%s', '%s', %g)", 
                                                 tabname, rowname, colname, x);
-            else apop_query("INSERT INTO %s VALUES ('%s', '%s', 0/0);", 
+            else apop_query("INSERT INTO %s VALUES ('%s', '%s', 0/0)", 
                                         tabname, rowname, colname);
         }
     }
@@ -213,11 +215,11 @@ void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name,
         rowname = (n->rowct > i) ? n->row[i] : (sprintf(sparerow, "r%i", i), sparerow);
         for (int j=0; j< in->textsize[1]; j++){
             colname = (n->textct > j) ? n->text[j] : (sprintf(sparecol, "t%i", j), sparecol);
-            apop_query("INSERT INTO %s VALUES ('%s', '%s', '%s');", tabname, 
+            apop_query("INSERT INTO %s VALUES ('%s', '%s', '%s')", tabname, 
                 rowname, colname, in->text[i][j]);
         }
     }
-	apop_query("commit;");
+	apop_query("commit");
 }
 
 
@@ -957,15 +959,14 @@ static char *get_field_conditions(char *var, apop_data *field_params){
 
 static int tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
     char *q = NULL;
-    asprintf(&q, "CREATE TABLE %s", tabname);
-    for (int i=0; i<fn->textsize[0]; i++){
-        if (i==0) 	{
-            if (has_row_names) xprintf(&q, "%s (row_names varchar(100), ", q);
-            else               xprintf(&q, "%s (", q);
-        } else xprintf(&q, "%s %s, ", q, get_field_conditions(*fn->text[i-1], field_params));
-        xprintf(&q, "%s %s", q, fn[i]);
+    asprintf(&q, "create table %s", tabname);
+    for (int i=0; i < *fn->textsize; i++){
+        if (i==0)
+             xprintf(&q, has_row_names ? "%s (row_names varchar(100), " : "%s (", q);
+        else xprintf(&q, "%s %s, ", q, get_field_conditions(*fn->text[i-1], field_params));
+        xprintf(&q, "%s %s", q, *fn->text[i]);
     }
-    xprintf(&q, "%s %s%s%s);", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
+    xprintf(&q, "%s %s%s%s)", q, get_field_conditions(*fn->text[fn->textsize[0]-1], field_params)
                                 , table_params? ", ": "", XN(table_params));
     apop_query("%s", q);
     Apop_stopif(!apop_table_exists(tabname), return -1, 0, "query \"%s\" failed.", q);
@@ -973,7 +974,7 @@ static int tab_create_mysql(char *tabname, int has_row_names, apop_data *field_p
     return 0;
 }
 
-static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data *fn){
+static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
     char  *q = NULL;
     asprintf(&q, "create table %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
@@ -1028,9 +1029,9 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
 static void line_to_insert(line_parse_t L, apop_data const*addme, char const *tabname, 
                              sqlite3_stmt *p_stmt, int row){
     if (!L.ct) return;
-    int  field = 1;
+    int field = 1;
     char comma = ' ';
-    char *q  = NULL;
+    char *q = NULL;
     if (!p_stmt) asprintf(&q, "INSERT INTO %s VALUES (", tabname);
     for (int col=0; col < L.ct; col++){
         char *prepped = prep_string_for_sqlite(!!p_stmt, *addme->text[col]);
@@ -1042,15 +1043,13 @@ static void line_to_insert(line_parse_t L, apop_data const*addme, char const *ta
                 /*keep going */, 0, "Something wrong on line %i, field %i [%s].\n"
                                             , row, field-1, *addme->text[col]);
         } else {
-            if (prepped && strlen(prepped)) 
-                 xprintf(&q, "%s%c %s", q, comma,  prepped);
-            else xprintf(&q, "%s%cNULL", q, comma);
+            xprintf(&q, "%s%c %s", q, comma,  (prepped && strlen(prepped) ? prepped : " NULL"));
             comma = ',';
         }
         free(prepped);
     }
     if (!p_stmt){
-        apop_query("%s);",q); 
+        apop_query("%s)",q); 
         free (q);
     }
 }
@@ -1136,7 +1135,7 @@ APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_
     const char * apop_varad_var(delimiters, apop_opts.input_delimiters);
     char apop_varad_var(if_table_exists, 'n')
 APOP_VAR_ENDHEAD
-    int  batch_size  = 10000, not_ok=0,
+    int  batch_size  = 10000,
       	 col_ct, ct = 0, rows = 1;
     FILE *infile;
     char buffer[bs];
@@ -1163,13 +1162,9 @@ APOP_VAR_ENDHEAD
                                     add_this_line, fn, field_ends, delimiters);
     col_ct = L.ct = *add_this_line->textsize;
     Apop_stopif(!col_ct, return -1, 0, "counted zero columns in the input file (%s).", tabname);
-    if (!tab_exists){
-        if (apop_opts.db_engine=='m')
-            not_ok = tab_create_mysql(tabname, has_row_names=='y', field_params, table_params, fn);
-        else
-            not_ok = tab_create_sqlite(tabname, has_row_names=='y', field_params, table_params, fn);
-        Apop_stopif(not_ok, return -1, 0, "Creating the table in the database failed.");
-    }
+    if (!tab_exists)
+        Apop_stopif( ((apop_opts.db_engine=='m') ? tab_create_mysql : tab_create_sqlite)(tabname, has_row_names=='y', field_params, table_params, fn),
+            return -1, 0, "Creating the table in the database failed.");
 #if SQLITE_VERSION_NUMBER < 3003009
     Apop_notify(1, "Apophenia was compiled using a version of SQLite from mid-2007 or earlier. "
                     "The code for reading in text files using such an old version is no longer supported, "
@@ -1183,9 +1178,8 @@ APOP_VAR_ENDHEAD
     //convert a data line into SQL: insert into TAB values (0.3, 7, "et cetera");
 	while(L.ct && !L.eof){
         line_to_insert(L, add_this_line, tabname, statement, rows);
-        if (!(ct++ % batch_size)){
-            if (apop_opts.verbose > 1) {fprintf(stderr, ".");fflush(NULL);}
-        }
+        if (apop_opts.verbose > 1 && !(ct++ % batch_size)) 
+            {fprintf(stderr, "."); fflush(NULL);}
         if (use_sqlite_prepared_statements){
             int err = sqlite3_step(statement);
             if (err!=0 && err != 101) //0=ok, 101=done

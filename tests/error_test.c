@@ -32,6 +32,7 @@ void reset_log(){
 }
 
 int main(){
+    apop_opts.db_engine='s';
     printf("test error checking (some systems may print error messags here)\n");
     reset_log();
     apop_data *d = apop_data_alloc();
@@ -57,9 +58,9 @@ int main(){
                                 "(or you are using a big mother of a computer).");
 
     reset_log();
-    check_data_error(apop_query_to_data("stelect 8 from data"), 'q', "apop_query_to_data", "query error");
+    check_data_error(apop_query_to_data("stelect 8 from data"), 'q', "(apop_query_to_data|<unknown>)", "query error");
     reset_log();
-    check_data_error(apop_query_to_mixed_data("dd", "stelect 8 from data"), 'q', "apop_sqlite_multiquery", "query error");
+    check_data_error(apop_query_to_mixed_data("dd", "stelect 8 from data"), 'q', "(apop_sqlite_multiquery|<unknown>)", "query error");
 
     reset_log();
     apop_data *fefail = apop_data_falloc((2,2), 0, 0, -1, -1);

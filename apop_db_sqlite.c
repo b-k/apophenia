@@ -342,9 +342,9 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
         colct++;
     }
     int requested = in->intypes[0]+in->intypes[1]+in->intypes[2]+in->intypes[3]+in->intypes[4];
-      Apop_stopif(colct != requested, in->error_thrown='d'; return 1, 0, 
-      "you asked for %i columns in your list of types(%s), but your query produced %u columns. \
-      The remainder will be placed in the text section." , requested, in->instring, colct);
+      Apop_stopif(colct != requested, in->error_thrown='d'; return 1, 1, 
+      "you asked for %i columns in your list of types(%s), but your query produced %u columns. "
+      "The remainder will be placed in the text section. Output data set's ->error element set to 'd'." , requested, in->instring, colct);
     return 0;
 }
 

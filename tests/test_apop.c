@@ -62,51 +62,6 @@ void apop_data_scale (apop_data *d, double scale){
     if (d->matrix) gsl_matrix_scale(d->matrix, scale);
 }
 
-#include <sys/wait.h> 
-static void test_printing(){
-    //This compares printed output to the printed output in the attached file. 
-    char outfile[] = "print_test.out";
-
-    if (!apop_table_exists("nandata"))
-        test_nan_data();
-    gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
-    apop_matrix_print(m, .output_file=outfile, .output_append='w');
-
-apop_system("cp %s xxx", outfile);
-
-    if (!apop_table_exists("d"))
-        db_to_text();
-    apop_data *d = apop_query_to_mixed_data ("tvttmmwt", "select * from d");
-    FILE *f = fopen(outfile, "a");
-    fprintf(f, "\nand a full vector+matrix+text+weights data set, formatted for computer reading:\n");
-    strcpy(apop_opts.output_delimiter, "\t| ");
-    apop_name_add(d->names, "Some SNPS", 'h');
-    apop_data_print(d, .output_pipe =f);
-
-    fprintf(f, "\nand just the names:\n");
-    fclose(f);
-    //need to redirect stdout.
-    int status;
-    if (fork() == 0){
-        freopen(outfile, "a", stdout);
-        apop_name_print(d->names);
-        fclose(stdout);
-        exit(0);
-    }
-
-    wait(&status);
-    f = fopen(outfile, "a");
-
-    fprintf(f, "\nand just the weights vector:\n");
-    strcpy(apop_opts.output_delimiter, "\t");
-    apop_vector_print(d->weights, .output_type='p', .output_pipe=f);
-    fclose(f);
-    int has_diffs = apop_system("diff -b printing_sample %s", outfile);
-    assert(!has_diffs);
-    //apop_system("rm %s", outfile);
-    unlink(outfile);
-    unlink("xxx");
-}
 
 void v_pow10(double *in){ *in = pow(10,*in);}
 double log_for_map(gsl_vector *v){apop_vector_log(v); return apop_sum(v);}
@@ -250,17 +205,24 @@ void test_normalizations(gsl_vector *v){
     apop_data_free(sum);
     gsl_matrix_free(dv.matrix);
 }
-//This tests the database-side functions.
+
+//This tests the database-side functions. Only for sqlite.
 void test_skew_and_kurt(gsl_rng *r){
-    apop_table_exists(.remove=1, .name="t");
-    apop_query("create table t(vals)");
-    for(int i=0; i<1e4; i++)
-        apop_query("insert into t values(%g)", gsl_rng_uniform(r));
-    gsl_vector *v = apop_query_to_vector("select * from t");
-    Diff (apop_var(v), apop_query_to_float("select var(vals) from t"), tol6);
-    Diff (apop_vector_skew(v), apop_query_to_float("select skew(vals) from t"), tol6);
-    Diff (apop_vector_kurtosis(v), apop_query_to_float("select kurt(vals) from t"), tol5);
-    apop_table_exists("t",1);
+    gsl_vector *v;
+    if (apop_opts.db_engine=='s'){
+        apop_table_exists(.remove='d', .name="t");
+        apop_query("create table t(vals)");
+        for(int i=0; i<1e4; i++)
+            apop_query("insert into t values(%g)", gsl_rng_uniform(r));
+        v = apop_query_to_vector("select * from t");
+        Diff (apop_var(v), apop_query_to_float("select var(vals) from t"), tol6);
+        Diff (apop_vector_skew(v), apop_query_to_float("select skew(vals) from t"), tol6);
+        Diff (apop_vector_kurtosis(v), apop_query_to_float("select kurt(vals) from t"), tol5);
+        apop_table_exists("t", 'd');
+    } else {
+        v = gsl_vector_alloc(1e4);
+        for(int i=0; i<1e4; i++) gsl_vector_set(v, i,  gsl_rng_uniform(r));
+    }
     test_normalizations(v);
     gsl_vector_free(v);
 }
@@ -321,37 +283,6 @@ void test_listwise_delete(){
     assert(t4->textsize[1]==10);
 }
 
-void test_nan_data(){
-    apop_text_to_db("test_data_nans", "nandata");
-    strcpy(apop_opts.db_name_column, "head");
-    apop_opts.nan_string = "(nan|\\.)";
-    apop_data *d  = apop_query_to_data("select * from nandata");
-    apop_data_print(d, "nantest", .output_type='d');
-    apop_data_free(d);
-    apop_data *d2  = apop_query_to_data("select * from nantest");
-    assert(gsl_isnan(apop_data_get(d2, .rowname="second", .colname="c")));
-    assert(gsl_isnan(apop_data_get(d2, .rowname="third", .colname="b")));
-    assert(!apop_data_get(d2, .rowname="fourth", .colname="b"));
-    apop_data_free(d2);
-    apop_opts.nan_string = "NaN";
-    
-    //while we're here, test querying just names & no data.
-    apop_data *justnames = apop_query_to_data("select head from nandata");
-    assert(justnames->names->rowct == 4);
-    assert(!justnames->vector && !justnames->matrix);
-    apop_data_free(justnames);
-
-    //Oh, and let's test fixed-width inputs.
-    apop_text_to_db("test_data_fixed_width", .tabname="fw", .has_col_names='n', .field_ends=(int[]){3,6});
-    assert(apop_query_to_float("select col_2 from fw")==3.14159);
-    apop_data *t=apop_query_to_text("select col_1 from fw");
-    assert(apop_strcmp(*t->text[0],"A#C"));
-    assert(apop_strcmp(*t->text[1]," BC"));
-    apop_text_to_db("test_data_fixed_width", .tabname="fww", .field_names=(char*[]){"number", "text", "float"}, .field_ends=(int[]){3,6});
-    assert(apop_query_to_float("select number from fww where number<0")==-21);
-    assert(apop_query_to_float("select float from fww where text=' BC'")==2.71828);
-    unlink("nantest");
-}
 
 static void wmt(gsl_vector *v, gsl_vector *v2, gsl_vector *w, gsl_vector *av, gsl_vector *av2, double mean){
     assert(apop_vector_mean(av) == apop_vector_mean(v,w));
@@ -627,6 +558,7 @@ void test_inversion(gsl_rng *r){
 }
 
 void test_summarize(){
+    apop_table_exists("td", 'd');
     apop_text_to_db("test_data", .has_row_names= 0,1, .tabname = "td");
     gsl_matrix *m = apop_query_to_matrix("select * from td");
     apop_data *s = apop_data_summarize(apop_matrix_to_data(m));
@@ -983,95 +915,6 @@ void test_rownames(){
     assert(*zeroone == 10);
 }
 
-void test_uniform(apop_data *d){
-    Apop_col_tv(d, "ab", abcol);
-    apop_data ab_d = (apop_data){.vector=abcol};
-    apop_model *u = apop_estimate(&ab_d, apop_uniform);
-    Diff(log(apop_p(&ab_d, u)), apop_log_likelihood(&ab_d, u), 1e-5);
-
-    apop_data_add_names(&ab_d, 'v', "a vector");
-    apop_data_set(&ab_d, .colname="a vector", .row=0, .val=-297);
-    assert(apop_p(&ab_d, u) == 0);
-    assert(isinf(apop_log_likelihood(&ab_d, u)));
-
-    apop_model *iu = apop_estimate(&ab_d, apop_improper_uniform);
-    assert(apop_p(&ab_d, iu) == 1);
-    assert(apop_log_likelihood(&ab_d, iu)==0);
-
-    int verbosity = apop_opts.verbose;
-    apop_opts.verbose = -1;
-    double draw;
-    apop_draw(&draw, NULL, iu);
-    apop_opts.verbose = verbosity;
-    assert(isnan(draw));
-}
-
-void db_to_text(){
-    apop_db_close();
-    apop_db_open(NULL);
-    if (!apop_table_exists("d")){
-        apop_data *field_params = apop_text_alloc(NULL,2,2);
-        apop_text_fill(field_params, "[ab][ab]", "numeric",
-                                     ".*",        "character");
-        apop_text_to_db("data-mixed", "d", 0, 1, NULL, .field_params=field_params);
-    }
-    apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
-    int b_allele_col = apop_name_find(d->names, "b_allele", 't');
-    assert(!strcmp("T",  d->text[3][b_allele_col]));
-    int rsid_col = apop_name_find(d->names, "rsid", 't');
-    assert(!strcmp("rs2977656",  d->text[4][rsid_col]));
-    assert(apop_data_get(d, .row=5, .colname="ab")==201);
-
-    assert(!strcmp(d->text[3][rsid_col], "rs'11804171"));
-
-    apop_data *dcc = apop_data_copy(d); //test apop_data_copy
-    assert(!strcmp("T",  dcc->text[3][b_allele_col]));
-    assert(!strcmp("rs2977656",  dcc->text[4][rsid_col]));
-    assert(apop_data_get(dcc, 5, .colname="ab")==201);
-
-    apop_data *dd = apop_query_to_text ("select * from d");
-    b_allele_col = apop_name_find(dd->names, "b_allele", 't');
-    assert(!strcmp("T",  dd->text[3][b_allele_col]));
-    rsid_col = apop_name_find(dd->names, "rsid", 't');
-    assert(!strcmp("rs2977656",  dd->text[4][rsid_col]));
-    
-    apop_data *dc = apop_data_copy(d);
-    b_allele_col = apop_name_find(dc->names, "b_allele", 't');
-    assert(!strcmp("T",  dc->text[3][b_allele_col]));
-    rsid_col = apop_name_find(dc->names, "rsid", 't');
-    assert(!strcmp("rs2977656",  dc->text[4][rsid_col]));
-    assert(apop_data_get(dc, 5, .colname="ab")==201);
-
-    apop_data_print(dc, "mixedtest", .output_type='d');
-    apop_data *de = apop_query_to_mixed_data("mmmmtttt","select * from mixedtest");
-    b_allele_col = apop_name_find(de->names, "b_allele", 't');
-    assert(!strcmp("T",  de->text[3][b_allele_col]));
-    rsid_col = apop_name_find(de->names, "rsid", 't');
-    assert(!strcmp("rs2977656",  de->text[4][rsid_col]));
-    assert(apop_data_get(de, 5, .colname="ab")==201);
-    unlink("mixedtest");
-
-    test_uniform(d);
-    apop_data_free(dc); apop_data_free(dd); 
-    apop_data_free(dcc); apop_data_free(d); 
-}
-
-void test_blank_db_queries(){
-    apop_db_close();
-    apop_db_open(NULL);
-    apop_query("create table t (a, b, c)");
-    apop_data *d = apop_query_to_data("select * from t");
-    apop_data *e = apop_query_to_text("select * from t");
-    gsl_matrix *f = apop_query_to_matrix("select * from t");
-    gsl_vector *g = apop_query_to_vector("select * from t");
-    double h = apop_query_to_float("select * from t");
-    assert(d==NULL);
-    assert(e==NULL);
-    assert(f==NULL);
-    assert(g==NULL);
-    assert(gsl_isnan(h));
-}
-
 int get_factor_index(apop_data *flist, char *findme){
     for (int i=0; i< flist->textsize[0]; i++)
         if (apop_strcmp(flist->text[i][0], findme))
@@ -1246,48 +1089,9 @@ void test_resize(){
     assert(apop_vector_sum(v) == 45);
 }
 
-void test_crosstabbing() {
-    apop_db_close(); //gotta test it somewhere
-    if (!apop_table_exists("snps"))
-        apop_text_to_db("data-mixed", "snps", 0, 1);
-    apop_query("create table snp_ct as "
-                 " select a_allele, b_allele, count(*) as ct "
-                 " from snps group by a_allele, b_allele ");
-    apop_data *d = apop_db_to_crosstab("snp_ct", "a_allele", "b_allele", "ct");
-    assert(apop_data_get(d, .rowname="A", "G")==5);
-    assert(apop_data_get(d, .rowname="C", "G")==1);
-
-    apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
-    apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
-    apop_data_set(ct, 1, 0, 2); apop_text_add(ct, 1, 0, "second");
-    apop_data_set(ct, 2, 0, 3); apop_text_add(ct, 2, 0, "third");
-    apop_crosstab_to_db(ct, "ct", "r", "c", "val");
-    assert(!strcmp(**(apop_query_to_text("select val from ct where r='r0' and c='t0'")->text), "first"));
-    assert(!strcmp(**(apop_query_to_text("select val from ct where r='r2' and c='t0'")->text), "third"));
-    assert(apop_query_to_float("select val from ct where r='r1' and c='c0'")==2);
-}
-
 void test_mvn_gamma(){
     assert(apop_multivariate_gamma(10, 1)==gsl_sf_gamma(10));
     assert(apop_multivariate_lngamma(10, 1)==gsl_sf_lngamma(10));
-}
-
-void test_data_to_db() {
-  int i, j;
-    if (!apop_table_exists("snps"))
-        apop_text_to_db("data-mixed", "snps");
-    apop_data *d = apop_query_to_mixed_data("tvttmmmt", "select * from snps");
-    apop_data_print(d, "snps2", .output_type='d');
-    apop_data *d2 = apop_query_to_mixed_data("vmmmtttt", "select * from snps2");
-    for (i=0; i< d2->vector->size; i++)
-        assert(d->vector->data[i] == d2->vector->data[i]);
-    for (i=0; i< d2->matrix->size1; i++)
-        for (j=0; j< d2->matrix->size2; j++)
-            assert(gsl_matrix_get(d->matrix, i, j) ==  gsl_matrix_get(d2->matrix, i, j));
-    for (i=0; i< d2->textsize[0]; i++)
-        for (j=0; j< d2->textsize[1]; j++)
-            assert(!strcmp(d->text[i][j],d2->text[i][j]));  
-    unlink("snps2");
 }
 
 void test_default_rng(gsl_rng *r) {
@@ -1530,7 +1334,6 @@ int main(int argc, char **argv){
     apop_model *e  = apop_estimate(d, an_ols_model);
 
     do_test("test listwise delete", test_listwise_delete());
-    do_test("db_to_text", db_to_text());
     do_test("rownames", test_rownames());
     do_test("apop_dot", test_dot());
     do_test("apop_jackknife", test_jackknife(r));
@@ -1540,12 +1343,10 @@ int main(int argc, char **argv){
     do_test("test probit and logit", test_probit_and_logit(r));
     do_test("test probit and logit again", test_probit_and_logit(r));
     do_test("test ML imputation", test_ml_imputation(r));
-    do_test("NaN handling", test_nan_data());
     do_test("test data compressing", test_pmf_compress(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
     do_test("default RNG", test_default_rng(r));
-    do_test("test printing", test_printing());
     do_test("test row set and remove", row_manipulations());
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
@@ -1553,8 +1354,6 @@ int main(int argc, char **argv){
     //do_test("test fix params", test_model_fix_parameters(r));
     do_test("positive definiteness", test_posdef(r));
     do_test("test binomial estimations", test_binomial(r));
-    do_test("test data to db", test_data_to_db());
-    do_test("test db to crosstab", test_crosstabbing());
     do_test("dummies and factors", dummies_and_factors());
     do_test("test vector/matrix realloc", test_resize());
     do_test("test_vector_moving_average", test_vector_moving_average());
@@ -1562,7 +1361,6 @@ int main(int argc, char **argv){
     do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
     do_test("OLS test", test_OLS(r));
     do_test("test lognormal estimations", test_lognormal(r));
-    do_test("test queries returning empty tables", test_blank_db_queries());
     do_test("test jackknife covariance", test_jack(r));
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
