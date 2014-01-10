@@ -84,7 +84,7 @@ static void prep_names (apop_model *e){
     }
 	if (e->data->names->vector) { //this is post ols shuffle.
         if (e->parameters)
-            asprintf(&e->parameters->names->title, "Regression of %s", e->data->names->vector);
+            Asprintf(&e->parameters->names->title, "Regression of %s", e->data->names->vector);
         apop_name_add(e->parameters->names, "parameters", 'v');
         for(int i=0; i< e->data->names->colct; i++)
             apop_name_add(e->parameters->names, e->data->names->col[i], 'r');

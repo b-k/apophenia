@@ -133,21 +133,21 @@ static char *apop_get_factor_basename(apop_data *d, int col, char type){
                     : col >=0 && d->names && d->names->colct > col      ? d->names->col[col]
                     : NULL;
     if (catname){
-        asprintf(&name, "%s", catname);
+        Asprintf(&name, "%s", catname);
         return name;
     }
     if (type == 't'){
-        asprintf(&name, "text column %i", col);
+        Asprintf(&name, "text column %i", col);
         return name;
     }
-    if (col == -1)  asprintf(&name, "vector");
-    else            asprintf(&name, "column %i", col);
+    if (col == -1)  Asprintf(&name, "vector");
+    else            Asprintf(&name, "column %i", col);
     return name;
 }
 
 static char *make_catname (apop_data *d, int col, char type){
     char *name, *subname = apop_get_factor_basename(d, col, type);
-    asprintf(&name, "<categories for %s>", subname);
+    Asprintf(&name, "<categories for %s>", subname);
     free(subname);
     return name;
 }
@@ -174,7 +174,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
         //awkward format conversion:
         telmts = malloc(sizeof(char*)*elmt_ctr);
         for (size_t j=0; j< elmt_ctr; j++)
-            asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
+            Asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
         (*factor_list)->vector = gsl_vector_alloc(elmt_ctr);
         for (size_t i=0; i< (*factor_list)->vector->size; i++)
             apop_data_set(*factor_list, i, -1, i);
@@ -289,7 +289,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
-    Apop_stopif(!d, return NULL, 1, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.")
+    Apop_stopif(!d, return NULL, 1, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.");
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
     int apop_varad_var(keep_first, 0)
@@ -382,7 +382,7 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)
-    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.")
+    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.");
     int apop_varad_var(incol, 0)
     int apop_varad_var(outcol, 0)
     char apop_varad_var(intype, 't')
@@ -422,7 +422,7 @@ APOP_VAR_ENDHEAD
 */
 APOP_VAR_HEAD apop_data *apop_data_get_factor_names(apop_data *data, int col, char type){
     apop_data *apop_varad_var(data, NULL)
-    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.")
+    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.");
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 'd')
 APOP_VAR_ENDHEAD

@@ -33,7 +33,7 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
         return -1;
 	if (type == 'h'){
         free(n->title);
-        asprintf(&n->title, "%s", add_me);
+        Asprintf(&n->title, "%s", add_me);
         return 1;
 	} 
 	if (type == 'v'){
@@ -163,7 +163,7 @@ apop_name * apop_name_copy(apop_name *in){
     apop_name_stack(out, in, 'c');
     apop_name_stack(out, in, 'r');
     apop_name_stack(out, in, 't');
-    asprintf(&out->title, "%s", in->title);
+    Asprintf(&out->title, "%s", in->title);
     return out;
 }
 

@@ -619,7 +619,7 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
             "documentation for the list of options", mp->method);
     if (!mp->method || !strlen(mp->method)) mp->method = ms ? "FR cg" : "NM simplex";
 
-    Apop_stopif(!dist->parameters, dist->error='p'; return, 0, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?")
+    Apop_stopif(!dist->parameters, dist->error='p'; return, 0, "Not enough information to allocate parameters over which to optimize. If this was not called from apop_estimate, did you call apop_prep first?");
     infostruct info = {.data           = data,
                        .use_constraint = 1,
                        .path           = mp->path,

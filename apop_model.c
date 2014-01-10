@@ -36,7 +36,7 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     if (!model->parameters) model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info) model->info = apop_data_alloc();
     free(model->info->names->title);
-    asprintf(&model->info->names->title, "<Info>");
+    Asprintf(&model->info->names->title, "<Info>");
     model->data = data;
 	return model;
 }

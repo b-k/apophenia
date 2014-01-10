@@ -91,7 +91,7 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
     //Data gathered. Now output
     apop_data   *out    = apop_data_alloc();
     double      toptail = gsl_cdf_chisq_Q(diff, df-1);
-    asprintf(&out->names->title, "Goodness-of-fit test via Chi-squared statistic");
+    Asprintf(&out->names->title, "Goodness-of-fit test via Chi-squared statistic");
     apop_data_add_named_elmt(out, "Chi squared statistic", diff);
     apop_data_add_named_elmt(out, "df", df-1);
     apop_data_add_named_elmt(out, "p value",  toptail); 
@@ -278,7 +278,7 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
         }
     }
     apop_data *out = apop_data_alloc();
-    asprintf(&out->names->title, "Kolmogorov-Smirnov test");
+    Asprintf(&out->names->title, "Kolmogorov-Smirnov test");
     apop_data_add_named_elmt(out, "max distance", largest_diff);
     double ps = m2_is_pmf ? psmirnov2x(largest_diff, maxsize1, maxsize2)
                           : kolmogorov_2x(maxsize1, largest_diff);

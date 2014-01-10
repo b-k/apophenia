@@ -399,7 +399,7 @@ static int setup_nonzero_contrast(char const *margin_table,
     char *q;
     bool used[allvars->textsize[1]];
     memset(used, 0, sizeof(bool)*allvars->textsize[1]);
-	asprintf(&q, "create table apop_zerocontrasts_%i as select %s, %g from\n", 
+	Asprintf(&q, "create table apop_zerocontrasts_%i as select %s, %g from\n", 
             run_number, apop_text_paste(allvars, .between=","), nudge);
     for (int i=0; i < contrast_ct; i++){
         xprintf(&q, "%s%s (select distinct %s  from %s) \n", 
@@ -571,7 +571,7 @@ APOP_VAR_ENDHEAD
 
     if (nudge || !init_table){
         char *tab;
-        asprintf(&tab, "apop_zerocontrasts_%i", run_number);
+        Asprintf(&tab, "apop_zerocontrasts_%i", run_number);
         apop_table_exists(tab, 'd');
         free(tab);
         Apop_stopif(setup_nonzero_contrast(margin_table, all_vars_d,  
@@ -584,23 +584,23 @@ APOP_VAR_ENDHEAD
     //note that margin data may have invalid rows.
     if (init_table){
         if (structural_zeros) 
-             asprintf(&initt, "(select * from %s where not (%s))", init_table, structural_zeros);
-        else asprintf(&initt, "%s", init_table);
+             Asprintf(&initt, "(select * from %s where not (%s))", init_table, structural_zeros);
+        else Asprintf(&initt, "%s", init_table);
     }
     char *init_q, *pre_init_q = NULL;
     if (init_table){
         char *countstr;
-        if (init_count_col) asprintf(&countstr, "sum(%s) as %s", init_count_col, init_count_col);
-        else                asprintf(&countstr, "count(%s)", **all_vars_d->text);
-        asprintf(&init_q, "select %s, %s from %s group by %s", 
+        if (init_count_col) Asprintf(&countstr, "sum(%s) as %s", init_count_col, init_count_col);
+        else                Asprintf(&countstr, "count(%s)", **all_vars_d->text);
+        Asprintf(&init_q, "select %s, %s from %s group by %s", 
                            list_of_fields, countstr, initt, list_of_fields);
         free(countstr);
     }
 
     char *marginq, *cc; 
-    if (count_col) asprintf(&cc, "sum(%s)", count_col);
+    if (count_col) Asprintf(&cc, "sum(%s)", count_col);
     else           cc = strdup("count(*)");
-    asprintf(&marginq, "select %s, %s  from %s\ngroup by %s", 
+    Asprintf(&marginq, "select %s, %s  from %s\ngroup by %s", 
                        list_of_fields, cc, margin_table, list_of_fields);
     free(cc); free(initt);
 

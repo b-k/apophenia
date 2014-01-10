@@ -619,7 +619,7 @@ allocation:
             for (int j=0; j< in->textsize[1]; j++){
                 int whichtext = (i >= splitpoint);
                 int row = whichtext ? i - splitpoint : i;
-                asprintf(&(out[whichtext]->text[row][j]), "%s", in->text[i][j]);
+                Asprintf(&(out[whichtext]->text[row][j]), "%s", in->text[i][j]);
             }
     }
     return out;
@@ -1101,12 +1101,12 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
     if (in->text[row][col] != apop_nul_string) free(in->text[row][col]);
     if (!fmt){
-        asprintf(&(in->text[row][col]), "%s", apop_opts.nan_string);
+        Asprintf(&(in->text[row][col]), "%s", apop_opts.nan_string);
         return 0;
     }
     va_list argp;
 	va_start(argp, fmt);
-    vasprintf(&(in->text[row][col]), fmt, argp);
+    Apop_stopif(vasprintf(&(in->text[row][col]), fmt, argp)==-1, , 0, "Trouble writing to a string.");
 	va_end(argp);
     return 0;
 }
@@ -1438,7 +1438,7 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
     if (!newpage->names) newpage->names = apop_name_alloc();
     if (title && !(newpage->names->title == title)){//has title, but is not pointing to existing title
         free(newpage->names->title);
-        asprintf(&newpage->names->title, "%s", title);
+        Asprintf(&newpage->names->title, "%s", title);
     }
     Apop_stopif(!dataset, return newpage, 1, "You are adding a page to a NULL data set. Returning the new page as its own data set.");
     while (dataset->more)

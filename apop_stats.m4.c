@@ -35,7 +35,7 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 \ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
-    Apop_stopif(!in, return 0, 1, "You just asked me to sum a NULL. Returning zero.")
+    Apop_stopif(!in, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
     long double out = 0;
     for (size_t i=0; i< in->size; i++)
         out += gsl_vector_get(in, i);
@@ -363,7 +363,7 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
   \param m	the matrix to be summed. 
 \ingroup convenience_fns*/
 long double apop_matrix_sum(const gsl_matrix *m){
-    Apop_assert_c(m, 0, 1, "You just asked me to sum a NULL. Returning zero.")
+    Apop_stopif(!m, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
     long double	sum	= 0;
 	for (size_t j=0; j< m->size1; j++)
 		for (size_t i=0; i< m->size2; i++)
@@ -449,7 +449,7 @@ apop_data * apop_data_summarize(apop_data *indata){
         apop_name_stack(out->names,indata->names, 'r', 'c');
         if (indata->names->title && strlen(indata->names->title)){
             char *title;
-            asprintf(&title, "summary for %s", indata->names->title);
+            Asprintf(&title, "summary for %s", indata->names->title);
             apop_name_add(out->names, title, 'h');
             free(title);
         }

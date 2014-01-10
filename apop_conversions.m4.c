@@ -15,7 +15,7 @@ void xprintf(char **q, char *format, ...){
     va_list ap; 
     char *r = *q; 
     va_start(ap, format); 
-    vasprintf(q, format, ap);
+    Apop_stopif(vasprintf(q, format, ap)==-1, , 0, "Trouble writing to a string.");
     va_end(ap);
     free(r);
 }
@@ -959,7 +959,7 @@ static char *get_field_conditions(char *var, apop_data *field_params){
 
 static int tab_create_mysql(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
     char *q = NULL;
-    asprintf(&q, "create table %s", tabname);
+    Asprintf(&q, "create table %s", tabname);
     for (int i=0; i < *fn->textsize; i++){
         if (i==0)
              xprintf(&q, has_row_names ? "%s (row_names varchar(100), " : "%s (", q);
@@ -976,7 +976,7 @@ static int tab_create_mysql(char *tabname, int has_row_names, apop_data *field_p
 
 static int tab_create_sqlite(char *tabname, int has_row_names, apop_data *field_params, char *table_params, apop_data const *fn){
     char  *q = NULL;
-    asprintf(&q, "create table %s", tabname);
+    Asprintf(&q, "create table %s", tabname);
     for (int i=0; i<fn->textsize[0]; i++){
         if (i==0){
             if (has_row_names) xprintf(&q, "%s ('row_names', ", q);
@@ -1007,9 +1007,9 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
     if (*tail!='\0'){	//then it's not a number.
         if (!prepped_statements){
             if (strchr(astring, '\''))
-                asprintf(&out,"\"%s\"", astring);
+                Asprintf(&out,"\"%s\"", astring);
             else
-                asprintf(&out,"'%s'", astring);
+                Asprintf(&out,"'%s'", astring);
         } else  out = strdup(astring);
 	} else {	    //number, maybe INF or NAN. Also, sqlite wants 0.1, not .1
 		assert(*astring!='\0');
@@ -1020,7 +1020,7 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
         else if (gsl_isnan(atof(astring)))
 			out = strdup("0.0/0.0");
         else if (astring[0]=='.')
-			asprintf(&out, "0%s",astring);
+			Asprintf(&out, "0%s",astring);
 		else out = strdup(astring);
 	}
     return out;
@@ -1032,7 +1032,7 @@ static void line_to_insert(line_parse_t L, apop_data const*addme, char const *ta
     int field = 1;
     char comma = ' ';
     char *q = NULL;
-    if (!p_stmt) asprintf(&q, "INSERT INTO %s VALUES (", tabname);
+    if (!p_stmt) Asprintf(&q, "INSERT INTO %s VALUES (", tabname);
     for (int col=0; col < L.ct; col++){
         char *prepped = prep_string_for_sqlite(!!p_stmt, *addme->text[col]);
         if (p_stmt){
@@ -1069,7 +1069,7 @@ int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3
         Apop_stopif(1, return -1, 0, "Attempting to prepapre prepared statements, but using a version of SQLite that doesn't support them.");
     #else
         char *q=NULL;
-        asprintf(&q, "INSERT INTO %s VALUES (", tabname);
+        Asprintf(&q, "INSERT INTO %s VALUES (", tabname);
         for (size_t i = 0; i < col_ct; i++)
             xprintf(&q, "%s?%c", q, i==col_ct-1 ? ')' : ',');
         Apop_stopif(!db, return -1, 0, "The database should be open by now but isn't.");

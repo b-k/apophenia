@@ -113,7 +113,7 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
         assert(isfinite(pwork.x));
         return;
     } else 
-      Apop_assert_c(i==0, ,-5, "envelope error - violation without metropolis")
+      Apop_stopif(i!=0, ,-5, "envelope error - violation without metropolis");
     msamp ++;
     Apop_notify(3, " point rejected.");
   } while (msamp < 1e3);

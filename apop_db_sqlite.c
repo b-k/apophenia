@@ -239,7 +239,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
             ncshift ++;
         } else {
             apop_text_add(d, rows, jj-ncshift, (argv[jj]==NULL)? apop_opts.nan_string: argv[jj]);
-            //asprintf(&(d->text[rows][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
+            //Asprintf(&(d->text[rows][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
             if(addnames)
                 apop_name_add(d->names, column[jj], 't'); 
         }
@@ -330,7 +330,7 @@ static int multiquery_callback(void *instruct, int argc, char **argv, char **col
             if(addnames)
                 apop_name_add(in->d->names, column[i], 'c'); 
         } else if (c=='t'||c=='T'){
-            asprintf(&(in->d->text[in->thisrow-1][thistcol++]), "%s", 
+            Asprintf(&(in->d->text[in->thisrow-1][thistcol++]), "%s", 
 			                        argv[i] ? argv[i] : "NaN");
             if(addnames)
                 apop_name_add(in->d->names, column[i], 't'); 

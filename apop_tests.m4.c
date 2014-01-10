@@ -133,7 +133,7 @@ APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     return out;
 APOP_VAR_ENDHEAD
     apop_data *out = apop_data_alloc();
-    asprintf(&out->names->title, "F test");
+    Asprintf(&out->names->title, "F test");
     size_t contrast_ct = contrast->vector->size;
     Apop_stopif(contrast->matrix->size1 != contrast_ct,  out->error='d'; return out,
             0, "I counted %zu contrasts by the size of either contrast->vector or "
@@ -285,13 +285,13 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
  */
 APOP_VAR_HEAD apop_data* apop_anova(char *table, char *data, char *grouping1, char *grouping2){
     char *apop_varad_var(table, NULL)
-    Apop_assert(table, "I need the name of a table in the SQL database.")
+    Apop_stopif(!table, return NULL, 0, "I need the name of a table in the SQL database.");
     if (!strchr(table, <|')'|>)) //if you found ()s, then it is a temp table spec.
-        Apop_assert(apop_table_exists(table), "I couldn't find the table %s in the database.", table)
+        Apop_stopif(!apop_table_exists(table), return NULL, 0, "I couldn't find the table %s in the database.", table);
     char *apop_varad_var(data, NULL)
-    Apop_assert(data, "I need the name of the column in the %s table with the count or other data.", table)
+    Apop_stopif(!data, return NULL, 0, "I need the name of the column in the %s table with the count or other data.", table);
     char *apop_varad_var(grouping1, NULL)
-    Apop_assert(data, "I need at least grouping1, a column in the %s table.", table)
+    Apop_stopif(!data, return NULL, 0, "I need at least grouping1, a column in the %s table.", table);
     char *apop_varad_var(grouping2, NULL)
 APOP_VAR_ENDHEAD
     apop_data *first = apop_anova_one_way(table, data, grouping1);
@@ -299,7 +299,7 @@ APOP_VAR_ENDHEAD
     if (!grouping2) return first;
     apop_data *second = apop_anova_one_way(table, data, grouping2);
     char *joined = NULL;
-    asprintf(&joined, "%s, %s", grouping1, grouping2);
+    Asprintf(&joined, "%s, %s", grouping1, grouping2);
     apop_data *interaction = apop_anova_one_way(table, data, joined);
     apop_data *out = apop_data_calloc(5, 6);
     apop_name_stack(out->names, first->names, 'c');
@@ -415,9 +415,9 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     double apop_varad_var(p2, 0);
     int is_chi = strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
                      || strcasecmp(distribution, "chisq");
-     Apop_stopif(!strcasecmp(distribution, "f") && (!p1 || !p2), return NAN, 0, "I need both a p1 and p2 parameter specifying the degrees of freedom.")
+     Apop_stopif(!strcasecmp(distribution, "f") && (!p1 || !p2), return NAN, 0, "I need both a p1 and p2 parameter specifying the degrees of freedom.");
      Apop_stopif((!strcasecmp(distribution, "t") || !strcasecmp(distribution, "f") || is_chi)
-             && !p1, return NAN, 0, "I need a p1 parameter specifying the degrees of freedom.")
+             && !p1, return NAN, 0, "I need a p1 parameter specifying the degrees of freedom.");
      if (!p2 && (!distribution || !strcasecmp(distribution, "normal") || !strcasecmp(distribution, "gaussian") ))
          p2 = 1;
      if (!p2 && p1 >= 0 && !strcasecmp(distribution, "uniform"))

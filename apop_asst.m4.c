@@ -147,7 +147,7 @@ int apop_system(const char *fmt, ...){
     char *q;
     va_list argp;
 	va_start(argp, fmt);
-	vasprintf(&q, fmt, argp);
+	Apop_stopif(vasprintf(&q, fmt, argp)==-1,  return -1, 0, "Trouble writing to a string.");
 	va_end(argp);
     int out = system(q);
     free(q);
@@ -251,7 +251,7 @@ APOP_VAR_ENDHEAD
     int compiled_ok = !regcomp(&re, regex, REG_EXTENDED 
                                             + (use_case=='y' ? 0 : REG_ICASE)
                                             + (substrings ? 0 : REG_NOSUB) );
-    Apop_stopif(!compiled_ok, return -1, 0, "This regular expression didn't compile: \"%s\"", regex)
+    Apop_stopif(!compiled_ok, return -1, 0, "This regular expression didn't compile: \"%s\"", regex);
 
     int matchrow = 0;
     if (substrings) *substrings = apop_data_alloc();

@@ -38,7 +38,7 @@ static void get_db_type(){
     char *query;                  \
     va_list argp;                 \
 	va_start(argp, fmt);          \
-	vasprintf(&query, fmt, argp); \
+	Apop_stopif(vasprintf(&query, fmt, argp)==-1, , 0, "Trouble writing to a string."); \
 	va_end(argp);                 \
 	Apop_notify(2, "%s", query);
 
@@ -134,9 +134,9 @@ APOP_VAR_END_HEAD
 	ERRCHECK
 	if ((remove==1|| remove=='d') && (te.isthere||tev.isthere)){
         if (te.isthere)
-            asprintf(&q2, "drop table %s;", name);
+            Asprintf(&q2, "drop table %s;", name);
         else
-            asprintf(&q2, "drop view %s;", name);
+            Asprintf(&q2, "drop view %s;", name);
 		sqlite3_exec(db, q2, NULL, NULL, &err); 
         free(q2);
         ERRCHECK
@@ -210,7 +210,7 @@ int apop_query(const char *fmt, ...){
         {Apop_stopif(!mysql_db, return 1, 0, "No mySQL database is open.");
         return apop_mysql_query(query);}
 #else
-        Apop_stopif(1, return 1, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return 1, 0, "Apophenia was compiled without mysql support.");
 #endif
     else 
         {if (!db) apop_db_open(NULL);
@@ -426,7 +426,7 @@ double apop_query_to_float(const char * fmt, ...){
 #ifdef HAVE_MYSQL
         out = apop_mysql_query_to_float(query);
 #else
-        Apop_stopif(1, return NAN, 0, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return NAN, 0, "Apophenia was compiled without mysql support.");
 #endif
     } else {
         apop_data *d=NULL;
@@ -490,7 +490,7 @@ void qxprintf(char **q, char *format, ...){
     va_list ap;
     char *r = *q;
     va_start(ap, format);
-    vasprintf(q, format, ap);
+    Apop_stopif(vasprintf(q, format, ap)==-1, , 0, "Trouble writing to a string.");
     va_end(ap);
     free(r);
 }
@@ -518,28 +518,28 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
             if (!strlen(set->names->row[row])) field++; //leave NULL and cleared
             Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->names->row[row], -1, SQLITE_TRANSIENT),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->names->row[row])
+                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->names->row[row]);
         }
         if (set->vector && set->vector->size > row)
                 Apop_stopif(sqlite3_bind_double(p_stmt, field++, apop_data_get(set, row, -1)),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the vector element on line %zu, [%g].\n" ,row,  apop_data_get(set, row, -1))
+                    "Something wrong with the vector element on line %zu, [%g].\n" ,row,  apop_data_get(set, row, -1));
         if (msize1 > row)
             for (size_t col=0; col < msize2; col++)
                 Apop_stopif(sqlite3_bind_double(p_stmt, field++, apop_data_get(set, row, col)),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the matrix element %zu on line %zu, [%g].\n" ,col, row,  apop_data_get(set, row, col))
+                    "Something wrong with the matrix element %zu on line %zu, [%g].\n" ,col, row,  apop_data_get(set, row, col));
         if (*set->textsize > row)
             for (size_t col=0; col < set->textsize[1]; col++){
                 if (!strlen(set->text[row][col])) field++; //leave NULL and cleared
                 Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->text[row][col], -1, SQLITE_TRANSIENT),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->text[row][col])
+                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->text[row][col]);
             }
         if (set->weights && set->weights->size > row)
                 Apop_stopif(sqlite3_bind_double(p_stmt, field++, gsl_vector_get(set->weights, row)),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the weight element on line %zu, [%g].\n" ,row,  gsl_vector_get(set->weights, row))
+                    "Something wrong with the weight element on line %zu, [%g].\n" ,row,  gsl_vector_get(set->weights, row));
         int err = sqlite3_step(p_stmt);
         Apop_stopif(err!=0 && err != 101 //0=ok, 101=done
                     , , 0, "prepared sqlite insert query gave error code %i.\n", err);
@@ -594,13 +594,13 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
 
     if (!apop_opts.db_engine) get_db_type();
     if (apop_table_exists(tabname))
-        asprintf(&q, " ");
+        Asprintf(&q, " ");
     else if (apop_opts.db_engine == 'm')
 #ifdef HAVE_MYSQL
         if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname)))
-            asprintf(&q, " ");
+            Asprintf(&q, " ");
         else {
-            asprintf(&q, "create table %s (", tabname);
+            Asprintf(&q, "create table %s (", tabname);
             if (use_row) {
                 qxprintf(&q, "%s\n %s varchar(1000)", q, apop_opts.db_name_column);
                 comma = ',';
@@ -631,14 +631,14 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
             sprintf(q, " ");
         }
 #else 
-        Apop_stopif(1, return -1, apop_errorlevel, "Apophenia was compiled without mysql support.")
+        Apop_stopif(1, return -1, apop_errorlevel, "Apophenia was compiled without mysql support.");
 #endif
     else {
         if (db==NULL) apop_db_open(NULL);
         if (((output_append =='a' || output_append =='A') && apop_table_exists(tabname)) )
-            asprintf(&q, " ");
+            Asprintf(&q, " ");
         else {
-            asprintf(&q, "create table %s (", tabname);
+            Asprintf(&q, "create table %s (", tabname);
             if (use_row) {
                 qxprintf(&q, "%s\n %s", q, apop_opts.db_name_column);
                 comma = ',';

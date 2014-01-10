@@ -19,18 +19,21 @@
 #define Staticdef(type, name, def) static type (name) = NULL; if (!(name)) (name) = (def);
 
 // Check for NULL and complain if so.
-#define Nullcheck(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is NULL.", #in)
-#define Nullcheck_m(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL model.", #in)
-#define Nullcheck_mp(in, errval) Nullcheck_m(in, errval); Apop_assert_c((in)->parameters, errval, apop_errorlevel, "%s is a model with NULL parameters. Please set the parameters and try again.", #in)
-#define Nullcheck_d(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL data set.", #in)
+#define Nullcheck(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is NULL.", #in);
+#define Nullcheck_m(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL model.", #in);
+#define Nullcheck_mp(in, errval) Nullcheck_m(in, errval); Apop_assert_c((in)->parameters, errval, apop_errorlevel, "%s is a model with NULL parameters. Please set the parameters and try again.", #in);
+#define Nullcheck_d(in, errval) Apop_assert_c(in, errval, apop_errorlevel, "%s is a NULL data set.", #in);
 //And because I do them all so often:
 #define Nullcheck_mpd(data, model, errval) Nullcheck_m(model, errval); Nullcheck_p(model, errval); Nullcheck_d(data, errval);
 //deprecated:
-#define Nullcheck_p(in, errval) Nullcheck_mp(in, errval) 
+#define Nullcheck_p(in, errval) Nullcheck_mp(in, errval);
 
 //in apop_conversions.c Extend a string.
 void xprintf(char **q, char *format, ...);
 #define XN(in) ((in) ? (in) : "")
+
+//For a pedantic compiler. Continues on error, because there's not much else to do: the computer is clearly broken.
+#define Asprintf(...) Apop_stopif(asprintf(__VA_ARGS__)==-1, , 0, "Error printing to a string.")
 
 #include <sqlite3.h>
 #include <stddef.h>

@@ -64,7 +64,7 @@ static double apop_mysql_table_exists(char const *table, int delme){
 
     if (delme =='d' || delme=='D'){
        char *a_query;
-       asprintf(&a_query, "drop table %s", table);
+       Asprintf(&a_query, "drop table %s", table);
        Apop_mstopif(mysql_query (mysql_db, a_query), GSL_NAN, 
             "table exists, but table dropping failed");
     }

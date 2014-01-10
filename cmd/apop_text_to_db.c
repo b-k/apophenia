@@ -25,7 +25,7 @@ int main(int argc, char **argv){
         tab_exists_check = 0;
     char **field_names = NULL;
 
-	asprintf(&msg, "%s [-d delimiters] text_file table_name dbname\n"
+	Asprintf(&msg, "%s [-d delimiters] text_file table_name dbname\n"
                 "e.g.: %s -d\",|\" infile.txt a_table info.db\n"
 "If the input text file name is a single dash, -, then read from STDIN.\n"
 "Input must be plain ASCII or UTF-8.\n"

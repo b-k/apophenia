@@ -84,7 +84,7 @@ typedef long int logical;
 typedef long int integer;
 
 #define Calloc(n,t)	(t *)calloc((unsigned)(n),sizeof(t))   // From #include "S.h"
-#define Warning(msg) Apop_assert_c(0, , 0 , "%s", msg)
+#define Warning(msg) Apop_assert_c(0, , 0 , "%s", msg);
 
 static integer c__0 = 0;
 static integer c__1 = 1;
@@ -868,7 +868,7 @@ case 195: mess="only constant, linear, or quadratic local models allowed"; break
 case 196: mess="degree must be at least 1 for vertex influence matrix"; break;
 default: sprintf(mess=mess2,"Assert failed; error code %d\n",i); break;
     }
-    Apop_assert_n(0, "%s", mess)
+    Apop_assert_n(0, "%s", mess);
 }
 
 static void ehg183_(char *s, integer *i, integer n, integer inc) {
