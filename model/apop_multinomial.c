@@ -62,8 +62,25 @@ static void make_covar(apop_model *est){
 }
 
 static long double multinomial_constraint(apop_data *data, apop_model *b){
-  //constraint is that 0 < all elmts 
-    return apop_linear_constraint(b->parameters->vector, .margin = 1e-3);
+  //constraint is that 0 < all elmts, and  1>all ps.
+    int size = b->parameters->vector->size;
+    static apop_data *constr;
+    if (constr && constr->matrix->size2 != size)
+        apop_data_free(constr);
+    if (!constr){
+        constr = apop_data_calloc(size*2-1, size*2-1, size);
+
+        //top half: 0 < [param], including param 0
+        Apop_submatrix(constr->matrix, 0, 0, size, size, tophalf);
+        gsl_matrix_set_identity(tophalf);
+
+        //bottom (almost) half: 1 >= [param], excluding param 0
+        for (int i=size; i < size*2-1; i++){
+            apop_data_set(constr, i, -1, -1);
+            apop_data_set(constr, i, i-size+1, -1);
+        }
+    }
+    return apop_linear_constraint(b->parameters->vector, constr);
 }
 
 static double binomial_ll(gsl_vector *hits, void *paramv){
@@ -85,8 +102,7 @@ static long double multinomial_log_likelihood(apop_data *d, apop_model *params){
     double n = pv[0]; 
     Apop_assert_c(pv[1] <=1, GSL_NAN, 1, "The input parameters should be [n, p_1, (...)], but "
         "element 1 of the parameter vector is >1."); //mostly makes sense for the binomial.
-    if (n==2)
-        return apop_map_sum(d, .fn_vp=binomial_ll, .param=params->parameters->vector);
+    if (n==2) return apop_map_sum(d, .fn_vp=binomial_ll, .param=params->parameters->vector);
 
     pv[0] = 1 - (apop_sum(params->parameters->vector)-n);//making the params a p-vector. Put n back at the end.
     double out = apop_map_sum(d, .fn_vp=multinomial_ll, .param=params);

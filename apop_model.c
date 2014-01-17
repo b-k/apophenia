@@ -140,7 +140,7 @@ void apop_model_show (apop_model * print_me){
 
 /** Outputs a copy of the \ref apop_model input.
 \param in The model to be copied
-\return A pointer to a copy of the original, which you can mangle as you see fit. 
+\return A pointer to a copy of the original, which you can mangle as you see fit. Includes copies of all settings groups, and the \c parameters (if not \c NULL, copied via \ref apop_data_copy).
 
 \li If <tt>in.more_size > 0</tt> I <tt>memcpy</tt> the \c more pointer from the original data set.
 

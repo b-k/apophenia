@@ -62,8 +62,8 @@ static void normal_estimate(apop_data * data, apop_model *est){
         vvar = apop_var(data->vector);
     }
     if (msize1) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
-    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
-    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
+    double mean = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
+    double var = mvar *(msize1*msize2/(tsize+0.0)) + vvar *(vsize/(tsize+0.0));
     est->parameters->vector->data[0] = mean;
     est->parameters->vector->data[1] = sqrt(var);
 	apop_name_add(est->parameters->names, "μ", 'r');

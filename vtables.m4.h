@@ -21,9 +21,6 @@ generate C macros.
 
 --After the m4 definition of make_vtab_fns, each new vtable requires a typedef, a hash
 definition, and a call to make_vtab_fns to do the rest.
-
---the typedef and has are defined inside of an m4 macro so that we can also paste the
-same text into documentation as needed.
 */
 m4_define(make_vtab_fns, <|m4_dnl
 #ifdef Declare_type_checking_fns
@@ -41,7 +38,16 @@ void *apop_vtable_get(char *tabname, unsigned long hash);
 int apop_vtable_drop(char const *tabname, unsigned long hash);
 
 typedef apop_model *(*apop_update_type)(apop_data *, apop_model* , apop_model*);
-#define apop_update_hash(m1, m2) ((size_t)(m1)->draw + (size_t)((m2)->log_likelihood ? (m2)->log_likelihood : (m2)->p)*33)
+#define apop_update_hash(m1, m2) (          \
+           ((m1)->log_likelihood ? (size_t)(m1)->log_likelihood : \
+            (m1)->p              ? (size_t)(m1)->p*33 : \
+            (m1)->draw           ? (size_t)(m1)->draw*33*27 \
+                                 : 33*27*19) \
+          +((m2)->log_likelihood ? (size_t)(m2)->log_likelihood : \
+            (m2)->p              ? (size_t)(m2)->p*33 : \
+            (m2)->draw           ? (size_t)(m2)->draw*33*27 \
+                                 : 33*27*19 \
+           ) * 37)
 make_vtab_fns(apop_update)
 
 typedef void (*apop_score_type)(apop_data *d, gsl_vector *gradient, apop_model *params);

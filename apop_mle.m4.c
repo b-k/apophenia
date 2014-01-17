@@ -376,7 +376,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
        if(est->constraint)
         apop_assert(!est->constraint(i->data, est), "the maximum likelihood search ended "
                                             "at a point that doesn't satisfy the model's constraints.");*/
-    if (i->want_cov=='y' && est->parameters->vector && !est->parameters->matrix){
+    if (i->want_cov=='y' && est->parameters){
         apop_model_numerical_covariance(i->data, est, Apop_settings_get(est,apop_mle,delta));
         if (i->want_tests=='y')
             apop_estimate_parameter_tests (est);

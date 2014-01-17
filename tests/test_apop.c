@@ -1265,6 +1265,20 @@ void test_pmf_compress(gsl_rng *r){
     }
 }
 
+void test_vtables(){
+    //run an updating to make sure that the vtable has been generated.
+    apop_model *n = apop_model_set_parameters(apop_normal, 0, 1);
+    apop_data *d = apop_model_draws(n);
+    apop_model *out = apop_update(d, n, apop_normal);
+    //did it use the vtable to see this is a Normal distribution?
+    assert(out->log_likelihood == apop_normal->log_likelihood);
+    //updating a distribution with data from itself:
+    Diff(apop_data_get(n->parameters), apop_data_get(out->parameters), 1e-1);
+
+    assert(apop_update_vtable_drop(apop_normal, apop_normal)==0);
+    assert(apop_update_vtable_drop(apop_beta, apop_binomial)==0);
+}
+
 void test_weighted_regression(apop_data *d, apop_model *e){
     //pretty rudimentary: set all weights to equal and see if we get the same result.
     apop_data *cp = apop_data_copy(d);
@@ -1333,6 +1347,7 @@ int main(int argc, char **argv){
     Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, an_ols_model);
 
+    do_test("vtables", test_vtables());
     do_test("test listwise delete", test_listwise_delete());
     do_test("rownames", test_rownames());
     do_test("apop_dot", test_dot());

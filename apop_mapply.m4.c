@@ -516,9 +516,9 @@ void *apop_map_sum_for_threading(void *in){
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages){ 
 
     //The first half of the wrapper function is about threading. See notes attached to apop_map_sum_for_threading.
-    int threadct = GSL_MIN((varad_in.in->matrix? varad_in.in->matrix->size1 : varad_in.in->vector->size), apop_opts.thread_count);
+    int threadct = GSL_MIN((varad_in.in->matrix? varad_in.in->matrix->size1 : varad_in.in->vector ? varad_in.in->vector->size: 1), apop_opts.thread_count);
     if (threadct > 1 && varad_in.all_pages <1000){
-        pthread_t     thread_id[threadct];
+        pthread_t thread_id[threadct];
         variadic_type_apop_map_sum inputs[threadct];
         apop_data slices[threadct];
         gsl_vector v[threadct], w[threadct];

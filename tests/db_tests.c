@@ -112,6 +112,12 @@ void db_to_text(){
     assert(apop_data_get(de, 5, .colname="ab")==201);
     unlink("mixedtest");
 
+    gsl_matrix *as_matrix = apop_query_to_matrix("select ab from d");
+    gsl_vector *as_vector = apop_query_to_vector("select ab from d");
+    Apop_matrix_col(as_matrix, 0, mv);
+    gsl_vector_sub(as_vector, mv);
+    Diff(apop_sum(as_vector), 0, 1e-10);
+
     test_uniform(d);
     apop_data_free(dc); apop_data_free(dd); 
     apop_data_free(dcc); apop_data_free(d); 
@@ -253,4 +259,5 @@ int main(){
     do_test("NaN handling", test_nan_data());
     do_test("test printing", test_printing());
     do_test("test db to crosstab", test_crosstabbing());
+    apop_db_close();
 }

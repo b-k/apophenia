@@ -4,7 +4,7 @@ Copyright (c) 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see 
 \amodel apop_pmf A probability mass function is commonly known as a histogram, or still more commonly,
 a bar chart. It indicates that at a given coordinate, there is a given mass.
 
-The data format for the PMF is simple: each row holds the coordinates, and the
+Each row of the PMF's data set holds the coordinates, and the
 <em>weights vector</em> holds the mass at the given point. This is in contrast to the
 crosstab format, where the location is simply given by the position of the data point
 in the grid.
@@ -29,9 +29,9 @@ Here it is as a sparse listing:
 <tr> <td>1.2</td> <td>2</td> <td>2</td> </tr>
 </table>
 
-The \c apop_pmf internally represents data in this manner. The dimensions are held
-in the \c matrix element of the data set, and the cell values are held in the \c weights
-element (<em>not the vector</em>).
+The \c apop_pmf internally represents data in this manner, with the dimensions 
+in the \c matrix, \c vector, and \c text element of the data set, and the cell values
+are held in the \c weights element (<em>not the vector</em>).
 
 If your data is in a crosstab (with entries in the matrix element for 2-D data or the
 vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.
@@ -49,11 +49,6 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 \li If the \c weights element is \c NULL, then I assume that all rows of the data set are
 equally probable.
 \li If the \c weights are present but sum to a not-finite value, the model's \c error element is set to \c 'w' when the estimation is run, and a warning printed.
-
-\li Be careful: the weights are in the \c weights element of the \c apop_data set, not in
-the \c vector element. If you put the weights in the \c vector and have \c NULL \c
-weights, then draws are equiprobable. This will be difficult to debug.
-
 
 \adoc    Input_format     As above, you can input to the \c estimate
                       routine a 2-D matrix that will be converted into this form.     

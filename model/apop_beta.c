@@ -82,7 +82,7 @@ static long double beta_cdf(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN)
     Get_vmsizes(d)  //vsize
     Get_ab(params)
-    double val = apop_data_get(d, 0, vsize ? -1 : 0);
+    double val = apop_data_get(d);
     return gsl_cdf_beta_P(val, ab.alpha, ab.beta);
 }
 

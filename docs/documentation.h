@@ -111,7 +111,7 @@ models from simple sub-models.
 
 \li For example, the \ref apop_update function does Bayesian updating on any two
 well-formed models. If they are on the table of conjugates, that is correctly handled,
-and if they are not, a variant of MCMC appropriate for any compatible pair of models
+and if they are not, an appropriate variant of MCMC 
 produces an empirical distribution. The output is yet another model, from which you
 can make random draws, or which you can use as a prior for another round of Bayesian
 updating.
@@ -1204,6 +1204,9 @@ endofdiv
 
 Outlineheader Modesec Models
 
+This segment discusses the use of existing \ref apop_model objects.
+If you need to write a new model, see \ref modeldetails.
+
 Outlineheader introtomodels Introduction
 
 Begin with the most common use:
@@ -1371,7 +1374,28 @@ Outlineheader Update Filtering & updating
 The model structure makes it
 easy to generate new models that are variants of prior models. Bayesian updating,
 for example, takes in one \ref apop_model that we call the prior, one \ref apop_model
-that we call a likelihood, and outputs an \ref apop_model that we call the posterior.
+that we call a likelihood, and outputs an \ref apop_model that we call the
+posterior. One can produce complex models using simpler transformations as well. For example, to generate
+a one-parameter Normal(μ, 1) given the code for for a Normal(μ, σ):
+
+\code
+apop_model *N_sigma1 = apop_model_fix_params(apop_model_set_parameters(apop_normal, NAN, 1));
+\endcode
+
+This can be used anywhere the original Normal distribution can be. If we need to truncate the distribution in the data space:
+
+\code
+//The constraint function.
+double over_zero(apop_data *in, apop_model *m){
+    return apop_data_get(in) > 0;
+}
+
+apop_model *trunc = apop_model_dconstrain(.base_model=N_sigma1,
+                                          .constraint=over_zero);
+\endcode
+
+Chaining together simpler transformations is an easy method to produce 
+models of arbitrary detail.
 
 \li\ref apop_update() : Bayesian updating
 \li\ref apop_model_coordinate_transform() : apply an invertible transformation to the data space

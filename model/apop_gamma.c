@@ -85,6 +85,26 @@ static void gamma_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
+/* via method of moments.
+   E(data) = ab
+   var(data) = a b^2
+   so a = E^2/var
+      b = var/E
+*/
+static void gamma_est(apop_data *data, apop_model *m){
+    Get_vmsizes(data)
+    double mmean=0, mvar=0, vmean=0, vvar=0;
+    if (vsize){
+        vmean = apop_mean(data->vector);
+        vvar = apop_var(data->vector);
+    }
+    if (msize1) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);
+    double mean = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
+    double var = mvar *(msize1*msize2/(tsize+0.0)) + vvar *(vsize/(tsize+0.0));
+    apop_data_set(m->parameters, 0, .val=gsl_pow_2(mean)/var);
+    apop_data_set(m->parameters, 1, .val=var/mean);
+}
+
 apop_model *apop_gamma = &(apop_model){"Gamma distribution", 2,0,0, .dsize=1, 
-      .log_likelihood = gamma_log_likelihood, .prep = gamma_prep, 
-      .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};
+    .estimate = gamma_est, .log_likelihood = gamma_log_likelihood, .prep = gamma_prep, 
+    .constraint = gamma_constraint, .cdf = gamma_cdf, .draw = gamma_rng};

@@ -16,12 +16,16 @@ If fmemopen is missing, don't even bother with the error log stuff.
 */
 char errorbuff[10000];
 
-void check_data_error(apop_data *in, char should_be, char *fn_to_check, char *msg){
-    Apop_stopif (in->error != should_be, abort(), 0, "Didn't set %s.", msg);
+void check_log(char*fn_to_check, char*msg){
 #ifdef HAVE_FMEMOPEN
     fflush(NULL);
     Apop_stopif (!apop_regex(errorbuff, fn_to_check), abort(), 0, msg);
 #endif
+}
+
+void check_data_error(apop_data *in, char should_be, char *fn_to_check, char *msg){
+    Apop_stopif (in->error != should_be, abort(), 0, "Didn't set %s.", msg);
+    check_log(fn_to_check, msg);
 }
 
 void reset_log(){
@@ -70,6 +74,10 @@ int main(){
     reset_log();
     apop_data *d44 = apop_data_alloc(4,4);
     check_data_error(apop_dot(d44, d3), 'd', "apop_dot", "dot product dimension error");
+
+    apop_multivariate_normal->parameters = apop_data_calloc(2, 2, 2);
+    assert(apop_log_likelihood(fefail, apop_multivariate_normal) == -INFINITY);
+    check_log("apop_multinormal_ll", "Failed to not take the determinant of a zero matrix.");
 
     if (apop_opts.log_file) fclose(apop_opts.log_file);
     apop_opts.log_file = NULL;

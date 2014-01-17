@@ -77,11 +77,16 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
 }
 
 /** Copy a settings group with the given name from the second model to
- the first.  (i.e., the arguments are in memcpy order). 
+the first.  (i.e., the arguments are in memcpy order). 
 
- You probably won't need this often---just use \ref apop_model_copy.
- \exception outm->error=='s'  Error copying settings group.
- */
+You probably won't need this often---just use \ref apop_model_copy.
+
+\param outm The model that will receive a copy of the settings group.
+\param inm The model that will provide the original.
+\param copyme The string naming the group. For example, for an \ref apop_mcmc_settings group, this would be \c "apop_mcmc".
+
+\exception outm->error=='s'  Error copying settings group.
+*/
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme){
     if (!copyme || !strlen(copyme)) return; //apop_settings_group_alloc takes care of the blank sentinel.
     Apop_stopif(!inm, if (outm) outm->error = 's'; return, 0, "you asked me to copy the settings of a NULL model.");

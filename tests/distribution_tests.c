@@ -126,29 +126,33 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
 double true_parameter_v[] = {1.82,2.1};
 
 void test_distributions(gsl_rng *r){
-  if (verbose) printf("\n");
-  apop_model* true_params;
-  apop_model *null_model = &(apop_model){"the null model"};
-  apop_model *bernie_no_est = apop_model_copy(apop_bernoulli);
-  bernie_no_est->estimate=NULL;
-  apop_model *exp_no_est = apop_model_copy(apop_exponential);
-  exp_no_est->estimate=NULL;
-  apop_model *fish_no_est = apop_model_copy(apop_poisson);
-  fish_no_est->estimate=NULL;
-  apop_model *beta_no_est = apop_model_copy(apop_beta);
-  beta_no_est->estimate=NULL;
-  apop_t_distribution->estimate=NULL; //find df by MLE, not observation count.
-  apop_model *dist[] = {
-                apop_bernoulli, bernie_no_est, apop_beta, 
-                beta_no_est,
-                apop_binomial,
-                apop_dirichlet, apop_exponential, exp_no_est,
-                apop_gamma, 
-                apop_lognormal, apop_multinomial, apop_multivariate_normal,
-                apop_normal, apop_poisson, fish_no_est,
-                apop_t_distribution, apop_uniform,
-                apop_yule, apop_zipf, /*apop_wishart,*/
-                null_model};
+    if (verbose) printf("\n");
+    apop_model* true_params;
+    apop_model *null_model = &(apop_model){"the null model"};
+
+#define model_no_est(base) \
+    apop_model * base ## _no_est = apop_model_copy(apop_##base);\
+    base ## _no_est->estimate=NULL;
+
+    model_no_est(beta);
+    model_no_est(bernoulli);
+    model_no_est(gamma);
+    model_no_est(exponential);
+    model_no_est(poisson);
+
+    apop_t_distribution->estimate=NULL; //find df by MLE, not observation count.
+    apop_model *dist[] = {
+            apop_bernoulli, bernoulli_no_est, 
+            apop_beta, beta_no_est,
+            apop_binomial, apop_dirichlet,
+            apop_exponential, exponential_no_est,
+            apop_gamma, gamma_no_est,
+            apop_lognormal, apop_multinomial, 
+            apop_multivariate_normal,
+            apop_normal, apop_poisson, poisson_no_est,
+            apop_t_distribution, apop_uniform,
+            apop_yule, apop_zipf, /*apop_wishart,*/
+            null_model};
 
     for (int i=0; strcmp(dist[i]->name, "the null model"); i++){
         if (verbose) {printf("%s: ", dist[i]->name); fflush(NULL);}

@@ -339,13 +339,21 @@ typedef struct{
  */
 typedef struct{
     apop_data *data;
-    apop_data *starting_pt; /**< Deprecated and ignored. Starting point is drawn from your prior. */
     long int periods; /**< For how many steps should the MCMC chain run? */
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
     char method;
-} apop_update_settings;
+    apop_model *proposal; /**< The distribution from which test parameters will be drawn. If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. */
+    void (*step_fn)(apop_data *, apop_model*); /**< Modifies the parameters of the
+        proposal distribution given a successful draw. Thus, this function writes the
+        drawn data point to the parameter set. If the draw is a scalar, the default
+        function sets the 0th element of the model's \c parameter set with the draw
+        (works for the \ref apop_normal and other models). If the draw has multiple
+        dimensions, they are all copied to the parameter set, which must have the same
+        size. */
+    apop_data *starting_pt; /**< Deprecated and ignored. Starting point is drawn from your proposal distribution. */
+} apop_mcmc_settings;
 
 //Loess, including the old FORTRAN-to-C.
 struct loess_struct {
@@ -587,9 +595,9 @@ Apop_settings_declarations(apop_pmf)
 Apop_settings_declarations(apop_mle)
 Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_arms)
+Apop_settings_declarations(apop_mcmc)
 Apop_settings_declarations(apop_loess)
 Apop_settings_declarations(apop_stack)
-Apop_settings_declarations(apop_update)
 Apop_settings_declarations(apop_mixture)
 Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
