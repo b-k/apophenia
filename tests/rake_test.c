@@ -31,7 +31,7 @@ void test_raking_further(){
     apop_data_print(
             apop_rake(.margin_table="rake_test", .count_col="weights", 
                 .contrasts=(char*[]){"first", "second"}, .contrast_ct=2),
-        .output_file="raked", .output_type='d');
+        .output_name="raked", .output_type='d');
     apop_model *fitted= apop_estimate(apop_query_to_mixed_data("mmw", "select * from raked"), apop_pmf);
     rake_check(apop_estimate(apop_query_to_mixed_data("mmw", "select first, second, 1 from rake_test"), apop_pmf), fitted);
 
@@ -46,7 +46,7 @@ void test_raking_further(){
     apop_data_print(
             apop_rake(.margin_table="rake_test", .count_col="weights", 
                 .contrasts=(char*[]){"first", "second"}, .contrast_ct=2, .init_table="rakeinit", .init_count_col="weights"),
-        .output_file="raked", .output_type='d');
+        .output_name="raked", .output_type='d');
     //apop_data_show(apop_query_to_data("select * from raked"));
 
     apop_model *base= apop_estimate(apop_query_to_mixed_data("mmw", "select * from rakeinit"), apop_pmf);

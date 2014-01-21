@@ -235,7 +235,7 @@ delta;
 apop_data *mypath;
 Apop_model_add_group(mymodel, apop_mle, .path=&mypath);
 apop_model *out = apop_estimate(mydata, mymodel);
-apop_data_print(mypath, .output_file="search");
+apop_data_print(mypath, .output_name="search");
 apop_data_free(mypath);
 \endcode                              
                               

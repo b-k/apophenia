@@ -104,7 +104,7 @@ double apop_matrix_determinant(const gsl_matrix *in) {
 
 You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
 
-\param data The input matrix. (No default. If \c NULL, I'll return \c NULL.)
+\param data The input matrix. (No default. If \c NULL, return \c NULL and print a warning iff <tt>apop_opts.verbose >= 1</tt>.)
 I modify int in place so that each column has mean zero.
 
 \param dimensions_we_want  (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
@@ -116,9 +116,8 @@ The data set's vector will be the largest eigenvalues, scaled by the total of al
 \ingroup linear_algebra */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
-    Nullcheck_d(data, NULL);
+    Apop_stopif(!data, return NULL, 1, "NULL data input");
     int const apop_varad_var(dimensions_we_want, data->size2);
-    if (!data) return NULL;
 APOP_VAR_ENDHEAD
     Set_gsl_handler
     apop_data *pc_space	= apop_data_alloc(0, data->size2, dimensions_we_want);

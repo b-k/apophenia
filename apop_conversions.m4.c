@@ -1096,7 +1096,7 @@ Especially if you are using a pre-2007 version of SQLite, there may be a speedup
 
 \code
 apop_query("begin;");
-apop_data_print(dataset, .output_file="dbtab", .output_type='d');
+apop_data_print(dataset, .output_name="dbtab", .output_type='d');
 apop_query("commit;");
 \endcode
 

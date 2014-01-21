@@ -14,6 +14,8 @@
 	Apop_matrix_col Apop_matrix_row One column or row as a gsl_matrix
 **MLE methods are now strings instead of all-caps enums.
 **All blank elements of a data->text grid point to the same NUL string.
+--Add apop_model_metropolis; revise apop_update accordingly.
+**Replace all instances of output_file with output_name (GNU sed -i 's/output_file/output_name/g' *c)
 
 	December 2013
 --append and replace options for apop_text_to_db

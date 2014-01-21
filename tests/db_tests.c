@@ -184,7 +184,7 @@ static void test_printing(){
         test_nan_data();
     strcpy(apop_opts.db_name_column, "head");
     gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
-    apop_matrix_print(m, .output_file=outfile, .output_append='w');
+    apop_matrix_print(m, .output_name=outfile, .output_append='w');
 
 apop_system("cp %s xxx", outfile);
 

@@ -25,9 +25,9 @@ function.
 \ingroup output
 */
  
-#define Output_vars output_file, output_pipe, output_type, output_append
+#define Output_vars output_name, output_pipe, output_type, output_append
 
-#define Output_declares char const * output_file, FILE * output_pipe, char output_type, char output_append
+#define Output_declares char const * output_name, FILE * output_pipe, char output_type, char output_append
 
 /** If you're reading this, it is probably because you were referred by another function
   that uses this internally. You should never call this function directly, but do read
@@ -40,36 +40,36 @@ function.
   apop_data_print(your_data, .output_type ='f', .output_append = 'w');
   \endcode
 
-  \param output_file The name of the output file, if any. For a database, the table to write.
+  \param output_name The name of the output file, if any. For a database, the table to write.
   \param output_pipe If you have already opened a file and have a \c FILE* on hand, use
   this instead of giving the file name.
   \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
   \param output_append \c 'a' = append (default), \c 'w' = write over.
 
-At the end, \c output_file, \c output_pipe, and \c output_type are all set.
+At the end, \c output_name, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
-void apop_prep_output(char const *output_file, FILE ** output_pipe, char *output_type, char *output_append){
+void apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append : 'w';
 
-    if (!output_file && !*output_pipe && !*output_type)     *output_type = 's';              
-    else if (output_file && !*output_pipe && !*output_type) *output_type = 'f'; 
-    else if (!output_file && *output_pipe && !*output_type) *output_type = 'p';     
+    if (!output_name && !*output_pipe && !*output_type)     *output_type = 's';              
+    else if (output_name && !*output_pipe && !*output_type) *output_type = 'f'; 
+    else if (!output_name && *output_pipe && !*output_type) *output_type = 'p';     
 
     if (*output_type =='p')      *output_pipe = *output_pipe ? *output_pipe: stdout;      
     else if (*output_type =='s') *output_pipe = stdout; 
     else if (*output_type =='d') *output_pipe = stdout;  //won't be used.
-    else *output_pipe = output_file
-                        ? fopen(output_file, *output_append == 'a' ? "a" : "w")
+    else *output_pipe = output_name
+                        ? fopen(output_name, *output_append == 'a' ? "a" : "w")
                         : stdout;
 }
 
 #define Dispatch_output                        \
-    char const *apop_varad_var(output_file, NULL);  \
+    char const *apop_varad_var(output_name, NULL);  \
     FILE * apop_varad_var(output_pipe, NULL);  \
     char apop_varad_var(output_type, 0);       \
     char apop_varad_var(output_append, 0);     \
-    apop_prep_output(output_file, &output_pipe, &output_type, &output_append);
+    apop_prep_output(output_name, &output_pipe, &output_type, &output_append);
 
 /** Prep for Gnuplot one of those cute scatterplots with a regression line through it.
 
@@ -122,7 +122,7 @@ APOP_VAR_ENDHEAD
     //force the delimiter to be a comma space; don't tell the user.
     strcpy(exdelimiter, apop_opts.output_delimiter);
     strcpy(apop_opts.output_delimiter, ", ");
-	apop_matrix_print(data->matrix, output_file, output_pipe, output_type, 'a');
+	apop_matrix_print(data->matrix, output_name, output_pipe, output_type, 'a');
     strcpy(apop_opts.output_delimiter, exdelimiter);
 }
 
@@ -162,7 +162,7 @@ APOP_VAR_ENDHEAD
     fprintf(output_pipe, "e\n");
 
     if (output_type == 'p') fflush(output_pipe);
-    else if (output_file)   fclose(output_pipe);
+    else if (output_name)   fclose(output_pipe);
     apop_data_free(histodata);
 }
 
@@ -279,7 +279,7 @@ static void print_core_v(const gsl_vector *data, char *separator, Output_declare
 	    }
 	    fprintf(f,"\n");
     }
-	if (output_file) fclose(f);
+	if (output_name) fclose(f);
 }
 
 /** Print a vector in float format.
@@ -404,8 +404,8 @@ APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     Dispatch_output
 APOP_VAR_ENDHEAD 
     if (output_type  == 'd'){
-        if (output_append == 'w') apop_table_exists(output_file, 'd');
-        apop_data_to_db(data, output_file, output_append);
+        if (output_append == 'w') apop_table_exists(output_name, 'd');
+        apop_data_to_db(data, output_name, output_append);
         return;
     }
     apop_data_print_core(data, output_pipe, output_type);
@@ -413,7 +413,7 @@ APOP_VAR_ENDHEAD
         output_append='a';
         apop_data_print(data->more, Output_vars);
     }
-    if (output_file)
+    if (output_name)
         fclose(output_pipe);
 }
 
@@ -528,7 +528,7 @@ APOP_VAR_ENDHEAD
         for (size_t j = 0; j< d->matrix->size2; j++)
             printone(f, width, height, margin, i, j, d);
     fprintf(f, "unset multiplot\n"); 
-    if (output_type == 'f' && output_file)
+    if (output_type == 'f' && output_name)
         fclose(f);
 }
 
@@ -585,7 +585,7 @@ APOP_VAR_ENDHEAD
     fprintf(output_pipe, "e\n");
     if (output_type == 'p')
         fflush(output_pipe);
-    else if (output_file)
+    else if (output_name)
         fclose(output_pipe);
     gsl_vector_free(vd);
 }
@@ -608,7 +608,7 @@ APOP_VAR_HEAD void apop_plot_triangle(apop_data *in, Output_declares){
     Dispatch_output
 APOP_VAR_ENDHEAD 
     FILE *f=output_pipe;
-    Apop_assert_n(f, "Error opening file %s for writing.", output_file);
+    Apop_assert_n(f, "Error opening file %s for writing.", output_name);
     if (in->names && in->names->colct>=3){
         fprintf(f, "set label '%s' at -0.03, 0 right; \n", in->names->col[0]);
         fprintf(f, "set label '%s' at 1.03, 0 left; \n", in->names->col[1]);
@@ -632,5 +632,5 @@ APOP_VAR_ENDHEAD
     );
     Apop_submatrix(in->matrix, 0,0, in->matrix->size1, 3, triplets);
     apop_matrix_print(triplets, .output_pipe=f, .output_type='p');
-    if (output_file) fclose(f);
+    if (output_name) fclose(f);
 }
