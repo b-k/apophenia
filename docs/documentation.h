@@ -2831,7 +2831,8 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \section methodsection Methods
 
 \subsection psubsection p, log_likelihood
-
+    ;
+\li Function headers look like  <tt>long double your_p_or_ll(apop_data *d, apop_model *params)</tt>.
 \li The inputs are an \ref apop_data set and an \ref apop_model, which should include a filled <tt>->parameters</tt> element.
 \li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are.
 \li Return \c NaN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
@@ -2840,6 +2841,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 
 \subsection prepsubsection prep
 
+\li Function header looks like <tt>void your_prep(apop_data *data, apop_model *params)</tt>.
 \li If \c vsize, \c msize1, or \c msize2 are -1, then the prep function will set them to the width of the input data.
 \li If \c dsize is -1, then the prep function shall set it to the width of the input data.
 \li If the \c parameters element is not allocated, the function shall allocate it via <tt>apop_data_alloc(vsize, msize1, msize2)</tt> (or equivalent).
@@ -2854,6 +2856,7 @@ a vtable (see above), the registration shall happen here. Registration may also 
 
 \subsection estimatesubsection estimate
 
+\li Function header looks like  <tt> void your_estimate(apop_data * data, apop_model *params)</tt>.
 \li Assume that the prep routine has already been run. Notably, this means that parameters have been allocated.
 \li Assume that the \c parmaeters hold garbage (as in a \c malloc without a subsequent assignment to the <tt>malloc</tt>-ed space).
 \li The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, \ref apop_estimate, which makes a copy of its input model, preps it, and then calls the \c estimate function with the prepeped copy.
@@ -2866,12 +2869,14 @@ a vtable (see above), the registration shall happen here. Registration may also 
 
 \subsection drawsubsection draw
 
+\li Function header looks like <tt>void your_draw(double *out, gsl_rng* r, apop_model *params)</tt>
 \li Assume that model \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the draw method should check that \c parameters are not \c NULL and fill the output with NaNs if necessary parameters are not set.
 \li User inputs a pointer-to-<tt>double</tt> of length \c dsize; user is expected to make sure that there is adequate space.  User also inputs a \c gsl_rng, already allocated (probably via \ref apop_rng_alloc).
 \li The function shall fill the space pointed to by the input pointer with a random draw from the data space, where the likelihood of any given observation is proportional to its likelihood as given by the \c p method. Data shall be reduced to a single vector via \ref apop_data_pack if it is not already a single vector.
 
 \subsection cdfsubsection cdf
 
+\li Function header looks like <tt>long double your_cdf(apop_data *d, apop_model *params)</tt>.
 \li Assume that \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the CDF method should check that \c parameters are not \c NULL and return NaN if necessary parameters are not set.
 \li The CDF method must accept data as a single row of data in the \c matrix of the input \ref apop_data set (as per a draw produced using the \c draw method). May accept other formats.
 \li Returns the percentage of the likelihood function \f$\leq\f$ the first row of the input data. The definition of \f$\leq\f$ is chosen by the model author.
@@ -2879,6 +2884,7 @@ a vtable (see above), the registration shall happen here. Registration may also 
 
 \subsection constraintsubsection constraint
 
+\li Function header looks like <tt>long double your_constraint(apop_data *data, apop_model *params)</tt>.
 \li Assume that \c parameters are set, via \ref apop_estimate, \ref apop_model_set_parameters, or the internals of an MLE search. The author of the constraint method should check that \c parameters are not \c NULL and return NaN if necessary parameters are not set.
 \li See \ref apop_linear_constraint for a useful basis and/or example. Many constraints can be written as wrappers for this function.
 \li If the constraint is met, then return zero.

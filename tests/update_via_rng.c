@@ -80,6 +80,10 @@ void betabinom(){
     apop_model *upd_r = apop_update(draws, beta, bi);
     betaed = apop_estimate(apop_data_pmf_expand(upd_r->data, 2000), apop_beta);
     deciles(betaed, betaup, 1);
+
+    apop_data *d2 = apop_model_draws(upd, draw_ct*2);
+    apop_model *d2m = apop_estimate(d2, apop_beta);
+    deciles(d2m, betaup, 1);
 }
 
 void gammaexpo(){

@@ -81,12 +81,77 @@ static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
     s->step_fn = step_to_vector;
 }
 
+/* The draw method for models estimated via apop_model_metropolis. */
+static void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
+    /* params is the PMF. It has an apop_mcmc_settings group, which has the base_model
+       that the MCMC was originally run for.
+       The draw has the same size as the params of base_model.
+       The proposal distribution has parameters of unknown size---it is up to the step_fn
+       to get those right. The proposal distribution's dsize equals base_model param
+       size and thus the size of draw.
+     */
+    apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
+    Apop_stopif(!s, return /*1*/, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
+    apop_data *earlier_draws = s->pmf->data;
+    apop_model *m = s->base_model;
+    Get_vmsizes(m->parameters) //tsize
+    double ratio, ll;
+    apop_data *current_param = apop_data_copy(m->parameters);
+    int constraint_fails = 0, reject_count = 0;
+
+    while (1){
+        apop_draw(out, rng, s->proposal);
+        apop_data_fill_base(m->parameters, out);
+        if (m->constraint(s->base_model->data, m)){
+            constraint_fails++;
+            continue;
+        }
+        ll = apop_log_likelihood(s->base_model->data, m);
+
+        Apop_notify(3, "ll=%g for parameters:\t", ll);
+        if (apop_opts.verbose >=3) apop_data_print(m->parameters);
+
+        Apop_stopif(gsl_isnan(ll) || !isfinite(ll), continue, 
+                2, "Trouble evaluating the m function at vector beginning with %g. "
+                "Throwing it out and trying again.\n"
+                , m->parameters->vector->data[0]);
+        ratio = ll - s->last_ll;
+        if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio)
+            break;  //success
+        Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
+        reject_count++;
+    }
+
+    apop_data_memcpy(current_param, m->parameters);
+    if (s->step_fn) s->step_fn(m->parameters, s->proposal);
+    s->last_ll = ll;
+    earlier_draws->matrix = apop_matrix_realloc(earlier_draws->matrix, earlier_draws->matrix->size1+1, earlier_draws->matrix->size2);
+    Apop_row_v(earlier_draws, earlier_draws->matrix->size1-1, v);
+    apop_data_pack(m->parameters, v);
+    memcpy(out, v->data, sizeof(double)*tsize);
+    if(earlier_draws->vector) {
+        apop_vector_realloc(earlier_draws->vector, earlier_draws->vector->size +1);
+        gsl_vector_set(earlier_draws->vector, earlier_draws->vector->size-1, 1);
+    }
+
+    if (reject_count) Apop_notify(2, "M-H rejections before an accept: %i.\n", reject_count);
+    Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
+    apop_data_free(current_param);
+    return /*0*/;
+}
+
 /** Use <a href="https://en.wikipedia.org/wiki/Metropolis-Hastings">Metropolis-Hastings
 Markov chain Monte Carlo</a> to make draws from the given model.
 
 Attach a \ref apop_mcmc_settings group to your model to specify the proposal
 distribution, burnin, and other details of the search. See the \ref apop_mcmc_settings
 documentation for details.
+
+\param d The \ref apop_data set used for evaluating the likelihood of a proposed parameter set.
+
+\param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
+
+\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: see \autorng)
 
 \li If the likelihood model no parameters, I will allocate them. That means you can use
 one of the stock models that ship with Apophenia. If I need to run the model's prep
@@ -98,13 +163,16 @@ undefined when this exits. This may be settled at a later date.
 
 \li If you set <tt>apop_opts.verbose=2</tt> or greater, I will report the accept rate of the M-H sampler. It is a common rule of thumb to select a proposal so that this is between 20% and 50%. Set <tt>apop_opts.verbose=3</tt> to see the proposal points, their likelihoods, and the acceptance odds.
 
-\return An \ref apop_pmf model representing the results of the search. 
+\return A modified \ref apop_pmf model representing the results of the search. It has
+a specialized \c draw method that returns another step from the Markov chain with each draw. Each draw is also recorded internally.
+
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, apop_model *m, gsl_rng *rng){
     static gsl_rng *spare_rng = NULL;
     apop_data *apop_varad_var(d, NULL);
     apop_model *apop_varad_var(m, NULL);
+    Apop_stopif(!m, return NULL, 0, "NULL model input.");
     gsl_rng *apop_varad_var(rng, NULL);
     if (!rng){
         if (!spare_rng) spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
@@ -116,7 +184,8 @@ APOP_VAR_END_HEAD
     bool m_is_a_copy = 0;
     m = maybe_prep(d, m, &m_is_a_copy);
     Get_vmsizes(m->parameters) //vsize, msize1, msize2, tsize
-    double ratio, ll, cp_ll = GSL_NEGINF;
+    double ratio, ll;
+    s->last_ll = GSL_NEGINF;
     double *draw = malloc(sizeof(double) * tsize);
     apop_data *current_param = apop_data_alloc(vsize, msize1, msize2);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
@@ -147,18 +216,17 @@ APOP_VAR_END_HEAD
         if (apop_opts.verbose >=3) apop_data_print(m->parameters);
 
         Apop_stopif(gsl_isnan(ll) || !isfinite(ll), goto newdraw, 
-                1, "Trouble evaluating the "
-                "m function at vector beginning with %g. "
+                1, "Trouble evaluating the m function at vector beginning with %g. "
                 "Throwing it out and trying again.\n"
                 , m->parameters->vector->data[0]);
-        ratio = ll - cp_ll;
+        ratio = ll - s->last_ll;
         if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){//success
             apop_data_memcpy(current_param, m->parameters);
             if (s->step_fn) s->step_fn(current_param, s->proposal);
-            cp_ll = ll;
+            s->last_ll = ll;
             accept_count++;
         } else {
-            Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, cp_ll, exp(ratio));
+            Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
         }
         if (i >= s->periods * s->burnin){
             Apop_row_v(out, i-(s->periods *s->burnin), v);
@@ -167,8 +235,14 @@ APOP_VAR_END_HEAD
     }
     out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
     gsl_vector_set_all(out->weights, 1);
-    apop_model *outp   = apop_estimate(out, apop_pmf);
+    apop_model *outp = apop_estimate(out, apop_pmf);
+    s->pmf = outp;
+    s->base_model = m;
+    outp->draw = apop_model_metropolis_draw;
+    apop_settings_copy_group(outp, m, "apop_mcmc");
+
     free(draw);
+    apop_data_free(current_param);
     if (m_is_a_copy) apop_model_free(m);
     Apop_notify(2, "M-H sampling accept percent = %3.3f%%", 100*(0.0+accept_count)/s->periods);
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
@@ -343,11 +417,15 @@ APOP_VAR_END_HEAD
                         "likelihood's parameter count?" : "");
     if (prior->p || prior->log_likelihood){
         apop_model *p = apop_model_copy(product);
-        p->more = (apop_model*[]){prior, likelihood};
+        //pending revision, a memory leak:
+        p->more = malloc(sizeof(apop_model*)*2);
+        ((apop_model**)p->more)[0] = apop_model_copy(prior);
+        ((apop_model**)p->more)[1] = apop_model_copy(likelihood);
+        p->more_size = sizeof(apop_model*) * 2;
         p->parameters = apop_data_alloc(prior->dsize);
+        p->data = data;
         if (s) apop_settings_copy_group(p, prior, "apop_mcmc");
         apop_model *out = apop_model_metropolis(data, p, rng); 
-        apop_model_free(p);
         if (ll_is_a_copy) apop_model_free(likelihood);
         return out;
     }

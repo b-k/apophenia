@@ -353,6 +353,9 @@ typedef struct{
         dimensions, they are all copied to the parameter set, which must have the same
         size. */
     apop_data *starting_pt; /**< Deprecated and ignored. Starting point is drawn from your proposal distribution. */
+    double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
+    apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
+    apop_model *base_model; /**< The model you provided with a \c log_likelihood or \c p element (which need not sum to one). You do not have to set this: if it is \c NULL on input to \ref apop_model_metropolis, I will fill it in.*/
 } apop_mcmc_settings;
 
 //Loess, including the old FORTRAN-to-C.
