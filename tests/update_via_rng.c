@@ -140,9 +140,59 @@ void gammafish(){
     deciles(gammafied, gammafied2, 5);
 }
 
+/*
+void check_distribution(apop_data *in){
+    assert(in->matrix && in->matrix->size1);
+    for (int i=0; i< in->matrix->size1; i++){
+        Apop_row_v(in, i, r);
+        assert(apop_sum(r) == 30);
+    }
+    #define Diff(L, R, eps) Apop_stopif(fabs((L)-(R))>=(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+    Apop_col_v(in, 0, z);
+    Diff(apop_sum(z)/(30*1000), .3, .03);
+    Apop_col_v(in, 1, o);
+    Diff(apop_sum(o)/(30*1000), .2, .03);
+    Apop_col_v(in, 2, t);
+    Diff(apop_sum(t)/(30*1000), .1, .03);
+    Apop_col_v(in, 3, h);
+    Diff(apop_sum(h)/(30*1000), .4, .03);
+}
+
+void make_draws(){
+    apop_model *multinom = apop_model_copy(apop_multinomial);
+    multinom->parameters = apop_data_falloc((4), 30, .2, .1, .4);
+    multinom->dsize = 4;
+
+    apop_data *d1 = apop_model_draws(multinom, 1000);
+    check_distribution(d1);
+    multinom->draw = NULL; //so draw via MCMC
+    apop_data *d2 = apop_model_draws(multinom);
+    check_distribution(d2);
+}*/
+
+void make_draws(){
+    apop_model *multinom = apop_model_copy(apop_multivariate_normal);
+    multinom->parameters = apop_data_falloc((2, 2, 2), 
+                                        1,  1, .1,
+                                        8, .1,  1);
+    multinom->dsize = 2;
+
+    apop_model *d1 = apop_estimate(apop_model_draws(multinom), apop_multivariate_normal);
+    for (int i=0; i< 2; i++)
+        for (int j=-1; j< 2; j++)
+            assert(fabs(apop_data_get(multinom->parameters, i, j)
+                    - apop_data_get(d1->parameters, i, j)) < .25);
+    multinom->draw = NULL; //so draw via MCMC
+    apop_model *d2 = apop_estimate(apop_model_draws(multinom, 10000), apop_multivariate_normal);
+    for (int i=0; i< 2; i++)
+        for (int j=-1; j< 2; j++)
+            assert(fabs(apop_data_get(multinom->parameters, i, j)
+                    - apop_data_get(d2->parameters, i, j)) < .25);
+}
+
 int main(){
     //gammaexpo(); //OK, I give up. Too inaccurate.
     betabinom();
     gammafish();
-
+    make_draws();
 }

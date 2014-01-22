@@ -96,7 +96,17 @@ static long double i_p(apop_data *d, apop_model *ml_model){
     return apop_p(real_data, actual_base);
 }
 
-static apop_model *apop_ml_impute_model = &(apop_model){"Internal ML imputation model", .estimate=i_est, .p = i_p, .log_likelihood=i_ll};
+//doesn't actually move the parameters
+static long double i_constraint(apop_data *d, apop_model *ml_model){
+    Switch_back
+    apop_data *original_params = apop_data_copy(actual_base->parameters);
+    long double out = actual_base->constraint(real_data, actual_base);
+    if (out) apop_data_memcpy(actual_base->parameters, original_params);
+    apop_data_free(original_params);
+    return out;
+}
+
+apop_model *apop_swap_model = &(apop_model){"Model with data and params swapped", .estimate=i_est, .p = i_p, .log_likelihood=i_ll, .constraint = i_constraint};
 
 /** Impute the most likely data points to replace NaNs in the data, and insert them into 
 the given data. That is, the data set is modified in place.
@@ -121,7 +131,7 @@ apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
         mvn = apop_estimate(list_d, apop_multivariate_normal);
         apop_data_free(list_d);
     }
-    apop_model *impute_me = apop_model_copy(apop_ml_impute_model);
+    apop_model *impute_me = apop_model_copy(apop_swap_model);
     impute_me->parameters = d;
     impute_me->more = mvn;
     apop_model *fixed = apop_model_fix_params(impute_me);

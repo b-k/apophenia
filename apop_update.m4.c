@@ -82,14 +82,15 @@ static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
 }
 
 /* The draw method for models estimated via apop_model_metropolis. */
-static void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     /* params is the PMF. It has an apop_mcmc_settings group, which has the base_model
        that the MCMC was originally run for.
        The draw has the same size as the params of base_model.
        The proposal distribution has parameters of unknown size---it is up to the step_fn
        to get those right. The proposal distribution's dsize equals base_model param
        size and thus the size of draw.
+       After pulling the attached settings group, the parent model is ignored. One expects that it is related to base_model.
      */
+void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
     Apop_stopif(!s, return /*1*/, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
     apop_data *earlier_draws = s->pmf->data;

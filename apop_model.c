@@ -402,22 +402,40 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     }
 }
 
-/** Draw from a model. If the model has its own RNG, then you're good to
- go; if not, use \ref apop_arms_draw to generate random draws.
+extern apop_model *apop_swap_model; //apop_missing_data.c
+void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params);//apop_update.c
 
-That function has a lot of caveats: most notably, the input data will
-be univariate, and your likelihood function must be nonnegative and sum
-to one. If those aren't appropriate, then don't use this default. [A
-more forgiving default is on the to-do list.]
+/** Draw from a model. 
 
-\li See also \ref apop_model_draws to fill a matrix with draws.
+\li If the model has its own RNG, then use that.
+\li If the model is univariate, use \ref apop_arms_draw to generate random draws.
+\li If the model is multivariate, use \ref apop_model_metropolis to generate random draws.
+
+\li This makes a single draw. See \ref apop_model_draws to fill a matrix with draws.
 \ingroup models
 */
 void apop_draw(double *out, gsl_rng *r, apop_model *m){
     if (m->draw)
         m->draw(out,r, m); 
-    else
+    else if (m->dsize == 1)
         apop_arms_draw(out, r, m);
+    else {
+        //generate a model with data/params reversed
+        //estimate mcmc. Swapped model will be stored as settings->base_model.
+        if (!Apop_settings_get_group(m, apop_mcmc)){
+            apop_model *swapped = apop_model_copy(apop_swap_model);
+            swapped->more = m;
+            swapped->msize1 = 1;
+            swapped->msize2 = m->dsize;
+            swapped->data = m->parameters;
+            Apop_settings_add_group(swapped, apop_mcmc, .burnin=0.999, .periods=1000);
+            apop_model *est = apop_model_metropolis(m->parameters, swapped, r); //leak.
+            m->draw = apop_model_metropolis_draw;
+            apop_settings_copy_group(m, est, "apop_mcmc");
+        }
+
+
+    }
 }
 
 /** The default prep is to simply call \ref apop_model_clear. If the
