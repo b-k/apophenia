@@ -28,7 +28,7 @@ libapophenia_la_SOURCES = \
 			model/apop_uniform.c        model/apop_wishart.c        \
             model/apop_yule.c 	 		model/apop_zipf.c 
 
-pkginclude_HEADERS = db.h stats.h types.h asst.h settings.h variadic.h vtables.h
+pkginclude_HEADERS = types.h asst.h variadic.h vtables.h
 include_HEADERS = apop.h
 
 pkgconfig_DATA= apophenia.pc

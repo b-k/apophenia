@@ -298,8 +298,6 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     gsl_vector_free(numeric_default);
 }
 
-#include "settings.h"
-
 Apop_settings_init(apop_pm,
     //defaults include base=NULL, index=0, own_rng=0
     Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
