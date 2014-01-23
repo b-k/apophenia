@@ -99,6 +99,7 @@ static long double i_p(apop_data *d, apop_model *ml_model){
 //doesn't actually move the parameters
 static long double i_constraint(apop_data *d, apop_model *ml_model){
     Switch_back
+    if (!actual_base->constraint) return 0;
     apop_data *original_params = apop_data_copy(actual_base->parameters);
     long double out = actual_base->constraint(real_data, actual_base);
     if (out) apop_data_memcpy(actual_base->parameters, original_params);
