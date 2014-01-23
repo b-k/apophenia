@@ -19,8 +19,7 @@ cd $workdir
 cp ChangeLog NEWS
 echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
 
-#generate the internal header based on the public apop.h
-sed -e 's/[<>]/"/g' -e 's/apophenia\///' -e '1i#include "variadic.h"' -e '1i#include "internal.h"\n' <apop.h > apop_internal.h
+
 
 autoreconf -f -i
 autoreconf -i

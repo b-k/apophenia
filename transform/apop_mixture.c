@@ -92,7 +92,7 @@ The first example uses a text file \c faith.data, in the \c tests directory of t
 */
 
 #include "apop_internal.h"
-#include "types.h"
+
 Apop_settings_copy(apop_mixture,
     (*out->cmf_refct)++;
 )

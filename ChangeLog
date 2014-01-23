@@ -15,7 +15,10 @@
 **MLE methods are now strings instead of all-caps enums.
 **All blank elements of a data->text grid point to the same NUL string.
 --Add apop_model_metropolis; revise apop_update accordingly.
+--apop_draw uses metropolis to draw from any model with a log likelihood/p and where data size>1.
 **Replace all instances of output_file with output_name (GNU sed -i 's/output_file/output_name/g' *c)
+--Consolidated headers
+**apop.h no longer #includes time.h or unistd.h
 
 	December 2013
 --append and replace options for apop_text_to_db

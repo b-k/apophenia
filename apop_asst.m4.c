@@ -338,6 +338,10 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 \li Prints a warning if you send in a non-<tt>NULL apop_data</tt> set, but its \c matrix element is \c NULL, when <tt>apop_opts.verbose>=1</tt>.
 
 \li See also \ref apop_draw, which makes a single draw.
+
+Here is a one-liner program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):
+
+\include draw_some_normals.c
  */
 
 APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws){

@@ -27,6 +27,7 @@ room for better numeric precision; we all know this without reminders from the
 post-install tests.  */
 
 #include <apop.h>
+#include <unistd.h>
 
 #ifdef FULL_TOLERANCE
 double tol6 = 1e-6;

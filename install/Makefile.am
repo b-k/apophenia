@@ -28,7 +28,6 @@ libapophenia_la_SOURCES = \
 			model/apop_uniform.c        model/apop_wishart.c        \
             model/apop_yule.c 	 		model/apop_zipf.c 
 
-pkginclude_HEADERS = types.h asst.h variadic.h vtables.h
 include_HEADERS = apop.h
 
 pkgconfig_DATA= apophenia.pc
@@ -53,7 +52,7 @@ EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
 		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
 		docs/make_model_doc.awk docs/documentation.h rpm.spec \
 		eg apop_db_mysql.c apop_db_sqlite.c \
-		apop_internal.h internal.h COPYING2 apophenia.pc
+		apop_internal.h COPYING2 apophenia.pc
 
 DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
 

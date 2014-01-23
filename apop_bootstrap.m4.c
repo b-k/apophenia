@@ -10,6 +10,11 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2
 
 \param  seed    The seed. No need to get funny with it: 0, 1, and 2 will produce wholly different streams.
 \return The RNG ready for your use.
+
+\li If you are confident that your code is debugged and would like a new stream of values every time your program runs (provided your runs are more than a second apart), seed with the time:
+
+\include draw_some_normals.c
+
 \ingroup convenience_fns
 */
 gsl_rng *apop_rng_alloc(int seed){

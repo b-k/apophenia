@@ -1,4 +1,5 @@
 #include <apop.h>
+#include <unistd.h>
 
 char *testfile = "logit_test_data";
 

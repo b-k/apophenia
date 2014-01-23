@@ -3,6 +3,7 @@ Notice that I use various levels of tolerance, so this gives you an idea
 of the relative accuracies of various operations. */
 
 #include <apop.h>
+#include <unistd.h>
 
 #define TOL 1e-15
 #define TOL2 1e-5

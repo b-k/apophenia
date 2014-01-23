@@ -5,6 +5,7 @@
  --assert that the estimated parameters are within epsilon of the true parameters.
 */
 #include <apop.h>
+#include <unistd.h>
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 #define Print_dot if(verbose){printf(".");fflush(NULL);}

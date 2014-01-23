@@ -1,4 +1,5 @@
 #include <apop.h>
+#include <unistd.h>
 #ifdef Testing
 #include "sort_tests.c" //For Apophenia's test suite, some tedious checks that the sorts worked
 #endif

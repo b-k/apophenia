@@ -19,6 +19,7 @@ export APOP_DB_ENGINE=mysql
 */
 
 #include <apop.h>
+#include <unistd.h>
 int verbose = 1;
 
 #define Diff(L, R, eps) {double left=(L), right=(R); Apop_stopif(isnan(left-right) || fabs((left)-(right))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(left), (double)(right), eps);}
