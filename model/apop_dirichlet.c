@@ -43,8 +43,9 @@ static long double dirichlet_constraint(apop_data *data, apop_model *v){
 }
 
 /*\adoc    RNG  A call to \c gsl_ran_dirichlet.*/
-static void dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
+static int dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
+    return 0;
 }
 
 static void dirichlet_prep(apop_data *data, apop_model *params){

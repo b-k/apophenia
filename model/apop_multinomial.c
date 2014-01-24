@@ -124,8 +124,8 @@ static apop_model *multinomial_paramdist(apop_data *d, apop_model *m){
 }
 */
 
-static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
-    Nullcheck_mp(est, );
+static int multinomial_rng(double *out, gsl_rng *r, apop_model* est){
+    Nullcheck_mp(est, 1);
     double * p = est->parameters->vector->data;
     //the trick where we turn the params into a p-vector
     int N = p[0];
@@ -150,6 +150,7 @@ static void multinomial_rng(double *out, gsl_rng *r, apop_model* est){
     }
     done:
     p[0] = N;
+    return 0;
 }
 
 static void multinomial_show(apop_model *est, FILE *out){

@@ -120,8 +120,9 @@ apop_data * normal_predict(apop_data *dummy, apop_model *m){
 /*\adoc RNG An apophenia wrapper for the GSL's Normal RNG.
 
 This one asks explicitly for a mean, and the GSL assumes zero and lets you add the mean yourself.  */
-static void normal_rng(double *out, gsl_rng *r, apop_model *p){
+static int normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
+    return 0;
 }
 
 static void normal_prep(apop_data *data, apop_model *params){
@@ -228,8 +229,9 @@ static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
 }
 
 /* \adoc RNG An Apophenia wrapper for the GSL's Normal RNG, exp'ed.  */
-static void lognormal_rng(double *out, gsl_rng *r, apop_model *p){
+static int lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = exp(gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0]);
+    return 0;
 }
 
 static void lognormal_prep(apop_data *data, apop_model *params){

@@ -44,11 +44,11 @@ likely to get the 1st most common item, so this produces a lot of ones,
 a great deal of twos, and so on.
 
 Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
-static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
-    Nullcheck_mp(param, );
+static int zipf_rng(double *out, gsl_rng* r, apop_model *param){
+    Nullcheck_mp(param, 1);
     double a = apop_data_get(param->parameters, 0, -1);
-    Apop_stopif(isnan(a) || a < 1, return, 0, "Zipf needs a parameter >=1; "
-                                              "got %g. Stopping.", a); 
+    Apop_stopif(isnan(a) || a < 1, *out=GSL_NAN; return 1, 
+            0, "Zipf needs a parameter >=1; got %g. Setting *out to NAN.", a); 
     int x;
     long double u, v, t, 
             b    = powl(2, a-1), 
@@ -60,6 +60,7 @@ static void zipf_rng(double *out, gsl_rng* r, apop_model *param){
         t = powl((1.0 + 1.0/x), (a-1));
     } while (v * x * (t-1.0)/(b-1) > t/b);
     *out = x;
+    return 0;
 }
 
 apop_model *apop_zipf = &(apop_model){"Zipf distribution", 1,0,0, .dsize=1,

@@ -67,8 +67,9 @@ static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
 /* \adoc RNG Just a wrapper for \c gsl_ran_gamma.
 
 See the notes for \ref apop_exponential on a popular alternate form.  */
-static void gamma_rng( double *out, gsl_rng* r, apop_model *p){
+static int gamma_rng( double *out, gsl_rng* r, apop_model *p){
     *out    = gsl_ran_gamma(r, gsl_vector_get(p->parameters->vector, 0), gsl_vector_get(p->parameters->vector, 1));
+    return 0;
 }
 
 static long double gamma_cdf(apop_data *d, apop_model *params){

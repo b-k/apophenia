@@ -64,13 +64,13 @@ static void multivariate_normal_estimate(apop_data * data, apop_model *p){
 /* \adoc    RNG  The RNG fills an input array whose length is based on the input parameters.
 
  The nice, easy method from Devroye, p 565 */
-static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
+static int mvnrng(double *out, gsl_rng *r, apop_model *eps){
     apop_data *params = eps->parameters;
     gsl_vector *v = gsl_vector_alloc(params->vector->size);
     gsl_vector *dotted = gsl_vector_calloc(params->vector->size);
     for (size_t i=0; i< params->vector->size; i++)
         gsl_vector_set(v, i, gsl_ran_gaussian(r, 1));
-    gsl_matrix *copy  = apop_matrix_copy(params ->matrix);
+    gsl_matrix *copy  = apop_matrix_copy(params->matrix);
         gsl_linalg_cholesky_decomp(copy); //returns upper and lower triangle; we want just one.
     for (size_t i=0; i< copy->size1; i++)
         for (size_t j=i+1; j< copy->size2; j++)
@@ -81,6 +81,7 @@ static void mvnrng(double *out, gsl_rng *r, apop_model *eps){
     gsl_vector_free(v);
     gsl_vector_free(dotted);
     gsl_matrix_free(copy);
+    return 0;
 }
 
 static void mvn_prep(apop_data *d, apop_model *m){

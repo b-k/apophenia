@@ -48,8 +48,9 @@ static long double bernoulli_constraint(apop_data *data, apop_model *inmodel){
 }
 
 /* \adoc    RNG Returns a single zero or one. */
-static void bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
+static int bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
+    return 0;
 }
 
 static long double bernoulli_cdf(apop_data *d, apop_model *params){

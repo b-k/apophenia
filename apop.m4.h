@@ -116,7 +116,7 @@ struct apop_model{
     long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
                             the integral up to the single data point you provide.  Call via \ref apop_cdf */
     long double (*constraint)(apop_data *data, apop_model *params);
-    void (*draw)(double *out, gsl_rng* r, apop_model *params);
+    int (*draw)(double *out, gsl_rng* r, apop_model *params);
                 /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
     apop_settings_type *settings;
@@ -333,7 +333,7 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m);
 double apop_log_likelihood(apop_data *d, apop_model *m);
 double apop_p(apop_data *d, apop_model *m);
 double apop_cdf(apop_data *d, apop_model *m);
-void apop_draw(double *out, gsl_rng *r, apop_model *m);
+int apop_draw(double *out, gsl_rng *r, apop_model *m);
 void apop_prep(apop_data *d, apop_model *m);
 apop_model *apop_parameter_model(apop_data *d, apop_model *m);
 apop_data * apop_predict(apop_data *d, apop_model *m);
@@ -461,7 +461,7 @@ gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
 
-void apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
+int apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
 
 
     // maximum likelihod estimation related functions

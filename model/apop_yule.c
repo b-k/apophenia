@@ -62,11 +62,12 @@ static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model 
 }
 
 /* \adoc RNG Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
-static void yule_rng( double *out, gsl_rng * r, apop_model *a){
-	double e1	= gsl_ran_exponential(r, 1);
-	double e2	= gsl_ran_exponential(r, 1);
-	int x	= GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a->parameters->vector->data -1)))), 0);
+static int yule_rng( double *out, gsl_rng * r, apop_model *a){
+	double e1 = gsl_ran_exponential(r, 1);
+	double e2 = gsl_ran_exponential(r, 1);
+	int x = GSL_MAX((int) (- e1  / log(1 - exp(-e2 / (*a->parameters->vector->data -1)))), 0);
 	*out =  x + 1;	//we rounded down to floor, but want ceil.
+    return 0;
 }
 
 static void yule_prep(apop_data *data, apop_model *params){

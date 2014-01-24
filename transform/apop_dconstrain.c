@@ -67,13 +67,14 @@ static void dc_prep(apop_data *d, apop_model *m){
 }
 
 /* \adoc RNG Draw from the base model; if the draw is outside the constraint, throw it out and try again. */
-static void dc_rng(double *out, gsl_rng *r, apop_model *m){
-    Get_set(m, )
+static int dc_rng(double *out, gsl_rng *r, apop_model *m){
+    Get_set(m, 1)
     gsl_matrix_view mv;
     do {
         apop_draw(out, r, cs->base_model);
         mv = gsl_matrix_view_array(out, 1, cs->base_model->dsize);
     } while (!cs->constraint(&(apop_data){.matrix=&(mv.matrix)}, cs->base_model));
+    return 0;
 }
 
 static double constr(apop_data *d, void *csin){

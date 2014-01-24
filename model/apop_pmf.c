@@ -131,8 +131,8 @@ do it before the first draw or CDF calculation.
 \exception m->error='f' There is zero or NaN density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
 \exception m->error='a' Allocation error. I set the model's \c error element to \c 'a' and set <tt>out=NAN</tt>. Maybe try \ref apop_data_pmf_compress first?
 */
-static void draw (double *out, gsl_rng *r, apop_model *m){
-    Nullcheck_m(m, ) Nullcheck_d(m->data, )
+static int draw (double *out, gsl_rng *r, apop_model *m){
+    Nullcheck_m(m, 1) Nullcheck_d(m->data, 1)
     apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
     if (!settings) settings = Apop_model_add_group(m, apop_pmf);
     Get_vmsizes(m->data) //maxsize
@@ -142,7 +142,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
     else {
         size_t size = m->data->weights->size;
         if (!settings->cmf) setup_cmf(m);
-        Apop_stopif(m->error=='f', *out=GSL_NAN; return, 0, "Zero or NaN density in the PMF.");
+        Apop_stopif(m->error=='f', *out=GSL_NAN; return 1, 0, "Zero or NaN density in the PMF.");
         double draw = gsl_rng_uniform(r);
         //do a binary search for where draw is in the CDF.
         double *cdf = settings->cmf->data; //alias.
@@ -172,7 +172,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
     //Done searching. Current should now be the right row index.
     if (settings->draw_index=='y'){
         *out = current;
-        return;
+        return 0;
     }
     Apop_row(m->data, current, outrow);
     int i = 0;
@@ -181,6 +181,7 @@ static void draw (double *out, gsl_rng *r, apop_model *m){
     if (outrow->matrix)
         for( ; i < outrow->matrix->size2; i ++)
             out[i] = gsl_matrix_get(outrow->matrix, 0, i);
+    return 0;
 }
 
 

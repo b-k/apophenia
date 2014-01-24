@@ -110,7 +110,7 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
         Apop_row(draws, i, onerow);
-        apop_draw(onerow->matrix->data, r, m);
+        Apop_stopif(apop_draw(onerow->matrix->data, r, m), abort(), 0, "bad draw.");
         Apop_row(draws, i, one_data_pt);
         apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
     }

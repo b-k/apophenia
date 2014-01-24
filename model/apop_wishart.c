@@ -49,7 +49,7 @@ static long double wishart_ll(apop_data *in, apop_model *m){
     return ll + k*in->matrix->size1;
 }
 
-static void apop_wishart_draw(double *out, gsl_rng *r, apop_model *m){
+static int apop_wishart_draw(double *out, gsl_rng *r, apop_model *m){
     /*
 Translated from the Fortran by BK. Fortran comments:
 
@@ -97,6 +97,7 @@ C     whose elements have a Wishart(N, SIGMA) distribution.
     memmove(out, crrc->matrix->data, sizeof(double)*np*np);
     apop_data_free(rmatrix); apop_data_free(cr);
     apop_data_free(crrc);    apop_data_free(crr);
+    return 0;
 }
 
 static long double wishart_constraint(apop_data *d, apop_model *m){

@@ -335,6 +335,8 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 \exception out->error=='s' You gave me a \c draws matrix, but its size is less than the size of a single draw from the data, <tt>model->dsize</tt>.
 
+\exception out->error=='d' Trouble drawing from the distribution for at least one row. That row is set to all \c NAN.
+
 \li Prints a warning if you send in a non-<tt>NULL apop_data</tt> set, but its \c matrix element is \c NULL, when <tt>apop_opts.verbose>=1</tt>.
 
 \li See also \ref apop_draw, which makes a single draw.
@@ -351,8 +353,8 @@ APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng 
     apop_data * apop_varad_var(draws, NULL);
     int apop_varad_var(count, 1000);
     if (draws) {
-        Apop_stopif(!draws->matrix, return draws, 1, "Input data set's matrix is NULL.");
-        Apop_stopif((int)draws->matrix->size2 < model->dsize, draws->error='s'; return draws,
+        Apop_stopif(!draws->matrix, draws->error='m'; return draws, 1, "Input data set's matrix is NULL.");
+        Apop_stopif((int)draws->matrix->size2 < model->dsize, draws->error='s'; draws->error='m'; return draws,
                 1, "Input data set's matrix column count is less than model->dsize.");
         count = draws->matrix->size1;
     } else
@@ -366,7 +368,10 @@ APOP_VAR_ENDHEAD
     apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
     for (int i=0; i< count; i++){
         Apop_row(out, i, onerow);
-        apop_draw(onerow->matrix->data, rng, model);
+        Apop_stopif(apop_draw(onerow->matrix->data, rng, model),
+                gsl_matrix_set_all(onerow->matrix, GSL_NAN); out->error='d',
+                0, "Trouble drawing for row %i. "
+                "I set it to all NANs and set out->error='d'.", i);
     }
     return out;
 }

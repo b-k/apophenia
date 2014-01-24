@@ -264,12 +264,14 @@ Now, random draws are taken from the input data, and the dependent variable valu
 other appropriate distribution, such as a \ref apop_multivariate_normal,
 or an \ref apop_pmf filled in with more data, or perhaps something from
 http://en.wikipedia.org/wiki/Errors-in-variables_models , as desired.  */
-static void ols_rng(double *out, gsl_rng *r, apop_model *m){
+static int ols_rng(double *out, gsl_rng *r, apop_model *m){
     //X is drawn from the input distribution, then Y = X\beta + epsilon
-    apop_lm_settings   *olp =  apop_settings_get_group(m, apop_lm);
+    apop_lm_settings *olp =  apop_settings_get_group(m, apop_lm);
+    Apop_stopif(!olp, return 1, 0, "no apop_lm settings group attached. Has this model been estimated yet?");
 
     gsl_vector *tempdata = gsl_vector_alloc(m->parameters->vector->size);
-    apop_draw(tempdata->data, r, olp->input_distribution);
+    Apop_stopif(apop_draw(tempdata->data, r, olp->input_distribution), return 2,
+            0, "Couldn't draw from the distribution of the input data.");
     gsl_blas_ddot(tempdata, m->parameters->vector, out);
 
     double sigma_sq = apop_data_get(m->info, .rowname="SSE")/m->data->matrix->size1;
@@ -277,6 +279,7 @@ static void ols_rng(double *out, gsl_rng *r, apop_model *m){
 
     if (m->dsize > 1) memcpy(out+1, tempdata->data, sizeof(double)*tempdata->size);
     gsl_vector_free(tempdata);
+    return 0;
 }
 
 /* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. If so, see \ref dataprep for details. Else, left unchanged.

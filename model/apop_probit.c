@@ -303,7 +303,7 @@ static size_t get_draw_size(apop_model *in){
     return datasize;
 }
 
-static void logit_rng(double *out, gsl_rng *r, apop_model *m){
+static int logit_rng(double *out, gsl_rng *r, apop_model *m){
     //X is drawn from the input distribution, then Y = X\beta + epsilon
     apop_lm_settings *olp = apop_settings_get_group(m, apop_lm);
     if (!olp) olp=Apop_model_add_group(m, apop_lm
@@ -326,9 +326,11 @@ static void logit_rng(double *out, gsl_rng *r, apop_model *m){
     Staticdef(apop_model*, a_pmf, apop_model_copy(apop_pmf))
     a_pmf->dsize = 0; //so draws produce a row number
     a_pmf->data = xbeta_w_numeraire;
-    apop_draw(out, r, a_pmf);
+    Apop_stopif(apop_draw(out, r, a_pmf), return 1, 
+                        0, "Couldn't draw from a PMF populated using X'β.");
     if (m->dsize>1) memcpy(out+1, x->vector->data, datasize *sizeof(double));
     apop_data_free(x);
+    return 0;
 }
 
 

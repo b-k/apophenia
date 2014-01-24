@@ -63,8 +63,9 @@ static long double unif_cdf(apop_data *d, apop_model *m){
     return (val-min)/(max-min);
 }
 
-static void uniform_rng(double *out, gsl_rng *r, apop_model* eps){
+static int uniform_rng(double *out, gsl_rng *r, apop_model* eps){
     *out =  gsl_rng_uniform(r) *(eps->parameters->vector->data[1]- eps->parameters->vector->data[0])+ eps->parameters->vector->data[0];
+    return 0;
 }
 
 apop_model *apop_uniform = &(apop_model){"Uniform distribution", 2, 0, 0,  .dsize=1,
@@ -81,7 +82,7 @@ fully neutral prior.
 \adoc    Input_format      Ignored.
 \adoc    Parameter_format  \c NULL 
 \adoc    estimated_parameters   \c NULL
-\adoc    RNG The \c draw function makes no sense, and therefore halts if you call it.
+\adoc    RNG The \c draw function makes no sense, and therefore sets the value in <tt>*out</tt> to \c NAN, returns 1, and prints a warning if <tt>apop_opts.verbose >=1</tt>.
 \adoc    CDF Half of the distribution is less than every given point, so the CDF always
              returns 0.5. One could perhaps make an argument that this should really be
              infinity, but a half is more in the spirit of the distribution's
@@ -95,8 +96,8 @@ static long double improper_unif_ll(apop_data *d, apop_model *m){ return 0; }
 static long double improper_unif_cdf(apop_data *d, apop_model *m){ return 0.5; }
 static long double improper_unif_p (apop_data *d, apop_model *m){ return 1; }
 
-static void improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
-    Apop_stopif(1, *out=GSL_NAN, 0, "It doesn't make sense to make random draws from an improper Uniform.");
+static int improper_uniform_rng(double *out, gsl_rng *r, apop_model* eps){
+    Apop_stopif(1, *out=GSL_NAN; return 1, 1, "It doesn't make sense to make random draws from an improper Uniform.");
 }
 
 apop_model *apop_improper_uniform = &(apop_model){"Improper uniform distribution", 2, 0, 0,  .dsize=1,

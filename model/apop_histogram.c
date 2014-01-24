@@ -112,18 +112,21 @@ static long double kernel_cdf(apop_data *d, apop_model *m){
     return kernel_p_cdf_base(d, m, apop_cdf);
 }
 
-/* \adoc    RNG  Randomly selects a data point, then randomly draws from that sub-distribution.*/
-static void kernel_draw(double *d, gsl_rng *r, apop_model *m){
+/* \adoc    RNG  Randomly selects a data point, then randomly draws from that sub-distribution.
+ Returns 0 on success, 1 if unable to pick a sub-distribution (meaning the weights over the distributions are somehow broken), and 2 if unable to draw from the sub-distribution.
+ */
+static int kernel_draw(double *d, gsl_rng *r, apop_model *m){
     //randomly select a point, using the weights.
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
     apop_data *point = apop_data_alloc(1, pmf->dsize);
     Apop_row_v(point, 0, draw_here);
-    apop_draw(draw_here->data, r, pmf);
+    Apop_stopif(apop_draw(draw_here->data, r, pmf), return 1, 0, "Unable to use the PMF over kernels to select a kernel from which to draw.");
     (ks->set_fn)(point, ks->kernel);
     //Now draw from the distribution around that point.
-    apop_draw(d, r, ks->kernel);
+    Apop_stopif(apop_draw(d, r, ks->kernel), return 2, 0, "unable to draw from a single selected kernel.");
     apop_data_free(point);
+    return 0;
 }
 
 apop_model *apop_kernel_density = &(apop_model){"kernel density estimate", .dsize=1,

@@ -142,10 +142,10 @@ static long double fix_params_constraint(apop_data *data, apop_model *fixed_mode
     return out;
 }
 
-static void fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
+static int fix_params_draw(double *out, gsl_rng* r, apop_model *eps){
     apop_model *base_model = Apop_settings_get(eps, apop_fix_params, base_model);
     unpack(base_model->parameters, eps);
-    base_model->draw(out, r, base_model);
+    return base_model->draw(out, r, base_model);
 }
 
 static void fixed_est(apop_data * data, apop_model *params){

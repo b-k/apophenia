@@ -90,9 +90,9 @@ static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
        size and thus the size of draw.
        After pulling the attached settings group, the parent model is ignored. One expects that it is related to base_model.
      */
-void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
+int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
-    Apop_stopif(!s, return /*1*/, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
+    Apop_stopif(!s, return 1, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
     apop_data *earlier_draws = s->pmf->data;
     apop_model *m = s->base_model;
     Get_vmsizes(m->parameters) //tsize
@@ -138,7 +138,7 @@ void apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     if (reject_count) Apop_notify(2, "M-H rejections before an accept: %i.\n", reject_count);
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
     apop_data_free(current_param);
-    return /*0*/;
+    return 0;
 }
 
 /** Use <a href="https://en.wikipedia.org/wiki/Metropolis-Hastings">Metropolis-Hastings

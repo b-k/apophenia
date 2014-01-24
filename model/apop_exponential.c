@@ -66,8 +66,9 @@ static long double expo_cdf(apop_data *d, apop_model *params){
 }
 
 /* \adoc RNG Just a wrapper for \c gsl_ran_exponential.  */
-static void exponential_rng(double *out, gsl_rng* r, apop_model *p){
+static int exponential_rng(double *out, gsl_rng* r, apop_model *p){
 	*out = gsl_ran_exponential(r, p->parameters->vector->data[0]);
+    return 0;
 }
 
 static void exponential_prep(apop_data *data, apop_model *params){

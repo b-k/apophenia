@@ -86,12 +86,13 @@ static long double beta_cdf(apop_data *d, apop_model *params){
     return gsl_cdf_beta_P(val, ab.alpha, ab.beta);
 }
 
-static void beta_rng(double *out, gsl_rng *r, apop_model* eps){
-    Nullcheck_mp(eps, )
+static int beta_rng(double *out, gsl_rng *r, apop_model* eps){
+    Nullcheck_mp(eps, 1)
     Get_ab(eps)
     do {
     *out = gsl_ran_beta(r, ab.alpha, ab.beta);
     } while (*out <= 0 || *out >= 1);
+    return 0;
 }
 
 static void beta_prep(apop_data *data, apop_model *params){

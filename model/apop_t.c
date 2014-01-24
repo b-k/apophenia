@@ -37,12 +37,13 @@ static long double apop_tdist_llike(apop_data *d, apop_model *m){
     return apop_map_sum(d, .fn_dp=one_t, .param=params) - tsize * log(sigma);
 }
 
-void apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
-    Nullcheck_mp(m, );
+int apop_t_dist_draw(double *out, gsl_rng *r, apop_model *m){ 
+    Nullcheck_mp(m, 1);
     double mu = m->parameters->vector->data[0];
     double sigma = m->parameters->vector->data[1];
     double df = m->parameters->vector->data[2];
     *out = gsl_ran_tdist(r, df) * sigma + mu;
+    return 0;
 }
 
 static long double apop_t_dist_cdf(apop_data *in, apop_model *m){

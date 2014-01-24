@@ -255,7 +255,7 @@ But I have logs, and want to stay in log-format for as long as possible, to prev
     return total_ll;
 }
 
-static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
+static int mixture_draw (double *out, gsl_rng *r, apop_model *m){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
     if (!ms->cmf){
         ms->cmf = apop_model_copy(apop_pmf);
@@ -263,8 +263,10 @@ static void mixture_draw (double *out, gsl_rng *r, apop_model *m){
         ms->cmf->data->weights = apop_vector_copy(ms->weights);
         Apop_model_add_group(ms->cmf, apop_pmf, .draw_index='y');
     }
-    double index; apop_draw(&index, r, ms->cmf);
-    apop_draw(out, r, ms->model_list[(int)index]);
+    double index; 
+    Apop_stopif(apop_draw(&index, r, ms->cmf), return 1, 
+            0, "Couldn't select a mixture element using the internal PMF over mixture elements.");
+    return apop_draw(out, r, ms->model_list[(int)index]);
 }
 
 static long double mixture_cdf(apop_data *d, apop_model *model_in){

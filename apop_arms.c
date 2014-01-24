@@ -90,7 +90,7 @@ http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.ht
 
 \li See \ref apop_arms_settings for the list of parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
   */
-void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
+int apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     apop_arms_settings *params = Apop_settings_get_group(m, apop_arms);
     if (!params) params = Apop_model_add_group(m, apop_arms, .model=m);
   POINT pwork;        /* a working point, not yet incorporated in envelope */
@@ -111,13 +111,14 @@ void apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
         Apop_notify(3, " point accepted.");
         *out = pwork.x;
         assert(isfinite(pwork.x));
-        return;
+        return 0;
     } else 
-      Apop_stopif(i!=0, ,-5, "envelope error - violation without metropolis");
+      Apop_stopif(i!=0, return 1,-5, "envelope error - violation without metropolis");
     msamp ++;
     Apop_notify(3, " point rejected.");
   } while (msamp < 1e3);
   Apop_notify(1, "I just rejected 1,000 samples. Something is wrong.");
+  return 0;
 }
 
 int initial (apop_arms_settings* params,  arms_state *env){

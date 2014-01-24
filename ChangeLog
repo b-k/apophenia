@@ -19,6 +19,7 @@
 **Replace all instances of output_file with output_name (GNU sed -i 's/output_file/output_name/g' *c)
 --Consolidated headers
 **apop.h no longer #includes time.h or unistd.h
+**apop_draw returns zero on success; nonzero on failure.
 
 	December 2013
 --append and replace options for apop_text_to_db

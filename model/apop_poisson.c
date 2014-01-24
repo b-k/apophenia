@@ -74,8 +74,9 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
 }
 
 /* \adoc RNG Just a wrapper for \c gsl_ran_poisson.  */
-static void poisson_rng(double *out, gsl_rng* r, apop_model *p){
+static int poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
+    return 0;
 }
 
 static void poisson_prep(apop_data *data, apop_model *params){

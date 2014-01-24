@@ -93,12 +93,13 @@ static long double stack_p(apop_data *d, apop_model *m){
     return out;
 }
 
-void stack_draw(double *d, gsl_rng *r, apop_model *m){
+static int stack_draw(double *d, gsl_rng *r, apop_model *m){
     apop_stack_settings *s = Apop_settings_get_group(m, apop_stack);
-    check_settings(); 
-    apop_draw(d, r, s->model1);
+    check_settings(1); 
+    Apop_stopif(apop_draw(d, r, s->model1), return 1, 0, "draw from first model failed.");
     double *d2 = d+ s->model1->dsize;
-    apop_draw(d2, r, s->model2);
+    Apop_stopif(apop_draw(d2, r, s->model2), return 1, 0, "draw from second model failed.");
+    return 0;
 }
 
 apop_model *apop_stack = &(apop_model){"Stack of models", .p=stack_p, .log_likelihood=stack_ll, 
