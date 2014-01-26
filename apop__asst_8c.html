@@ -26,6 +26,7 @@ urchinTracker();
 </div>
 <div class="header">
   <div class="summary">
+<a href="#define-members">Defines</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -33,6 +34,12 @@ urchinTracker();
 <div class="title">apop_asst.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+<h2><a name="define-members"></a>
+Defines</h2>
+<ul>
+<li><a class="anchor" id="a8750ed6982fcba489a502ef79f023095"></a><!-- doxytag: member="apop_asst.c::omp_threadnum" ref="a8750ed6982fcba489a502ef79f023095" args="" -->
+#define <b>omp_threadnum</b>&#160;&#160;&#160;0
+</ul>
 <h2><a name="typedef-members"></a>
 Typedefs</h2>
 <ul>
@@ -49,7 +56,9 @@ Functions</h2>
 <li>int <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> (const char *string, const char *regex, <a class="el" href="structapop__data.html">apop_data</a> **substrings, const char use_case)
 <li>double <a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, gsl_rng *rng, <a class="el" href="structapop__data.html">apop_data</a> *draws)
+<li><a class="anchor" id="a72d8c995400d75922553d463f4b2b890"></a><!-- doxytag: member="apop_asst.c::apop_rng_get_thread_base" ref="a72d8c995400d75922553d463f4b2b890" args="(int thread)" -->
+gsl_rng * <b>apop_rng_get_thread_base</b> (int thread)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, <a class="el" href="structapop__data.html">apop_data</a> *draws)
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
@@ -148,12 +157,12 @@ char * <b>apop_nul_string</b>
 </pre></div> 
 </div>
 </div>
-<a class="anchor" id="ae1f659437ab89ac1e4df447023edf040"></a><!-- doxytag: member="apop_asst.c::apop_model_draws" ref="ae1f659437ab89ac1e4df447023edf040" args="(apop_model *model, int count, gsl_rng *rng, apop_data *draws)" -->
+<a class="anchor" id="a4e204cdc7429bef3ca2efb83453fe77a"></a><!-- doxytag: member="apop_asst.c::apop_model_draws" ref="a4e204cdc7429bef3ca2efb83453fe77a" args="(apop_model *model, int count, apop_data *draws)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model</em>, </td>
@@ -163,12 +172,6 @@ char * <b>apop_nul_string</b>
           <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -189,7 +192,6 @@ char * <b>apop_nul_string</b>
   <table class="params">
     <tr><td class="paramname">model</td><td>The model from which draws will be made. Must already be prepared and/or estimated.</td></tr>
     <tr><td class="paramname">count</td><td>The number of draws to make. If <code>draw_matrix</code> is not <code>NULL</code>, then this is ignored and <code>count=draw_matrix-&gt;matrix-&gt;size1</code>. default=1000.</td></tr>
-    <tr><td class="paramname">rng</td><td>a <code>gsl_rng</code>, already allocated. default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>.</td></tr>
     <tr><td class="paramname">draws</td><td>If not <code>NULL</code>, a pre-allocated data set whose <code>matrix</code> element will be filled with draws.</td></tr>
   </table>
   </dd>
@@ -209,16 +211,19 @@ char * <b>apop_nul_string</b>
 <ul>
 <li>See also <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, which makes a single draw.</li>
 </ul>
-<p>Here is a one-liner program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):</p>
+<ul>
+<li>Random numbers are generated using RNGs from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>, qv.</li>
+</ul>
+<p>Here is a two-line program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 <span class="preprocessor">#include &lt;time.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.rng_seed = time(NULL);
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(
-            <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(
+            <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(
                 <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 
                 .count=10, 
-                .rng=<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(time(NULL))
             )
     );
 }
@@ -542,4 +547,4 @@ char * <b>apop_nul_string</b>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>

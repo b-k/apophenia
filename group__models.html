@@ -570,7 +570,7 @@ Functions</h2>
 
     <span class="comment">//make draws. Currently, you need to prep the model first.</span>
     <a class="code" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep</a>(NULL, trunc);
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(trunc, 1e5);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(trunc, 1e5);
 
     <span class="comment">//Estimate the parameters given the just-produced data:</span>
     <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, trunc);
@@ -578,7 +578,7 @@ Functions</h2>
     assert(<a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(est-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, norm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector)&lt;1e-1);
 
     <span class="comment">//Generate a data set that is truncated at zero using alternate means</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *normald = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 2e4);
+    <a class="code" href="structapop__data.html">apop_data</a> *normald = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 5e4);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; normald-&gt;matrix-&gt;size1; i++){
         <span class="keywordtype">double</span> *d = <a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(normald, i);
         <span class="keywordflow">if</span> (*d &lt; 0) *d *= -1;
@@ -1129,6 +1129,9 @@ Functions</h2>
 <tr><td valign="top"><em><a class="anchor" id="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a2ba8dd70e2d12cd2736372948c45b27f"></a><!-- doxytag: member="CDF" ref="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a2ba8dd70e2d12cd2736372948c45b27f" args="" -->CDF</em>&nbsp;</td><td>
 <p>Sums the CDF to the given point of all the sub-distributions. </p>
 </td></tr>
+<tr><td valign="top"><em><a class="anchor" id="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a80205ed7dc8da61e7f05564247f57aca"></a><!-- doxytag: member="Settings" ref="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a80205ed7dc8da61e7f05564247f57aca" args="" -->Settings</em>&nbsp;</td><td>
+<p><a class="el" href="structapop__kernel__density__settings.html">apop_kernel_density_settings</a> </p>
+</td></tr>
 <tr><td valign="top"><em><a class="anchor" id="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a1c1cbb78ff14b111c5f4c9be59c76c26"></a><!-- doxytag: member="Examples" ref="ggaded18b6bf8bd63a53f7b72ed5f27fdb5a1c1cbb78ff14b111c5f4c9be59c76c26" args="" -->Examples</em>&nbsp;</td><td>
 <p>This example sets up and uses KDEs based on a Normal and a Uniform distribution.</p>
 <div class="fragment"><pre class="fragment"><span class="comment">/* This program draws ten random data points, and then produces two kernel density</span>
@@ -1172,7 +1175,7 @@ Functions</h2>
 
 <a class="code" href="structapop__data.html">apop_data</a> *draw_some_data(){
     <a class="code" href="structapop__model.html">apop_model</a> *uniform_0_20 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga95be4cc3931072118a7c8ffece73fbe1">apop_uniform</a>, 0, 20);
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(uniform_0_20, 10);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(uniform_0_20, 10);
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(<a class="code" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a>(d), .output_pipe=stderr);
     <span class="keywordflow">return</span> d;
 }
@@ -1609,9 +1612,8 @@ printf(<span class="stringliteral">&quot;LL=%g\n&quot;</span>, <a class="code" h
                         produce_fixed_mvn(0, 1));
     <a class="code" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep</a>(NULL, many_humps);
 
-    gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(21);
     <span class="keywordtype">int</span> len = 100000;
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(many_humps, len, r);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(many_humps, len);
     <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(d, 0, first);
 <span class="preprocessor">    #ifndef Testing</span>
 <span class="preprocessor"></span>    printf(<span class="stringliteral">&quot;mu=%g\n&quot;</span>, <a class="code" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(first));
@@ -2934,7 +2936,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 <li>If the model is multivariate, use <a class="el" href="apop__update_8c.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a> to generate random draws.</li>
 </ul>
 <ul>
-<li>This makes a single draw. See <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> to fill a matrix with draws.</li>
+<li>This makes a single draw. See <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> to fill a matrix with draws.</li>
 </ul>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Zero on success; nozero on failure. <code>out[0]</code> is probably <code>NAN</code> on failure. </dd></dl>
 
@@ -3198,7 +3200,7 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
   <a class="code" href="structapop__model.html">apop_model</a> *dist = <a class="code" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a>(your_data, your_model);
 </pre></div><ul>
 <li><code>index</code> gives the position of the parameter (in <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> order) in which you are interested. Thus, if this is zero or more, then you will get a univariate output distribution describing a single parameter. If <code>index == -1</code>, then I will give you the multivariate distribution across all parameters. The default is zero (i.e. the univariate distribution of the zeroth parameter). </li>
-<li><code>rng</code> If the method requires random draws (as the default bootstrap will), then use this. If you provide <code>NULL</code> and one is needed, see the <a class="el" href="autorng.html">Auto-allocated RNGs</a> section on how one is provided for you. </li>
+<li><code>rng</code> If the method requires random draws (as the default bootstrap will), then use this. If you provide <code>NULL</code> and one is needed, I provide one for you via <code>apop_rng_alloc(apop_opts.rng_seed++)</code>. </li>
 <li><code>draws</code> If there is no closed-form solution and bootstrap is inappropriate, then the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws. </li>
 <li>The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see <a class="el" href="modeldetails.html#vtables">Registering new methods in vtables</a> for details. The typedef new functions must conform to and the hash used for lookups are:</li>
 </ul>
@@ -3331,4 +3333,4 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>

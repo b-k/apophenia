@@ -44,8 +44,6 @@ Functions</h2>
 <li>double <a class="el" href="group__mapply.html#gaa1a135fcdd8ea6f9cbc0d518773d6c3c">apop_vector_map_sum</a> (const gsl_vector *in, double(*fn)(double))
 <li>double <a class="el" href="group__mapply.html#gae04bc576579bfb2e14d5004d4af7bb88">apop_matrix_map_all_sum</a> (const gsl_matrix *in, double(*fn)(double))
 <li>double <a class="el" href="group__mapply.html#ga4f0c51a046140b563c8e12a6032e9a16">apop_matrix_map_sum</a> (const gsl_matrix *in, double(*fn)(gsl_vector *))
-<li><a class="anchor" id="gab5f1167cdbb979e2594d58a9b5c20731"></a><!-- doxytag: member="mapply::apop_map_sum_for_threading" ref="gab5f1167cdbb979e2594d58a9b5c20731" args="(void *in)" -->
-void * <b>apop_map_sum_for_threading</b> (void *in)
 <li>double <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
@@ -207,7 +205,9 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
  'c'==Apply a function <code>gsl_vector</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>double</code> to each column of the matrix<br/>
  Default is 'a', but notice that I'll ignore a <code>NULL</code> vector or matrix, so if your data set has only a vector (for example), that's what I'll use.</td></tr>
     <tr><td class="paramname">all_pages</td><td>If <code>'y'</code>, then I follow the <code>more</code> pointer to subsequent pages, else I handle only the first page of data. [I abuse this for an internal semaphore, by the way, so your input must always be nonnegative and less than 1,000. Of course, 'y' and 'n' fit these rules fine.] Default: <code>'n'</code>.</td></tr>
-    <tr><td class="paramname">inplace</td><td>If 'n' (the default), generate a new <a class="el" href="gentle.html#apop_data">apop_data</a> set for output, which will contain the mapped values (and the names from the original set). If 'y', modify in place. The <code>double</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>double</code> versions, <code>'v'</code>, <code>'m'</code>, and <code>'a'</code>, write to exactly the same location as before. The <code>gsl_vector</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>double</code> versions, <code>'r'</code>, and <code>'c'</code>, will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost. If 'v' (as in void), return <code>NULL</code>. (Default = 'n')</td></tr>
+    <tr><td class="paramname">inplace</td><td>If 'n' (the default), generate a new <a class="el" href="gentle.html#apop_data">apop_data</a> set for output, which will contain the mapped values (and the names from the original set).<br/>
+ If 'y', modify in place. The <code>double</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>double</code> versions, <code>'v'</code>, <code>'m'</code>, and <code>'a'</code>, write to exactly the same location as before. The <code>gsl_vector</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>double</code> versions, <code>'r'</code>, and <code>'c'</code>, will write to the vector. Be careful: if you are writing in place and there is already a vector there, then the original vector is lost.<br/>
+ If 'v' (as in void), return <code>NULL</code>. (Default = 'n')</td></tr>
   </table>
   </dd>
 </dl>
@@ -340,7 +340,10 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 <p>A function that effectively calls <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and returns the sum of the resulting elements. Thus, this function returns a single <code>double</code>. See the <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> page for details of the inputs, which are the same here, except that <code>inplace</code> doesn't make sense---this function will always just add up the input function outputs.</p>
 <p>See also the <a class="el" href="group__mapply.html">map/apply page</a> for details.</p>
 <ul>
-<li>I don't copy the input data to send to your input function. Therefore, if your function modifies its inputs as a side-effect, your data set will be modified as this function runs. </li>
+<li>I don't copy the input data to send to your input function. Therefore, if your function modifies its inputs as a side-effect, your data set will be modified as this function runs.</li>
+</ul>
+<ul>
+<li>The sum of zero elements is zero, so that is what is returned if the input <a class="el" href="gentle.html#apop_data">apop_data</a> set is <code>NULL</code>. If <code>apop_opts.verbose &gt;= 2</code> I print a warning. </li>
 </ul>
 
 </div>
@@ -680,4 +683,4 @@ void * <b>apop_map_sum_for_threading</b> (void *in)
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>

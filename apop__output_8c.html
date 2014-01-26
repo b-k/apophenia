@@ -46,7 +46,7 @@ Defines</h2>
 <h2><a name="func-members"></a>
 Functions</h2>
 <ul>
-<li>void <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> (char const *output_name, FILE **output_pipe, char *output_type, char *output_append)
+<li>int <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> (char const *output_name, FILE **output_pipe, char *output_type, char *output_append)
 <li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
 <li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
 <li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
@@ -78,7 +78,8 @@ void <b>p_fn</b> (FILE *f, double data)
     FILE * apop_varad_var(output_pipe, NULL);  \
     char apop_varad_var(output_type, 0);       \
     char apop_varad_var(output_append, 0);     \
-    apop_prep_output(output_name, &amp;output_pipe, &amp;output_type, &amp;output_append);
+    Apop_stopif(<a class="code" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a>(output_name, &amp;output_pipe, &amp;output_type, &amp;output_append), \
+            <span class="keywordflow">return</span>, 0, <span class="stringliteral">&quot;Trouble preparing to write output.&quot;</span>);
 </pre></div>
 </div>
 </div>
@@ -132,12 +133,12 @@ void <b>p_fn</b> (FILE *f, double data)
     <tr><td class="paramname">v</td><td>The data (No default, must not be <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">m</td><td>The distribution, such as apop_normal. I'll be using the <code>draw</code> method. (Default = best-fitting Normal) </td></tr>
     <tr><td class="paramname">bins</td><td>The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data-&gt;size/10); denominator subject to future adjustment) </td></tr>
-    <tr><td class="paramname">r</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="autorng.html">Auto-allocated RNGs</a>. (Default = <code>NULL</code>)</td></tr>
+    <tr><td class="paramname">r</td><td>A <code>gsl_rng</code>. If NULL, I'll get an RNG via <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>)</td></tr>
   </table>
   </dd>
 </dl>
 <ul>
-<li>See <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -175,19 +176,19 @@ void <b>p_fn</b> (FILE *f, double data)
 A triangle plot with a smattering of data points.</div></div>
  <ul>
 <li>Gnuplot will rescale for you, so you don't need to worry about whether the row sums to one. </li>
-<li>See <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> for more on how printing settings are set. </li>
+<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
 <li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
 
 </div>
 </div>
-<a class="anchor" id="a659e1aba609f405ba688bbeb674f09f9"></a><!-- doxytag: member="apop_output.c::apop_prep_output" ref="a659e1aba609f405ba688bbeb674f09f9" args="(char const *output_name, FILE **output_pipe, char *output_type, char *output_append)" -->
+<a class="anchor" id="a4748bf59f5441cd27e5b93056c7ec1c7"></a><!-- doxytag: member="apop_output.c::apop_prep_output" ref="a4748bf59f5441cd27e5b93056c7ec1c7" args="(char const *output_name, FILE **output_pipe, char *output_type, char *output_append)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void <a class="el" href="apop__output_8c.html#a659e1aba609f405ba688bbeb674f09f9">apop_prep_output</a> </td>
+          <td class="memname">int <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> </td>
           <td>(</td>
           <td class="paramtype">char const *&#160;</td>
           <td class="paramname"><em>output_name</em>, </td>
@@ -236,4 +237,4 @@ A triangle plot with a smattering of data points.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>

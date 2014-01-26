@@ -100,9 +100,10 @@ Defines</h2>
 <li><a class="anchor" id="ae6aa069a742d2480040cfdaa79b2bc54"></a><!-- doxytag: member="apop.h::apop_F_test" ref="ae6aa069a742d2480040cfdaa79b2bc54" args="" -->
 #define <b>apop_F_test</b>&#160;&#160;&#160;<a class="el" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a>
 <li>#define <a class="el" href="group__regression.html#ga33c353f768fb4b0e7a3f98ab7a546ba5">apop_estimate_r_squared</a>(in)
+<li>#define <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>(thread_in)
 <li>#define <b>apop_update_hash</b>(m1, m2)
 <li><a class="anchor" id="a8cd48076436e96fccb3391a913a61ef0"></a><!-- doxytag: member="apop.h::apop_update_vtable_add" ref="a8cd48076436e96fccb3391a913a61ef0" args="(fn,...)" -->
-#define <b>apop_update_vtable_add</b>(fn,...)&#160;&#160;&#160;(apop_update_type_check(fn), apop_vtable_add(&quot;apop_update&quot;, fn, apop_update_hash(__VA_ARGS__)))
+#define <b>apop_update_vtable_add</b>(fn,...)&#160;&#160;&#160;apop_update_type_check(fn), apop_vtable_add(&quot;apop_update&quot;, fn, apop_update_hash(__VA_ARGS__))
 <li><a class="anchor" id="a0a4a2a359c86f81bc940e2c1cacf1c26"></a><!-- doxytag: member="apop.h::apop_update_vtable_get" ref="a0a4a2a359c86f81bc940e2c1cacf1c26" args="(...)" -->
 #define <b>apop_update_vtable_get</b>(...)&#160;&#160;&#160;apop_vtable_get(&quot;apop_update&quot;, apop_update_hash(__VA_ARGS__))
 <li><a class="anchor" id="ae47c666417e84db7685304252be2bfc1"></a><!-- doxytag: member="apop.h::apop_update_vtable_drop" ref="ae47c666417e84db7685304252be2bfc1" args="(...)" -->
@@ -110,7 +111,7 @@ Defines</h2>
 <li><a class="anchor" id="a199f5dc2439b633a936e344f989c73be"></a><!-- doxytag: member="apop.h::apop_score_hash" ref="a199f5dc2439b633a936e344f989c73be" args="(m1)" -->
 #define <b>apop_score_hash</b>(m1)&#160;&#160;&#160;((size_t)((m1)-&gt;log_likelihood ? (m1)-&gt;log_likelihood : (m1)-&gt;p))
 <li><a class="anchor" id="aef9011becba9f153c05befada14122a1"></a><!-- doxytag: member="apop.h::apop_score_vtable_add" ref="aef9011becba9f153c05befada14122a1" args="(fn,...)" -->
-#define <b>apop_score_vtable_add</b>(fn,...)&#160;&#160;&#160;(apop_score_type_check(fn), apop_vtable_add(&quot;apop_score&quot;, fn, apop_score_hash(__VA_ARGS__)))
+#define <b>apop_score_vtable_add</b>(fn,...)&#160;&#160;&#160;apop_score_type_check(fn), apop_vtable_add(&quot;apop_score&quot;, fn, apop_score_hash(__VA_ARGS__))
 <li><a class="anchor" id="a3c6057f0ca24c9fc40dfd3522e8514cb"></a><!-- doxytag: member="apop.h::apop_score_vtable_get" ref="a3c6057f0ca24c9fc40dfd3522e8514cb" args="(...)" -->
 #define <b>apop_score_vtable_get</b>(...)&#160;&#160;&#160;apop_vtable_get(&quot;apop_score&quot;, apop_score_hash(__VA_ARGS__))
 <li><a class="anchor" id="a4a27175f1a44444ec667019cf8ced62a"></a><!-- doxytag: member="apop.h::apop_score_vtable_drop" ref="a4a27175f1a44444ec667019cf8ced62a" args="(...)" -->
@@ -118,7 +119,7 @@ Defines</h2>
 <li><a class="anchor" id="a8a8d1e9d3b98d6955df9e8d033b6e942"></a><!-- doxytag: member="apop.h::apop_parameter_model_hash" ref="a8a8d1e9d3b98d6955df9e8d033b6e942" args="(m1)" -->
 #define <b>apop_parameter_model_hash</b>(m1)&#160;&#160;&#160;((size_t)((m1)-&gt;log_likelihood ? (m1)-&gt;log_likelihood : (m1)-&gt;p)*33 + (m1)-&gt;estimate ? (size_t)(m1)-&gt;estimate: 27)
 <li><a class="anchor" id="a7a6b40cdcb585c940b730dfd9974371f"></a><!-- doxytag: member="apop.h::apop_parameter_model_vtable_add" ref="a7a6b40cdcb585c940b730dfd9974371f" args="(fn,...)" -->
-#define <b>apop_parameter_model_vtable_add</b>(fn,...)&#160;&#160;&#160;(apop_parameter_model_type_check(fn), apop_vtable_add(&quot;apop_parameter_model&quot;, fn, apop_parameter_model_hash(__VA_ARGS__)))
+#define <b>apop_parameter_model_vtable_add</b>(fn,...)&#160;&#160;&#160;apop_parameter_model_type_check(fn), apop_vtable_add(&quot;apop_parameter_model&quot;, fn, apop_parameter_model_hash(__VA_ARGS__))
 <li><a class="anchor" id="a1d58be6503a02ffb2f20724d4590d021"></a><!-- doxytag: member="apop.h::apop_parameter_model_vtable_get" ref="a1d58be6503a02ffb2f20724d4590d021" args="(...)" -->
 #define <b>apop_parameter_model_vtable_get</b>(...)&#160;&#160;&#160;apop_vtable_get(&quot;apop_parameter_model&quot;, apop_parameter_model_hash(__VA_ARGS__))
 <li><a class="anchor" id="a07133ab4527477a34fcf4fd2927d38df"></a><!-- doxytag: member="apop.h::apop_parameter_model_vtable_drop" ref="a07133ab4527477a34fcf4fd2927d38df" args="(...)" -->
@@ -126,14 +127,14 @@ Defines</h2>
 <li><a class="anchor" id="a98bb5c58491167e8f49f139c0b903683"></a><!-- doxytag: member="apop.h::apop_predict_hash" ref="a98bb5c58491167e8f49f139c0b903683" args="(m1)" -->
 #define <b>apop_predict_hash</b>(m1)&#160;&#160;&#160;((size_t)((m1)-&gt;log_likelihood ? (m1)-&gt;log_likelihood : (m1)-&gt;p)*33 + (m1)-&gt;estimate ? (size_t)(m1)-&gt;estimate: 27)
 <li><a class="anchor" id="a4bc5e9268f1b6439d551aa25a37408a3"></a><!-- doxytag: member="apop.h::apop_predict_vtable_add" ref="a4bc5e9268f1b6439d551aa25a37408a3" args="(fn,...)" -->
-#define <b>apop_predict_vtable_add</b>(fn,...)&#160;&#160;&#160;(apop_predict_type_check(fn), apop_vtable_add(&quot;apop_predict&quot;, fn, apop_predict_hash(__VA_ARGS__)))
+#define <b>apop_predict_vtable_add</b>(fn,...)&#160;&#160;&#160;apop_predict_type_check(fn), apop_vtable_add(&quot;apop_predict&quot;, fn, apop_predict_hash(__VA_ARGS__))
 <li><a class="anchor" id="a2f9abf5d4af072eedeceeb754cba5e78"></a><!-- doxytag: member="apop.h::apop_predict_vtable_get" ref="a2f9abf5d4af072eedeceeb754cba5e78" args="(...)" -->
 #define <b>apop_predict_vtable_get</b>(...)&#160;&#160;&#160;apop_vtable_get(&quot;apop_predict&quot;, apop_predict_hash(__VA_ARGS__))
 <li><a class="anchor" id="a0269008b422fd5c530f17355112acdd6"></a><!-- doxytag: member="apop.h::apop_predict_vtable_drop" ref="a0269008b422fd5c530f17355112acdd6" args="(...)" -->
 #define <b>apop_predict_vtable_drop</b>(...)&#160;&#160;&#160;apop_vtable_drop(&quot;apop_predict&quot;, apop_predict_hash(__VA_ARGS__))
 <li>#define <b>apop_model_print_hash</b>(m1)
 <li><a class="anchor" id="a8f9b8d46ac98dcb1eeb21502d5661d41"></a><!-- doxytag: member="apop.h::apop_model_print_vtable_add" ref="a8f9b8d46ac98dcb1eeb21502d5661d41" args="(fn,...)" -->
-#define <b>apop_model_print_vtable_add</b>(fn,...)&#160;&#160;&#160;(apop_model_print_type_check(fn), apop_vtable_add(&quot;apop_model_print&quot;, fn, apop_model_print_hash(__VA_ARGS__)))
+#define <b>apop_model_print_vtable_add</b>(fn,...)&#160;&#160;&#160;apop_model_print_type_check(fn), apop_vtable_add(&quot;apop_model_print&quot;, fn, apop_model_print_hash(__VA_ARGS__))
 <li><a class="anchor" id="a541056fe6b15dda51eccb31e119f1f65"></a><!-- doxytag: member="apop.h::apop_model_print_vtable_get" ref="a541056fe6b15dda51eccb31e119f1f65" args="(...)" -->
 #define <b>apop_model_print_vtable_get</b>(...)&#160;&#160;&#160;apop_vtable_get(&quot;apop_model_print&quot;, apop_model_print_hash(__VA_ARGS__))
 <li><a class="anchor" id="a27f8f510f16ba6a7ba154dfd9dd77d0b"></a><!-- doxytag: member="apop.h::apop_model_print_vtable_drop" ref="a27f8f510f16ba6a7ba154dfd9dd77d0b" args="(...)" -->
@@ -295,7 +296,7 @@ void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html"
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *dataset, <a class="el" href="structapop__data.html">apop_data</a> *newpage, const char *title)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char free_p)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#ae2ab3a4f332adb368fe970619a8c0252">apop_data_rm_rows</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int *drop, int(*do_drop)(<a class="el" href="structapop__data.html">apop_data</a> *, void *), void *drop_parameter)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, gsl_rng *rng, <a class="el" href="structapop__data.html">apop_data</a> *draws)
+<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, <a class="el" href="structapop__data.html">apop_data</a> *draws)
 <li>gsl_vector * <a class="el" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a> (const gsl_vector *in)
 <li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
 <li>gsl_matrix * <a class="el" href="group__convenience__fns.html#ga45bb322b9f491c46feb1e24025b6301f">apop_matrix_copy</a> (const gsl_matrix *in)
@@ -404,6 +405,8 @@ void <b>apop_data_print</b> (const <a class="el" href="structapop__data.html">ap
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans)
 <li>gsl_rng * <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a> (int seed)
 <li>double <a class="el" href="apop_8h.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)
+<li><a class="anchor" id="a72d8c995400d75922553d463f4b2b890"></a><!-- doxytag: member="apop.h::apop_rng_get_thread_base" ref="a72d8c995400d75922553d463f4b2b890" args="(int thread)" -->
+gsl_rng * <b>apop_rng_get_thread_base</b> (int thread)
 <li>int <a class="el" href="apop_8h.html#a0492d6f5ae8a73a60b651cadb113d643">apop_arms_draw</a> (double *out, gsl_rng *r, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <dl class="el"><dd class="mdescRight">Adaptive rejection metropolis sampling.  <a href="#a0492d6f5ae8a73a60b651cadb113d643"></a><br/></dl><li>gsl_vector * <a class="el" href="group__linear__algebra.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#a1a55a20880947e289767aad6e5b0117c">apop_model_hessian</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *model, double delta)
@@ -413,10 +416,10 @@ void <b>apop_data_print</b> (const <a class="el" href="structapop__data.html">ap
 <li>long double <a class="el" href="apop_8h.html#ad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a> (gsl_vector *beta, <a class="el" href="structapop__data.html">apop_data</a> *constraint, double margin)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#af676505faea1c7e30ffbd8690a092ed8">apop_model_fix_params_get_base</a> (<a class="el" href="structapop__model.html">apop_model</a> *model_in)
-<li><a class="anchor" id="af38c2d79e0e1f423356970201636f03e"></a><!-- doxytag: member="apop.h::apop_vtable_add" ref="af38c2d79e0e1f423356970201636f03e" args="(char *tabname, void *fn_in, unsigned long hash)" -->
-int <b>apop_vtable_add</b> (char *tabname, void *fn_in, unsigned long hash)
-<li><a class="anchor" id="a12502ff82a0ad4c0f656ede85722294d"></a><!-- doxytag: member="apop.h::apop_vtable_get" ref="a12502ff82a0ad4c0f656ede85722294d" args="(char *tabname, unsigned long hash)" -->
-void * <b>apop_vtable_get</b> (char *tabname, unsigned long hash)
+<li><a class="anchor" id="a25375d4d280ac2e2e1f6c1c4308a0768"></a><!-- doxytag: member="apop.h::apop_vtable_add" ref="a25375d4d280ac2e2e1f6c1c4308a0768" args="(char const *tabname, void *fn_in, unsigned long hash)" -->
+int <b>apop_vtable_add</b> (char const *tabname, void *fn_in, unsigned long hash)
+<li><a class="anchor" id="ad36d4bf46ba0e0472a2986f90ad22977"></a><!-- doxytag: member="apop.h::apop_vtable_get" ref="ad36d4bf46ba0e0472a2986f90ad22977" args="(char const *tabname, unsigned long hash)" -->
+void * <b>apop_vtable_get</b> (char const *tabname, unsigned long hash)
 <li><a class="anchor" id="a2445b1dfe4ae37ff37e04b5d2461084f"></a><!-- doxytag: member="apop.h::apop_vtable_drop" ref="a2445b1dfe4ae37ff37e04b5d2461084f" args="(char const *tabname, unsigned long hash)" -->
 int <b>apop_vtable_drop</b> (char const *tabname, unsigned long hash)
 <li><a class="anchor" id="a09bdec45ab38cada87f32669a4b00100"></a><!-- doxytag: member="apop.h::apop_update_type_check" ref="a09bdec45ab38cada87f32669a4b00100" args="(apop_update_type in)" -->
@@ -449,11 +452,7 @@ int <b>apop_system</b> (const char *fmt,...) __attribute__((format(printf
 <li>double * <a class="el" href="apop_8h.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> (gsl_vector *data, char rounding)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__data.html">apop_data</a> *sort_order, char asc, char inplace, double *col_order)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#ac1bae5dffbbd4bc82c7369211c36f934">apop_rake</a> (char const *margin_table, char *const *var_list, int var_ct, char const *all_vars, char *const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, int run_number, char const *init_table, char const *init_count_col, double nudge, char const *table_name)
-<li><a class="anchor" id="af1083347ab05b970089bc97287928fcb"></a><!-- doxytag: member="apop.h::asprintf" ref="af1083347ab05b970089bc97287928fcb" args="(char **res, const char *format,...) __attribute__((__format__(__printf__" -->
-int <b>asprintf</b> (char **res, const char *format,...) __attribute__((__format__(__printf__
-<li><a class="anchor" id="aa7d3fcd8b24054fe10faa86813d48aed"></a><!-- doxytag: member="apop.h::vasprintf" ref="aa7d3fcd8b24054fe10faa86813d48aed" args="(char **res, const char *format, va_list args) __attribute__((__format__(__printf__" -->
-int int <b>vasprintf</b> (char **res, const char *format, va_list args) __attribute__((__format__(__printf__
-<li>int int double <a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> (const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv)
+<li>double <a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> (const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d1, const <a class="el" href="structapop__data.html">apop_data</a> *d2, char form1, char form2)
 <li>int <a class="el" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a> (const gsl_vector *in, long double max)
 <li>gsl_matrix * <a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> (const gsl_matrix *in)
@@ -1325,6 +1324,32 @@ printf(<span class="stringliteral">&quot;The correlation coefficient between row
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a class="anchor" id="a1e829ce2396bf05ab10460bcc37aeeab"></a><!-- doxytag: member="apop.h::apop_rng_get_thread" ref="a1e829ce2396bf05ab10460bcc37aeeab" args="(thread_in)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">thread_in</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The <code>gsl_rng</code> is not itself thread-safe, in the sense that it can not be used simultaneously by multiple threads. However, if each thread has its own <code>gsl_rng</code>, then each will safely operate independently.</p>
+<p>Thus, Apophenia keeps an internal store of RNGs for use by threaded functions. If the input to this function, <code>thread</code>, is greater than any previous input, then the array of <code>gsl_rng</code>s is extended to length <code>thread</code>, and each element extended using <code>++apop_opts.rng_seed</code> (i.e., the seed is incremented before use).</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">thread_in</td><td>The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads). If blank, I'll look up the current thread (via <code>omp_get_thread_num</code>) for you.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The appropriate RNG, initialized if necessary. </dd></dl>
 
 </div>
 </div>
@@ -2242,7 +2267,7 @@ gsl_matrix * o = &amp;( apop_mm_##o );
     <tr><td class="paramname">data</td><td>The data set. An <code><a class="el" href="structapop__data.html">apop_data</a></code> set where each row is a single data point. (No default) </td></tr>
     <tr><td class="paramname">model</td><td>An <a class="el" href="structapop__model.html">apop_model</a>, whose <code>estimate</code> method will be used here. (No default) </td></tr>
     <tr><td class="paramname">iterations</td><td>How many bootstrap draws should I make? (default: 1,000) </td></tr>
-    <tr><td class="paramname">rng</td><td>An RNG that you have initialized, probably with <code>apop_rng_alloc</code>. (Default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
+    <tr><td class="paramname">rng</td><td>An RNG that you have initialized, probably with <code>apop_rng_alloc</code>. (Default: an RNG from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>) </td></tr>
     <tr><td class="paramname">keep_boots</td><td>If 'y', then add a page to the output <a class="el" href="gentle.html#apop_data">apop_data</a> set with the statistics calculated for each bootstrap iteration. They are packed via <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a>, so use <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default: 'n') <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *boot_output = <a class="code" href="apop_8h.html#a4eb57b1f864c650ed6d7e029550e7bb8">apop_bootstrap_cov</a>(your_data, your_model, .keep_boots=<span class="charliteral">&#39;y&#39;</span>);
 <a class="code" href="structapop__data.html">apop_data</a> *boot_stats = <a class="code" href="apop_8h.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(boot_output, <span class="stringliteral">&quot;&lt;bootstrapped statistics&gt;&quot;</span>);
 
@@ -3553,7 +3578,8 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 </pre></div></dd></dl>
 <p>The text segment, if any, is not binned. I use <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> as the final step in the binning, and that does respect the text segment.</p>
 <p>Here is a sample program highlighting the difference between <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> and <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> .</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#define _GNU_SOURCE</span>
+<span class="preprocessor"></span><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="preprocessor">#ifdef Testing</span>
 <span class="preprocessor"></span><span class="preprocessor">    #define printdata(dataset)  ;</span>
@@ -4166,7 +4192,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
     <tr><td class="paramname">from</td><td>the <img class="formulaInl" alt="$p$" src="form_20.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">to</td><td>the <img class="formulaInl" alt="$q$" src="form_77.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">draw_ct</td><td>If I do the calculation via random draws, how many? (Default = 1e5) </td></tr>
-    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="autorng.html">Auto-allocated RNGs</a>. (Default = <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>) </td></tr>
     <tr><td class="paramname">top</td><td>deprecated synonym for <code>from</code>. </td></tr>
     <tr><td class="paramname">bottom</td><td>deprecated synonym for <code>to</code>.</td></tr>
   </table>
@@ -4508,12 +4534,12 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 
 </div>
 </div>
-<a class="anchor" id="ae1f659437ab89ac1e4df447023edf040"></a><!-- doxytag: member="apop.h::apop_model_draws" ref="ae1f659437ab89ac1e4df447023edf040" args="(apop_model *model, int count, gsl_rng *rng, apop_data *draws)" -->
+<a class="anchor" id="a4e204cdc7429bef3ca2efb83453fe77a"></a><!-- doxytag: member="apop.h::apop_model_draws" ref="a4e204cdc7429bef3ca2efb83453fe77a" args="(apop_model *model, int count, apop_data *draws)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a> </td>
+          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>model</em>, </td>
@@ -4523,12 +4549,6 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
           <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -4549,7 +4569,6 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
   <table class="params">
     <tr><td class="paramname">model</td><td>The model from which draws will be made. Must already be prepared and/or estimated.</td></tr>
     <tr><td class="paramname">count</td><td>The number of draws to make. If <code>draw_matrix</code> is not <code>NULL</code>, then this is ignored and <code>count=draw_matrix-&gt;matrix-&gt;size1</code>. default=1000.</td></tr>
-    <tr><td class="paramname">rng</td><td>a <code>gsl_rng</code>, already allocated. default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>.</td></tr>
     <tr><td class="paramname">draws</td><td>If not <code>NULL</code>, a pre-allocated data set whose <code>matrix</code> element will be filled with draws.</td></tr>
   </table>
   </dd>
@@ -4569,16 +4588,19 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <ul>
 <li>See also <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, which makes a single draw.</li>
 </ul>
-<p>Here is a one-liner program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):</p>
+<ul>
+<li>Random numbers are generated using RNGs from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>, qv.</li>
+</ul>
+<p>Here is a two-line program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 <span class="preprocessor">#include &lt;time.h&gt;</span>
 
 <span class="keywordtype">int</span> main(){
+    <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.rng_seed = time(NULL);
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(
-            <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(
+            <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(
                 <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1), 
                 .count=10, 
-                .rng=<a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(time(NULL))
             )
     );
 }
@@ -4626,7 +4648,6 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(){
-    gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(10);
     <span class="keywordtype">size_t</span> ct = 5e4;
 
     <span class="comment">//set up the model &amp; params</span>
@@ -4636,7 +4657,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
     <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
     pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);
     pvm-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 2;
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(pvm, ct, r);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(pvm, ct);
 
     <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span>
     gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);
@@ -4763,7 +4784,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
   <table class="params">
     <tr><td class="paramname">d</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> set used for evaluating the likelihood of a proposed parameter set.</td></tr>
     <tr><td class="paramname">m</td><td>The <a class="el" href="structapop__model.html">apop_model</a> from which parameters are being drawn. (No default; must not be <code>NULL</code>)</td></tr>
-    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, probably allocated via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>. (Default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>)</td></tr>
+    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, probably allocated via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>. (Default: an RNG from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>)</td></tr>
   </table>
   </dd>
 </dl>
@@ -6026,7 +6047,7 @@ gets_soc_security=1" is a structural zero.</p>
     <tr><td class="paramname">data</td><td>The input data, that will be used by the likelihood function (default = <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">prior</td><td>The prior <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>log_likelihood</code> or <code>p</code> method. (No default, must not be <code>NULL</code>.) </td></tr>
     <tr><td class="paramname">likelihood</td><td>The likelihood <a class="el" href="structapop__model.html">apop_model</a>. If the system needs to estimate the posterior via MCMC, this needs to have a <code>log_likelihood</code> or <code>p</code> method (ll preferred). (No default, must not be <code>NULL</code>.) </td></tr>
-    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, already initialized (e.g., via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). (default: see <a class="el" href="autorng.html">Auto-allocated RNGs</a>) </td></tr>
+    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, already initialized (e.g., via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>). (default: an RNG from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>) </td></tr>
   </table>
   </dd>
 </dl>
@@ -6466,4 +6487,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>

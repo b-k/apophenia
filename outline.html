@@ -56,12 +56,6 @@ urchinTracker();
 <div class="fragment"><pre class="fragment">gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g -Wall -O3
 </pre></div><p> will produce an output file named <code>run_me</code> from the input source code <code>sample.c</code>. It will include symbols for debugging (<code>-g</code>), print all warnings (<code>-Wall</code>), try every optimization GCC has (<code>-O3</code>, where <code>-O</code> stands for optimization) and will correctly find the functions in the Apophenia, GSL, and SQLite libraries (<code>-lapophenia -lgsl ...</code>). Order matters in the linking list: the files a package depends on should be listed after the package. E.g., since sample.c depends on Apophenia, <code>gcc sample.c -lapophenia</code> will work, while <code>gcc -lapophenia sample.c</code> is likely to give you errors. Similarly, list <code>-lapophenia</code> before <code>-lgsl</code>, which comes before <code>-lgslcblas</code>.</p>
 <p></div>
-<p><h2><a class="anchor" name="vim"><div class="trigger" onClick="showBranch('vimd');swapFolder('vimf')"><img src="right.png" border="0" id="vimf" alt="pip"> Syntax highlighting</div></a></h2><div class="branch" id="vimd">
-<p>If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring. E.g., for <code>vim</code>, add the following two lines to <code>/usr/share/vim/[your current version]/syntax/c.vim</code>: </p>
-<div class="fragment"><pre class="fragment">syn keyword     cType           gsl_matrix gsl_rng gsl_vector <a class="code" href="structapop__data.html">apop_data</a>
-syn keyword     cType           <a class="code" href="structapop__name.html">apop_name</a> <a class="code" href="structapop__model.html">apop_model</a>
-</pre></div><p> Other text editors have similar files to which you can add the above types.</p>
-<p></div>
 <p></div>
 <p><h2><a class="anchor" name="debugging"><div class="trigger" onClick="showBranch('debuggingd');swapFolder('debuggingf')"><img src="right.png" border="0" id="debuggingf" alt="pip"> Errors, logging, debugging and stopping</div></a></h2><div class="branch" id="debuggingd">
 <h5>The <code>error</code> element</h5>
@@ -111,6 +105,39 @@ syn keyword     cType           <a class="code" href="structapop__name.html">apo
 unset APOP_DB_ENGINE
 <a class="code" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> indata stab db_for_sqlite.db
 </pre></div><p>Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see <a class="el" href="db_moments.html">Database moments (plus pow()!)</a>. </div>
+<p><h2><a class="anchor" name="threads"><div class="trigger" onClick="showBranch('threadsd');swapFolder('threadsf')"><img src="right.png" border="0" id="threadsf" alt="pip"> Threading</div></a></h2><div class="branch" id="threadsd">
+<p>Apophenia uses OpenMP for threading. You generally do not need to know how OpenMP works to use Apophenia, and many points of work will thread without your doing anything.</p>
+<ul>
+<li>All functions strive to be thread-safe. Part of how this is achieved is that static variables are marked as thread-local or atomic, as per the C standard. There still exist compilers that can't implement thread-local or atomic variables, in which case your safest bet is to set OMP's thread count to one as below (or get a new compiler).</li>
+</ul>
+<ul>
+<li>Some functions modify their inputs. It is up to you to use those functions in a thread-safe manner. The <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> operates correctly in a threaded environment, but if you have two threads resizing the same <code>gsl_matrix</code> at the same time, you're going to have problems.</li>
+</ul>
+<ul>
+<li>There are few compilers that don't support OpenMP. Clang on MacOS may be the only current mainstream example as of this writing, and they are hard at work on implementing it. In the mean time, you will get errors about undefined <code>#pragma</code>s when compiling on such a system, and all work will be single-threaded.</li>
+</ul>
+<ul>
+<li>Set the maximum number of threads to <code>N</code> with the environment variable</li>
+</ul>
+<div class="fragment"><pre class="fragment">export OMP_NUM_THREADS N
+</pre></div><p>or the C function</p>
+<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;omp.h&gt;</span>
+omp_set_num_threads(N);
+</pre></div><p>Use one of these methods with <code>N=1</code> if you want a single-threaded program.</p>
+<ul>
+<li><a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and friends distribute their <code>for</code> loop over the input <a class="el" href="gentle.html#apop_data">apop_data</a> set across multiple threads. Therefore, be careful to send thread-unsafe functions to it only after calling <code>omp_set_num_threads(1)</code>.</li>
+</ul>
+<ul>
+<li>There are a few functions, like <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>, that rely on <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>, and therefore also thread by default.</li>
+</ul>
+<ul>
+<li>The function <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a> retrieves a statically-stored RNG specific to a given thread. Therefore, if you use that function in the place of a <code>gsl_rng</code>, you can parallelize functions that make random draws.</li>
+</ul>
+<ul>
+<li><a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a> allocates its store of threads using apop_opts.rng_seed, then incrementing that seed by one. You thus probably have threads with seeds 479901, 479902, 479903, .... [If you have a better way to do it, please feel free to modify the code to implement your improvement and submit a pull request on Github.]</li>
+</ul>
+<p>See &lt;a href="<a href="http://modelingwithdata.org/arch/00000175.htm">http://modelingwithdata.org/arch/00000175.htm</a>&gt;this tutorial on C threading if you would like to know more, or are unsure about whether your functions are thread-safe or not.</p>
+<p></div>
 <p><h2><a class="anchor" name="mwd"><div class="trigger" onClick="showBranch('mwdd');swapFolder('mwdf')"><img src="right.png" border="0" id="mwdf" alt="pip"> The book version</div></a></h2><div class="branch" id="mwdd">
 <p>Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.</p>
 <p>If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia.</p>
@@ -126,8 +153,8 @@ unset APOP_DB_ENGINE
 <p>[This section last updated 3 January 2014.]</p>
 <p>Apophenia was first posted to SourceForge in February 2005, which means that we've had several years to develop and test the code in real-world applications.</p>
 <p>The test suite, including the sample code and solution set for _Modeling with Data_, is about 5,500 lines over 135 files. gprof reports that it covers about 90% of the 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is that the well-worn parts, in this case functions like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> and <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>'s <code>log_likelihood</code>, are likely to be entirely reliable, while the out-of-the-way functions (maybe the score for the Beta distribution) are worth a bit of caution. Close to all of the code has been used in production, so all of it was at least initially tested against real-world data.</p>
-<p>It is currently at version 0.998, which is intended to indicate that it is substantially complete. Of course, a library for scientific computing, or even for that small subset that is statistics, will never cover all needs and all methods. But as it stands Apophenia's framework, based on the <a class="el" href="gentle.html#apop_data">apop_data</a> and <a class="el" href="structapop__model.html">apop_model</a>, is basicaly internally consistent, has enough tools that you can get common work done quickly, and is reasonably fleshed out with a good number of models out of the box.</p>
-<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure is set, and there are enough functions there that you could use it as a subpackage by itself (along with the database functions) for nontrivial dealings with data.</p>
+<p>It is currently at version 0.999, which is intended to indicate that it is substantially complete. Of course, a library for scientific computing, or even for that small subset that is statistics, will never cover all needs and all methods. But as it stands Apophenia's framework, based on the <a class="el" href="gentle.html#apop_data">apop_data</a> and <a class="el" href="structapop__model.html">apop_model</a>, is basically internally consistent, has enough tools that you can get common work done quickly, and is reasonably fleshed out with a good number of models out of the box.</p>
+<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure is set, and there are enough functions there that you could use it as a subpackage by itself (especially in tandem with the database functions) for nontrivial dealings with data.</p>
 <p>The <a class="el" href="structapop__model.html">apop_model</a> structure is much more ambitious---Apophenia is really intended to be a novel system for developing models---and its internals can still be improved. The promise underlying the structure is that you can provide just one item, such as an RNG or a likelihood function, and the structure will do all of the work to fill in computationally-intensive methods for everything else; see <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> for the gory details. Some directions aren't quite there yet (such as RNG -&gt; most other things); the default likelihood -&gt; RNG function only works for models with a domain of unidimensional reals; the PMF model (the essential bridge from data sets to empirical models) needs an internal index for faster lookups. Readers are invited perhaps contribute better methods (such as an alternate means of estimating mixture models), or filling in more of existing models (write a dlog likelihood function for a model that does not currently have one), or submit new standard models not yet included.</p>
 <p></div>
 <p><h2><a class="anchor" name="ext"><div class="trigger" onClick="showBranch('extd');swapFolder('extf')"><img src="right.png" border="0" id="extf" alt="pip"> How do I write extensions?</div></a></h2><div class="branch" id="extd">
@@ -730,7 +757,7 @@ d-&gt;names-&gt;vector;
 </pre></div><p>Along the way to estimating the parameters, most models also find covariance estimates for the parameters, calculate statistics like log likelihood, and so on, which the final print statement will show.</p>
 <p>The <code>apop_probit</code> model that ships with Apophenia is unparameterized: <code>apop_probit.parameters==NULL</code>. The output from the estimation, <code>the_estimate</code>, has the same form as <code>apop_probit</code>, but <code>the_estimate-&gt;parameters</code> has a meaningful value.</p>
 <p><h2><a class="anchor" name="covandstuff"><div class="trigger" onClick="showBranch('covandstuffd');swapFolder('covandstufff')"><img src="right.png" border="0" id="covandstufff" alt="pip"> More estimation output</div></a></h2><div class="branch" id="covandstuffd">
-<p>A call to <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> produces more than just the estimated parameters. Most will produce any of a covariance matrix, some hypothesis tests, a list of expected values, log likelihood, AIC, BIC, et cetera.</p>
+<p>A call to <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> produces more than just the estimated parameters. Most will produce any of a covariance matrix, some hypothesis tests, a list of expected values, log likelihood, AIC, AIC_c, BIC, et cetera.</p>
 <p>First, note that if you don't want all that, adding to your model an <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> group with its default values (see below on settings groups) signals to the model that you want only the parameters and to not waste CPU time on covariances, expected values, et cetera. See the <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> documentation for examples and further refinements.</p>
 <ul>
 <li>The actual parameter estimates are in an <a class="el" href="gentle.html#apop_data">apop_data</a> set at <code>your_model-&gt;parameters</code>.</li>
@@ -757,7 +784,7 @@ d-&gt;names-&gt;vector;
 <span class="keywordtype">double</span> density_under =  <a class="code" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>(expected_value, the_estimate);
 
 gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(234211);
-<a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws</a>(the_estimate, .count=1000, .rng=rng);
+<a class="code" href="structapop__data.html">apop_data</a> *draws = <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(the_estimate, .count=1000, .rng=rng);
 </pre></div><p>Apophenia ships with many well-known models for your immediate use, including probability distributions, such as the <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, <a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">apop_poisson</a>, or <a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a> models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit; e.g., assume the data is Normally distributed and find the mean and variance: <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>).</p>
 <p>There are also linear models like <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a>, <a class="el" href="group__models.html#ga319b8e3d5025a6fc94829a978273eb8b">apop_probit</a>, and <a class="el" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a> (where those last two are multinomial or binomial as the input data dictates). As in the example, they are on equal footing with the distributions, so nothing keeps you from making random draws from an estimated linear model.</p>
 <p>Simulation models seem to not fit this form, but you will see below that if you can write an objective function for the <code>p</code> method of the model, you can use the above tools. Notably, you can estimate parameters via maximum likelihood and then give confidence intervals around those parameters.</p>
@@ -767,6 +794,103 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
                         .tolerance=1e-4, .method=APOP_RF_NEWTON);
 <a class="code" href="structapop__model.html">apop_model</a> *re_est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, the_estimate);
 </pre></div><p>See below for the details of using settings groups.</p>
+<p><h2><a class="anchor" name="modelparameterization"><div class="trigger" onClick="showBranch('modelparameterizationd');swapFolder('modelparameterizationf')"><img src="right.png" border="0" id="modelparameterizationf" alt="pip"> Parameterizing or initializing a model</div></a></h2><div class="branch" id="modelparameterizationd">
+<p>The models that ship with Apophenia have the requisite procedures for estimation, making draws, and so on, but have <code>params==NULL</code> and <code>settings==NULL</code>. The model is thus, for many purposes, incomplete, and you will need to take some action to complete the model. There are several possibilities:</p>
+<ul>
+<li>Estimate it! Almost all models can be sent with a data set as an argument to the <code>apop_estimate</code> function. The input model is unchanged, but the output model has parameters and settings in place. [When settings must be set beforehand, the model documentation will tell you.]</li>
+</ul>
+<ul>
+<li>If your model has a fixed number of numeric parameters, then you can set them with <a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>.</li>
+</ul>
+<ul>
+<li>If your model has a variable number of parameters, you can directly set the <code>parameters</code> element via <code>apop_data_falloc</code>. For most purposes, you will also need to set the <code>msize1</code>, <code>msize2</code>, <code>vsize</code>, and <code>dsize</code> elements to the size you want. See the example below.</li>
+</ul>
+<ul>
+<li>Some models have disparate, non-numeric settings rather than a simple matrix of parameters. For example, an kernel density estimate needs a model as a kernel and a base data set, which can be set via <a class="el" href="group__settings.html#ga8e5f7950ae47b299e20f2c447199cf6f">apop_model_copy_set</a>.</li>
+</ul>
+<p>Here is an example that shows the options for parameterizing a model. After each parameterization, 20 draws are made and written to a file named draws-[modelname].</p>
+<div class="fragment"><pre class="fragment"><span class="comment">/*Parameterizing or initializing a model</span>
+<span class="comment"></span>
+<span class="comment">Apophenia ships with several models, which have the requisite procedures for estimation,</span>
+<span class="comment">making draws, and so on, but have &lt;tt&gt;params==NULL&lt;/tt&gt; and &lt;tt&gt;settings==NULL&lt;/tt&gt;. The</span>
+<span class="comment">model is thus, for many purposes, incomplete, and you will need to take some action to</span>
+<span class="comment">complete the model. There are several possibilities:</span>
+<span class="comment"></span>
+<span class="comment"></span>
+<span class="comment"></span>
+<span class="comment">\li Estimate it! Almost all models can be sent with a data set as an argument to the</span>
+<span class="comment">&lt;tt&gt;apop_estimate&lt;/tt&gt; function. The input model is unchanged, but the output model has</span>
+<span class="comment">parameters and settings in place.</span>
+<span class="comment"></span>
+<span class="comment">\li If your model has a fixed number of numeric parameters, then you can set them with</span>
+<span class="comment">\ref apop_model_set_parameters.</span>
+<span class="comment"></span>
+<span class="comment">\li If your model has a variable number of parameters, you can directly set the \c</span>
+<span class="comment">parameters element via \c apop_data_falloc.  For most purposes, you will also need to</span>
+<span class="comment">set the \c msize1, \c msize2, \c vsize, and \c dsize elements to the size you want. See</span>
+<span class="comment">the example below.</span>
+<span class="comment"></span>
+<span class="comment">\li Some models have disparate, non-numeric settings rather than a simple matrix of</span>
+<span class="comment">parameters. For example, an kernel density estimate needs a model as a kernel and a base data set, which can be set via \ref apop_model_copy_set.</span>
+<span class="comment"></span>
+<span class="comment">Here is an example that shows the options for parameterizing a model. After each parameterization, 20 draws are made and written to a file named draws-[modelname].</span>
+<span class="comment">*/</span>
+
+
+
+
+<span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+
+<span class="preprocessor">#define print_draws(mm) apop_data_print(apop_model_draws(mm, 20), .output_name= &quot;draws-&quot; #mm);</span>
+<span class="preprocessor"></span>
+<a class="code" href="structapop__data.html">apop_data</a> *draw_some_data(){
+    <a class="code" href="structapop__model.html">apop_model</a> *uniform_0_20 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga95be4cc3931072118a7c8ffece73fbe1">apop_uniform</a>, 0, 20);
+    <span class="keywordflow">return</span> <a class="code" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(uniform_0_20, 10);
+}
+
+<span class="keywordtype">int</span> main(){
+    <a class="code" href="structapop__data.html">apop_data</a> *d = draw_some_data();    
+
+    <span class="comment">//Estimate a Normal distribution from the data:</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *N = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>);
+    print_draws(N);
+
+    <span class="comment">//estimate a one-dimensional multivariate Normal from the data:</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *mvN = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
+    print_draws(mvN);
+
+
+    <span class="comment">//fixed parameter list:</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *std_normal = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
+    print_draws(std_normal);
+
+    <span class="comment">//variable-size parameter list:</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *std_multinormal = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);
+    std_multinormal-&gt;msize1 =
+    std_multinormal-&gt;msize2 =
+    std_multinormal-&gt;vsize =
+    std_multinormal-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 3;
+    std_multinormal-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3, 3, 3),
+                                1,  1, 0, 0, 
+                                1,  0, 1, 0,
+                                1,  0, 0, 1);
+    print_draws(std_multinormal);
+
+
+    <span class="comment">//estimate a KDE using the defaults:</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *k = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>);
+    print_draws(k);
+
+    <span class="comment">/*the documentation tells us that a KDE estimation consists of filling </span>
+<span class="comment">      an apop_kernel_density_settings group, so we can set it to use a </span>
+<span class="comment">      Normal(μ, 2) kernel via: */</span>
+
+    <a class="code" href="structapop__model.html">apop_model</a> *k2 = <a class="code" href="group__settings.html#ga8e5f7950ae47b299e20f2c447199cf6f">apop_model_copy_set</a>(<a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>, <a class="code" href="group__models.html#gaded18b6bf8bd63a53f7b72ed5f27fdb5">apop_kernel_density</a>, 
+                         .base_data=d,
+                         .kernel = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 2));
+    print_draws(k2);
+}
+</pre></div><p></div>
 <p>Where to from here? See the <a class="el" href="group__models.html">Models</a> page for a list of the canned models, along with a list of basic functions that make use of them.</p>
 <p>If you need to write a new model, see <a class="el" href="modeldetails.html">Writing new models</a>.</p>
 <p></div>
@@ -830,7 +954,7 @@ gsl_rng *rng = <a class="code" href="group__convenience__fns.html#gada044cf02135
 <li><a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters()</a> : Models ship with no parameters set. Use this to convert a Normal(μ, σ) with unknown μ and σ into a Normal(0, 1), for example. </li>
 <li><a class="el" href="group__models.html#gab29755a86b82dfe31cdd01d55431cc09">apop_model_free()</a> </li>
 <li><a class="el" href="group__models.html#gaa86381a72949fd3ffafefa87e3f51a4f">apop_model_clear()</a>, <a class="el" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep()</a> : remove the parameters from a parameterized model. Used infrequently. </li>
-<li><a class="el" href="apop_8h.html#ae1f659437ab89ac1e4df447023edf040">apop_model_draws()</a> : many random draws from an estimated model.</li>
+<li><a class="el" href="apop_8h.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws()</a> : many random draws from an estimated model.</li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="Update"><div class="trigger" onClick="showBranch('Updated');swapFolder('Updatef')"><img src="right.png" border="0" id="Updatef" alt="pip"> Filtering &amp; updating</div></a></h2><div class="branch" id="Updated">
@@ -1177,4 +1301,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Jan 26 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>
