@@ -17,7 +17,7 @@ consumption, while you are printing a matrix for import into another program.
 /** \defgroup apop_print 	Assorted printing functions		
 
 The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \c .output_type .
+or database, depending on how you set \c .output_type.
 The <tt>apop_*_show</tt> functions print only to screen, and are basically
 just a convenience shell to the corresponding <tt>apop_*_print</tt>
 function.
@@ -208,7 +208,7 @@ void apop_data_show(const apop_data *in){
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
     if (hasrownames)
         for (size_t i=0; i < in->names->rowct; i ++)
-            apop_text_add(printout, i + hascolnames, 0, in->names->row[i]);
+            apop_text_add(printout, i + hascolnames, 0, "%s", in->names->row[i]);
     for (size_t i=0; i < vsize; i ++) //vsize may be zero.
         apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
     for (size_t i=0; i < msize1; i ++) //msize1 may be zero.
@@ -217,7 +217,7 @@ void apop_data_show(const apop_data *in){
     if (in->textsize[0])
         for (size_t i=0; i < in->textsize[0]; i ++)
             for (size_t j=0; j < in->textsize[1]; j ++)
-                apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, in->text[i][j]);
+                apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, "%s", in->text[i][j]);
     if (hasweights)
         for (size_t i=0; i < in->weights->size; i ++)
             apop_text_add(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
@@ -225,13 +225,13 @@ void apop_data_show(const apop_data *in){
 //column names
     if (hascolnames){
         if (vsize && in->names->vector)
-            apop_text_add(printout, 0 , hasrownames,  in->names->vector);
+            apop_text_add(printout, 0 , hasrownames, "%s", in->names->vector);
         if (msize2 && in->names)
             for (size_t i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i,  in->names->col[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i, "%s", in->names->col[i]);
         if (in->textsize[1] && in->names)
             for (size_t i=0; i < in->names->textct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, in->names->text[i]);
+                apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, "%s", in->names->text[i]);
         if (hasweights)
             apop_text_add(printout, 0 , outsize_c-1, "Weights");
     }
@@ -393,7 +393,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 }
 
 /** Print an \ref apop_data set to a file, the database, or the screen,
-  as determined by the \c .output_typei .
+  as determined by the \c .output_type.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.

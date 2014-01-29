@@ -84,12 +84,14 @@ handle only the first page of data. [I abuse this for an internal semaphore, by 
 Default: \c 'n'. 
 
 \param inplace  If 'n' (the default), generate a new \ref apop_data set for output,
-which will contain the mapped values (and the names from the original set). If 'y',
+which will contain the mapped values (and the names from the original set).<br>
+If 'y',
 modify in place. The \c double \f$\to\f$ \c double versions, \c 'v', \c 'm', and \c
 'a', write to exactly the same location as before. The \c gsl_vector \f$\to\f$ \c
 double versions, \c 'r', and \c 'c', will write to the vector. Be careful: if you
 are writing in place and there is already a vector there, then the original vector is
-lost. If 'v' (as in void), return \c NULL.  (Default = 'n')
+lost.<br>
+If 'v' (as in void), return \c NULL.  (Default = 'n')
 
 \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
 \ref Apop_row to get each row in turn, and send it to the function. The first
@@ -151,10 +153,10 @@ APOP_VAR_ENDHEAD
                      : part == 'a' ? apop_data_alloc(vsize, msize1, msize2)
                      : part == 'r' ? apop_data_alloc(maxsize)
                      : part == 'c' ?  apop_data_alloc(msize2) : NULL;
-    Apop_stopif(inplace=='y' && !in->vector, in->vector=gsl_vector_alloc(maxsize), 2, 
+    Apop_stopif(inplace=='y' && (part=='r'||part=='c') && !in->vector, in->vector=gsl_vector_alloc(maxsize), 2, 
                             "No vector in your input data set for me to write outputs to; "
                             "allocating one for you of size %i", maxsize);
-    if (in->names && out){
+    if (in->names && out && !(inplace=='y')){
         if (part == 'v'  || (in->vector && ! in->matrix)) {
              apop_name_stack(out->names, in->names, 'v');
              apop_name_stack(out->names, in->names, 'r');
@@ -181,12 +183,20 @@ APOP_VAR_ENDHEAD
             for (int i=0; i< smaller_dim; i++){
                 if (smaller_dim == in->matrix->size1){
                     Apop_row_v(in, i, onevector);
-                    Apop_row_v(out, i, twovector);
-                    mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
+                    if (inplace=='v')
+                        mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'r', by_apop_rows);
+                    else {
+                        Apop_row_v(out, i, twovector);
+                        mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
+                    }
                 } else {
                     Apop_col_v(in, i, onevector);
-                    Apop_col_v(out, i, twovector);
-                    mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
+                    if (inplace=='v')
+                        mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'c', by_apop_rows);
+                    else {
+                        Apop_col_v(out, i, twovector);
+                        mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
+                    }
                 }
             }
         }

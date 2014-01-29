@@ -152,7 +152,7 @@ documentation for details.
 
 \param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
 
-\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: see \autorng)
+\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: see \ref autorng)
 
 \li If the likelihood model no parameters, I will allocate them. That means you can use
 one of the stock models that ship with Apophenia. If I need to run the model's prep
@@ -339,7 +339,7 @@ distribution, and then outputs a histogram model for further analysis. Notably,
 the histogram can be used as the input to this function, so you can chain Bayesian
 updating procedures.
 
-\li If the prior distribution has a \c p or \c log_likelihood element, then I use ref apop_model_metropolis to generate the posterior.
+\li If the prior distribution has a \c p or \c log_likelihood element, then I use \ref apop_model_metropolis to generate the posterior.
 
 \li If the prior does not have a \c p or \c log_likelihood but does have a \c draw element, then I make draws from the prior and weight them by the \c p given by the likelihood distribution. This is not a rejection sampling method, so the burnin is ignored.
 

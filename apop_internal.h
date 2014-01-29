@@ -59,4 +59,15 @@ void apop_gsl_error(char const *reason, char const *file, int line, int gsl_errn
 #define __attribute__(...)
 #endif
 
+#ifndef HAVE_ASPRINTF
+#include <stdarg.h>
+
+//asprintf, vararg, &c
+extern int asprintf (char **res, const char *format, ...)
+       __attribute__ ((__format__ (__printf__, 2, 3)));
+extern int vasprintf (char **res, const char *format, va_list args)
+       __attribute__ ((__format__ (__printf__, 2, 0)));
+#endif
+
 #include "apop.h"
+void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll); //In apop_mle.c

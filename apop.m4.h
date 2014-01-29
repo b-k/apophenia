@@ -661,11 +661,6 @@ Apop_var_declare( apop_data * apop_rake(char const *margin_table, char * const*v
                     char const *count_col, int run_number, char const *init_table, 
                     char const *init_count_col, double nudge, char const* table_name) )
 
-//asprintf, vararg, &c
-extern int asprintf (char **res, const char *format, ...)
-       __attribute__ ((__format__ (__printf__, 2, 3)));
-extern int vasprintf (char **res, const char *format, va_list args)
-       __attribute__ ((__format__ (__printf__, 2, 0)));
 
 #include <gsl/gsl_cdf.h>
 #include <gsl/gsl_blas.h>

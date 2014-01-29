@@ -369,9 +369,28 @@ static int setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
     return 0;
 }
 
+void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll){
+    //Did the sending function save last value of f()?
+    if (!ll) ll = apop_log_likelihood(d, m);
+
+    Get_vmsizes(est->parameters); //tsize
+    int param_ct = tsize;
+
+    if (!est->info) est->info = apop_data_alloc();
+    apop_data_add_named_elmt(est->info, "log likelihood", ll);
+    double AIC = 2*param_ct - 2 *ll;
+    apop_data_add_named_elmt(est->info, "AIC", AIC);
+    if (d){//some models have NULL data.
+        int n;
+        {Get_vmsizes(d); n = maxsize;}
+        apop_data_add_named_elmt(est->info, "AIC_c", AIC  + 2*param_ct *(param_ct + 1.0)/(n - param_ct - 1.0));
+        Get_vmsizes(d); //vsize, msize1, tsize
+        apop_data_add_named_elmt(est->info, "BIC", param_ct * log(n) - 2 *ll);
+    }
+}
+
 static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
-    Get_vmsizes(params); //tsize = total # of parameters
-    apop_model	*est    = i->model; //just an alias.
+    apop_model *est = i->model; //just an alias.
     /* This catches too many near-misses
        if(est->constraint)
         apop_assert(!est->constraint(i->data, est), "the maximum likelihood search ended "
@@ -381,21 +400,9 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
         if (i->want_tests=='y')
             apop_estimate_parameter_tests (est);
     }
-    int param_ct = tsize;
-    if (i->want_info=='y'){
-        //Did the sending function save last value of f()?
-        if (!ll) ll = apop_log_likelihood(i->data, i->model);
-
-        if (!est->info) est->info = apop_data_alloc();
-        apop_data_add_named_elmt(est->info, "status", status);
-        apop_data_add_named_elmt(est->info, "log likelihood", ll);
-        apop_data_add_named_elmt(est->info, "AIC", 2*param_ct - 2 *ll);
-        if (i->data){//some models have NULL data.
-            Get_vmsizes(i->data); //vsize, msize1, tsize
-            apop_data_add_named_elmt(est->info, "BIC by row", param_ct * log(msize1 ? msize1: vsize) - 2 *ll);
-            apop_data_add_named_elmt(est->info, "BIC by item", param_ct * log(tsize) - 2 *ll);
-        }
-    }
+    if (!est->info) est->info = apop_data_alloc();
+    apop_data_add_named_elmt(est->info, "status", status);
+    if (i->want_info=='y') add_info_criteria(i->data, i->model, est, ll);
 }
 
 static void apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){

@@ -1230,7 +1230,7 @@ Outlineheader covandstuff More estimation output
 
 A call to \ref apop_estimate produces more than just the estimated parameters. Most will
 produce any of a covariance matrix, some hypothesis tests, a list of expected values, log
-likelihood, AIC, BIC, et cetera.
+likelihood, AIC, AIC_c, BIC, et cetera.
 
 First, note that if you don't want all that, 
 adding to your model an \ref apop_parts_wanted_settings group with its default values (see below on settings groups) signals to
@@ -2797,14 +2797,18 @@ the input data. This is what you want for regression methods, where there is one
 
 \li The first page, named \c &lt;info&gt; is typically a list of scalars. Nothing is guaranteed, but the elements may include:
 
-\li AIC
-\li BIC
+\li AIC: <a href="https://en.wikipedia.org/wiki/Akaike's_Information_Criterion">Aikake Information Criterion</a>
+\li AIC_c: AIC with a finite sample correction. "<b>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</b>" [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
+\li BIC: <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a>
 \li R squared
+\li R squared adj
 \li log likelihood
 \li status.
 
+For those elements that require a count of input data, the calculations assume each row in the input \ref apop_data set is a single datum.
+
 Get these via, e.g., <tt>apop_data_get(your_model->info, .rowname="log likelihood")</tt>.
-When writing for any arbitrary function, be prepared to get \c NaN, indicating that the element is not calculated or saved in the info page by the given model.
+When writing for any arbitrary function, be prepared to handle \c NaN, indicating that the element is not calculated or saved in the info page by the given model.
 
 \li Several routines will include a \c predict table. The table has these rows:
     \li row (optional)

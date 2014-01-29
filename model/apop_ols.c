@@ -131,35 +131,33 @@ This function is a bit inefficient, in that it calculates the error terms,
 which you may have already done in the OLS estimation.  */
 static long double ols_log_likelihood (apop_data *d, apop_model *p){ 
     Nullcheck_mpd(d, p, GSL_NAN); Nullcheck(d->matrix, GSL_NAN);
-  long double ll  = 0; 
+  long double ll = 0; 
   long double sigma, actual, weight;
   double expected, x_prob;
   apop_lm_settings *lms = Apop_settings_get_group(p, apop_lm);
   apop_model *input_distribution = lms ? lms->input_distribution : NULL;
-  gsl_matrix *data	 = d->matrix;
+  gsl_matrix *data = d->matrix;
   gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
         Apop_row_v(d, i, datarow);
         gsl_blas_ddot(p->parameters->vector, datarow, &expected);
         if (d->vector){ //then this has been prepped
-            actual    = apop_data_get(d,i, -1);
+            actual = apop_data_get(d,i, -1);
         } else {
-            actual    = gsl_matrix_get(data,i, 0);
+            actual = gsl_matrix_get(data,i, 0);
             expected += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
         }
         gsl_vector_set(errors, i, expected-actual);
     }
-    sigma   = sqrt(apop_vector_var(errors));
-	for(size_t i=0;i< data->size1; i++){
-        Apop_row_v(d, i, datarow);
-        gsl_matrix_view m = gsl_matrix_view_vector(datarow, 1, datarow->size);
-        apop_data justarow = {.matrix=&(m.matrix)};
-        if (input_distribution)
-            x_prob = apop_p(&justarow, input_distribution); //probably improper uniform, and so just 1 anyway.
-        else
-            x_prob = 1;
-        weight       = d->weights ? gsl_vector_get(d->weights, i) : 1; 
-        ll  += log(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
+    sigma = sqrt(apop_vector_var(errors));
+	for(size_t i=0; i< data->size1; i++){
+        Apop_row(d, i, justarow);
+        justarow->vector = NULL;
+        x_prob = (input_distribution)
+                    ? apop_p(justarow, input_distribution) //probably improper uniform, and so just 1 anyway.
+                    : 1;
+        weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
+        ll += logl(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
 	} 
     gsl_vector_free(errors);
     return ll;
@@ -343,9 +341,12 @@ static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
         apop_estimate_parameter_tests(ep);
-    apop_data_add_named_elmt(ep->info, "log likelihood", ols_log_likelihood(ep->data, ep));
+
+    add_info_criteria(ep->data, ep, ep, apop_log_likelihood(ep->data, ep)); //in apop_mle.c
+
     apop_data *r_sq = apop_estimate_coefficient_of_determination(ep); //Add R^2-type info to info page.
     apop_data_stack(ep->info, r_sq, .inplace='y');
+
     apop_data_free(r_sq);
     if (!olp->destroy_data){
         if (weights) gsl_vector_free(weights);

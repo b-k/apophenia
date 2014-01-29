@@ -20,6 +20,7 @@
 --Consolidated headers
 **apop.h no longer #includes time.h or unistd.h
 **apop_draw returns zero on success; nonzero on failure.
+**Removed the BIC-by-cells from estimation output. Added AIC_c. OLS now reports the ICs along with R^2.
 
 	December 2013
 --append and replace options for apop_text_to_db
