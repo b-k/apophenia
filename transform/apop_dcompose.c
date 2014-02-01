@@ -14,7 +14,6 @@ Apop_settings_free(apop_composition,)
 
 Apop_settings_init(apop_composition,
     Apop_varad_set(draw_ct, 1e4);
-    Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
 )
 
 #define Get_cs(inmodel, outval) \
@@ -83,7 +82,7 @@ static void compose_prep(apop_data *d, apop_model *m){
 static long double compose_ll(apop_data *indata, apop_model*composition){
     Get_cs(composition, GSL_NAN)
     Apop_stopif(unpack(composition), return GSL_NAN, 0, "Trouble unpacking parameters.");
-    apop_data *draws = apop_model_draws(cs->generator_m, .count=cs->draw_ct, .rng=cs->rng);
+    apop_data *draws = apop_model_draws(cs->generator_m, .count=cs->draw_ct);
     double ll = apop_log_likelihood(draws, cs->ll_m);
     apop_data_free(draws);
     return ll;

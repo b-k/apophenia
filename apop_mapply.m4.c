@@ -214,7 +214,6 @@ APOP_VAR_ENDHEAD
 }
 
 typedef struct {
-    size_t *limlist;
     void *fn;
     gsl_matrix  *m;
     gsl_vector  *v, *vin;
@@ -227,125 +226,91 @@ typedef struct {
 /* Mapply_core splits the database into an array of threadpass structs, then one of the following
   ...loop functions gets called, which does the actual for loop to step through the rows/columns/elements.  */
 
-static void *rowloop(void *t){
-    threadpass  *tc = t;
+static void rowloop(threadpass *tc){
     apop_fn_r   *rtod=tc->fn;
     apop_fn_rp  *fn_rp=tc->fn;
     apop_fn_rpi *fn_rpi=tc->fn;
     apop_fn_ri  *fn_ri=tc->fn;
-    double  val;
-    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    Get_vmsizes(tc->d); //maxsize
+    #pragma omp parallel for
+    for (int i=0; i< maxsize; i++){
         Apop_row(tc->d, i, onerow);
-        val = 
+        double val = 
         tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
                       : (tc->use_index ? fn_ri(onerow, i) : rtod(onerow) );
         if (tc->v) gsl_vector_set(tc->v, i, val);
     }
-    return NULL;
 }
 
-static void *forloop(void *t){
-    threadpass  *tc = t;
+static void forloop(threadpass *tc){
     apop_fn_v   *vtod=tc->fn;
     apop_fn_vp  *fn_vp=tc->fn;
     apop_fn_vpi *fn_vpi=tc->fn;
     apop_fn_vi  *fn_vi=tc->fn;
-    gsl_vector view;
-    double  val;
-    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
-        view    = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
-        val     = 
+    int max = tc->rc == 'r' ? tc->m->size1 : tc->m->size2;
+    #pragma omp parallel for
+    for (int i= 0; i< max; i++){
+    gsl_vector view = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
+    double val  = 
         tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : fn_vp(&view, tc->param) )
                       : (tc->use_index ? fn_vi(&view, i) : vtod(&view) );
         if (tc->v) gsl_vector_set(tc->v, i, val);
     }
-    return NULL;
 }
 
-static void *oldforloop(void *t){
-    threadpass *tc = t;
+static void oldforloop(threadpass *tc){
     apop_fn_vtov *vtov=tc->fn;
     if (tc->v){
         tc->rc = 'r';
-        return forloop(t);
+        return forloop(tc);
     }
-    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
+    #pragma omp parallel for
+    for (int i=0; i< tc->m->size1; i++){
         Apop_matrix_row(tc->m, i, v);
         vtov(v);
     }
-    return NULL;
 }
 
 //if mapping to self, then set tc.v = in_v
-static void *vectorloop(void *t){
-    threadpass  *tc = t;
-    double      inval, outval;
+static void vectorloop(threadpass *tc){
     apop_fn_d   *dtod=tc->fn;
     apop_fn_dp  *fn_dp=tc->fn;
     apop_fn_dpi *fn_dpi=tc->fn;
     apop_fn_di  *fn_di=tc->fn;
-    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
-        inval   = gsl_vector_get(tc->vin, i);
-        outval =
+    #pragma omp parallel for
+    for (int i= 0; i< tc->vin->size; i++){
+        double inval = gsl_vector_get(tc->vin, i);
+        double outval =
         tc->use_param ? (tc->use_index ? fn_dpi(inval, tc->param, i) : 
                                      fn_dp(inval, tc->param))
                      : (tc->use_index ? fn_di(inval, i) : 
                                      dtod(inval));
         if (tc->v) gsl_vector_set(tc->v, i, outval);
     }
-    return NULL;
 }
 
-static void *oldvectorloop(void *t){
-    threadpass *tc = t;
-    double *inval;
+static void oldvectorloop(threadpass *tc){
     apop_fn_dtov *dtov=tc->fn;
-    if (tc->v) return vectorloop(t);
-    for (int i= tc->limlist[0]; i< tc->limlist[1]; i++){
-        inval   = gsl_vector_ptr(tc->vin, i);
+    if (tc->v) return vectorloop(tc);
+    #pragma omp parallel for
+    for (int i= 0; i< tc->vin->size; i++){
+        double *inval = gsl_vector_ptr(tc->vin, i);
         dtov(inval);
     }
-    return NULL;
-}
-
-static size_t *threadminmax(const int threadno, const int totalct, const int threadct){
-    int segment_size = totalct/threadct;
-    size_t *out = malloc(sizeof(size_t)*3);
-    out[0] = threadno*segment_size;
-    out[1] = (threadno==threadct-1) ? totalct : (threadno+1)*segment_size;
-    out[2] = threadno;
-    return out;
 }
 
 static gsl_vector*mapply_core(apop_data *d, gsl_matrix *m, gsl_vector *vin, void *fn, gsl_vector *vout, bool use_index, bool use_param, void *param, char post_22, bool by_apop_rows){
     Get_vmsizes(d); //maxsize
-    int threadct = GSL_MIN((m? m->size1 : vin ? vin->size : maxsize), apop_opts.thread_count);
-    pthread_t thread_id[threadct];
-    threadpass tp[threadct];
-    for (size_t i=0 ; i<threadct; i++)
-        tp[i] = (threadpass) {
-            .limlist   = threadminmax(i, 
-                    m? ((!post_22 || post_22 == 'r') ? m->size1 : m->size2) : vin ? vin->size: maxsize , threadct),
+    threadpass tp =
+         (threadpass) {
             .fn = fn, .m = m, .d = d,
             .vin = vin, .v = vout,
             .use_index = use_index, .use_param= use_param,
             .param = param, .rc = post_22
         };
-    if (threadct==1){ //don't thread.
-        if (by_apop_rows) rowloop(tp);
-        else if (m)       post_22 ? forloop(tp) : oldforloop(tp);
-        else              post_22 ? vectorloop(tp) : oldvectorloop(tp);
-    } else {
-        for (size_t i=0 ; i<threadct; i++){
-            if (by_apop_rows) pthread_create(&thread_id[i], NULL, rowloop, tp+i);
-            else if (m)       pthread_create(&thread_id[i], NULL, post_22 ? forloop : oldforloop, tp+i);
-            else              pthread_create(&thread_id[i], NULL, post_22 ? vectorloop : oldvectorloop, tp+i);
-        }
-        for (size_t i=0 ; i<threadct; i++)
-            pthread_join(thread_id[i], NULL);
-    }
-    for (size_t i=0 ; i<threadct; i++)
-        free(tp[i].limlist);
+    if (by_apop_rows) rowloop(&tp);
+    else if (m) post_22 ? forloop(&tp) : oldforloop(&tp);
+    else        post_22 ? vectorloop(&tp) : oldvectorloop(&tp);
     return vout;
 }
 
@@ -437,6 +402,7 @@ static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *o
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
     if (!in) return NULL;
     gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
+    #pragma omp parallel for
     for (size_t i=0; i< in->size1; i++){
         gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
         Apop_matrix_row(out, i, v);
@@ -455,6 +421,7 @@ gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
   */
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
     if (!in) return;
+    #pragma omp parallel for
     for (size_t i=0; i< in->size1; i++){
         Apop_matrix_row(in, i, v);
         apop_vector_apply(v, fn);
@@ -497,79 +464,18 @@ double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
     return out;
 }
 
-/*I abuse the macro system to do threading, because the variadic function takes
-     exactly one input, which is what the pthread_create function needs. The alternative,
-     writing a function to handle every argument to apop_map_sum to re-generate the
-     variadic_apop_map_sum_type struct, would be an uglier hack.
-
-     This function wraps variadic_apop_map_sum so that we're of the form pthread wants, void *(*)(void*),
-     instead of double (*)(variadic_type_apop_map_sum).  The main of
-     variadic_apop_map_sum just uses Apop_rows (and some abuse of that macro's
-     internals) to generate the subsets, then each thread calls this function to do the work.
-
-     How does apop_map_sum know if it's in the middle of a thread? I add 1000 to the all_pages integer. 
-     If threadct =0 or all_pages >=1000, then process as normal.
-*/
-void *apop_map_sum_for_threading(void *in){
-    double *val = malloc(sizeof(double));
-    *val = variadic_apop_map_sum(*(variadic_type_apop_map_sum*)in);
-    return val;
-}
-
 /** A function that effectively calls \ref apop_map and returns the sum of the resulting elements. Thus, this function returns a single \c double. See the \ref apop_map page for details of the inputs, which are the same here, except that \c inplace doesn't make sense---this function will always just add up the input function outputs.
 
   See also the \ref mapply "map/apply page" for details.
 
 \li I don't copy the input data to send to your input function. Therefore, if your function modifies its inputs as a side-effect, your data set will be modified as this function runs.
+
+\li The sum of zero elements is zero, so that is what is returned if the input \ref apop_data set is \c NULL. If <tt>apop_opts.verbose >= 2</tt> I print a warning.
  \ingroup mapply
  */
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages){ 
-
-    //The first half of the wrapper function is about threading. See notes attached to apop_map_sum_for_threading.
-    int threadct = GSL_MIN((varad_in.in->matrix? varad_in.in->matrix->size1 : varad_in.in->vector ? varad_in.in->vector->size: 1), apop_opts.thread_count);
-    if (threadct > 1 && varad_in.all_pages <1000){
-        pthread_t thread_id[threadct];
-        variadic_type_apop_map_sum inputs[threadct];
-        apop_data slices[threadct];
-        gsl_vector v[threadct], w[threadct];
-        gsl_matrix m[threadct];
-        Get_vmsizes(varad_in.in);
-        int totalct = GSL_MAX(vsize, GSL_MAX(msize1, varad_in.in->textsize[0]));
-        int segment_size  = totalct/threadct;
-        for (int i=0 ; i<threadct; i++){
-            inputs[i] = varad_in;
-            /*Copy the inputs, use Apop_rows to get slices, use all_pages to mark that this is
-            in-thread processing, then run this function on the subsetted copy of the inputs.  
-            The tedium is in copying the substructures (but not data) so they persist past the loop. */
-            int bottom=i*segment_size;
-            Apop_rows(varad_in.in, bottom, i==threadct-1 ? totalct-bottom : segment_size, somerows);
-            slices[i] = *somerows; //copy the struct, because on the next loop it'll be different.
-            v[i] = somerows->vector ? *(somerows->vector): (gsl_vector){};
-            w[i] = somerows->weights ? *(somerows->weights): (gsl_vector){};
-            m[i] = somerows->matrix ? *(somerows->matrix): (gsl_matrix){};
-            slices[i].vector = somerows->vector ? &v[i] : 0;
-            slices[i].weights = somerows->weights ? &w[i] : 0;
-            slices[i].matrix = somerows->matrix ?&m[i] : 0;
-            inputs[i].in = slices+i;
-            inputs[i].all_pages = varad_in.all_pages+1000;
-            pthread_create(&thread_id[i], NULL, apop_map_sum_for_threading, inputs+i);
-        }
-        double sum = 0;
-        void *partsum;
-        for (int i=0 ; i<threadct; i++){
-            pthread_join(thread_id[i], &partsum);
-//printf("part %i: %g\n", i, *(double*)partsum);
-//apop_data_show(slices+i);
-            sum+= *(double*)partsum;
-            free(partsum);
-        }
-
-        inputs[0].in = varad_in.in->more;
-        inputs[0].all_pages -= 1000;
-        return sum + (((varad_in.all_pages=='y' || varad_in.all_pages=='Y') && varad_in.in->more) ? variadic_apop_map_sum(inputs[0]): 0);
-    }
-
     apop_data * apop_varad_var(in, NULL)
+    Apop_stopif(!in, return 0, 2, "NULL input. Returning zero.");
     apop_fn_v * apop_varad_var(fn_v, NULL)
     apop_fn_d * apop_varad_var(fn_d, NULL)
     apop_fn_r * apop_varad_var(fn_r, NULL)
@@ -584,50 +490,20 @@ APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_
     apop_fn_ri * apop_varad_var(fn_ri, NULL)
     void * apop_varad_var(param, NULL)
     char apop_varad_var(part, ((fn_v||fn_vp||fn_vpi||fn_vi) ? 'r' : 'a'));
-    if (varad_in.all_pages >= 1000) varad_in.all_pages -= 1000;
     int apop_varad_var(all_pages, 'n')
 APOP_VAR_ENDHEAD 
-    Get_vmsizes(in);
-    double outsum = 0;
-    if (fn_r || fn_ri || fn_rpi || fn_rp)
-        for (int i=0; i < GSL_MAX(maxsize, in->textsize[0]); i++){
-            Apop_row(in, i, arow);
-            if (fn_r) outsum += fn_r(arow);
-            else if (fn_rp) outsum += fn_rp(arow, param);
-            else if (fn_ri) outsum += fn_ri(arow, i);
-            else            outsum += fn_rpi(arow, param, i);
-        }
-    else {
-        if (part =='m' || part == 'v' || part == 'a'){
-        Apop_stopif(!fn_d && !fn_dp && !fn_di && !fn_dpi, return NAN, 0, 
-                "You specified .part='a', which means I need one of .fn_d, .fn_dp, .fn_di, or .fn_dpi specified");
-        if (part =='m') firstcol= 0; //don't traverse vector, even if present
-        if (part =='v') msize2= 0; //don't traverse matrix, even if present
-        for (int i=0; i < GSL_MAX(vsize, msize1); i++)
-            for (int j=firstcol; j < msize2; j++){
-                double val = apop_data_get(in, i, j);
-                if (fn_d) outsum += fn_d(val);
-                else if (fn_dp) outsum += fn_dp(val, param);
-                else if (fn_di) outsum += fn_di(val, i);
-                else            outsum += fn_dpi(val, param, i);
-            }
-        } else if (part =='r' ||part =='c'){
-            Apop_stopif(!fn_v && !fn_vp && !fn_vi && !fn_vpi, return NAN, 0,
-                    "You specified .part='a', which means I need one of .fn_v, .fn_vp, .fn_vi, or .fn_vpi specified");
-            long int max = (part=='r') ? msize1 : msize2;
-            gsl_vector_view v;
-            for (int i=0; i < max; i++){
-                v = (part=='r')
-                    ? gsl_matrix_row(in->matrix, i)
-                    : gsl_matrix_column(in->matrix, i);
-                if       (fn_v)  outsum += fn_v(&v.vector);
-                else if (fn_vp)  outsum += fn_vp(&v.vector, param);
-                else if (fn_vi)  outsum += fn_vi(&v.vector, i);
-                else             outsum += fn_vpi(&v.vector, param, i);
-            }
-        }
-    }
-        return outsum + 
-                    (((all_pages=='y' || all_pages=='Y') && in->more) ? apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, fn_ri, param, part, all_pages) : 0);
-    }
+    apop_data *mapped = apop_map(in, .fn_d=fn_d, .fn_v=fn_v, .fn_r=fn_r, 
+                        .fn_dp=fn_dp, .fn_vp=fn_vp, .fn_rp=fn_rp, 
+                        .fn_dpi=fn_dpi,  .fn_vpi=fn_vpi, .fn_rpi=fn_rpi, 
+                        .fn_di=fn_di, .fn_vi=fn_vi, .fn_ri=fn_ri, 
+                        .param=param, .part=part, .inplace='n', .all_pages='n');
+    double outsum =   (mapped->vector ? apop_sum(mapped->vector) : 0)
+                    + (mapped->matrix ? apop_matrix_sum(mapped->matrix) : 0);
+    apop_data_free(mapped);
+    return outsum + 
+                    (((all_pages=='y' || all_pages=='Y') && in->more) ? 
+                        apop_map_sum_base(in->more, fn_d, fn_v, fn_r, fn_dp, 
+                        fn_vp, fn_rp, fn_dpi, fn_vpi, fn_rpi, fn_di, fn_vi, 
+                        fn_ri, param, part, all_pages) : 0);
+}
 /** \} */

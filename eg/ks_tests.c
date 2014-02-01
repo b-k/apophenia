@@ -2,8 +2,8 @@
 //This program finds the p-value of a K-S test between
 //500 draws from a N(0, 1) and a N(x, 1), where x grows from 0 to 1.
 
-apop_model * model_to_pmfs(apop_model *m1, int size, gsl_rng *r){
-    apop_data *outd1 = apop_model_draws(m1, size, r);
+apop_model * model_to_pmfs(apop_model *m1, int size){
+    apop_data *outd1 = apop_model_draws(m1, size);
     return apop_estimate(apop_data_sort(outd1), apop_pmf);
 }
 
@@ -15,8 +15,7 @@ apop_model * model_to_pmfs(apop_model *m1, int size, gsl_rng *r){
 
 int main(){
     apop_model *n1 = apop_model_set_parameters(apop_normal, 0, 1);
-    gsl_rng *r = apop_rng_alloc(123);
-    apop_model *pmf1 = model_to_pmfs(n1, 5e2, r);
+    apop_model *pmf1 = model_to_pmfs(n1, 5e2);
     apop_data *ktest;
 
     //first, there should be zero divergence between a PMF and itself:

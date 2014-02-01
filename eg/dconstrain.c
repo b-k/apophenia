@@ -37,7 +37,7 @@ int main(){
     assert(apop_vector_distance(est->parameters->vector, norm->parameters->vector)<1e-1);
 
     //Generate a data set that is truncated at zero using alternate means
-    apop_data *normald = apop_model_draws(apop_model_set_parameters(apop_normal, 0, 1), 2e4);
+    apop_data *normald = apop_model_draws(apop_model_set_parameters(apop_normal, 0, 1), 5e4);
     for (int i=0; i< normald->matrix->size1; i++){
         double *d = apop_data_ptr(normald, i);
         if (*d < 0) *d *= -1;

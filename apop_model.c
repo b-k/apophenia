@@ -422,7 +422,9 @@ int apop_draw(double *out, gsl_rng *r, apop_model *m){
     //Else, MCMC, possibly setting it up first.
     //generate a model with data/params reversed
     //estimate mcmc. Swapped model will be stored as settings->base_model.
-    if (!Apop_settings_get_group(m, apop_mcmc)){
+    if (!Apop_settings_get_group(m, apop_mcmc))
+    #pragma omp critical
+    {
         apop_model *swapped = apop_model_copy(apop_swap_model);
         swapped->more = m;
         swapped->msize1 = 1;

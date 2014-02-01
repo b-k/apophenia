@@ -7,8 +7,7 @@ int main(){
     apop_model *m2 = apop_model_set_parameters(apop_normal, -5, 1);
     apop_model *mm = apop_model_stack(m1, m2);
     int len = 1e5;
-    gsl_rng *r = apop_rng_alloc(1);
-    apop_data *draws = apop_model_draws(mm, len, r);
+    apop_data *draws = apop_model_draws(mm, len);
     for (int i=0; i< len; i++){
         Apop_row_v(draws, i, onev);
         assert((int)onev->data[0] == onev->data[0]);
@@ -41,9 +40,9 @@ int main(){
     apop_model *m3 = apop_model_set_parameters(apop_poisson, 8);
     apop_model *mmm = apop_model_stack(m1, m2, m3);
     apop_data *sum = apop_data_summarize(apop_model_draws(mmm, 1e5));
-    assert(fabs(apop_data_get(sum, .row=0, .colname="mean") - 3) < 1e-2);
-    assert(fabs(apop_data_get(sum, .row=1, .colname="mean") - -5) < 1e-2);
-    assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 1e-2);
+    assert(fabs(apop_data_get(sum, .row=0, .colname="mean") - 3) < 2e-2);
+    assert(fabs(apop_data_get(sum, .row=1, .colname="mean") - -5) < 2e-2);
+    assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 2e-2);
     assert(apop_data_get(sum, .row=0, .colname="median") == 3);
     assert(apop_data_get(sum, .row=2, .colname="median") == 8);
 }

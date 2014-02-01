@@ -1,7 +1,6 @@
 #include <apop.h>
 
 int main(){
-    gsl_rng *r = apop_rng_alloc(10);
     size_t ct = 5e4;
 
     //set up the model & params
@@ -11,7 +10,7 @@ int main(){
     apop_model *pvm = apop_model_copy(apop_multivariate_normal);
     pvm->parameters = apop_data_copy(params);
     pvm->dsize = 2;
-    apop_data *d = apop_model_draws(pvm, ct, r);
+    apop_data *d = apop_model_draws(pvm, ct);
 
     //set up and estimate a model with fixed covariance matrix but free means
     gsl_vector_set_all(pvm->parameters->vector, GSL_NAN);

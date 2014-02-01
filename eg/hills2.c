@@ -25,9 +25,8 @@ int main(){
                         produce_fixed_mvn(0, 1));
     apop_prep(NULL, many_humps);
 
-    gsl_rng *r = apop_rng_alloc(21);
     int len = 100000;
-    apop_data *d = apop_model_draws(many_humps, len, r);
+    apop_data *d = apop_model_draws(many_humps, len);
     Apop_col_v(d, 0, first);
     #ifndef Testing
     printf("mu=%g\n", apop_mean(first));

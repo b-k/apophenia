@@ -122,7 +122,7 @@ void test_ml_imputation(gsl_rng *r){
         for(j=i+1; j < 3; j ++)
             apop_data_set(mvn->parameters, j, i, apop_data_get(mvn->parameters, i, j));
     apop_matrix_to_positive_semidefinite(mvn->parameters->matrix);
-    apop_model_draws(mvn, .draws=fillme, .rng=r);
+    apop_model_draws(mvn, .draws=fillme);
     //apop_data_show(mvn->parameters);
     apop_model *est = apop_estimate(fillme, apop_multivariate_normal);
     //apop_data_show(est->parameters);
@@ -850,15 +850,15 @@ void test_lognormal(gsl_rng *r){
     apop_data_free(data);
 }
 
-void test_multivariate_normal(gsl_rng *r){
-    int len = 4e5;
+void test_multivariate_normal(){
+    int len = 5e5;
     double params[] = {1, 3, 0,
                        2, 0, 1};
     apop_data *p = apop_data_fill_base(apop_data_alloc(2, 2, 2), params);
     apop_model *mv = apop_model_copy(apop_multivariate_normal);
     mv->parameters=p;
     mv->dsize=2;
-    apop_data *rdraws = apop_model_draws(mv, .count=len, .rng=r);
+    apop_data *rdraws = apop_model_draws(mv, .count=len);
     mv->parameters=NULL;
     apop_model_free(mv);
     apop_model *est =apop_estimate(rdraws, apop_multivariate_normal);
@@ -868,7 +868,7 @@ void test_multivariate_normal(gsl_rng *r){
                   +fabs(est->parameters->matrix->data[1] - p->matrix->data[1])
                   +fabs(est->parameters->matrix->data[2] - p->matrix->data[2])
                   +fabs(est->parameters->matrix->data[3] - p->matrix->data[3]);
-    assert (error < 3e-2); //yes, unimpressive, but we don't wanna be here all day.
+    Diff(error, 0, 4e-2); //yes, unimpressive, but we don't wanna be here all day.
     apop_model_free(est);
     apop_data_free(rdraws);
 }
@@ -1353,7 +1353,7 @@ int main(int argc, char **argv){
     do_test("rownames", test_rownames());
     do_test("apop_dot", test_dot());
     do_test("apop_jackknife", test_jackknife(r));
-    do_test("test multivariate_normal", test_multivariate_normal(r));
+    do_test("test multivariate_normal", test_multivariate_normal());
     do_test("log and exponent", log_and_exp(r));
     do_test("split and stack test", test_split_and_stack(r));
     do_test("test probit and logit", test_probit_and_logit(r));

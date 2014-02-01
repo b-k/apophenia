@@ -5,6 +5,7 @@ Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <regex.h>
+#include <omp.h>
 
 extern char *apop_nul_string;
 
@@ -319,13 +320,37 @@ apop_model *apop_beta_from_mean_var(double m, double v){
     return apop_model_set_parameters(apop_beta, alpha, beta);
 }
 
+/** The \c gsl_rng is not itself thread-safe, in the sense that it can not be used
+simultaneously by multiple threads. However, if each thread has its own \c gsl_rng, then each will safely operate independently.
+
+Thus, Apophenia keeps an internal store of RNGs for use by threaded functions. If the
+input to this function, \c thread, is greater than any previous input, then the array
+of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended using
+<tt>++apop_opts.rng_seed</tt> (i.e., the seed is incremented before use).
+
+\param thread The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads).
+
+\return The appropriate RNG, initialized if necessary.
+*/
+gsl_rng *apop_rng_get_thread(int thread){
+    static gsl_rng **rngs;
+    static int rng_ct = -1;
+    if (thread > rng_ct)
+        #pragma omp critical
+        {
+            rngs = realloc(rngs, sizeof(gsl_rng*)*(thread+1));
+            for (int i=rng_ct+1; i<= thread; i++)
+                rngs[i] = apop_rng_alloc(++apop_opts.rng_seed);
+            rng_ct = thread;
+        }
+    return rngs[thread];
+}
+
 /** Make a set of random draws from a model and write them to an \ref apop_data set.
 
 \param model The model from which draws will be made. Must already be prepared and/or estimated.
 
 \param count The number of draws to make. If \c draw_matrix is not \c NULL, then this is ignored and <tt>count=draw_matrix->matrix->size1</tt>. default=1000.
-
-\param rng a \c gsl_rng, already allocated. default: see \ref autorng.
 
 \param draws If not \c NULL, a pre-allocated data set whose \c matrix element will be filled with draws. 
 
@@ -341,12 +366,13 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 \li See also \ref apop_draw, which makes a single draw.
 
-Here is a one-liner program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):
+\li Random numbers are generated using RNGs from \ref apop_rng_get_thread, qv.
+
+Here is a two-line program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):
 
 \include draw_some_normals.c
  */
-
-APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws){
+APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, apop_data *draws){
     apop_model * apop_varad_var(model, NULL);
     Apop_stopif(!model, apop_return_data_error(n), 0, "Input model is NULL.");
     Apop_stopif(!model->dsize, apop_return_data_error(n), 0, "Input model has dsize==0.");
@@ -359,16 +385,14 @@ APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, gsl_rng 
         count = draws->matrix->size1;
     } else
         Apop_stopif(model->dsize<=0, apop_return_data_error(n), 0, "model->dsize<=0, so I don't know the size of matrix to allocate.");
-    static gsl_rng *spare_rng;
-    gsl_rng * apop_varad_var(rng, NULL);
-    if (!rng && !spare_rng)
-        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng)  rng = spare_rng;
 APOP_VAR_ENDHEAD
     apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
-    for (int i=0; i< count; i++){
+    int i;
+
+    #pragma omp parallel for private(i)
+    for (i=0; i< count; i++){
         Apop_row(out, i, onerow);
-        Apop_stopif(apop_draw(onerow->matrix->data, rng, model),
+        Apop_stopif(apop_draw(onerow->matrix->data, apop_rng_get_thread(omp_get_thread_num()), model),
                 gsl_matrix_set_all(onerow->matrix, GSL_NAN); out->error='d',
                 0, "Trouble drawing for row %i. "
                 "I set it to all NANs and set out->error='d'.", i);

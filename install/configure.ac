@@ -65,6 +65,7 @@ AM_CONDITIONAL([HAVE_MYSQL], [test x$HAVE_MYSQL = xtrue])
 PACKAGE_NAME=apophenia
 
 ACX_PTHREAD
+AC_OPENMP
 
 AC_CONFIG_FILES([Makefile tests/Makefile apophenia.pc])
 AC_OUTPUT

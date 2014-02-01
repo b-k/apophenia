@@ -229,7 +229,7 @@ Apop_var_declare( apop_data* apop_data_rm_page(apop_data * data, const char *tit
 Apop_var_declare( apop_data * apop_data_rm_rows(apop_data *in, int *drop, int (*do_drop)(apop_data* ! void*), void* drop_parameter) )
 
 //in apop_asst.c:
-Apop_var_declare( apop_data * apop_model_draws(apop_model *model, int count, gsl_rng *rng, apop_data *draws) )
+Apop_var_declare( apop_data * apop_model_draws(apop_model *model, int count, apop_data *draws) )
 
 
 /* Convenience functions to convert among vectors (gsl_vector), matrices (gsl_matrix), 
@@ -1526,7 +1526,6 @@ typedef struct {
 typedef struct {
     apop_model *generator_m;
     apop_model *ll_m;
-    gsl_rng *rng;
     int draw_ct;
 } apop_composition_settings;/**< All of the elements of this struct should be considered private.*/
 
