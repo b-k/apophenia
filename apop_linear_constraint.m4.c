@@ -176,12 +176,12 @@ APOP_VAR_ENDHEAD
         Once you have a candidate point, compare its distance to the
         current favorite; keep the best.
      */
-    for (i=0; i< constraint_ct; i++){
-        if (bindlist[i])
+    for (i=0; i< constraint_ct; i++)
+        if (bindlist[i]){
             get_candiate(base_beta, constraint, i, candidate, margin);
-        if(apop_vector_distance(base_beta, candidate) < apop_vector_distance(base_beta, closest_pt))
-            gsl_vector_memcpy(closest_pt, candidate);
-    }
+            if(apop_vector_distance(base_beta, candidate) < apop_vector_distance(base_beta, closest_pt))
+                gsl_vector_memcpy(closest_pt, candidate);
+        }
     gsl_vector_memcpy(beta, closest_pt);
 add_margin:
     for (i=0; i< constraint_ct; i++){

@@ -748,7 +748,7 @@ gsl_vector * v = &( apop_vv_##v );*/
 
 #define Apop_cols(d, colnum, len, outd) \
     gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size2 > (colnum)+(len)-1)  \
-                                ? gsl_matrix_submatrix((d)->matrix, colnum, 0, (d)->matrix->size1, (len)).matrix\
+                                ? gsl_matrix_submatrix((d)->matrix, 0, colnum, (d)->matrix->size1, (len)).matrix\
                                 : (gsl_matrix) { };             \
     apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
             (apop_name){                                                         \
@@ -765,7 +765,8 @@ gsl_vector * v = &( apop_vv_##v );*/
                 .vector= NULL,                                                   \
                 .weights= (d)->weights,                                          \
                 .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
-                .textsize[0]=NULL                                                \
+                .textsize[0] = 0,                                                \
+                .textsize[1] = 0,                                                \
                 .text = NULL,                                                    \
                 .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
     apop_data *outd =  &apop_dd_##outd;
@@ -1299,7 +1300,7 @@ typedef struct{
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
     char method;
-    apop_model *proposal; /**< The distribution from which test parameters will be drawn. If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. */
+    apop_model *proposal; /**< The distribution from which test parameters will be drawn. If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to parameterize your model with an initial position. */
     void (*step_fn)(apop_data *, apop_model*); /**< Modifies the parameters of the
         proposal distribution given a successful draw. Thus, this function writes the
         drawn data point to the parameter set. If the draw is a scalar, the default
@@ -1311,6 +1312,7 @@ typedef struct{
     double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
     apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
     apop_model *base_model; /**< The model you provided with a \c log_likelihood or \c p element (which need not sum to one). You do not have to set this: if it is \c NULL on input to \ref apop_model_metropolis, I will fill it in.*/
+    int proposal_is_cp; /**< For internal use. */
 } apop_mcmc_settings;
 
 //Loess, including the old FORTRAN-to-C.

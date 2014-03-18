@@ -46,15 +46,19 @@ Apop_settings_init(apop_mcmc,
    //all else defaults to zero/NULL
 )
 
-Apop_settings_copy(apop_mcmc, )
+Apop_settings_copy(apop_mcmc, 
+        out->proposal = apop_model_copy(in->proposal);
+        out->proposal_is_cp=1;
+)
+
 Apop_settings_free(apop_mcmc, 
-        apop_model_free(in->proposal);)
+        if (in->proposal_is_cp) apop_model_free(in->proposal);
+)
 
 
 static void step_to_vector(apop_data *d, apop_model *m){
     gsl_vector *vv = apop_data_pack(d);
-    if (vv->size==1) apop_data_set(m->parameters, .val=gsl_vector_get(vv, 0));
-    else             gsl_vector_memcpy(m->parameters->vector, vv);
+    apop_data_unpack(vv, m->parameters);
     gsl_vector_free(vv);
 }
 
@@ -73,12 +77,16 @@ static apop_model *maybe_prep(apop_data *d, apop_model *m, bool *is_a_copy){
 }
 
 static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
-    s->proposal = apop_model_copy(apop_multivariate_normal);
+    apop_model *mvn =  apop_model_copy(apop_multivariate_normal);
+    mvn->parameters = apop_data_alloc(tsize, tsize, tsize);
+    gsl_vector_set_all(mvn->parameters->vector, NAN);
+    gsl_matrix_set_identity(mvn->parameters->matrix);
+    s->proposal = apop_model_fix_params(mvn);
     s->proposal->dsize = tsize;
-    s->proposal->parameters = apop_data_alloc(tsize, tsize, tsize);
+    s->proposal->parameters = apop_data_alloc(tsize);
     gsl_vector_set_all(s->proposal->parameters->vector, 1);
-    gsl_matrix_set_identity(s->proposal->parameters->matrix);
     s->step_fn = step_to_vector;
+    s->proposal_is_cp = 1;
 }
 
 /* The draw method for models estimated via apop_model_metropolis. */
@@ -92,7 +100,7 @@ static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
      */
 int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     Apop_stopif(!apop_settings_get_group(params, apop_mcmc), return 1, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
-#pragma omp critical
+#pragma omp critical (metro_draw)
 {
     apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
     apop_data *earlier_draws = s->pmf->data;
@@ -133,13 +141,13 @@ int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     apop_data_pack(m->parameters, v);
     memcpy(out, v->data, sizeof(double)*tsize);
     if(earlier_draws->vector) {
-        apop_vector_realloc(earlier_draws->vector, earlier_draws->vector->size +1);
-        gsl_vector_set(earlier_draws->vector, earlier_draws->vector->size-1, 1);
+        apop_vector_realloc(earlier_draws->vector, earlier_draws->vector->size + 1);
+        gsl_vector_set(earlier_draws->vector, earlier_draws->vector->size - 1, 1);
     }
+    apop_data_free(current_param);
 
     if (reject_count) Apop_notify(2, "M-H rejections before an accept: %i.\n", reject_count);
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
-    apop_data_free(current_param);
 }
     return 0;
 }
@@ -183,6 +191,9 @@ APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, apop_model *m, gsl
         rng = spare_rng;
     }
 APOP_VAR_END_HEAD
+    apop_model *outp;
+    #pragma omp critical (metropolis)
+    {
     apop_mcmc_settings *s = apop_settings_get_group(m, apop_mcmc);
     if (!s) s = Apop_model_add_group(m, apop_mcmc);
     bool m_is_a_copy = 0;
@@ -200,6 +211,11 @@ APOP_VAR_END_HEAD
     int accept_count = 0;
 
     if (!s->proposal) setup_normal_proposals(s, tsize);
+    if (!s->proposal->parameters) {
+        apop_prep(NULL, s->proposal);
+        if(s->proposal->parameters->matrix) gsl_matrix_set_all(s->proposal->parameters->matrix, 1);
+        if(s->proposal->parameters->vector) gsl_vector_set_all(s->proposal->parameters->vector, 1);
+    }
     if (!s->step_fn) s->step_fn = step_to_vector;
 
     apop_draw(draw, rng, s->proposal); //set starting point.
@@ -239,7 +255,7 @@ APOP_VAR_END_HEAD
     }
     out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
     gsl_vector_set_all(out->weights, 1);
-    apop_model *outp = apop_estimate(out, apop_pmf);
+    outp = apop_estimate(out, apop_pmf);
     s->pmf = outp;
     s->base_model = m;
     outp->draw = apop_model_metropolis_draw;
@@ -250,6 +266,7 @@ APOP_VAR_END_HEAD
     if (m_is_a_copy) apop_model_free(m);
     Apop_notify(2, "M-H sampling accept percent = %3.3f%%", 100*(0.0+accept_count)/s->periods);
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
+    }
     return outp;
 }
 

@@ -100,6 +100,8 @@ static long double multinomial_log_likelihood(apop_data *d, apop_model *params){
     Nullcheck_mpd(d, params, GSL_NAN);
     double *pv = params->parameters->vector->data;
     double n = pv[0]; 
+    Apop_assert_c(params->parameters->vector->size>=2, GSL_NAN, 0, "I need two or more input parameters "
+                    "representing [n, p_1, (...)].");
     Apop_assert_c(pv[1] <=1, GSL_NAN, 1, "The input parameters should be [n, p_1, (...)], but "
         "element 1 of the parameter vector is >1."); //mostly makes sense for the binomial.
     if (n==2) return apop_map_sum(d, .fn_vp=binomial_ll, .param=params->parameters->vector);

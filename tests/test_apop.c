@@ -26,6 +26,7 @@ because it reported an error of 1e-5 when it should have been 1e-8. There is alw
 room for better numeric precision; we all know this without reminders from the
 post-install tests.  */
 
+#define _GNU_SOURCE
 #include <apop.h>
 #include <unistd.h>
 
@@ -270,8 +271,17 @@ void test_listwise_delete(){
     for (int i=0; i< 10; i++)
         for (int j=0; j< 9; j++)
             apop_text_add(t1, i, j, "%i", i*j);
+    t2 = apop_data_copy(t1);
     apop_data_transpose(t1);
     assert(!strlen(t1->text[7][11]));
+
+    //come back
+    apop_data_transpose(t1);
+    assert(!strlen(t1->text[11][7]));
+    for (int i=0; i< 10; i++)
+        for (int j=0; j< 9; j++)
+            assert(!strcmp(t1->text[i][j], t2->text[i][j]));
+
     apop_data_free(t1);
     t1 = apop_text_alloc(NULL, 10, 12);
     for (int i=0; i< 9; i++)

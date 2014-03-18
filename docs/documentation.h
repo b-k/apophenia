@@ -16,7 +16,7 @@ task, then Apophenia is the library for you.
 
 <h5>The goods</h5> 
 
-The library has been growing and improving since 2005, and has been downloaded over 10,000 times. To date, it has over two hundred functions to facilitate scientific computing, such as:
+The library has been growing and improving since 2005, and has been downloaded over 10,000 times. To date, it has over two hundred functions to facilitate statistical computing, such as:
 
 \li OLS and family, discrete choice models like probit and logit, kernel density estimators, and other common models
 \li database querying and maintenance utilities
@@ -433,18 +433,6 @@ Order matters in the linking list: the files a package depends on should be list
 endofdiv
 
 
-Outlineheader vim Syntax highlighting 
-
-If your text editor supports syntax highlighting, there are a few types defined in the Apophenia and GSL headers which may be worth coloring.
-E.g., for <tt>vim</tt>, add the following two lines to <tt>/usr/share/vim/[your current version]/syntax/c.vim</tt>:
-\code
-syn keyword     cType           gsl_matrix gsl_rng gsl_vector apop_data
-syn keyword     cType           apop_name apop_model
-\endcode
-Other text editors have similar files to which you can add the above types.
-
-endofdiv
-
 endofdiv
 
 Outlineheader debugging  Errors, logging, debugging and stopping
@@ -554,6 +542,52 @@ apop_text_to_db indata stab db_for_sqlite.db
 Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
 endofdiv
 
+Outlineheader threads Threading
+
+Apophenia uses OpenMP for threading. You generally do not need to know how OpenMP works
+to use Apophenia, and many points of work will thread without your doing anything.
+
+\li There are few compilers that don't support OpenMP. Clang on MacOS may be the only
+current mainstream example as of this writing, and they are hard at work on implementing
+it. In the mean time, you will get errors about undefined #pragmas when compiling on
+such a system, and all work will be single-threaded.
+
+\li Set the maximum number of threads to \c N with the environment variable
+
+\code
+export OMP_NUM_THREADS N
+\endcode
+
+or the C function
+
+\code
+#include <omp.h>
+omp_set_num_threads(N);
+\endcode
+
+Use one of these methods with <tt>N=1</tt> if you want a single-threaded program.
+
+\li \ref apop_map and friends distribute their \c for loop over the input \ref apop_data
+set across multiple threads. Therefore, be careful to send thread-unsafe functions to
+it only after calling \c omp_set_num_threads(1).
+
+\li There are a few functions, like \ref apop_model_draws, that rely on \ref apop_map, and
+therefore also thread by default.
+
+\li The function apop_rng_get_thread() retrieves a statically-stored RNG specific to a given
+thread. Therefore, if you use that function in the place of a \c gsl_rng, you can
+parallelize functions that make random draws.
+
+\li \ref apop_rng_get_thread allocates its store of threads using apop_opts.rng_seed,
+then incrementing that seed by one. You thus probably have threads with seeds 479901,
+479902, 479903, .... [If you have a better way to do it, please feel free to modify the
+code to implement your improvement and submit a pull request on Github.]
+
+See <a href="http://modelingwithdata.org/arch/00000175.htm>this tutorial on C
+threading</a> if you would like to know more, or are unsure about whether your functions
+are thread-safe or not.
+
+endofdiv
 
 Outlineheader mwd The book version
 
@@ -2835,7 +2869,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \section methodsection Methods
 
 \subsection psubsection p, log_likelihood
-    ;
+
 \li Function headers look like  <tt>long double your_p_or_ll(apop_data *d, apop_model *params)</tt>.
 \li The inputs are an \ref apop_data set and an \ref apop_model, which should include a filled <tt>->parameters</tt> element.
 \li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are.

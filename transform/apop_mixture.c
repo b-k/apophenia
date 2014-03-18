@@ -257,7 +257,7 @@ But I have logs, and want to stay in log-format for as long as possible, to prev
 
 static int mixture_draw (double *out, gsl_rng *r, apop_model *m){
     apop_mixture_settings *ms = Apop_settings_get_group(m, apop_mixture);
-    #pragma omp critical
+    #pragma omp critical (mixdraw)
     if (!ms->cmf){
         ms->cmf = apop_model_copy(apop_pmf);
         ms->cmf->data = apop_data_alloc();

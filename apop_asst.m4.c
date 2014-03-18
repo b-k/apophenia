@@ -336,7 +336,7 @@ gsl_rng *apop_rng_get_thread(int thread){
     static gsl_rng **rngs;
     static int rng_ct = -1;
     if (thread > rng_ct)
-        #pragma omp critical
+        #pragma omp critical (rng_get_thread)
         {
             rngs = realloc(rngs, sizeof(gsl_rng*)*(thread+1));
             for (int i=rng_ct+1; i<= thread; i++)
