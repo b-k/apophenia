@@ -151,7 +151,7 @@ typedef struct {
 } apop_model_for_infomatrix_struct;
 
 static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
-    static gsl_vector *v = NULL;
+    static threadlocal gsl_vector *v = NULL;
     apop_model_for_infomatrix_struct *settings = m->more;
     apop_model *mm = settings->base_model;
     apop_score_type ms = apop_score_vtable_get(mm);
@@ -833,8 +833,7 @@ static void apop_annealing(infostruct *i){
                          .t_initial     = mp->t_initial,
                          .mu_t          = mp->mu_t,
                          .t_min         = mp->t_min};
-    static const gsl_rng *r;
-    if (!r) r = mp->rng ? mp->rng : apop_rng_alloc(apop_opts.rng_seed++);
+    gsl_rng *r = mp->rng ? mp->rng : apop_rng_get_thread();
     //these two are done at apop_maximum_likelihood:
     //i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
     //setup_starting_point(mp, i->beta);

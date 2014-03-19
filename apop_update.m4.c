@@ -163,7 +163,7 @@ documentation for details.
 
 \param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
 
-\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: see \ref autorng)
+\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
 
 \li If the likelihood model no parameters, I will allocate them. That means you can use
 one of the stock models that ship with Apophenia. If I need to run the model's prep
@@ -181,15 +181,10 @@ a specialized \c draw method that returns another step from the Markov chain wit
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, apop_model *m, gsl_rng *rng){
-    static gsl_rng *spare_rng = NULL;
     apop_data *apop_varad_var(d, NULL);
     apop_model *apop_varad_var(m, NULL);
     Apop_stopif(!m, return NULL, 0, "NULL model input.");
-    gsl_rng *apop_varad_var(rng, NULL);
-    if (!rng){
-        if (!spare_rng) spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-        rng = spare_rng;
-    }
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
 APOP_VAR_END_HEAD
     apop_model *outp;
     #pragma omp critical (metropolis)
@@ -393,7 +388,7 @@ typedef apop_model *(*apop_update_type)(apop_data *, apop_model , apop_model);
 estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method.  (No default, must not be \c NULL.)
 \param likelihood The likelihood \ref apop_model. If the system needs to
 estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method (ll preferred). (No default, must not be \c NULL.)
-\param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: see \ref autorng)
+\param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: an RNG from \ref apop_rng_get_thread)
 \return an \ref apop_model struct representing the posterior, with updated parameters. 
 
 Here is a test function that compares the output via conjugate table and via
@@ -403,15 +398,10 @@ Metropolis-Hastings sampling:
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng){
-    static gsl_rng *spare_rng = NULL;
     apop_data *apop_varad_var(data, NULL);
     apop_model *apop_varad_var(prior, NULL);
     apop_model *apop_varad_var(likelihood, NULL);
-    gsl_rng *apop_varad_var(rng, NULL);
-    if (!rng){
-        if (!spare_rng) spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-        rng = spare_rng;
-    }
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
 APOP_VAR_END_HEAD
     static int setup=0; if (!(setup++)){
         apop_update_vtable_add(betabinom, apop_beta, apop_binomial);

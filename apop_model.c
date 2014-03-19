@@ -347,7 +347,7 @@ in which you are interested. Thus, if this is zero or more, then you will get a
 univariate output distribution describing a single parameter. If <tt>index == -1</tt>,
 then I will give you the multivariate distribution across all parameters.  The default
 is zero (i.e. the univariate distribution of the zeroth parameter).
-\li \c rng If the method requires random draws (as the default bootstrap will), then use this. If you provide \c NULL and one is needed, see the \ref autorng section on how one is provided for you.
+\li \c rng If the method requires random draws (as the default bootstrap will), then use this. If you provide \c NULL and one is needed, I provide one for you via <tt>apop_rng_alloc(apop_opts.rng_seed++)</tt>.
 \li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
 the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
 \li The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:

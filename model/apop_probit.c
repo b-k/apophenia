@@ -97,7 +97,7 @@ static long double biprobit_log_likelihood(apop_data *d, apop_model *p){
 	return total_prob;
 }
 
-static double val;
+static threadlocal double val;
 static double unordered(double in){ return in == val; }
 
 // This is just a for loop that runs a probit on each column.
@@ -106,7 +106,7 @@ static long double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     gsl_vector *val_vector = get_category_table(d)->vector;
     if (val_vector->size==2) return biprobit_log_likelihood(d, p);
     //else, multinomial loop
-    static apop_model *spare_probit = NULL;
+    static threadlocal apop_model *spare_probit = NULL;
     if (!spare_probit){
         spare_probit = apop_model_copy(apop_probit);
         spare_probit->parameters = apop_data_alloc();

@@ -32,9 +32,9 @@ int main(){
     //test that the parameters are as promised.
     apop_model *m1back = apop_settings_get(ested, apop_stack, model1);
     apop_model *m2back = apop_settings_get(ested, apop_stack, model2);
-    assert(fabs(apop_data_get(m1back->parameters, .col=-1) - 3) < 1e-2);
-    assert(fabs(apop_data_get(m2back->parameters, .col=-1) - -5) < 1e-2);
-    assert(fabs(apop_data_get(m2back->parameters, .col=-1, .row=1) - 1) < 1e-2);
+    assert(fabs(apop_data_get(m1back->parameters, .col=-1) - 3) < 5e-1);
+    assert(fabs(apop_data_get(m2back->parameters, .col=-1) - -5) < 5e-1);
+    assert(fabs(apop_data_get(m2back->parameters, .col=-1, .row=1) - 1) < 5e-1);
 
     //You can stack as many models as you'd like.
     apop_model *m3 = apop_model_set_parameters(apop_poisson, 8);
@@ -42,7 +42,7 @@ int main(){
     apop_data *sum = apop_data_summarize(apop_model_draws(mmm, 1e5));
     assert(fabs(apop_data_get(sum, .row=0, .colname="mean") - 3) < 2e-2);
     assert(fabs(apop_data_get(sum, .row=1, .colname="mean") - -5) < 2e-2);
-    assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 2e-2);
+    assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 4e-2);
     assert(apop_data_get(sum, .row=0, .colname="median") == 3);
     assert(apop_data_get(sum, .row=2, .colname="median") == 8);
 }

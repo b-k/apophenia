@@ -121,7 +121,7 @@ If the constraint is not met, this \c beta is shifted by \c margin (Euclidean di
 todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
 */
 APOP_VAR_HEAD long double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
-    static apop_data *default_constraint;
+    static threadlocal apop_data *default_constraint;
     gsl_vector * apop_varad_var(beta, NULL);
     double apop_varad_var(margin, 0);
     apop_data * apop_varad_var(constraint, NULL);
@@ -139,9 +139,9 @@ APOP_VAR_HEAD long double  apop_linear_constraint(gsl_vector *beta, apop_data * 
         constraint = default_constraint;
     }
 APOP_VAR_ENDHEAD
-    static gsl_vector *closest_pt = NULL;
-    static gsl_vector *candidate  = NULL;
-    static gsl_vector *fix        = NULL;
+    static threadlocal gsl_vector *closest_pt = NULL;
+    static threadlocal gsl_vector *candidate  = NULL;
+    static threadlocal gsl_vector *fix        = NULL;
     int constraint_ct = constraint->matrix->size1;
     int bindlist[constraint_ct];
     int i, bound = 0;

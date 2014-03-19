@@ -19,9 +19,9 @@ int main(int argc, char **argv){
 
     apop_opts.verbose=0;  //so don't print queries until -v -v.
 
-	while ((c = getopt (argc, argv, "d:f:hv")) != -1)
+	while ((c = getopt (argc, argv, "d:f:hv-")) != -1)
 		if      (c=='d') strcpy(apop_opts.output_delimiter,optarg);
-        else if (c=='h') printf(msg, argv[0]);
+        else if (c=='h'||c=='-') {printf(msg, argv[0]); exit(0);}
         else if (c=='v') {
             verbose++;
             apop_opts.verbose++;

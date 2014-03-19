@@ -4,6 +4,7 @@ This file is included directly into \ref apop_db.c.
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
  */
 #include <sqlite3.h>
+#include <string.h>
 
 sqlite3	*db=NULL;	                //There's only one SQLite database handle. Here it is.
 
@@ -225,7 +226,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
     if (qi->firstcall){
         qi->firstcall = 0;
         for(int i=0; i<argc; i++)
-            if (!strcmp(column[i], apop_opts.db_name_column)){
+            if (!strcasecmp(column[i], apop_opts.db_name_column)){
                 qi->namecol = i;
                 break;
             }

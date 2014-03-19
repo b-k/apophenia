@@ -143,8 +143,12 @@ typedef struct{
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
     FILE *log_file;  /**< The file handle for the log. Defaults to \c stderr, but change it with, e.g.,
                            <tt>apop_opts.log_file = fopen("outlog", "w");</tt> */
-    int  thread_count; /**< Threads to use internally. See \ref apop_map and family.  */
-    int  rng_seed;
+    int  thread_count; /**< Deprecated. Use \c omp_set_num_threads(n).  */
+    #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
+        _Atomic(int) rng_seed;
+    #else
+        int rng_seed;
+    #endif
     float version;
 } apop_opts_type;
 
@@ -354,9 +358,6 @@ apop_model *apop_model_mixture_base(apop_model **inlist);
 apop_model *apop_model_stack_base(apop_model *mlist[]);
 #define apop_model_stack(...) apop_model_stack_base((apop_model *[]){__VA_ARGS__, NULL})
 
-        // Map and apply
-#include <pthread.h>
-
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
 Apop_var_declare( apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*),
@@ -460,6 +461,8 @@ Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *mo
 gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
+#define apop_rng_get_thread(t_in) apop_rng_get_thread_base(#t_in[0]=='\0' ? -1: (t_in+0))
+gsl_rng *apop_rng_get_thread_base(int thread);
 
 int apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
 
@@ -515,7 +518,7 @@ void $1_type_check($1_type in){ };
 #else
 void $1_type_check($1_type in);
 #endif
-#define $1_vtable_add(fn, ...) ($1_type_check(fn), apop_vtable_add("$1", fn, $1_hash(__VA_ARGS__))) 
+#define $1_vtable_add(fn, ...) $1_type_check(fn), apop_vtable_add("$1", fn, $1_hash(__VA_ARGS__))
 #define $1_vtable_get(...) apop_vtable_get("$1", $1_hash(__VA_ARGS__))
 #define $1_vtable_drop(...) apop_vtable_drop("$1", $1_hash(__VA_ARGS__))m4_dnl
 |>)
@@ -1246,7 +1249,7 @@ typedef struct {
   \ingroup settings */
 typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
-    gsl_rng *rng; /**< For random draw methods. See \ref autorng on the default. */
+    gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
     gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
     int rng_owner; /**< For internal use. Should I free the RNG when this copy of the settings group is freed? */
@@ -1521,7 +1524,7 @@ typedef struct {
     double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
     double (*scaling)(apop_model *); /**< Optional. Return the percent of the model density inside the constraint. */
     gsl_rng *rng; /**< If you don't provide a \c scaling function, I calculate the in-constraint model density via random draws.
-                       If no \c rng is provided, I use a default RNG; see \ref autorng. */
+                       If no \c rng is provided, I use a default RNG; see \ref apop_rng_get_thread. */
     int draw_ct; /**< How many draws to make for calculating the in-constraint model density via random draws. Current default: 1e4. */
 } apop_dconstrain_settings;
 

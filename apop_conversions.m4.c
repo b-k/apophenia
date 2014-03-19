@@ -464,7 +464,7 @@ typedef struct{
     char c, type;
 } apop_char_info;
 
-static size_t bs=1e5;
+static const size_t bs=1e5;
 static char get_next(char *buffer, size_t *ptr, FILE *infile){
     if (*ptr>=bs){
         size_t len=fread(buffer, 1, bs, infile);

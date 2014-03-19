@@ -81,7 +81,7 @@ int main(int argc, char **argv){
 "-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n";
 
 	Apop_stopif(argc<2, return 1, 0, msg, argv[0]);
-	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:")) != -1)
+	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:-")) != -1)
 	    if (c=='f'){
               outfile = strdup(optarg);
               sf++;
@@ -89,9 +89,9 @@ int main(int argc, char **argv){
               histoplotting = 1;
               histobins = atoi(optarg);
         } 
-        else if (c=='h') {
+        else if (c=='h'||c=='-') {
             printf(msg, argv[0]);
-			return 1;
+			return 0;
 		}
         else if (c=='d') d = strdup(optarg);
         else if (c=='n') no_plot ++;

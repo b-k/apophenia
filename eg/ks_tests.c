@@ -28,7 +28,7 @@ int main(){
     //between a N(0, 1) and N(m, 1) gets smaller.
     cprintf("mean\tpval\n");
     double prior_pval = 18;
-    for(double i=0; i<= .5; i+=0.1){
+    for(double i=0; i<= .6; i+=0.2){
         apop_model *n11 = apop_model_set_parameters(apop_normal, i, 1);
         ktest = apop_test_kolmogorov(pmf1, n11);
         #ifndef Testing

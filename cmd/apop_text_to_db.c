@@ -54,7 +54,7 @@ int main(int argc, char **argv){
 		printf("%s", msg);
 		return 0;
 	}
-	while ((c = getopt (argc, argv, "n:d:e:f:hmp:ru:vN:O")) != -1)
+	while ((c = getopt (argc, argv, "n:d:e:f:hmp:ru:vN:O-")) != -1)
         if (c=='n') {
               if (optarg[0]=='c') colnames='n';
               else                apop_opts.nan_string = optarg;
@@ -70,7 +70,7 @@ int main(int argc, char **argv){
         }
         else if (c=='d') strcpy(apop_opts.input_delimiters, optarg);
 		else if (c=='f') field_list = break_down(optarg);
-		else if (c=='h') printf("%s", msg);
+		else if (c=='h' || c=='-') {printf("%s", msg); return 0;}
 		else if (c=='m') apop_opts.db_engine = 'm';
 		else if (c=='u') strcpy(apop_opts.db_user, optarg);
 		else if (c=='p') strcpy(apop_opts.db_pass, optarg);

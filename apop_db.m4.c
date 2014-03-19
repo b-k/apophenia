@@ -21,7 +21,16 @@ apop_opts_type apop_opts	=
 
 #include "apop_db_sqlite.c" // callback_t is defined here, btw.
 
+
 #ifdef HAVE_MYSQL
+//Let mysql have these.
+#undef VERSION
+#undef PACKAGE
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_VERSION
+#undef PACKAGE_BUGREPORT
 #include "apop_db_mysql.c"
 #endif
 

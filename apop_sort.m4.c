@@ -69,8 +69,8 @@ static int find_min_unsorted(size_t *sorted, size_t height, size_t min){
     return -1;
 }
 
-static apop_data *d;  //stdlib qsort doesn't have a hook where we can put these.
-static int offset;
+static threadlocal apop_data *d;  //stdlib qsort doesn't have a hook where we can put these.
+static threadlocal int offset;
 
 static int compare_strings(const void *a, const void *b) {
     const size_t *da = (const size_t *) a;

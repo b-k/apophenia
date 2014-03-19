@@ -21,6 +21,7 @@ gsl_rng *apop_rng_alloc(int seed){
     static int first_use = 1;
     if (first_use){
        first_use = 0;
+       #pragma omp critical (rng_env_setup) //GSL makes vague promises about thread-safety
        gsl_rng_env_setup();
     }
     gsl_rng *setme = gsl_rng_alloc(gsl_rng_taus2);
@@ -100,7 +101,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
 \param data	    The data set. An \c apop_data set where each row is a single data point. (No default)
 \param model    An \ref apop_model, whose \c estimate method will be used here. (No default)
 \param iterations How many bootstrap draws should I make? (default: 1,000) 
-\param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: see \ref autorng)
+\param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
 \param keep_boots  If 'y', then add a page to the output \ref apop_data set with the statistics calculated for each bootstrap iteration.
 They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed. (Default: 'n')
 \code
@@ -121,15 +122,11 @@ apop_vector_print(row_27);
 \see apop_jackknife_cov
  */
 APOP_VAR_HEAD apop_data * apop_bootstrap_cov(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans) {
-    static gsl_rng *spare = NULL;
     apop_data * apop_varad_var(data, NULL);
     apop_model *model = varad_in.model;
     int apop_varad_var(iterations, 1000);
     Apop_stopif(!data, apop_return_data_error(n), 0, "The data input can't be NULL.");
-    gsl_rng * apop_varad_var(rng, NULL);
-    if (!rng && !spare) 
-        spare = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng) rng = spare;
+    gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
     char apop_varad_var(keep_boots, 'n');
     char apop_varad_var(ignore_nans, 'n');
 APOP_VAR_ENDHEAD

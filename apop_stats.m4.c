@@ -206,7 +206,7 @@ where \f$i\f$ iterates over dimensions.
 \ingroup convenience_fns
 */
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
-    static gsl_vector *zero = NULL;
+    static threadlocal gsl_vector *zero = NULL;
     const gsl_vector * apop_varad_var(ina, NULL);
     Apop_assert(ina, "The first vector has to be non-NULL.");
     const gsl_vector * apop_varad_var(inb, NULL);
@@ -637,7 +637,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
-  \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+  \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
   \param top deprecated synonym for \c from.
   \param bottom deprecated synonym for \c to.
 
@@ -665,11 +665,7 @@ APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int dr
     Apop_assert(from, "The first model is NULL.");
     Apop_assert(to, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
-    static gsl_rng * spare_rng = NULL;
-    gsl_rng * apop_varad_var(rng, NULL);
-    if (!rng && !spare_rng) 
-        spare_rng = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng)  rng = spare_rng;
+    gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
 APOP_VAR_ENDHEAD
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");

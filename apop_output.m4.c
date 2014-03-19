@@ -539,14 +539,13 @@ The distribution percentiles will be on the $x$-axis, your data percentiles on t
 \param v    The data (No default, must not be \c NULL.)
 \param m    The distribution, such as apop_normal. I'll be using the \c draw method. (Default = best-fitting Normal)
 \param bins The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data->size/10); denominator subject to future adjustment)
-\param r    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref autorng. (Default = \c NULL)
+\param r    A \c gsl_rng. If NULL, I'll get an RNG via \ref apop_rng_get_thread. (Default = \c NULL)
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, size_t bins, gsl_rng *r){
-    static gsl_rng *spare = NULL;
     int free_m = 0;
     gsl_vector * apop_varad_var(v, NULL);
     Apop_assert_n(v, "Input vector is NULL.");
@@ -560,10 +559,7 @@ APOP_VAR_HEAD void apop_plot_qq(gsl_vector *v, apop_model *m, Output_declares, s
     }
     Dispatch_output
     size_t apop_varad_var(bins, GSL_MAX(10, v->size/10));
-    gsl_rng *apop_varad_var(r, NULL)
-    if (!r && !spare) 
-        spare = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!r)  r = spare;
+    gsl_rng *apop_varad_var(r, apop_rng_get_thread())
 
     apop_plot_qq_base(v, m, Output_vars, bins, r);
     if (free_m) apop_model_free(m);

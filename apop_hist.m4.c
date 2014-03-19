@@ -22,7 +22,7 @@ The output is normalized to integrate to one.
 \c draw method. (No default)
 \param draws The number of random draws to make. (arbitrary default = 10,000)
 \param bin_count If no bin spec, the number of bins to use (default: as per \ref apop_data_to_bins, \f$\sqrt(N)\f$)
-\param rng The \c gsl_rng used to make random draws. (default: see note on \ref autorng)
+\param rng The \c gsl_rng used to make random draws. (default: an RNG from \ref apop_rng_get_thread)
 
 \return An \ref apop_pmf model.
 
@@ -37,11 +37,7 @@ APOP_VAR_HEAD apop_model *apop_model_to_pmf(apop_model *model, apop_data *binspe
     apop_data* apop_varad_var(binspec, NULL);
     int apop_varad_var(bin_count, 0);
     long int apop_varad_var(draws, 1e4);
-    gsl_rng *apop_varad_var(rng, NULL)
-    static gsl_rng *spare = NULL;
-    if (!rng && !spare) 
-        spare = apop_rng_alloc(++apop_opts.rng_seed);
-    if (!rng) rng = spare;
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread())
 APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
     apop_data *outd = apop_data_alloc(draws, model->dsize); 

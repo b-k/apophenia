@@ -5,7 +5,13 @@ Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU 
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <regex.h>
-#include <omp.h>
+#ifdef _OPENMP
+    #include <omp.h>
+    #define omp_threadnum omp_get_thread_num()
+#else
+    #define omp_threadnum 0
+
+#endif
 
 extern char *apop_nul_string;
 
@@ -108,7 +114,9 @@ When reading the code, remember that the zeroth element holds the value for N=1,
     static int * 	 lengths= NULL;
     static int		 count	= 0;
     static double ** precalced=NULL;
-    int			     j, old_len, i;
+    int	old_len, i;
+    #pragma omp critical (generalized_harmonic)
+    { //Due to memoization, this can't parallelize.
 	for (i=0; i< count; i++)
 		if (eses == NULL || eses[i] == s) 	
             break;
@@ -125,13 +133,14 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 		old_len			= 1;
 	}
 	else {	//then you found it.
-		old_len		= lengths[i];
+		old_len = lengths[i];
 	}
 	if (N-1 >= old_len){	//It's there, but you need to extend what you have.
-		precalced[i]	= realloc(precalced[i], sizeof(double) * N);
-		for (j=old_len; j<N; j++)
+		precalced[i] = realloc(precalced[i], sizeof(double) * N);
+		for (int j = old_len; j<N; j++)
 			precalced[i][j] = precalced[i][j-1] + 1/pow((j+1),s);
 	}
+    }
 	return 	precalced[i][N-1];
 }
 
@@ -332,9 +341,18 @@ of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended 
 
 \return The appropriate RNG, initialized if necessary.
 */
-gsl_rng *apop_rng_get_thread(int thread){
+gsl_rng *apop_rng_get_thread_base(int thread){
     static gsl_rng **rngs;
     static int rng_ct = -1;
+
+    if (thread==-1){
+        #ifdef OpenMP
+            thread = omp_get_thread_num();
+        #else
+            thread = 0;
+        #endif
+    }
+
     if (thread > rng_ct)
         #pragma omp critical (rng_get_thread)
         {
@@ -392,7 +410,7 @@ APOP_VAR_ENDHEAD
     #pragma omp parallel for private(i)
     for (i=0; i< count; i++){
         Apop_row(out, i, onerow);
-        Apop_stopif(apop_draw(onerow->matrix->data, apop_rng_get_thread(omp_get_thread_num()), model),
+        Apop_stopif(apop_draw(onerow->matrix->data, apop_rng_get_thread(omp_threadnum), model),
                 gsl_matrix_set_all(onerow->matrix, GSL_NAN); out->error='d',
                 0, "Trouble drawing for row %i. "
                 "I set it to all NANs and set out->error='d'.", i);

@@ -45,7 +45,7 @@ void set_midpoint(apop_data * in, apop_model *m){
 \adoc Estimated_parameters None
 \adoc Estimated_settings  The estimate method basically just runs
                           <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>
-\adoc settings  \ref apop_kernel_density_settings.
+\adoc Settings  \ref apop_kernel_density_settings
 \adoc Examples
 This example sets up and uses KDEs based on a Normal and a Uniform distribution.
 

@@ -1901,6 +1901,7 @@ apop_data *apop_test_fisher_exact(apop_data *intab){
             rowct     = intab->matrix->size1,
             colct     = intab->matrix->size2;
     has_error=0;
+#pragma omp critical (fexact) //f3xact and f5exact use static vars for some state-keeping.
     fexact(&rowct, 
        &colct,
        intified,

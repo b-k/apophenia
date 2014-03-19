@@ -328,32 +328,8 @@ apop_text_to_db("infile.txt", "intable", .has_col_name=1, NULL);
 apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
 \endcode
 
-\li If one of the optional elements is an RNG, see \ref autorng on what happens when you don't provide an RNG.
+\li If one of the optional elements is an RNG and you do not provide one, I use one from \ref apop_rng_get_thread.
 \li For exhaustive details on implementation of the above (should you wish to write new functions that behave like this) see the \ref optionaldetails page.
-
-*/
-
-/** \page autorng Auto-allocated RNGs
-
-Functions that use the \ref designated syntax for reading inputs and assigning default values use the following rules for handling RNGs.
-
-- The first time a function is called with no \c gsl_rng as
-input, a new \c gsl_rng is produced. The call will effectively look like this
-\code  
-static gsl_rng *internal_rng = gsl_rng_alloc(++apop_opts.rng_seed);
-\endcode
-
-- Because \c internal_rng is declared \c static, it will remember its state as you repeatedly call the function, so you will get appropriate random numbers.
-
-- \c apop_opts.rng_seed is incremented at each use, so you can write down the seed used for later reference. 
-
-- Because it increments, the next function to auto-allocate an RNG will produce different random numbers. That is, every function that uses this setup will have a different, independent RNG.
-
-- If you would like a different outcome every time the program runs, set the seed to the time before running:
-\code  
-#include <time.h>
-apop_opts.rng_seed = time(NULL);
-\endcode  
 
 */
 
@@ -574,9 +550,9 @@ it only after calling \c omp_set_num_threads(1).
 \li There are a few functions, like \ref apop_model_draws, that rely on \ref apop_map, and
 therefore also thread by default.
 
-\li The function apop_rng_get_thread() retrieves a statically-stored RNG specific to a given
-thread. Therefore, if you use that function in the place of a \c gsl_rng, you can
-parallelize functions that make random draws.
+\li The function \ref apop_rng_get_thread retrieves a statically-stored RNG specific
+to a given thread. Therefore, if you use that function in the place of a \c gsl_rng,
+you can parallelize functions that make random draws.
 
 \li \ref apop_rng_get_thread allocates its store of threads using apop_opts.rng_seed,
 then incrementing that seed by one. You thus probably have threads with seeds 479901,
@@ -1328,6 +1304,37 @@ apop_model *re_est = apop_estimate(data, the_estimate);
 \endcode
 
 See below for the details of using settings groups.
+
+Outlineheader modelparameterization  Parameterizing or initializing a model
+
+The models that ship with Apophenia have the requisite procedures for estimation,
+making draws, and so on, but have <tt>params==NULL</tt> and <tt>settings==NULL</tt>. The
+model is thus, for many purposes, incomplete, and you will need to take some action to
+complete the model. There are several possibilities:
+
+\li Estimate it! Almost all models can be sent with a data set as an argument to the
+<tt>apop_estimate</tt> function. The input model is unchanged, but the output model
+has parameters and settings in place. [When settings must be set beforehand, the
+model documentation will tell you.]
+
+\li If your model has a fixed number of numeric parameters, then you can set them with
+\ref apop_model_set_parameters.
+
+\li If your model has a variable number of parameters, you can directly set the \c
+parameters element via \c apop_data_falloc.  For most purposes, you will also need to
+set the \c msize1, \c msize2, \c vsize, and \c dsize elements to the size you want. See
+the example below.
+
+\li Some models have disparate, non-numeric settings rather than a simple matrix of
+parameters. For example, an kernel density estimate needs a model as a kernel and a
+base data set, which can be set via \ref apop_model_copy_set.
+
+Here is an example that shows the options for parameterizing a model. After each
+parameterization, 20 draws are made and written to a file named draws-[modelname].
+
+\include ../eg/parameterization.c
+
+endofdiv
 
 Where to from here? See the \ref models page for a list of the canned models,
 along with a list of basic functions that make use of them. 

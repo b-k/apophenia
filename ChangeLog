@@ -4,6 +4,13 @@
 !!Big.
 ]
 
+	March 2014
+--Command-line tools print help should a user add a --help option.
+
+	February 2014
+!!OpenMP for threading. All calls to apop_map and friends, apop_model_draws, and others auto-thread.
+!!apop_rng_get_thread to get a thread-specific RNG, so you can thread random processes.
+
 	January 2014
 **View macro reform:
 	Apop_cols       Apop_rows       A contiguous set of columns or rows as an apop_data set (with names)

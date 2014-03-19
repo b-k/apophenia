@@ -64,7 +64,7 @@ static void make_covar(apop_model *est){
 static long double multinomial_constraint(apop_data *data, apop_model *b){
   //constraint is that 0 < all elmts, and  1>all ps.
     int size = b->parameters->vector->size;
-    static apop_data *constr;
+    static threadlocal apop_data *constr;
     if (constr && constr->matrix->size2 != size)
         apop_data_free(constr);
     if (!constr){

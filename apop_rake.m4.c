@@ -536,7 +536,11 @@ and the \c weights vector gives the most likely value for each cell.
 categories will soon be added.
 */
 APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_list, int var_ct, char const *all_vars, char * const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, int run_number, char const *init_table, char const *init_count_col, double nudge, char const* table_name){
-    static int defaultrun = 0;
+    #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
+        static _Atomic(int) defaultrun = 0;
+    #else
+        static int defaultrun = 0;
+    #endif
     char const * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
     char const * apop_varad_var(margin_table, table_name);
     Apop_stopif(!margin_table, apop_return_data_error(i), 0,  
