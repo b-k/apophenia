@@ -114,7 +114,7 @@ unset APOP_DB_ENGINE
 <li>Some functions modify their inputs. It is up to you to use those functions in a thread-safe manner. The <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> operates correctly in a threaded environment, but if you have two threads resizing the same <code>gsl_matrix</code> at the same time, you're going to have problems.</li>
 </ul>
 <ul>
-<li>There are few compilers that don't support OpenMP. Clang on MacOS may be the only current mainstream example as of this writing, and they are hard at work on implementing it. In the mean time, you will get errors about undefined <code>#pragma</code>s when compiling on such a system, and all work will be single-threaded.</li>
+<li>There are few compilers that don't support OpenMP. Clang on MacOS may be the only current mainstream example as of this writing, and they are hard at work on implementing it. In the mean time, when compiling on such a system all work will be single-threaded.</li>
 </ul>
 <ul>
 <li>Set the maximum number of threads to <code>N</code> with the environment variable</li>
@@ -136,7 +136,7 @@ omp_set_num_threads(N);
 <ul>
 <li><a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a> allocates its store of threads using apop_opts.rng_seed, then incrementing that seed by one. You thus probably have threads with seeds 479901, 479902, 479903, .... [If you have a better way to do it, please feel free to modify the code to implement your improvement and submit a pull request on Github.]</li>
 </ul>
-<p>See &lt;a href="<a href="http://modelingwithdata.org/arch/00000175.htm">http://modelingwithdata.org/arch/00000175.htm</a>&gt;this tutorial on C threading if you would like to know more, or are unsure about whether your functions are thread-safe or not.</p>
+<p>See <a href="http://modelingwithdata.org/arch/00000175.htm">this tutorial on C threading</a> if you would like to know more, or are unsure about whether your functions are thread-safe or not.</p>
 <p></div>
 <p><h2><a class="anchor" name="mwd"><div class="trigger" onClick="showBranch('mwdd');swapFolder('mwdf')"><img src="right.png" border="0" id="mwdf" alt="pip"> The book version</div></a></h2><div class="branch" id="mwdd">
 <p>Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.</p>
