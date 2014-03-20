@@ -194,7 +194,7 @@ sudo yum install make gcc gsl-devel libsqlite3x-devel
 \li Once you have the library downloaded, compile it using 
 
 \code
-tar xvzf apop*tgz && cd apophenia-0.998
+tar xvzf apop*tgz && cd apophenia-0.999
 ./configure && make && sudo make install && make check
 \endcode
 
@@ -523,10 +523,19 @@ Outlineheader threads Threading
 Apophenia uses OpenMP for threading. You generally do not need to know how OpenMP works
 to use Apophenia, and many points of work will thread without your doing anything.
 
+\li All functions strive to be thread-safe. Part of how this is achieved is that static
+variables are marked as thread-local or atomic, as per the C standard. There still
+exist compilers that can't implement thread-local or atomic variables, in which case
+your safest bet is to set OMP's thread count to one as below (or get a new compiler).
+
+\li Some functions modify their inputs. It is up to you to use those functions in
+a thread-safe manner. The \ref apop_matrix_realloc operates correctly in a threaded
+environment, but if you have two threads resizing the same \c gsl_matrix at the same
+time, you're going to have problems.
+
 \li There are few compilers that don't support OpenMP. Clang on MacOS may be the only
 current mainstream example as of this writing, and they are hard at work on implementing
-it. In the mean time, you will get errors about undefined #pragmas when compiling on
-such a system, and all work will be single-threaded.
+it. In the mean time, when compiling on such a system all work will be single-threaded.
 
 \li Set the maximum number of threads to \c N with the environment variable
 
@@ -559,7 +568,7 @@ then incrementing that seed by one. You thus probably have threads with seeds 47
 479902, 479903, .... [If you have a better way to do it, please feel free to modify the
 code to implement your improvement and submit a pull request on Github.]
 
-See <a href="http://modelingwithdata.org/arch/00000175.htm>this tutorial on C
+See <a href="http://modelingwithdata.org/arch/00000175.htm">this tutorial on C
 threading</a> if you would like to know more, or are unsure about whether your functions
 are thread-safe or not.
 
@@ -601,16 +610,16 @@ out-of-the-way functions (maybe the score for the Beta distribution) are worth a
 of caution. Close to all of the code has been used in production, so all of it was at
 least initially tested against real-world data.
 
-It is currently at version 0.998, which is intended to indicate that it is substantially
+It is currently at version 0.999, which is intended to indicate that it is substantially
 complete. Of course, a library for scientific computing, or even for that small subset
 that is statistics, will never cover all needs and all methods. But as it stands
-Apophenia's framework, based on the \ref apop_data and \ref apop_model, is basicaly
+Apophenia's framework, based on the \ref apop_data and \ref apop_model, is basically
 internally consistent, has enough tools that you can get common work done quickly,
 and is reasonably fleshed out with a good number of models out of the box.
 
 The \ref apop_data structure is set, and there are enough functions there that you could
-use it as a subpackage by itself (along with the database functions) for nontrivial
-dealings with data.
+use it as a subpackage by itself (especially in tandem with the database functions)
+for nontrivial dealings with data.
 
 The \ref apop_model structure is much more ambitious---Apophenia is really intended
 to be a novel system for developing models---and its internals can still be improved.
@@ -2333,9 +2342,10 @@ or \ref apop_data_sort to sort all elements by a single column.
 If you have an operation of the form <em>for each element of my data set, call this
 function</em>, then you can use \ref apop_map to do it. You could basically do everything you
 can do with an apply/map function via a \c for loop, but the apply/map approach is clearer
-and more fun. Also, if you set the global <tt>apop_opts.thread_count = N</tt> for any \c N greater than 1,
-then the work of mapping will be split across multiple CPU threads.  See the outline \> data sets \> map/apply
-section for a number of examples.
+and more fun. Also, if you set OpenMP's <tt>omp_set_num_threads(N)</tt> for any \c N
+greater than 1 (and it is set accordingly by default on most systems), then the work
+of mapping will be split across multiple CPU threads.  See the outline \> data sets \>
+map/apply section for a number of examples.
 
 \par Text
 

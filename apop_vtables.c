@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include "apop_internal.h" //just for OMP_critical
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -71,7 +72,7 @@ int apop_vtable_add(char const *tabname, void *fn_in, unsigned long hash){
 
 
     //add a table if need be.
-    #pragma omp critical (new_vtable)
+    OMP_critical (new_vtable)
     {
     v = find_tab(h, &ctr);
 

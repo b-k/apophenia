@@ -21,7 +21,7 @@ gsl_rng *apop_rng_alloc(int seed){
     static int first_use = 1;
     if (first_use){
        first_use = 0;
-       #pragma omp critical (rng_env_setup) //GSL makes vague promises about thread-safety
+       OMP_critical(rng_env_setup) //GSL makes vague promises about thread-safety
        gsl_rng_env_setup();
     }
     gsl_rng *setme = gsl_rng_alloc(gsl_rng_taus2);

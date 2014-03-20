@@ -20,23 +20,23 @@ int verbose = 1;
 //The MLE of the t distribution may have non-integer value (why not?)
 //Because we started with an integer value, we have to find the floor.
 void tfloor(apop_model *dce){
-    if (is_t(dce)) dce->parameters->vector->data[2] = round(dce->parameters->vector->data[2]);
+    if (is_t(dce)) dce->parameters->vector->data[2] = floor(dce->parameters->vector->data[2]);
 }
 
 int estimate_model(apop_data *data, apop_model *dist, char *method, apop_data *true_params){
     double *starting_pt;
     if(is_bernie(dist))
         starting_pt = (double[]){.5};
-    else starting_pt = (double[]) {1.6, 1.4};
+    else starting_pt = (double[]) {1.6, 1.4, 10};
 
-    Apop_model_add_group(dist, apop_mle, 
+    Apop_settings_add_group(dist, apop_mle, 
         .starting_pt = starting_pt,
         .method       = method, .verbose   =0,
         .step_size    = 1e-1,
         .tolerance    = 1e-4,   .k         = 1.8,
         .t_initial    = 1,      .t_min     = .5
         );
-    Apop_model_add_group(dist, apop_parts_wanted);
+    //Apop_model_add_group(dist, apop_parts_wanted);
 
     if((is_bernie(dist) || is_beta(dist))
        && !strcasecmp(method, "Newton hybrid"))
@@ -44,7 +44,7 @@ int estimate_model(apop_data *data, apop_model *dist, char *method, apop_data *t
     apop_model *e = apop_estimate(data, dist);
     tfloor(e);
     Diff(0.0, apop_vector_distance(apop_data_pack(true_params), apop_data_pack(e->parameters)), 1e-1); 
-    if (is_poisson(dist)) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
+    //if (is_poisson(dist)) Apop_settings_add(dist, apop_parts_wanted, covariance, 'y');
     Print_dot
     e = apop_estimate_restart(e);
     tfloor(e);

@@ -232,8 +232,7 @@ static void rowloop(threadpass *tc){
     apop_fn_rpi *fn_rpi=tc->fn;
     apop_fn_ri  *fn_ri=tc->fn;
     Get_vmsizes(tc->d); //maxsize
-    #pragma omp parallel for
-    for (int i=0; i< maxsize; i++){
+    OMP_for (int i=0; i< maxsize; i++){
         Apop_row(tc->d, i, onerow);
         double val = 
         tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
@@ -248,11 +247,10 @@ static void forloop(threadpass *tc){
     apop_fn_vpi *fn_vpi=tc->fn;
     apop_fn_vi  *fn_vi=tc->fn;
     int max = tc->rc == 'r' ? tc->m->size1 : tc->m->size2;
-    #pragma omp parallel for
-    for (int i= 0; i< max; i++){
-    gsl_vector view = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
-    double val  = 
-        tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : fn_vp(&view, tc->param) )
+    OMP_for (int i= 0; i< max; i++){
+        gsl_vector view = tc->rc == 'r' ? gsl_matrix_row(tc->m, i).vector : gsl_matrix_column(tc->m, i).vector;
+        double val  = 
+            tc->use_param ? (tc->use_index ? fn_vpi(&view, tc->param, i) : fn_vp(&view, tc->param) )
                       : (tc->use_index ? fn_vi(&view, i) : vtod(&view) );
         if (tc->v) gsl_vector_set(tc->v, i, val);
     }
@@ -264,8 +262,7 @@ static void oldforloop(threadpass *tc){
         tc->rc = 'r';
         return forloop(tc);
     }
-    #pragma omp parallel for
-    for (int i=0; i< tc->m->size1; i++){
+    OMP_for (int i=0; i< tc->m->size1; i++){
         Apop_matrix_row(tc->m, i, v);
         vtov(v);
     }
@@ -277,8 +274,7 @@ static void vectorloop(threadpass *tc){
     apop_fn_dp  *fn_dp=tc->fn;
     apop_fn_dpi *fn_dpi=tc->fn;
     apop_fn_di  *fn_di=tc->fn;
-    #pragma omp parallel for
-    for (int i= 0; i< tc->vin->size; i++){
+    OMP_for (int i= 0; i< tc->vin->size; i++){
         double inval = gsl_vector_get(tc->vin, i);
         double outval =
         tc->use_param ? (tc->use_index ? fn_dpi(inval, tc->param, i) : 
@@ -292,8 +288,7 @@ static void vectorloop(threadpass *tc){
 static void oldvectorloop(threadpass *tc){
     apop_fn_dtov *dtov=tc->fn;
     if (tc->v) return vectorloop(tc);
-    #pragma omp parallel for
-    for (int i= 0; i< tc->vin->size; i++){
+    OMP_for (int i= 0; i< tc->vin->size; i++){
         double *inval = gsl_vector_ptr(tc->vin, i);
         dtov(inval);
     }
@@ -402,8 +397,7 @@ static void apop_matrix_map_all_vector_subfn(const gsl_vector *in, gsl_vector *o
 gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
     if (!in) return NULL;
     gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
-    #pragma omp parallel for
-    for (size_t i=0; i< in->size1; i++){
+    OMP_for (size_t i=0; i< in->size1; i++){
         gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
         Apop_matrix_row(out, i, v);
         apop_matrix_map_all_vector_subfn(&inv.vector, v, fn);
@@ -421,8 +415,7 @@ gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
   */
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
     if (!in) return;
-    #pragma omp parallel for
-    for (size_t i=0; i< in->size1; i++){
+    OMP_for (size_t i=0; i< in->size1; i++){
         Apop_matrix_row(in, i, v);
         apop_vector_apply(v, fn);
     }

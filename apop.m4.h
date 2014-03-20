@@ -461,7 +461,7 @@ Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *mo
 gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
-#define apop_rng_get_thread(t_in) apop_rng_get_thread_base(#t_in[0]=='\0' ? -1: (t_in+0))
+#define apop_rng_get_thread(thread_in) apop_rng_get_thread_base(#thread_in[0]=='\0' ? -1: (thread_in+0))
 gsl_rng *apop_rng_get_thread_base(int thread);
 
 int apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
@@ -523,8 +523,8 @@ void $1_type_check($1_type in);
 #define $1_vtable_drop(...) apop_vtable_drop("$1", $1_hash(__VA_ARGS__))m4_dnl
 |>)
 
-int apop_vtable_add(char *tabname, void *fn_in, unsigned long hash);
-void *apop_vtable_get(char *tabname, unsigned long hash);
+int apop_vtable_add(char const *tabname, void *fn_in, unsigned long hash);
+void *apop_vtable_get(char const *tabname, unsigned long hash);
 int apop_vtable_drop(char const *tabname, unsigned long hash);
 
 typedef apop_model *(*apop_update_type)(apop_data *, apop_model* , apop_model*);

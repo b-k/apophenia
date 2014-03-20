@@ -3305,7 +3305,7 @@ double ibeta(double x, double a, double b) {
                     pn[i] /= IBETA_SMALL;
     } while (fabs(next-prev) > DOUBLE_EPS*prev);
     factor = a*log(x) + (b-1)*log(1-x);
-    factor -= gamma(a+1) + gamma(b) - gamma(a+b);
+    factor -= tgammal(a+1) + tgammal(b) - tgammal(a+b);
     I = exp(factor) * next;
     return(flipped ? 1-I : I);
 }

@@ -274,8 +274,8 @@ apop_data *apop_data_rank_compress (apop_data *in){
   has exactly the given frequency of zeros, ones, et cetera.
 */
 apop_data *apop_data_rank_expand (apop_data *in){
-    int total_ct = in->matrix ? apop_matrix_sum(in->matrix) : 0
-                 + in->vector ? apop_vector_sum(in->vector) : 0;
+    int total_ct = (in->matrix ? apop_matrix_sum(in->matrix) : 0)
+                 + (in->vector ? apop_vector_sum(in->vector) : 0);
     if (total_ct == 0)
         return NULL;
     apop_data *out = apop_data_alloc(total_ct);

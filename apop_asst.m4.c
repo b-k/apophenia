@@ -115,7 +115,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
     static int		 count	= 0;
     static double ** precalced=NULL;
     int	old_len, i;
-    #pragma omp critical (generalized_harmonic)
+    OMP_critical(generalized_harmonic)
     { //Due to memoization, this can't parallelize.
 	for (i=0; i< count; i++)
 		if (eses == NULL || eses[i] == s) 	
@@ -329,7 +329,8 @@ apop_model *apop_beta_from_mean_var(double m, double v){
     return apop_model_set_parameters(apop_beta, alpha, beta);
 }
 
-/** The \c gsl_rng is not itself thread-safe, in the sense that it can not be used
+/** \def apop_rng_get_thread
+The \c gsl_rng is not itself thread-safe, in the sense that it can not be used
 simultaneously by multiple threads. However, if each thread has its own \c gsl_rng, then each will safely operate independently.
 
 Thus, Apophenia keeps an internal store of RNGs for use by threaded functions. If the
@@ -337,9 +338,10 @@ input to this function, \c thread, is greater than any previous input, then the 
 of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended using
 <tt>++apop_opts.rng_seed</tt> (i.e., the seed is incremented before use).
 
-\param thread The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads).
+\param thread_in The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads). If blank, I'll look up the current thread (via \c omp_get_thread_num) for you.
 
 \return The appropriate RNG, initialized if necessary.
+\hideinitializer
 */
 gsl_rng *apop_rng_get_thread_base(int thread){
     static gsl_rng **rngs;
@@ -353,8 +355,8 @@ gsl_rng *apop_rng_get_thread_base(int thread){
         #endif
     }
 
+    OMP_critical(rng_get_thread)
     if (thread > rng_ct)
-        #pragma omp critical (rng_get_thread)
         {
             rngs = realloc(rngs, sizeof(gsl_rng*)*(thread+1));
             for (int i=rng_ct+1; i<= thread; i++)
@@ -405,10 +407,8 @@ APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, apop_dat
         Apop_stopif(model->dsize<=0, apop_return_data_error(n), 0, "model->dsize<=0, so I don't know the size of matrix to allocate.");
 APOP_VAR_ENDHEAD
     apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
-    int i;
 
-    #pragma omp parallel for private(i)
-    for (i=0; i< count; i++){
+    OMP_for (int i=0; i< count; i++){
         Apop_row(out, i, onerow);
         Apop_stopif(apop_draw(onerow->matrix->data, apop_rng_get_thread(omp_threadnum), model),
                 gsl_matrix_set_all(onerow->matrix, GSL_NAN); out->error='d',

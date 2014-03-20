@@ -49,7 +49,7 @@ function.
 At the end, \c output_name, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
 */
-void apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
+int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append : 'w';
 
     if (!output_name && !*output_pipe && !*output_type)     *output_type = 's';              
@@ -62,6 +62,8 @@ void apop_prep_output(char const *output_name, FILE ** output_pipe, char *output
     else *output_pipe = output_name
                         ? fopen(output_name, *output_append == 'a' ? "a" : "w")
                         : stdout;
+    Apop_stopif(!output_pipe && output_name, return -1, 0, "Trouble opening file %s.", output_name);
+    return 0;
 }
 
 #define Dispatch_output                        \
@@ -69,7 +71,8 @@ void apop_prep_output(char const *output_name, FILE ** output_pipe, char *output
     FILE * apop_varad_var(output_pipe, NULL);  \
     char apop_varad_var(output_type, 0);       \
     char apop_varad_var(output_append, 0);     \
-    apop_prep_output(output_name, &output_pipe, &output_type, &output_append);
+    Apop_stopif(apop_prep_output(output_name, &output_pipe, &output_type, &output_append), \
+            return, 0, "Trouble preparing to write output.");
 
 /** Prep for Gnuplot one of those cute scatterplots with a regression line through it.
 

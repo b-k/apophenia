@@ -100,7 +100,7 @@ static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
      */
 int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
     Apop_stopif(!apop_settings_get_group(params, apop_mcmc), return 1, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
-#pragma omp critical (metro_draw)
+OMP_critical (metro_draw)
 {
     apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
     apop_data *earlier_draws = s->pmf->data;
@@ -187,7 +187,7 @@ APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, apop_model *m, gsl
     gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
 APOP_VAR_END_HEAD
     apop_model *outp;
-    #pragma omp critical (metropolis)
+    OMP_critical(metropolis)
     {
     apop_mcmc_settings *s = apop_settings_get_group(m, apop_mcmc);
     if (!s) s = Apop_model_add_group(m, apop_mcmc);

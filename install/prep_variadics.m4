@@ -54,5 +54,5 @@ m4_patsubst(m4_dnl
 |>)
 
 m4_define_at_some_point(<|m4_apop_version|>, <|m4_syscmd(date +%Y%m%d)|>)
-m4_define(<|m4_apop_version|>, <|0.998|>)
+m4_define(<|m4_apop_version|>, <|0.999|>)
 m4_divert(0)
