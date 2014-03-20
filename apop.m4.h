@@ -1252,8 +1252,8 @@ typedef struct {
     gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
     gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
-    int rng_owner; /**< For internal use. Should I free the RNG when this copy of the settings group is freed? */
-    int draws_owner; /**< For internal use.  Should I free \c draws_made when this copy of the settings group is freed?*/
+    int *rng_refcount; /**< For internal use. */
+    int *draws_refcount; /**< For internal use.*/
 } apop_cdf_settings;
 
 

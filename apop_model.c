@@ -547,19 +547,21 @@ double apop_cdf(apop_data *d, apop_model *m){
 Apop_settings_init(apop_cdf,
     Apop_varad_set(draws, 1e4);
     Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));
-    out->rng_owner = !(in.rng);
-    out->draws_owner = !(in.draws_made);
+    out->rng_refcount   = malloc(sizeof(int));
+    out->draws_refcount = malloc(sizeof(int));
+    *out->rng_refcount = (in.rng) ? -1 : 1;
+    *out->draws_refcount = 1;
 )
 
 Apop_settings_free(apop_cdf,
-    if (in->rng_owner)
+    if (!--in->rng_refcount)
         gsl_rng_free(in->rng);
-    if (in->draws_made && in->draws_owner)
+    if (in->draws_made && !--in->draws_refcount)
         gsl_matrix_free(in->draws_made);
     apop_model_free(in->cdf_model);
 )
 
 Apop_settings_copy(apop_cdf,
-    out->draws_owner =
-    out->rng_owner   = 0;
+    out->draws_refcount ++;
+    if (out->rng_refcount > 0) out->rng_refcount ++;
 )
