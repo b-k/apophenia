@@ -63,7 +63,7 @@ Apop_settings_copy(apop_pmf,
 )
 
 Apop_settings_free(apop_pmf,
-    if (!(--in->cmf_refct)) {
+    if (!--*in->cmf_refct) {
         gsl_vector_free(in->cmf);
         free(in->cmf_refct);
     }
@@ -134,6 +134,7 @@ do it before the first draw or CDF calculation.
 static int draw (double *out, gsl_rng *r, apop_model *m){
     Nullcheck_m(m, 1) Nullcheck_d(m->data, 1)
     apop_pmf_settings *settings = Apop_settings_get_group(m, apop_pmf);
+    #pragma omp critical (pmfsetup)
     if (!settings) settings = Apop_model_add_group(m, apop_pmf);
     Get_vmsizes(m->data) //maxsize
     size_t current; 
@@ -141,6 +142,7 @@ static int draw (double *out, gsl_rng *r, apop_model *m){
         current = gsl_rng_uniform(r)* (maxsize-1);
     else {
         size_t size = m->data->weights->size;
+        #pragma omp critical (pmfsetuptwo)
         if (!settings->cmf) setup_cmf(m);
         Apop_stopif(m->error=='f', *out=GSL_NAN; return 1, 0, "Zero or NaN density in the PMF.");
         double draw = gsl_rng_uniform(r);

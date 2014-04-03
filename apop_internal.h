@@ -44,7 +44,7 @@ void apop_gsl_error(char const *reason, char const *file, int line, int gsl_errn
 
 //For when we're forced to use a global variable.
 #undef threadlocal
-#ifdef _ISOC11_SOURCE 
+#if __STDC_VERSION__ > 201100L
     #define threadlocal _Thread_local
 #elif defined(__APPLE__) 
     #define threadlocal

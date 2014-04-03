@@ -1252,7 +1252,6 @@ typedef struct {
     gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
     apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
     gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
-    int *rng_refcount; /**< For internal use. */
     int *draws_refcount; /**< For internal use.*/
 } apop_cdf_settings;
 
@@ -1264,7 +1263,6 @@ typedef struct {
     int index;
     gsl_rng *rng;
     int draws;
-    int own_rng;
 } apop_pm_settings;
 
 

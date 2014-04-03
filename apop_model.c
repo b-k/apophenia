@@ -300,21 +300,13 @@ void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
 
 Apop_settings_init(apop_pm,
     //defaults include base=NULL, index=0, own_rng=0
-    Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));
-    if (!in.rng)
-        out->own_rng = 1;
+    Apop_varad_set(rng, NULL);
     Apop_varad_set(draws, 1e4);
 )
 
-Apop_settings_copy(apop_pm,
-    out->rng = apop_rng_alloc(apop_opts.rng_seed++);
-    out->own_rng = 1;
-)
+Apop_settings_copy(apop_pm,)
 
-Apop_settings_free(apop_pm, 
-    if (in->own_rng)
-        gsl_rng_free(in->rng);
-)
+Apop_settings_free(apop_pm, )
 
 void distract_doxygen(){/*Doxygen gets thrown by the settings macros. This decoy function is a workaround. */}
 
@@ -405,16 +397,21 @@ int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params);//
 
 /** Draw from a model. 
 
-\li If the model has its own RNG, then use that.
+\param out An already-allocated array of <tt>double</tt>s to be filled by the draw method. This probably has size <tt>your_model->dsize</tt>.
+\param r   A \c gsl_rng, probably allocated via \ref apop_rng_alloc. Optional; if \c NULL, then I will call \ref apop_rng_get_thread for an RNG.
+\param m   The model from which to make draws.
+
+\li If the model has its own \c draw method, then use that.
 \li If the model is univariate, use \ref apop_arms_draw to generate random draws.
 \li If the model is multivariate, use \ref apop_model_metropolis to generate random draws.
 
-\li This makes a single draw. See \ref apop_model_draws to fill a matrix with draws.
+\li This makes a single draw of the given size. See \ref apop_model_draws to fill a matrix with draws.
 
 \return Zero on success; nozero on failure. <tt>out[0]</tt> is probably \c NAN on failure.
 \ingroup models
 */
 int apop_draw(double *out, gsl_rng *r, apop_model *m){
+    if (!r) r = apop_rng_get_thread();
     if (m->draw)
         return m->draw(out, r, m); 
     else if (m->dsize == 1)
@@ -546,22 +543,17 @@ double apop_cdf(apop_data *d, apop_model *m){
 
 Apop_settings_init(apop_cdf,
     Apop_varad_set(draws, 1e4);
-    Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));
-    out->rng_refcount   = malloc(sizeof(int));
+    Apop_varad_set(rng, NULL);
     out->draws_refcount = malloc(sizeof(int));
-    *out->rng_refcount = (in.rng) ? -1 : 1;
     *out->draws_refcount = 1;
 )
 
 Apop_settings_free(apop_cdf,
-    if (!--in->rng_refcount)
-        gsl_rng_free(in->rng);
-    if (in->draws_made && !--in->draws_refcount)
+    if (in->draws_made && !--*in->draws_refcount)
         gsl_matrix_free(in->draws_made);
     apop_model_free(in->cdf_model);
 )
 
 Apop_settings_copy(apop_cdf,
-    out->draws_refcount ++;
-    if (out->rng_refcount > 0) out->rng_refcount ++;
+    ++*out->draws_refcount;
 )
