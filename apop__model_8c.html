@@ -48,10 +48,8 @@ void <b>apop_model_show</b> (<a class="el" href="structapop__model.html">apop_mo
 <li>double <a class="el" href="group__models.html#ga2510c7df8ccd834732ee208005738b0f">apop_p</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>double <a class="el" href="group__models.html#ga5e160c8d0a0ee660c89fb3f6de2af89c">apop_log_likelihood</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>void <a class="el" href="group__models.html#ga228b013bc80f308900882312cab93eb3">apop_score</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, gsl_vector *out, <a class="el" href="structapop__model.html">apop_model</a> *m)
-<li><a class="anchor" id="a51657981006ace4360184841cfa632b2"></a><!-- doxytag: member="apop_model.c::Apop_settings_init" ref="a51657981006ace4360184841cfa632b2" args="(apop_pm, Apop_varad_set(rng, apop_rng_alloc(apop_opts.rng_seed++));if(!in.rng) out&#45;&gt;own_rng=1;Apop_varad_set(draws, 1e4);) Apop_settings_copy(apop_pm" -->
-<b>Apop_settings_init</b> (apop_pm, Apop_varad_set(rng, <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(apop_opts.rng_seed++));if(!in.rng) out-&gt;own_rng=1;Apop_varad_set(draws, 1e4);) Apop_settings_copy(apop_pm
-<li><a class="anchor" id="acabd3e09e05ae7d6c9869b69a18f501a"></a><!-- doxytag: member="apop_model.c::Apop_settings_free" ref="acabd3e09e05ae7d6c9869b69a18f501a" args="(apop_pm, if(in&#45;&gt;own_rng) gsl_rng_free(in&#45;&gt;rng);)" -->
-<b>Apop_settings_free</b> (apop_pm, if(in-&gt;own_rng) gsl_rng_free(in-&gt;rng);)
+<li><a class="anchor" id="a8b4ceb0267fe56c68a45019798204fed"></a><!-- doxytag: member="apop_model.c::Apop_settings_init" ref="a8b4ceb0267fe56c68a45019798204fed" args="(Apop_settings_copy(apop_pm, Apop_varad_set(rng, NULL);Apop_varad_set(draws, 1e4);)" -->
+<b>Apop_settings_init</b> (<a class="el" href="apop_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(apop_pm, Apop_varad_set(rng, NULL);Apop_varad_set(draws, 1e4);)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="anchor" id="ac8a700ba4b9678433d2f84938c1c515f"></a><!-- doxytag: member="apop_model.c::apop_model_metropolis_draw" ref="ac8a700ba4b9678433d2f84938c1c515f" args="(double *out, gsl_rng *rng, apop_model *params)" -->
 int <b>apop_model_metropolis_draw</b> (double *out, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *params)
@@ -59,22 +57,16 @@ int <b>apop_model_metropolis_draw</b> (double *out, gsl_rng *rng, <a class="el" 
 <li>void <a class="el" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>double <a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
-<li><a class="anchor" id="a267d8ded470f825608b081e2f6eaa8f2"></a><!-- doxytag: member="apop_model.c::Apop_settings_init" ref="a267d8ded470f825608b081e2f6eaa8f2" args="(apop_cdf, Apop_varad_set(draws, 1e4);Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));out&#45;&gt;rng_owner=!(in.rng);out&#45;&gt;draws_owner=!(in.draws_made);) Apop_settings_free(apop_cdf" -->
-<b>Apop_settings_init</b> (<a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, Apop_varad_set(draws, 1e4);Apop_varad_set(rng, apop_rng_alloc(++apop_opts.rng_seed));out-&gt;rng_owner=!(in.rng);out-&gt;draws_owner=!(in.draws_made);) Apop_settings_free(apop_cdf
-<li><a class="anchor" id="a7322bf336f7918e91622b63b64895409"></a><!-- doxytag: member="apop_model.c::if" ref="a7322bf336f7918e91622b63b64895409" args="(in&#45;&gt;rng_owner) gsl_rng_free(in&#45;&gt;rng)" -->
-<b>if</b> (in-&gt;rng_owner) gsl_rng_free(in-&gt;rng)
-<li><a class="anchor" id="ab513f9831d359d6f50949c2f0bad6090"></a><!-- doxytag: member="apop_model.c::if" ref="ab513f9831d359d6f50949c2f0bad6090" args="(in&#45;&gt;draws_made &amp;&amp;in&#45;&gt;draws_owner) gsl_matrix_free(in&#45;&gt;draws_made)" -->
-<b>if</b> (in-&gt;draws_made &amp;&amp;in-&gt;draws_owner) gsl_matrix_free(in-&gt;draws_made)
+<li><a class="anchor" id="af48a62e79fe52b21bf1a74e216d8e8c5"></a><!-- doxytag: member="apop_model.c::Apop_settings_init" ref="af48a62e79fe52b21bf1a74e216d8e8c5" args="(apop_cdf, Apop_varad_set(draws, 1e4);Apop_varad_set(rng, NULL);out&#45;&gt;draws_refcount=malloc(sizeof(int));*out&#45;&gt;draws_refcount=1;) Apop_settings_free(apop_cdf" -->
+<b>Apop_settings_init</b> (<a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a>, Apop_varad_set(draws, 1e4);Apop_varad_set(rng, NULL);out-&gt;draws_refcount=malloc(sizeof(int));*out-&gt;draws_refcount=1;) Apop_settings_free(apop_cdf
+<li><a class="anchor" id="a3e3acefac17b4eb8b8e8b804844df6ad"></a><!-- doxytag: member="apop_model.c::if" ref="a3e3acefac17b4eb8b8e8b804844df6ad" args="(in&#45;&gt;draws_made &amp;&amp;!&#45;&#45;*in&#45;&gt;draws_refcount) gsl_matrix_free(in&#45;&gt;draws_made)" -->
+<b>if</b> (in-&gt;draws_made &amp;&amp;!--*in-&gt;draws_refcount) gsl_matrix_free(in-&gt;draws_made)
 <li><a class="anchor" id="a7482aa1d411497cbd70295bee617de4d"></a><!-- doxytag: member="apop_model.c::apop_model_free" ref="a7482aa1d411497cbd70295bee617de4d" args="(in&#45;&gt;cdf_model)" -->
 <b>apop_model_free</b> (in-&gt;cdf_model)
 </ul>
 <h2><a name="var-members"></a>
 Variables</h2>
 <ul>
-<li><a class="anchor" id="aa3d991dd4255bfe46ea5abd052bb9639"></a><!-- doxytag: member="apop_model.c::rng" ref="aa3d991dd4255bfe46ea5abd052bb9639" args="" -->
-out <b>rng</b> = <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(apop_opts.rng_seed++)
-<li><a class="anchor" id="ab5d914f7f9f280487a0e6be543833807"></a><!-- doxytag: member="apop_model.c::own_rng" ref="ab5d914f7f9f280487a0e6be543833807" args="" -->
-out <b>own_rng</b> = 1
 <li><a class="anchor" id="a79d57058375e37ef6c59f0bb43e62585"></a><!-- doxytag: member="apop_model.c::apop_swap_model" ref="a79d57058375e37ef6c59f0bb43e62585" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> * <b>apop_swap_model</b>
 </ul>
@@ -82,4 +74,4 @@ out <b>own_rng</b> = 1
 <div class="textblock"><p>sets up the estimate structure which outputs from the various regressions and MLEs. </p>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Wed Mar 19 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Jun 6 2014.</div></body></html>
