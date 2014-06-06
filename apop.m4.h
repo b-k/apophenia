@@ -616,12 +616,12 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 \li If \c apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
 \li If \c apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
 */
-#define Apop_stopif(test, onfail, level, ...) do {\
+#define Apop_stopif(test, onfail, level, ...) {\
      if (test) {  \
         Apop_notify(level,  __VA_ARGS__);   \
         Apop_maybe_abort(level)  \
         onfail;  \
-    } } while(0)
+    } }
 
 #define apop_errorlevel -5
 

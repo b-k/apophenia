@@ -1003,7 +1003,8 @@ char *prep_string_for_sqlite(int prepped_statements, char const *astring){
 
     char *out  = NULL,
 		 *tail = NULL;
-	if(strtod(astring, &tail)) /*do nothing.*/;
+	if(strtod(astring, &tail)) 
+        /*do nothing.*/;
     if (*tail!='\0'){	//then it's not a number.
         if (!prepped_statements){
             if (strchr(astring, '\''))

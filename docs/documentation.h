@@ -29,10 +29,10 @@ Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="http://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download Apophenia here</a>.</h5>
+<h5><a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
 Most users will just want to download the latest packaged version linked from the <a
-href="http://sourceforge.net/projects/apophenia/files/latest/download?source=files">Download
+href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download
 Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
@@ -189,7 +189,7 @@ or
 sudo yum install make gcc gsl-devel libsqlite3x-devel
 \endcode
 
-\li <a href="http://sourceforge.net/projects/apophenia/files/latest/download?source=dlp">Download Apophenia here</a>. 
+\li <a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>. 
 
 \li Once you have the library downloaded, compile it using 
 
