@@ -7,22 +7,22 @@ Installation summary:
 
 ∙ The library depends on the GNU Scientific Library and SQLite3. If you are using a system with a package manager of some sort, there is certainly a package for them. Be sure to include both the main package and the lib-, -dev, or -devel package. Sample package manager calls:
 
-sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
+    sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
 or
-sudo yum install make gcc gsl-devel libsqlite3x-devel
+    sudo yum install make gcc gsl-devel libsqlite3x-devel
 or
-sudo pacman -S make gcc gsl sqlite 
+    sudo pacman -S make gcc gsl sqlite 
 
 
 ∙ Got the dependencies? Great, then run:
 
-./configure
-make 
-sudo make install
+    ./configure
+    make 
+    sudo make install
 
 
 ∙ Find detailed setup instructions and some troubleshooting notes at
-http://apophenia.sourceforge.net/doc/setup.html .
+http://apophenia.info/setup.html .
 
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.

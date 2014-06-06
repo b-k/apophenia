@@ -7,24 +7,43 @@ The quick summary for installation:
 
 ∙ The library depends on the GNU Scientific Library and SQLite3. If you are using a system with a package manager of some sort, there is certainly a package for them. Be sure to include both the main package and the lib-, -dev, or -devel package. Sample package manager calls:
 
-sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
+    sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
 or 
-sudo yum install make gcc gsl-devel libsqlite3x-devel
+    sudo yum install make gcc gsl-devel libsqlite3x-devel
+or 
+    sudo pacman -S make gcc gsl sqlite 
 
-∙ To build from this git repository, you will need to have Autotools installed [try (apt-get || yum install) autoconf automake libtool ], because the first step in the build process is to use Autotools to generate the build package. If you can't install Autotools, use the pre-built package from Sourceforge; see below.
+∙ The prebuilt package, that has only basic prerequisites (no Autotools or m4) can be downloaded from another Git branch:
 
-∙ Got Autotools? Great, then run:
+    #Download the zip file, via wget or your preferred downloading method:
+    wget https://github.com/b-k/Apophenia/archive/pkg.zip
 
-./configure
-cd apophenia-0.99
-make 
-sudo make install
+    #unzip and build
+    unzip pkg.zip
+    cd Apophenia-pkg
+    ./configure
+    make
+    sudo make install
 
-∙ The prebuilt package, that has only basic prerequisites (no Autotools or m4) can be downloaded from Sourceforge (because GitHub stopped supporting downloads):
-https://sourceforge.net/projects/apophenia/files/latest/download?source=files
+Or check out the branch via git:
+
+    git clone https://github.com/b-k/Apophenia.git
+    cd Apophenia
+    git checkout pkg
+    ./configure
+    make
+    sudo make install
+
+∙ This master branch of the git repository requires Autotools, so it can build the
+package. Try (apt-get || yum install) autoconf automake libtool. If you have Autotools installed, then from this branch you can run:
+
+    ./configure
+    cd apophenia-0.999
+    make 
+    sudo make install
 
 ∙ Find detailed setup instructions and some troubleshooting notes at
-http://apophenia.sourceforge.net/doc/setup.html .
+http://apophenia.info/setup.html .
 
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
