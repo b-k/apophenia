@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+bindir=${exec_prefix}/bin
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: Apophenia
+Description: The Apophenia library
+Version: 0.999
+Libs: -L${exec_prefix}/lib -lapophenia -lsqlite3 -lgsl -lgslcblas -lm 
+Cflags: -g -O2

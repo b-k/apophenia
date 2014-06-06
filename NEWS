@@ -1,0 +1,926 @@
+[Key: 
+--Addition or improvement
+**Change that could require recoding existing code.
+!!Big.
+]
+
+	March 2014
+--Command-line tools print help should a user add a --help option.
+
+	February 2014
+!!OpenMP for threading. All calls to apop_map and friends, apop_model_draws, and others auto-thread.
+!!apop_rng_get_thread to get a thread-specific RNG, so you can thread random processes.
+
+	January 2014
+**View macro reform:
+	Apop_cols       Apop_rows       A contiguous set of columns or rows as an apop_data set (with names)
+	Apop_col	    Apop_row        One column or row as an apop_data set
+	Apop_col_t      Apop_row_t      One column or row as an apop_data set, retrieved by row/col name
+	Apop_col_v      Apop_row_v      One column or row as a gsl_vector
+	Apop_col_tv     Apop_row_tv     One column or row as a gsl_vector, retrieved by row/col name
+	Apop_matrix_col Apop_matrix_row One column or row as a gsl_matrix
+**MLE methods are now strings instead of all-caps enums.
+**All blank elements of a data->text grid point to the same NUL string.
+--Add apop_model_metropolis; revise apop_update accordingly.
+--apop_draw uses metropolis to draw from any model with a log likelihood/p and where data size>1.
+**Replace all instances of output_file with output_name (GNU sed -i 's/output_file/output_name/g' *c)
+--Consolidated headers
+**apop.h no longer #includes time.h or unistd.h
+**apop_draw returns zero on success; nonzero on failure.
+**Removed the BIC-by-cells from estimation output. Added AIC_c. OLS now reports the ICs along with R^2.
+
+	December 2013
+--append and replace options for apop_text_to_db
+--apop_probit bug fix
+**apop_plot_histograms now uses gnuplot's impulses, not boxes by default---handles missing zero bins better.
+**MLE path trace lists the probs/loglikelihoods in the vector of the apop_data set it produces. path is apop_data**, from apop_data*.
+**apop_data_transpose has an .inplace option, which is 'y' by default. Add .inplace='n' to existing uses.
+--siman checks constraints for the starting point.
+--Mixture models overhauled.
+--cleaned up the command-line utilities
+**removed apop_lookup.
+
+	November 2013
+--rewrite apop_data_sort to allow sorting by multiple columns or text or names
+--apop_pmf now has a CDF method.
+--fixed up K-S tests.
+--removed the Swig Python wrapper from this package.
+**replaced char apop_opts.db_nan[101] with char *apop_opts.nan_string. More descriptive, easier to use.
+**apop_name_find does plain case-insensitive search; no regexes.
+
+	October 2013
+**all built-in models (apop_ols, apop_dirichlet, ...) are now apop_model* (ptr-to-struct), from apop_model (plain struct).
+**apop_estimate and apop_copy take in an apop_model* instead of plain apop_model.
+**printing no longer part of the apop_model struct; uses a vtable.
+
+	September 2013
+**change vbase, m1base, m2base ==> vsize, msize1, msize2
+**Estimate returns void (was apop_model*)
+--vtable mechanism improvements
+**Remove score, predict, and parameter_model from the apop_model object; use the vtable mechanism.
+**Upgrade model p, ll, cdf, constraint to return long double (was double)
+**consolidate vector_var and vector_weighted_var. same with cov, mean, weighted_skew, and weighted_pop. Users just have to replace apop_vector_weighted_var with apop_vector_var.
+**removed deprecated.h entirely.
+--apop_data_add_named_elmts puts new data in the vector, not the matrix, because it is intended for a list of scalars (==a vector). If you use apop_data_get(infodata, .rowname="statistic name") then you'll be able to retrieve the element either way.
+**removed apop_line_to_data and apop_line_to_matrix. Use apop_data_fill and apop_data_falloc.
+
+	August 2013
+--apop_map(_sum) properly threads data-row mappings. .inplace='v' to return NULL.
+**Remove apop_settings_alloc, apop_settings_group_alloc
+**Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
+**Apop_settings_set sets model->error='s' on error, instead of returning.
+**Add a .want_path='y' setting to your apop_mle_settings group, and I'll put a list of the points tried by the optimizer in an apop_data set named path (in the settings group); see documentation for details. Remove the former trace_path mechanism.
+**removed apop_(vector|matrix)_increment. Use, e.g., *gsl_vector_ptr(v, 7) += 3; or (*gsl_vector_ptr(v, 7))++.
+**Some mu and sigmas => μ and σ
+**Removed apop_settings_alloc, apop_settings_group_alloc
+**Change Apop_row to return an apop_data set, not a vector (for which use Apop_matrix_row).
+
+	June 2013
+--replaced makefile in base directory with ./configure.
+--version number now equals build date.
+**name->title is a ptr; name->column => name->col
+**removed apop_strip_dots; it's up to the user to give reasonable names for the db.
+
+	May 2013
+--jacobian transformations
+--Apop_model_copy_set to copy a model and add a settings group at once
+--mixture models
+--data-data composition
+--added apop_model_draws
+!!vtables, allowing for more functions with special cases for certain model(s) outside of the model object itself.
+
+	April 2013
+--plugged some memory leaks
+--default tolerance for MLE is much finer (1e-5).
+--Added apop_text_fill
+**Finally removed support for gsl_histograms, including the apop_histogram model. This cut has been promised for about four years now. Use the apop_pmf instead.
+**apop_data_to_bins no longer modifies the input data in place. It now makes a copy and modifies the copy.
+**Removed apop_crosstab_to_pmf. There's a version at https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF for matrices.
+**Removed apop_vector_to_array. If your array has stride 1, use your_array->data; else write a for loop to copy out the data.
+**Removed apop_array_to_matrix.
+
+	March 2013
+**apop_text_paste now prints the pasted string at verbosity level 3 (formerly 2).
+
+	February 2013
+--Starting_point in Bayesian updating no longer does anything, but it was never significant to begin with. Added some verbosity options to apop_update.
+
+	January 2013
+--Logit regression much smarter about picking a starting point.
+--Defaults for simulated annealing try 1600x fewer points. Prior settings were overkill.
+--configure.ac checks for native asprintf and uses it if it is present
+**Removed apop_db_merge and apop_db_merge_table. Get them from http://modelingwithdata.org/arch/00000141.html .
+**Removed apop_matrix_fill; use apop_data_fill
+**Removed apop_array_to_data.
+**Removed apop_matrix_correlation; use apop_data_correlation
+**Deprecated apop_rank_compress; use apop_data_to_dummies(..., .keep_first='y').
+--apop_model_stack
+
+	December 2012
+--Added an apop_pmf_settings group, eliminating a couple of hacks (e.g., see October 2012).
+--faster read-in of text files
+--Exponential model uses data in both the vector and matrix parts of the apop_data input
+--transformation to generate mixtures (i.e., linear combinations) of models.
+**apop_data_transpose now transposes the text element as well as the matrix (by default).
+	Use apop_data_transpose(your_matrix,  .transpose_text='n') to replicate the previous behavior.
+--removed Autoconf pkg-config macros, because Autoconf no longer needs the help.
+--writing apop_data to DB uses prepared queries where possible => much faster.
+**It is now up to you to put apop_query("begin"); / apop_query("commit"); wrappers around
+	writing of tables to the database.
+
+	November 2012
+--apop_vector_unique_elements, apop_data_to_dummies, and apop_data_to_factors handle NaNs
+	better; put them at the end of the sort order.
+!!Finally added an .error element to apop_data and apop_model structs, thus simplifying
+	error-checking.
+--Apop_stopif macro, rendering the Apop_assert family largely obsolete (so if you're using
+	them in your own work, consider them deprecated...).
+--Where the assert macros used to abort() on errors, they now send signal(SIGTRAP), making
+	debugging a little easier. Most host systems force an abort on SIGTRAP anyway.
+
+	October 2012
+**Removed apop_strcmp. If you still need it, this macro is basically equivalent:
+    #define apop_strcmp(a, b) (((a)&&(b) && !strcmp((a), (b))) || (!(a) && !(b)))
+--clean up of parameter-fixing model transformation.
+--split off multiple imputation variance code.
+**Removed apop_vector_grid_distance. Use apop_vector_distance(v1, v2, .metric='M');
+--If apop_pmf.dsize==0, apop_pmf.draw returns a row number, not the data in that row. This will change shortly.
+--Logit draw function, akin to apop_ols.draw. Both will change shortly.
+--apop_data_to_factors now auto-allocates a matrix if need be (because it always auto-allocated a vector). 
+
+	September 2012
+--\0 in text files counts as white space
+--fixed counting bug for text files with ,<end-of-line> sequences.
+
+	July 2012
+--some MLE cleanup
+--fixes to apop_rake
+--apop_logit.score fixed
+
+	June 2012
+--The sample kurtosis calculation is still more precise.
+
+	May 2012
+--Autotools improvements. Use the standard 'make check' instead of the ad hoc 'make test'.
+!!Set apop_opts.stop_on_warning='n' to never abort() on any type of error. E.g., GUIs that
+	should never halt will use this. Default is still to halt on errors, because that's
+	most useful for interactively developing numeric analyses.
+--Use apop_opts.log_file=fopen("yourlog", "w") to divert the warnings/errors from stderr into yourlog.
+--Some formerly void functions now return an int, to return an error code. E.g.,
+	apop_opts.stop_on_warning='n';
+	if (apop_data_set(data, row, col)) printf("Error! Nothing was set.\n");
+--Fixed a memory leak in simulated annealing.
+--Apop_data_row and apop_data_set_row handle row names
+
+	March 2012
+--bug fix in apop_text_to_data when input file has no names.
+--probit dlog likelihood isn't implemented for N>2; now acknowledging this.
+--added apop_data_get_factor_names
+--apop_(vector|matrix)_(map|apply) now accepts NULL input.
+
+	January 2012
+**Removed apop_matrix_var_m, which nobody was using.
+--bug fix in apop_vector_distance for Ln norms where n is odd.
+--reading data from text files rewritten; much more robust. 
+   **A space is no long a default delimiter.  Use apop_opts.input_delimiters="| ,\t" to restore old default.
+   **apop_opts.db_nan is no longer a regex; I just do a case-insensitive comparison.
+
+	December 2011
+--apop_model.textsize is now a size_t instead of an int.
+--apop_update accepts likelihoods with no pre-set parameters 
+
+	November 2011
+--moved to Github; some changes to structure and documentation to accommodate. 
+**apop_ols.predict didn't do the OLS shuffle if the input has no vector; this was anomalous.
+
+	October 2011
+--apop_text_paste added.
+**apop_multinomial and apop_binomial overhauled. No longer accepting Bernoulli draws as input.
+--standardization: make docs => make doc
+
+	September 2011
+--`query turned up a blank table' warning turns up when apop_opts.verbose >=2. (used to be >=1)
+--apop_t_test and apop_paired_t_test are quieter---no intermediate results until apop_opts.verbose >=2.
+**apop_opts.db_name_column now has a blank default (instead of the SQL-specific and potentially surprise-inducing "rowname").
+
+	August 2011
+--Bootstrap/Jackknife are better with text
+**apop_data_memcpy used to reallocate memory for the text and names elements; use apop_data_copy if you want allocation done for you.
+
+	July 2011
+--Apop_data_rm_rows now accepts a test function as well as a fixed list of rows to drop.
+
+	June 2011
+--apop_crosstab_to_db handles missing labels and NaNs better.
+**apop_matrix_to_db removed (as promised a few years ago). Use apop_matrix_print(yourdata, "tabname", .output_type='d').
+**F-test defaults now match ANOVA tradition.
+--documentation script doesn't use GNU extensions to awk; should now be POSIX-standard.
+
+	May 2011
+**apop_map returns a data set with an allocated/filled vector when not called with .inplace='y'.  Before, it had been making a full copy, which is idiosyncratic.
+--apop_rake accepts a weights column.
+--apop_anova uses variadic arguments for a marginally nicer interface (and better argument checking).
+**apop_data_to_dummies tries to give nicer labels. You may have to recode things if you relied on the old labels.
+
+	March 2011
+--Header files have been merged. A few long files is as easy to grep as a multitude of
+	nearly one-line files. If you #include <apop.h> instead of the individual headers,
+	then this shouldn't affect you. Due to redundancy, compilation with gcc takes 3% longer.
+
+	0.99 February 2011
+!!The apop_PMF model has more support:
+	--New supporting functions: apop_data_pmf_compress, apop_model_to_pmf
+	--functions that took apop_histogram models now take apop_pmfs as well:
+		apop_test_chi_squared_goodness_of_fit, apop_test_kolmogorov
+	--Consider the apop_histogram to be deprecated. Only two associated functions were removed; see below.
+	**apop_histogram_plot is removed. Replace with:
+	    fprintf(apop_opts.output_pipe, "plot '-' using 1:3 with boxes\n");
+		apop_model_print(hist);
+		fprintf(apop_opts.output_pipe, "e\n");
+	**apop_histogram_print was a bad idea to begin with, because it basically replicates
+	    gsl_histogram_fprintf. Use apop_model_print(your_histogram), which calls gsl_histogram_fprintf, 
+		or call that function directly. The only difference: the GSL function prints 
+		[start of bin] [end of bin] [value]
+		and apop_histogram print showed
+		[start of bin] [value]
+
+	December 2010
+**apop_maximum_likelihood no longer calls apop_prep. If you want that, use apop_estimate.
+--apop_text_to_db lets users specify types and keys.
+--deleted some obsolete/deprecated items: apop_error, apop_multinomial_settings
+--apop_data_split retains text when splitting by rows; still ignores it when splitting by columns.
+
+	November 2010
+--apop_listwise_delete uses apop_opts.db_nan to check for missing data in the text part of the input data.
+--apop_data_split handles names
+
+    September 2010
+**Multinomial distribution sets N to be the length of the row (a single observation)
+    rather than the size of the full data set. Added apop_multinomial.parameter_model method
+    for testing purposes.
+
+    August 2010
+** What was apop_assert => apop_assert_c; what was apop_assert_s => apop_assert. Their
+    arguments are slightly different, and the thing that was asserted no longer prints along
+    with the message you chose.
+--verbosity defaults to 1. Queries print at verbosity >=2.
+--apop_data_to_db writes the weights.
+--Iterative proportional fitting, aka raking. 
+
+**apop_text_add now frees the contents of cell in the text grid that you are about to
+    overwrite, thus preventing memory leaks without effort from the user. If your existing
+    code has other pointers to the string in that text cell, you'll have to replace the now
+    string-freeing apop_text_add with asprintf(&(your_dataset->text[row][col]), "your string").
+
+    July 2010
+** apop_regex now gets all matches when you pull substrings. Each row of the text grid
+    is a match, and if you have multiple substrings, each match's substrings will be
+    along the columns.  May require recoding because the substrings used to be along
+    the rows; just switch the indices.
+
+    June 2010
+** Removed the apop_rank settings group, and thus all the code related to it. It was just
+    the wrong place to do this. Added apop_data_rank_expand to convert rank data to
+    what the various models typically expect. This is another step for some users and
+    could be a problem if the counts get into the billions, but it still makes more sense
+    than rewriting every model twice.
+
+    May 2010
+**apop_data_prune_columns_base now takes in a list of strings terminated by a NULL, not by
+a zero-length string.
+--apop_data_get_row lets you pull a view from a data set. [this was briefly the apop_data_row]
+    ==>apop_data_set_rows, apop_data_rm_rows
+        ==> apop_data_listwise_delete is fifty lines shorter.
+--apop_parts_wanted_settings: fixes some infinite loops (est needs parameter models ->
+    p.m. bootstraps for variances -> bootstrap runs estimate -> repeat) and allows
+    just-the-parameters estimation when you want it.
+--cleaned up build system, including an added RPM spec file
+
+    April 2010
+--apop_t_distribution now has three parameters: mean, std dev, df. That is, it is based on un-normalized data.
+**apop_random_int and apop_random_double removed for not being particularly useful.
+
+    March 2010
+**The apop_predict special case for when all data is non-missing was a bit too special,
+    and has been eliminated---you now have to specify the first column as NaN yourself.
+    E.g., Apop_col(data, -1, to_nan); gsl_vector_set_all(to_nan, GSL_NAN);
+    This will make things more predictable, and save you if(!has_nans)... else... kind of statements.
+**Removed the prepared element of the apop_model.
+**apop_model_prep ==> apop_prep for consistency with other apop_model dispatch functions. apop_model_prep left for now as an alias in deprecated.h
+!!apop_parameter_model: a method for getting the distribution of a parameter.
+    **Moved OLS-family test stats (pval, qval, whatever) to a page of your_estimate->info. It won't be there for long either.
+--settings macros let you use lowercase, thus entirely ignoring that they're macros.
+    **apop_settings_rm_group function, which you were probably not using, changed to apop_settings_remove_group; apop_settings_get_group function => apop_settings_get_grp. Having a macro and a function that differed by a question of case was a bad idea to begin with.
+
+    February 2010
+!!Overhauling the output from estimations; pardon our dust. 
+--Added CDF method to the apop_model, including apop_cdf dispatch method and default via random draws.
+**Defininitvely removed the residual, covariance, and llikelihood elements from the
+    apop_model struct. The first two will be pages appended to the data and parameters,
+    respectively, and the last will be in the Info page appended to the parameters.
+**Renamed apop_ls_settings (least square) to apop_lm_settings (linear model) "s/apop_ls/apop_lm/g" should work.
+**Sundry lists of scalars, like the R^2 table and the estimation routine's info table put the data in column zero, not column -1. In the next bullet point you'll see how this simplifies retrieval.
+**Added an info element to the apop_model--> more shuffling of auxiliary info. 
+    --Find results like the log likelihood or AIC via, e.g., apop_data_get(your_model->info, .rowname="log likelihood");
+  **Find the predicted/residuals via apop_data_get_page(your_model->info, "Predicted");
+        This means that the input data set is read-only again. 
+    --Find the parameter covariances via apop_data_get_page(your_model->parameters, "Covariance");
+    **apop_estimate_coefficient_of_determination takes in the model again. Just replace est->parameters in your argument with est. apop_ols calls this fn automatically now [apop_data_get(your_model->info, .rowname="R sq")], so you probably aren't even calling it anymore.
+**apop_data_add_named_elmt now writes to the zeroth element of the matrix, not the vector.
+So instead of apop_data_get(data, .rowname="R squared", -1), just go with apop_data_get(data, .rowname="R squared"). This affects many of the elements of the info-type matrices.
+--apop_data_pack, apop_data_unpack, apop_ml_impute, apop_map offer an option to use all pages. 
+
+    0.23 January 2010
+**expected_value element of the model renamed predict; made coherent across models.
+!!apop_data set now has a ->more pointer to an additional apop_data set, e.g., for data + covariances or predictions + confidence intervals.
+--apop_ml_imputation renamed to apop_ml_impute. "#define apop_ml_imputation apop_ml_impute" retains noun-form name, but consider it deprecated.
+!!apop_estimate now copies, preps, then estimates. Estimate method of apop_model struct can thus assume the copy/prep step has been done;
+probably should not do these itself. As a side-effect, apop_maximum_likelihood's second argument is now a apop_model* (used to be apop_model).
+--apop_regex and apop_strcmp, for easier searching through your info pages.
+--minor rewording of COPYING2.
+**Because the Predicted table is now part of the parameter set, not the model,
+    apop_estimate_coefficient_of_determination now takes in the parameter set, not the model. Just replace est in your argument with est->parameters.
+**apop_multinomial_probit folded into apop_probit, where it should've been all along.
+    Regex for the fix: "s/apop_multinomial_probit/apop_probit/g"
+
+    December 2009
+--apop_strcmp
+--apop_loess model: 3,500 lines of code from the netlib archive, lovingly restored.
+
+    November 2009
+--apop_rm_columns bug fixed by Birger Baksaas.
+--apop_text_to_db attaches numeric affinity to sqlite3 columns, making numeric comparisons easier.
+--apop_histogram_model_reset's first argument is now "base" instead of "template", as a concession to C++ users.
+
+	September 2009
+--Many minor changes, mostly regarding adding optional arguments.
+--Dirichlet model
+--Output functions now take a consistent set of specs regarding to where they will write. You no longer have to use the global apop_opts settings if you don't want to.
+
+	August 2009
+--apop_map and apop_map_sum. Reworks the apop_(map|apply) system to be more flexible but a little more complex.
+-apop_(data|matrix|vector)_fill is now more robust---no more int vs float issues.
+**Removed apop_count_cols
+--Default univariate RNG, if you don't have one: Adaptive rejection markov chain sampling
+**.use_covar and other such settings now take 'y' or 'n', not 0 or 1.
+--new macro Apop_settings_set = Apop_settings_add, but makes more human sense
+--numeric covariance, formerly maligned, now works.
+
+	July 2009
+--multivariate gamma, log-gamma.
+--t, F, chi^2, Wishart distributions, for description [and Bayesian
+updating]
+--apop_matrix_to_positive_semidefinite and apop_matrix_is_positive_semidefinite 
+--bug fixes
+--Apop_model_add_group replaces Apop_settings_add_group, and is much more easy to work with.
+
+	June 2009
+--More variadicized functions
+	--notably, apop_estimate is much more useful
+--apop_opts.version.
+--apop_(vector|matrix|data)_stack have an inplace option, making stacking inside a for loop easier.
+--apop_test convenience function
+--more autoconf macros ==> some compilation hacks now done right
+
+	May 2009
+--mysql functions slightly cleaned up
+--apop_opts.db_user and apop_opts.db_pass for mysql.
+!!Functions that take lots of basically optional inputs, like apop_text_to_db, now use some designated initializer magic to let the user rearrange or omit inputs.
+**apop_dot also now allows designated initializers, which breaks
+(only) calls of the form apop_dot(a_vector, a_matrix, 't'). Replace with
+apop_dot(a_vector, a_matrix, 0, 't') or apop_dot(a_vector, a_matrix,
+.form2='t')
+--With optional inputs, some functions now handle RNGs for the lazy user ==>added apop_opts.rng_seed
+--apop_vector_distance is much more versatile
+**Removed apop_matrix_summarize. Too much like apop_data_summarize. Just
+replace every instance of apop_matrix_summarize(m) with apop_data_summarize(apop_matrix_to_data(m)).
+
+
+    April 2009
+--sample moments are now mega-accurate---possibly the most unbiased estimators in code today.
+!!Python interface via swig
+
+	March 2009
+--apop_matrix_realloc, apop_vector_realloc
+--sqlite queries no longer rely on a temp table ==> faster
+--fixed bugs in apop_table_exists making queries fail in Cygwin.
+
+	Jan/Feb 2009
+--Added more tests; some cleanup in test.c
+--Binomial distribution looks in both the data set's vector and matrix
+
+	December 2008
+--When writing x=infinity to a db table, I now write 'inf' to the db, instead of breaking.  SQLite has no standard here.
+
+	October 2008
+--bug fixes to new apop_data_show
+--bug fixes to apop_bernoulli.p
+--apop_update tweaks
+
+	September 2008
+--Documentation overhaul
+--apop_data_show is much more screen-friendly. Keep using
+apop_data_print for more machine-readable and less fixed-width output.
+**apop_plot_histogram now takes in a vector, bin count, and name of output. This is what it did in the first half of the year.
+  The current version of apop_plot_histogram, which acts on a histogram model, is renamed to apop_histogram_plot.
+
+	August 2008
+--Constraints in ML work better.
+**Overhaul of some discrete choice models
+	--Added tests for the probit and logit.
+	--fixed a bug revealed by the tests
+	**the first choice has a fixed value of zero.
+	**You'll probably need to call Apop_category_settings_add before estimating 
+		your model, unless the outcome choice variable is the 0th column of the matrix.
+	--more to come, e.g., multinomial probit will be merged with ordered probit.
+-Adding a settings group of a given type when that group already exists used to induce an error; now the old type is replaced with a clean default.
+--bug fix for apop_test_fisher_exact on non-square matrices
+--apop_settings_add and company do more work in functions and less in macros.
+--removed the settings_ct element of the apop_model; using a sentinel at the end of the array instead.
+--Slightly improved reading of text files.
+--Bootstrap/jackknife act on models with parameters in both matrix and vector form.
+
+
+    July 2008
+--Guts of apop_plot_histogram now use the apop_histogram model. 
+**  Also, it no longer normalizes the histogram to integrate to one by
+  default. You need to explicitly request this via
+  apop_histogram_normalize
+--apop_plot finally deleted.
+--apop_histogram_plot deleted; use apop_plot_histogram.
+--Added apop_vector_skew_sample, apop_vector_kurtosis_sample.
+
+
+	May 2008
+--apop_settings_rm_group added.
+--mysql interface has the beginnings of support for multiple
+	semicolon-separated queries in one call.
+--apop_histogram_refill_with_model ==> apop_histogram_model_reset;
+	apop_histogram_refill_with_vector ==> apop_histogram_vector_reset.
+
+	April 2008
+--apop_dot handles names.
+--apop_t_test now behaves correctly when one vector is of length 1.
+--some improvements/fixes when dealing with mySQL.
+--apop_sv_decomp renamed to apop_matrix_pca. Minor changes so that it correctly works as such.
+--apop_text_to_(db|data) handles column names like it used to, which
+   works better. Also a few other fixes for odd situations.
+
+	March 2008
+--Various improvements in reading in from text.
+	-- a, "b, c", d will now correctly read in as three elements: a; then "b, c"; then d
+	-- a,,b,c reads as a, NAN, b, c.
+
+	February 2008
+--Some of the header references didn't work for a fresh install.
+--bug fixes, esp. with apop_test_kolmogorov
+--added convenience fn apop_data_transpose
+
+	January 2008
+--Apop_assert, which streamlines the use of apop_error (thus shrinking the code base by 2%).
+--apop_OLS now has a log likelihood (also shuffled some of the code around)
+--bug fix in apop_binomial.p.
+**More name reform: apop_correlation_matrix --> apop_matrix_correlation; apop_data_correlation_matrix --> apop_data_correlation; apop_covariance_matrix --> apop_matrix_covariance; apop_data_covariance_matrix --> apop_data_covariance.
+--apop_count_(rows|cols)_in_text are now static functions and removed from the documentation.
+--Removed apop_random_beta, which had been set as deprecated earlier.  Use apop_beta_from_mean_var.
+**Removed apop_vector_isnan---just use apop_vector_map_sum(your_vector, isnan)
+**Removed apop_vector_finite---just use apop_vector_bounded(your_vector, INFINITY)
+--For your convenience, added Apop_settings_alloc() macro.
+	**apop_histogram_params ==> apop_histogram_settings
+	**apop_kernel_density_params ==> apop_kernel_density_settings
+	[The settings/params distinction is in some ways arbitrary anyway.]
+--bug fix in apop_mle.c: wasn't copying output parameters to the estimated model in some cases.
+--As part of name reform, all function names are being switched to
+lower-case throughout, so apop_ANOVA ==> apop_anova. Am keeping the old
+forms via macros. Notice also the non-yelling macro capitalizations above, such as Apop_assert.
+!!**Revised the settings for the apop_model. model_settings and
+method_settings are out, replaced by a much more organized single list
+of settings.
+--added the apop_lookup command-line program.
+**Renamed the apop_multinomial_logit model the apop_logit, because the
+binary logit is a special case that requires no special handling.
+**Reversed the signs on the probit coefficients, to better conform to
+the norm.
+
+
+	December 2007
+--added apop_vector_moving_average
+--apop_model now has prep and print methods.
+**apop_p, apop_log_likelihood, apop_score now take a pointer to an apop_model, not the model itself.
+--apop_multinomial_probit model
+--When a data set has matrix and vector, apop_dot accepts a 'v' to use the vector.
+--apop_plot_lattice produces a more attractive (and standard-form) plot.
+--apop_data_print works much better now.
+**apop_model no longer requires your data input to be const. It probably
+will be const, but it's not the interface's place to dictate that.
+**apop_data_unpack no longer allocates a new data set, but writes to an input data set assumed to be of the right size.
+--added apop_ANOVA to produce one- or two-way ANOVA tables from the database.
+**apop_test_ANOVA renamed to apop_test_ANOVA_independence to create a little more cognitive distance.
+--apop_data_text_to_factors
+--APOP_COL_T and APOP_ROW_T macros, to pull a column or row by name
+--apop_beta_from_mean_var produces a beta-distributed model with the right (alpha, beta) parameters. 
+**Thus, apop_random_beta is now marked as deprecated.
+**apop_x_prime_sigma_x removed, on grounds of being silly. If you want it back, see model/apop_multivariate_normal.c, where it is now a static function.
+**apop_qq_plot --> apop_plot_qq
+--Multinomial logit model (and the probit now has names).
+**Revised the bin-syncing methods. apop_vectors_to_histogram and apop_model_to_histogram are now out; apop_histogram_refill_with_vector and apop_histogram_refill_with_model are in. 
+**Also removed apop_model_test_goodness_of_fit as redundant. Just produce a histogram, use the above refill functions, and send your two histograms to apop_histograms_test_goodness_of_fit. If you do this often, you can write a convenience function to do that as quickly as I could.
+**apop_vector_replace and apop_matrix_replace are redundant---just use apop_(vector|matrix)_apply.
+--The covariance matrix is now produced via the derivative of the score function at the parameter. I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data.
+
+	November 2007
+--added apop_model_copy_set_string to get a copy of a model whose
+model_settings is just a string.
+**Thanks to this, folded all of the _rank versions of models into their
+base models. Set model_settings to "r" to use the rank version.
+--The default MLE method is now the Nelder-Mead Simplex algorithm,
+instead of the Fletcher-Reeves conjugate gradient. This is more
+conservative.
+--apop_(vector|matrix|matrix_all)_map_sum to get the sum of a function
+applied to a vector. E.g., find count of NaNs with apop_vector_map_sum(v, isnan);
+--apop_logit bug fix.
+
+	October 2007
+
+--apop_estimate now defaults to using MLEs, meaning you don't have to explicitly specify an estimate method for MLE models. 
+--apop_crosstab_to_db reads both the matrix and text elements of the input apop_data set. 
+--apop_system convenience function, to make C feel more like a scripting language. 
+--Added some SQLite functions for mySQL compatibility: var_samp, var_pop, stddev_samp, stddev_pop, std. 
+--Probit patched to not NaN for very unlikely parameter/data combinations. 
+**apop_estimate_restart takes two models, rather than one model and some haphazard settings. 
+--apop_plot_query no longer forces you to use the -d and -q switches to specify the database and query. 
+**The two places that use regular expressions: apop_opts.db_nan and the search for a name via apop_data_get/set... use case-insensitive EREs. Before I'd been using BREs, which nobody likes. 
+--<ctrl-c> stops the MLE searches, prints output, and continues the program. Especially useful for simulated annealing. [GDB tip: use the command: signal SIGINT ] 
+--apop_mle_fix_params debugging: gradients work now. 
+--apop_test_ANOVA added, to test the null hypothesis that all cells of a crosstab are equally likely. 
+**apop_multivariate_normal_prob removed. Use the apop_multivariate_normal model and its .log_likelihood, .p, .draw, et cetera. 
+**sed -i -e "s/apop_OLS_params/apop_ls_settings/g" -e "s/apop_mle_params/apop_mle_settings/g" *.c *.h
+
+	September 2007
+--The optimization methods now have an enumerated type.
+**apop_opts.mle_trace_path is now the trace_path element of the apop_mle_params struct. Also, it works much better.
+--apop_histogram_normalize function 
+--improvements to apop_kernel_density and apop_histogram_print
+
+	August 2007
+--removed apop_model_template. Just copy one of the existing models. 
+--apop_data_ptr_ti, apop_data_ptr_ii, apop_data_ptr_it 
+--And you can never have too many bug fixes
+
+	July 2007
+--apop_binomial model takes two types of input now: a two-column form with hit count and miss count, and a list of binary hits or misses. 
+--apop_lognormal model 
+--bug fixes on Information matrix calculation.
+
+	June 2007
+[subversion ate this part; sorry.]
+
+	May 2007
+--apop_query_to_mixed_data
+**apop_produce_dummies now makes dummy variables from both data and
+text. This means that there's another parameter you need to set to 'd'
+or 't' to indicate what you want dummified.
+!!**Merged the apop_params and apop_model structures, leaving everything
+in just one struct. That's about all the merging left.
+--apop_text_alloc and apop_text_add to make text manipulation a little
+easier.
+--apop_matrix_apply_all and apop_matrix_map_all operate on all items in
+a matrix.
+**small tweak to apop_vector_normalize interface.
+--apop_matrix_inverse and apop_matrix_determinant, because the
+apop_det_and_inv interface is sort of ugly.
+--APOP_SUBMATRIX macro
+--MLEs put the expected score in the ->more element of the returned
+apop_model. If people find this useful, we can maybe put a
+proper expected_score element in the model.
+--More consts in function headers. You can decide whether this
+is actually useful.
+
+	0.19 April 2007
+!!**Eliminated the apop_estimate and apop_ep structures, replacing them
+with the apop_params structure. The apop_params + apop_model pair form a
+closure representing a parametrized model. Expect the uses element to go
+away soon; after that, things should be stable. Parameters for individual
+methods now have their own space; try apop_ml_params_alloc and
+apop_OLS_params_alloc, for example.
+If you are just doing things like
+apop_estimate_show(apop_OLS.estimate(data,NULL));
+then don't worry, but if you are doing a lot with the input parameters,
+then have a look at Chapter 6 of _Modeling with Data_.
+--apop_histogram model
+**Gradually rewriting the histogram functions from before to make use of
+that model. E.g., eliminated apop_vector_to_cmf.
+**apop_line_to_data fixed to use both vector and matrix terms. Now
+requires arguments: (indata, vsize, m1size, m2size).
+--MLE now approximates the Information matrix using data gathered during
+the MLE search. This is wrong but cheap; right but expensive procedures
+forthcoming. [Hint: Simulated annealing gathers more info.]
+--apop_(data|matrix|vector)_fill functions, which are a touch fragile,
+but very useful when used with care.
+**apop_data_(get|set)_(tn|nt) changed to (ti|it), because n could stand
+for name or number, while i stands for index, and is often used for integers.
+--apop_names now have a title element, so you can give your data
+structures a title.
+**apop_params_alloc takes an apop_model, not an &apop_model. It's more
+natural that way.
+**Finally erradicated every last vestige of inventories: apop_params no
+longer has a .uses element. Instead, apop_specific_model_params may have
+a want_cov, want_expected_value, want_whatever element if the element is
+optional. And really, the parameters themselves should never be
+optional. What was I thinking.
+**apop_model_fix_params now sets up and returns an apop_mle_params object,
+thus resolving the problem that the MLE params needs a model input,
+and the model_fix_params model needed an MLE params input.
+
+	0.18 March 2007
+**apop_text_to_db now assumes column names unless you specify -nc.
+--If you set parameter_ct==0 in your model definition, the MLEs will
+assign parameter_ct == the number of columns in your data set.
+--Missing data functions: apop_listwise_delete and apop_ml_imputation
+**The constraint element of the apop_model now takes a void* parameter,
+like it should have all this time.
+**apop_jackknife (1) renamed to apop_jackknife_cov and (2) now actually
+works.
+**Entirely eliminated the apop_inventory structure. Its sole utility is
+inside the apop_ep struct.
+**Changed the RNG interface for the sake of allowing multidimensional
+draws. [Not that I have any functions that do that right now.]
+--Bayes-oriented MCMC algorithm: apop_mcmc_update
+!!Bayesian model generator: apop_update
+**apop_model paramters is now an apop_model. See the documentation of
+the model for all the changes.
+**apop_data_alloc now takes three arguments: vsize, msize1, msize2. To
+update, just put a 0, at the head of the arg list.
+!!An absolutely fabulous apop_linear_constraint function.
+--Produce a model with some parameters fixed via apop_model_fix_params.
+--apop_beta model
+
+	February 2007
+
+**Apop_sv_decomposition has a slightly nicer interface.
+**data->categories was too much to type, and too specific. The apop_data
+struct now has a data->text element, and textsize[0] and [1]. The
+categories element is linked to this, but is now deprecated.
+
+	January 2007
+**Root finding hooked into the max likelihood fns.
+
+0.17	December 2006
+**Apop_model struct has lost the fdf object, which was annoying, and now
+has the p function.
+--mySQL support.
+**apop_query_to_chars now returns an apop_data structure, so you don't
+have to go back and gather column names and dimensions.
+**apop_name_get (and the apop_get_tt family) now use regular expressions
+instead of SQL's LIKE operator. This is _much_ faster.
+--the apop_distribution model.
+
+		November 2006
+--The preeminently useful APOP_COL and APOP_ROW
+--apop_data_calloc
+--apop_vector_(apply|map) debugged.
+**apop_estimation_params is just too darn long; reduced to apop_ep.
+
+
+		October 2006
+--apop_text_to_db now reads from STDIN.
+**deleted apop_query_db; use apop_query.
+--Kolmogorov-Smirnov test.
+--apop_t_test returns GSL_NAN when given a one-element vector instead of
+hanging.
+--no more soft links in the tgz file==>may work better on Windows machines.
+--apop_(vector|matrix)_(map|apply) will apply a function to every
+row of a matrix or every element of a vector. The map functions return a
+gsl_vector.
+--bug fix in apop_test_goodness_of_fit.
+
+		September 2006
+
+**Removed apop command-line server thing. It was interesting, but that's
+the best that could be said of it.
+--Added functions for weighted data: weighted least squares, weighted moments.
+--apop_vector_percentiles now allows for averaging instead of rounding.
+
+		August 2006
+**apop_log_likelihood and friends now demand that data be apop_data*,
+rather than void*. Too many things broke when users gave non-apop_data
+data.
+--bug fixes
+
+		July 2006
+--Many more checks for NULL ==> more robust code and easier debugging.
+--Bug fixes.
+**apop_data_split, and apop_data_stack has been revised to handle the
+idea that a vector is the -1st element of the matrix. I.e., check your
+code if you're trying to merge matrices without merging the vectors.
+--Lattice plots.
+--Convenience t-tests from inside model estimations are fixed.
+--apop_query_to_vector. 
+--apop_opts.output_type == 'p' to print to apop_opts.output_pipe
+**apop_..._print and apop_..._show now work out whether elements are
+integers (if (val == (int) val)...), and print accordingly. This means
+that apop_..._print_int and apop_..._show_int are basically obsolete,
+and have been removed.
+--Apop_OLS now allows weights.
+--Test library now includes a few NIST certified tests.
+
+		June 2006
+--added preprocessor cruft to let the library work for C++
+--Jackknife revised
+
+		May 2006
+**The apop_model no longer includes an inventory. I leave it to the
+estimate function to do its own allocation.
+
+		April 2006
+**apop_matrix_normalize and apop_vector_normalize had different
+numbers for the same normalizations. Was that ever dumb. Also, I've
+switched to chars instead of ints to signify this stuff, for better
+mnemonics without resorting to the
+APOP_ENUM_YOU_HAVE_TO_LOOK_UP_EVERY_TIME_BECAUSE_ITS_SO_LONG sort of
+thing. If you were using apop_matrix_normalize(data, 0) before, you
+need to change that to using apop_matrix_normalize(data, 'm'). Thus,
+apop_vector_normalize now has one more normalization, for a total of
+four for both.
+
+--Added apop_rng_alloc convenience fn.
+
+--Added apop_strip_dots to keep inputs to the database healthy.
+
+--apop_name_find uses LIKE instead of strcmp.
+
+--a fn to calculate the generalized harmonic.
+
+--A whole section on histograms and goodness-of-fit tests.
+
+--apop_data_set fns to go with the apop_data_get fns.
+
+--apop_data now includes a vector type
+	--apop_estimate.parameters is now an apop_data type.
+	--apop_estimate.names is thus obsolete.
+
+		March 2006
+**apop_inventory is now a subset of apop_estimation_params. Implications:
+	--added apop_estimation_params_alloc() to ensure that inventory is set right.
+	--the model.estimate(data, inv, params) method is now model.estimate(data, params)
+	  model.estimate(data, NULL) still does what the user expects it to.
+  This makes structural sense, but will lightly break any existing code.
+  fix: change 
+   apop_inventory *inv = apop_inventory_set(1);
+   model.estimate(data, inv, NULL);
+
+   to
+   apop_estimation_params *ep = apop_estimation_params_alloc();
+   model.estimate(data, ep);
+
+   and in any apop_estimates, change any use of est->uses to
+   est.estimation_params.uses.
+
+**Next apop_estimate reform: y_values and residuals combined into one
+apop_data table with actual, predicted, residual columns.
+	--obviated the need for a 'dependent' element in apop_names; removed that.
+	If you need the name, it's now your_est->dependent->names->colnames[0].
+
+**your_estimate->covariance is now an apop_data set instead of a gsl_matrix.
+
+**the data element of the apop_matrix structure is now named matrix. So
+instead of data_set->data, use data_set->matrix, and instead of
+estimate->data->data->data, you can use estimate->data->matrix->data.
+
+--The command-line utility has been revisited, and can do a few more
+things, like OLS.
+
+--Simulated annealing
+	--added convenience fns apop_vector_distance(pt1,pt2) and
+		apop_vector_grid_distance(pt1,pt2)
+
+**Apop_data_memcpy no longer malloc()s for you, for comparability with
+the world's other memcpy fns. If you want mallocing, use apop_data_copy.
+
+--apop_test_fisher_exact(). Cut 'n' pasted from R, who cut 'n' pasted it
+from somebody else. Despite being the same code, it runs fifty (50)
+times faster from Apophenia.
+
+		February 2006
+--sort-of-adaptive MLE: use apop_estimate_restart to execute a new MLE
+search beginning where the last one ended, perhaps using a new method or
+rescaled parameters.
+	--This needed convenience functions to check for divergence, thus
+		added apop_vector_finite, apop_vector_bounded, apop_vector_isnan.
+**apop_db_to_crosstab now returns an apop_data set instead of a gsl_matrix.
+Also, it finally works with column headers that aren't numeric.
+**stats like apop_mean are now apop_vector_mean, following the proper
+	pkg-noun-verb naming scheme. 
+--Textbook is much improved.
+--apop_vector_to_pdf convenience fn.
+
+--Some of the fns that used to be of the form
+	apop_get_something(input, &output);
+are now of the more natural
+	out	= apop_get_something(input);
+This includes apop_array_to_vector and apop_array_to_matrix
+
+--bootstrapping works, and works with with apop_models.
+--apop_poisson model
+
+0.15	January 2006
+Added an apop_opts structure for options. Alowed the following changes:
+	--apop_verbose  is now apop_opts.verbose. Try this on your existing code:
+		perl -pi.bak -e 's/apop_verbose/apop_opts.verbose/g' *.c *.h
+	--the output functions now output into three formats: on screen, to file, to db;
+		see chapter five of the manual.
+		
+--F tests 
+--R squared.
+
+0.14	December 2005
+
+The apop_data structure, which is just a shell for a gsl_matrix and an
+apop_name. Was just sick of sending names following around my tables. 
+Lets us keep both numerical and categorical data in one place; kind of
+like R's data frame.
+
+--Added linear model objects: OLS, GLS. This means that what had been
+the apop_OLS function is now the apop_estimate_OLS function, and where it
+used to take in a gsl_matrix and an apop_name, now it takes an apop_data
+structure and a NULL. So you'll have to modify your code accordingly.
+
+--A function to generate dummy variables, useful in conjunction with
+--Functions to stack matrices and apop_data sets. Even a
+apop_partitioned_OLS function, that will only practically work for small data sets.
+
+--pow(.,.) in the database. I can't believe I dealt with SQL this long w/o it.
+
+0.13	December 2005
+
+--The apop_model object. This was a big deal that deserves more than
+just one line; see the manuals.
+
+0.12 	mid November 2005
+
+--Bar charts (assuming you've got Gnuplot > 4.1)
+--percentiles (in case you haven't got it)
+**redid MLE system so you can pick among the many options now available.  As a part of this:
+	--better handling of constraints.
+	--numerical gradients.
+	--numerical Hessians.
+
+0.12 	early November 2005, post-hiatus
+
+--You now have three maximum likelihood estimators to choose from: the
+GSL's no-gradient, the GSL's with-gradient, and Mr. WN's autocalculated
+gradient. 
+
+--If you haven't seen it before, the apop_distribution structure is
+increasingly well-supported. It allows the user to specify the features
+of the Max. Likeihood model in a consistent manner which facilitates
+things like comparing two models.
+
+--I'd still suggest taking the Waring and Yule distributions with care;
+everything else seems to check out.
+
+
+0.12 	September 2005
+**The distributions are now objects, which just provides a neat way
+of grouping together the half-dozen functions which are associated with
+any one distribution.
+
+0.11	September 2005
+--command-line server is much improved. I actually do work with it.
+--Documentation is now via doxygen.
+--asst bug fixes.
+--Have started to take plotting (via gnuplot) seriously
+--a limited test suite. Try: make test .
+
+0.10	August 2005
+--This version includes a server to park itself in memory and receive data
+processing requests. The intent is that one can then do analysis from
+the command line or a Perl/Python/Whatever script. The client/server
+works in the sense of handling a handful of requests without
+segfaulting, but remains in proof-of-concept stage. 
+--Added apop_merge_db for joining databases, both via C and command line 
+--Run t tests from the cmd line or the database.
+
+0.09	July 2005
+--Flattened the relatively complex vasprintf subsystem from GNU, so if
+you've been having trouble compiling on non-GNU systems, try again.
+Added two little command-line programs. Also, added more little
+functions which aren't very interesting, like t-tests; maybe you'll
+stumble upon them.
+
+0.08	May 2005
+--OLS/GLS/MLE now properly support the apop_estimate structure 
+--Column names
+
+0.07	April 2005
+--uses the apop_estimate structure to return heaps of data from regressions & MLEs
+--uses the apop_model structure
+
+0.06
+--var(x), skew(x), kurtosis(x) added to SQL understood by Apophenia.
+
+0.05
+--added a little crosstab utility
+--queries now accept printf-type arguments. 
+	==>GNU vasprintf was added.
+		==>updated to work with autoconf 1.7
