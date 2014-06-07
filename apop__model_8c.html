@@ -51,8 +51,7 @@ void <b>apop_model_show</b> (<a class="el" href="structapop__model.html">apop_mo
 <li><a class="anchor" id="a8b4ceb0267fe56c68a45019798204fed"></a><!-- doxytag: member="apop_model.c::Apop_settings_init" ref="a8b4ceb0267fe56c68a45019798204fed" args="(Apop_settings_copy(apop_pm, Apop_varad_set(rng, NULL);Apop_varad_set(draws, 1e4);)" -->
 <b>Apop_settings_init</b> (<a class="el" href="apop_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(apop_pm, Apop_varad_set(rng, NULL);Apop_varad_set(draws, 1e4);)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
-<li><a class="anchor" id="ac8a700ba4b9678433d2f84938c1c515f"></a><!-- doxytag: member="apop_model.c::apop_model_metropolis_draw" ref="ac8a700ba4b9678433d2f84938c1c515f" args="(double *out, gsl_rng *rng, apop_model *params)" -->
-int <b>apop_model_metropolis_draw</b> (double *out, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *params)
+<li>int <a class="el" href="apop__model_8c.html#ac8a700ba4b9678433d2f84938c1c515f">apop_model_metropolis_draw</a> (double *out, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *params)
 <li>int <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a> (double *out, gsl_rng *r, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li>void <a class="el" href="group__models.html#ga373ccc4cb87b162d62d07a2685ccd8ba">apop_prep</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m)
@@ -72,6 +71,59 @@ Variables</h2>
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>sets up the estimate structure which outputs from the various regressions and MLEs. </p>
-</div></div><!-- contents -->
+</div><hr/><h2>Function Documentation</h2>
+<a class="anchor" id="ac8a700ba4b9678433d2f84938c1c515f"></a><!-- doxytag: member="apop_model.c::apop_model_metropolis_draw" ref="ac8a700ba4b9678433d2f84938c1c515f" args="(double *out, gsl_rng *rng, apop_model *params)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="apop__model_8c.html#ac8a700ba4b9678433d2f84938c1c515f">apop_model_metropolis_draw</a> </td>
+          <td>(</td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">gsl_rng *&#160;</td>
+          <td class="paramname"><em>rng</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramname"><em>model</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The draw method for models estimated via <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>.</p>
+<p>That method produces an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>, typically with a few thousand draws from the model in a batch. If you want to get a single next step from the Markov chain, use this.</p>
+<p>A Markov chain works by making a new draw and then accepting or rejecting the draw. If the draw is rejected, the last value is reported as the next step in the chain. Users sometimes mitigate this repetition by making a batch of draws (say, ten at a time) and using only the last.</p>
+<p>If you run this without first running <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>, I will run it for you, meaning that there will be an initial burn-in period before the first draw that can be reported to you. That run is done using <code>model-&gt;data</code> as input.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out</td><td>An array of <code>doubles</code>, which will hold the draw, in the style of <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>. </td></tr>
+    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, already initialized, probably via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>. </td></tr>
+    <tr><td class="paramname">model</td><td>A model which was probably already run through <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>On return, <code>out</code> is filled with the next step in the Markov chain. The <code>-&gt;data</code> element of the PMF model is extended to include the additional steps in the chain. If a proposal failed the model constraints, then return 1; else return 0. See the notes in the documentation for <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>.</dd></dl>
+<ul>
+<li>After pulling the attached settings group, the parent model is ignored. One expects that <code>base_model</code> in the mcmc settings group == the parent model.</li>
+</ul>
+<ul>
+<li>If your settings break the model parameters into several chunks, this function returns after stepping through all chunks. </li>
+</ul>
+
+</div>
+</div>
+</div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jun 6 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Aug 3 2014.</div></body></html>

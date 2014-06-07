@@ -39,19 +39,54 @@ Data Fields</h2>
 <li>long int <a class="el" href="structapop__mcmc__settings.html#a2d45abb2f9ece60029b4f6d11511d41e">periods</a>
 <li>double <a class="el" href="structapop__mcmc__settings.html#a7c60f0929a17f4c2b2582e9d14a7c030">burnin</a>
 <li>int <a class="el" href="structapop__mcmc__settings.html#adcb3ad4825157cda798f4df246476f5c">histosegments</a>
-<li><a class="anchor" id="a7fe2f55b676a720b2aa7d98d9f386766"></a><!-- doxytag: member="apop_mcmc_settings::method" ref="a7fe2f55b676a720b2aa7d98d9f386766" args="" -->
-char <b>method</b>
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="structapop__mcmc__settings.html#afb06b31f677ceec20c4902048e39df17">proposal</a>
-<li>void(* <a class="el" href="structapop__mcmc__settings.html#af426698a8947bb84979cef82ac7d1e25">step_fn</a> )(<a class="el" href="structapop__data.html">apop_data</a> *, <a class="el" href="structapop__model.html">apop_model</a> *)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="structapop__mcmc__settings.html#a362e4735ed03c51106034ab695098174">starting_pt</a>
 <li>double <a class="el" href="structapop__mcmc__settings.html#a8f27658bcc0438f69f5600aa3420502f">last_ll</a>
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="structapop__mcmc__settings.html#af68073a090c2db68596d19fc5ab6996c">pmf</a>
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="structapop__mcmc__settings.html#a1ea0ccb424a1ac6c69bf647ab6ad656a">base_model</a>
+<li><a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> * <a class="el" href="structapop__mcmc__settings.html#ad79427c61c98e409521455a281068395">proposals</a>
+<li>int <a class="el" href="structapop__mcmc__settings.html#a04bcdda00a32350ca4b0ba782d3afc3c">proposal_count</a>
+<li>double <a class="el" href="structapop__mcmc__settings.html#a73b0c05c15cb9d17da372650e3caa1ff">target_accept_rate</a>
+<li>int <a class="el" href="structapop__mcmc__settings.html#a4b6c42b5d194856ef14c0dfc651b8602">accept_count</a>
+<li>int <a class="el" href="structapop__mcmc__settings.html#acfd8cd3fa2e0b97710567312f5a398fa">reject_count</a>
+<li>char <a class="el" href="structapop__mcmc__settings.html#a3b1ce772db565366881f6dadcfc79e4b">gibbs_chunks</a>
+<li>size_t * <a class="el" href="structapop__mcmc__settings.html#a3aaab8b4555be99e0d8673035856c0f3">block_starts</a>
+<li><a class="anchor" id="a26489894697f5c753730b4867151b4b6"></a><!-- doxytag: member="apop_mcmc_settings::block_count" ref="a26489894697f5c753730b4867151b4b6" args="" -->
+int <b>block_count</b>
 <li>int <a class="el" href="structapop__mcmc__settings.html#aa36620e7fd246c8c34ec9fef7ab45faf">proposal_is_cp</a>
+<li>char <a class="el" href="structapop__mcmc__settings.html#a43b77e37d7b78fe9832867bc979ba3c9">start_at</a>
+<li>void(* <a class="el" href="structapop__mcmc__settings.html#ae8bb5cbb3e35e3c9519775b8bdead17b">base_step_fn</a> )(double const *, struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *, struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *)
+<li>int(* <a class="el" href="structapop__mcmc__settings.html#af0b3a768ea4d032294932c450c31db15">base_adapt_fn</a> )(struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *ps, struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *ms)
 </ul>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Method settings for a model to be put through Bayesian updating. </p>
 </div><hr/><h2>Field Documentation</h2>
+<a class="anchor" id="a4b6c42b5d194856ef14c0dfc651b8602"></a><!-- doxytag: member="apop_mcmc_settings::accept_count" ref="a4b6c42b5d194856ef14c0dfc651b8602" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int <a class="el" href="structapop__mcmc__settings.html#a4b6c42b5d194856ef14c0dfc651b8602">apop_mcmc_settings::accept_count</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>After calling apop_mcmc, this will have the number of accepted proposals. </p>
+
+</div>
+</div>
+<a class="anchor" id="af0b3a768ea4d032294932c450c31db15"></a><!-- doxytag: member="apop_mcmc_settings::base_adapt_fn" ref="af0b3a768ea4d032294932c450c31db15" args=")(struct apop_mcmc_proposal_s *ps, struct apop_mcmc_settings *ms)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int(* <a class="el" href="structapop__mcmc__settings.html#af0b3a768ea4d032294932c450c31db15">apop_mcmc_settings::base_adapt_fn</a>)(struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *ps, struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *ms)</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>If a <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> has <code>NULL</code> <code>adapt_fn</code>, use this. If you don't want an adapt function, set this to a do-nothing function. </p>
+
+</div>
+</div>
 <a class="anchor" id="a1ea0ccb424a1ac6c69bf647ab6ad656a"></a><!-- doxytag: member="apop_mcmc_settings::base_model" ref="a1ea0ccb424a1ac6c69bf647ab6ad656a" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -62,7 +97,35 @@ char <b>method</b>
       </table>
 </div>
 <div class="memdoc">
-<p>The model you provided with a <code>log_likelihood</code> or <code>p</code> element (which need not sum to one). You do not have to set this: if it is <code>NULL</code> on input to <a class="el" href="apop__update_8c.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a>, I will fill it in. </p>
+<p>The model you provided with a <code>log_likelihood</code> or <code>p</code> element (which need not sum to one). You do not have to set this: if it is <code>NULL</code> on input to <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>, I will fill it in. </p>
+
+</div>
+</div>
+<a class="anchor" id="ae8bb5cbb3e35e3c9519775b8bdead17b"></a><!-- doxytag: member="apop_mcmc_settings::base_step_fn" ref="ae8bb5cbb3e35e3c9519775b8bdead17b" args=")(double const *, struct apop_mcmc_proposal_s *, struct apop_mcmc_settings *)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void(* <a class="el" href="structapop__mcmc__settings.html#ae8bb5cbb3e35e3c9519775b8bdead17b">apop_mcmc_settings::base_step_fn</a>)(double const *, struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *, struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *)</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>If a <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> has <code>NULL</code> <code>step_fn</code>, use this. If you don't want a step function, set this to a do-nothing function. </p>
+
+</div>
+</div>
+<a class="anchor" id="a3aaab8b4555be99e0d8673035856c0f3"></a><!-- doxytag: member="apop_mcmc_settings::block_starts" ref="a3aaab8b4555be99e0d8673035856c0f3" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t* <a class="el" href="structapop__mcmc__settings.html#a3aaab8b4555be99e0d8673035856c0f3">apop_mcmc_settings::block_starts</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>For internal use </p>
 
 </div>
 </div>
@@ -77,6 +140,25 @@ char <b>method</b>
 </div>
 <div class="memdoc">
 <p>What <em>percentage</em> of the periods should be ignored as initialization. That is, this is a number between zero and one. </p>
+
+</div>
+</div>
+<a class="anchor" id="a3b1ce772db565366881f6dadcfc79e4b"></a><!-- doxytag: member="apop_mcmc_settings::gibbs_chunks" ref="a3b1ce772db565366881f6dadcfc79e4b" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="structapop__mcmc__settings.html#a3b1ce772db565366881f6dadcfc79e4b">apop_mcmc_settings::gibbs_chunks</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>'a': One step draws and accepts/rejects all parameters as a unit<br/>
+</p>
+<p>'b': draw in blocks: the vector is a block, the matrix is a separate block, the weights are a separate block, and so on through every page of the model parameters. Each block of parameters is drawn and accepted/rejected as a unit. <br/>
+</p>
+<p>'1': draw each parameter and accept/reject separately. One MCMC step consists of a set of draws for every parameter.<br/>
+ </p>
 
 </div>
 </div>
@@ -132,21 +214,21 @@ char <b>method</b>
       </table>
 </div>
 <div class="memdoc">
-<p>If you have already run mcmc, I keep a pointer to the model so far here. Use apop_model_metropolis_draw to get one more draw. </p>
+<p>If you have already run mcmc, I keep a pointer to the model so far here. Use <a class="el" href="apop__model_8c.html#ac8a700ba4b9678433d2f84938c1c515f">apop_model_metropolis_draw</a> to get one more draw. </p>
 
 </div>
 </div>
-<a class="anchor" id="afb06b31f677ceec20c4902048e39df17"></a><!-- doxytag: member="apop_mcmc_settings::proposal" ref="afb06b31f677ceec20c4902048e39df17" args="" -->
+<a class="anchor" id="a04bcdda00a32350ca4b0ba782d3afc3c"></a><!-- doxytag: member="apop_mcmc_settings::proposal_count" ref="a04bcdda00a32350ca4b0ba782d3afc3c" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="structapop__mcmc__settings.html#afb06b31f677ceec20c4902048e39df17">apop_mcmc_settings::proposal</a></td>
+          <td class="memname">int <a class="el" href="structapop__mcmc__settings.html#a04bcdda00a32350ca4b0ba782d3afc3c">apop_mcmc_settings::proposal_count</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>The distribution from which test parameters will be drawn. If <code>NULL</code>, <a class="el" href="apop__update_8c.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a> will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not <code>NULL</code>, be sure to parameterize your model with an initial position. </p>
+<p>The number of proposal sets; see <code>gibbs_chunks</code> below. </p>
 
 </div>
 </div>
@@ -164,34 +246,63 @@ char <b>method</b>
 
 </div>
 </div>
-<a class="anchor" id="a362e4735ed03c51106034ab695098174"></a><!-- doxytag: member="apop_mcmc_settings::starting_pt" ref="a362e4735ed03c51106034ab695098174" args="" -->
+<a class="anchor" id="ad79427c61c98e409521455a281068395"></a><!-- doxytag: member="apop_mcmc_settings::proposals" ref="ad79427c61c98e409521455a281068395" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="structapop__mcmc__settings.html#a362e4735ed03c51106034ab695098174">apop_mcmc_settings::starting_pt</a></td>
+          <td class="memname"><a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a>* <a class="el" href="structapop__mcmc__settings.html#ad79427c61c98e409521455a281068395">apop_mcmc_settings::proposals</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Deprecated and ignored. Starting point is drawn from your proposal distribution. </p>
+<p>The list of proposals. You can probably use the default of adaptive multivariate normals. See the <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> struct for details. </p>
 
 </div>
 </div>
-<a class="anchor" id="af426698a8947bb84979cef82ac7d1e25"></a><!-- doxytag: member="apop_mcmc_settings::step_fn" ref="af426698a8947bb84979cef82ac7d1e25" args=")(apop_data *, apop_model *)" -->
+<a class="anchor" id="acfd8cd3fa2e0b97710567312f5a398fa"></a><!-- doxytag: member="apop_mcmc_settings::reject_count" ref="acfd8cd3fa2e0b97710567312f5a398fa" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void(* <a class="el" href="structapop__mcmc__settings.html#af426698a8947bb84979cef82ac7d1e25">apop_mcmc_settings::step_fn</a>)(<a class="el" href="structapop__data.html">apop_data</a> *, <a class="el" href="structapop__model.html">apop_model</a> *)</td>
+          <td class="memname">int <a class="el" href="structapop__mcmc__settings.html#acfd8cd3fa2e0b97710567312f5a398fa">apop_mcmc_settings::reject_count</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Modifies the parameters of the proposal distribution given a successful draw. Thus, this function writes the drawn data point to the parameter set. If the draw is a scalar, the default function sets the 0th element of the model's <code>parameter</code> set with the draw (works for the <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a> and other models). If the draw has multiple dimensions, they are all copied to the parameter set, which must have the same size. </p>
+<p>After calling apop_mcmc, this will have the number of rejected proposals. </p>
+
+</div>
+</div>
+<a class="anchor" id="a43b77e37d7b78fe9832867bc979ba3c9"></a><!-- doxytag: member="apop_mcmc_settings::start_at" ref="a43b77e37d7b78fe9832867bc979ba3c9" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="structapop__mcmc__settings.html#a43b77e37d7b78fe9832867bc979ba3c9">apop_mcmc_settings::start_at</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>If <code>'1'</code> (the default), start with a first proposal of all 1s. Even when this is a far-from-useful starting point, MCMC typically does a good job of crawling to better spots early in the chain.<br/>
+ If <code>'p'</code>, start at the <code>parameters</code> of the <a class="el" href="structapop__model.html">apop_model</a> sent in to <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>. </p>
+
+</div>
+</div>
+<a class="anchor" id="a73b0c05c15cb9d17da372650e3caa1ff"></a><!-- doxytag: member="apop_mcmc_settings::target_accept_rate" ref="a73b0c05c15cb9d17da372650e3caa1ff" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double <a class="el" href="structapop__mcmc__settings.html#a73b0c05c15cb9d17da372650e3caa1ff">apop_mcmc_settings::target_accept_rate</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>The desired acceptance rate, for use by adaptive proposals. Default: .35 </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jun 6 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Aug 3 2014.</div></body></html>

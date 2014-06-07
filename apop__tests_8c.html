@@ -118,20 +118,20 @@ Functions</h2>
 <div class="memdoc">
 <p>Runs an F-test specified by <code>q</code> and <code>c</code>. Your best bet is to see the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_88.png"/>
+<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_89.png"/>
 </p>
 <p> and that's what this function is based on.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">est</td><td>an <a class="el" href="structapop__model.html">apop_model</a> that you have already calculated. (No default) </td></tr>
-    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_89.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_90.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_91.png"/> are zero.) </td></tr>
+    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_90.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_91.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_92.png"/> are zero.) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_92.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_93.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_94.png"/>.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_93.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_94.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_95.png"/>.</dd></dl>
 <ul>
-<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_82.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
+<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_83.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
 </ul>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -257,4 +257,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jun 6 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Aug 3 2014.</div></body></html>

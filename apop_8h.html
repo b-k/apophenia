@@ -52,6 +52,7 @@ Data Structures</h2>
 <li>struct <a class="el" href="structapop__pm__settings.html">apop_pm_settings</a>
 <li>struct <a class="el" href="structapop__pmf__settings.html">apop_pmf_settings</a>
 <li>struct <a class="el" href="structapop__kernel__density__settings.html">apop_kernel_density_settings</a>
+<li>struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a>
 <li>struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a>
 <li>struct <a class="el" href="structloess__struct.html">loess_struct</a>
 <li>struct <a class="el" href="structapop__loess__settings.html">apop_loess_settings</a>
@@ -65,6 +66,8 @@ Data Structures</h2>
 <h2><a name="define-members"></a>
 Defines</h2>
 <ul>
+<li><a class="anchor" id="a369266c24eacffb87046522897a570d5"></a><!-- doxytag: member="apop.h::_GNU_SOURCE" ref="a369266c24eacffb87046522897a570d5" args="" -->
+#define <b>_GNU_SOURCE</b>
 <li><a class="anchor" id="ad9d5b8677ddea978bba1d1a17e85a6d3"></a><!-- doxytag: member="apop.h::apop_varad_head" ref="ad9d5b8677ddea978bba1d1a17e85a6d3" args="(type, name)" -->
 #define <b>apop_varad_head</b>(type, name)&#160;&#160;&#160;type variadic_##name(variadic_type_##name varad_in)
 <li>#define <b>apop_varad_declare</b>(type, name,...)
@@ -258,6 +261,8 @@ typedef <a class="el" href="structapop__model.html">apop_model</a> *(* <b>apop_p
 typedef <a class="el" href="structapop__data.html">apop_data</a> *(* <b>apop_predict_type</b> )(<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *params)
 <li><a class="anchor" id="af691684798094626c0f43a5ca55e9a9e"></a><!-- doxytag: member="apop.h::apop_model_print_type" ref="af691684798094626c0f43a5ca55e9a9e" args=")(apop_model *params, FILE *out)" -->
 typedef void(* <b>apop_model_print_type</b> )(<a class="el" href="structapop__model.html">apop_model</a> *params, FILE *out)
+<li>typedef struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> <a class="el" href="apop_8h.html#a3441b2386cb4d58601e5caf7ca4a1465">apop_mcmc_proposal_s</a>
+<li>typedef struct <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> <a class="el" href="group__settings.html#gae7b8fd387aa53bca1a8dedab0dd99a42">apop_mcmc_settings</a>
 </ul>
 <h2><a name="func-members"></a>
 Functions</h2>
@@ -446,7 +451,7 @@ int <b>apop_system</b> (const char *fmt,...) __attribute__((format(printf
 <li>char * <a class="el" href="apop_8h.html#a6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> const *strings, char *between, char *before, char *after, char *between_cols, int(*prune)(<a class="el" href="structapop__data.html">apop_data</a> *, int, int, void *), void *prune_parameter)
 <li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop_8h.html#a0316d98bbeb6ae13532a8c071019dbe6">apop_data_listwise_delete</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char inplace)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#a2a184259c139f1fdd970ef6b43f6274e">apop_ml_impute</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *meanvar)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, gsl_rng *rng)
+<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *m)
 <li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *prior, <a class="el" href="structapop__model.html">apop_model</a> *likelihood, gsl_rng *rng)
 <li>double <a class="el" href="apop_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> (double statistic, char *distribution, double p1, double p2, char tail)
 <li>double * <a class="el" href="apop_8h.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> (gsl_vector *data, char rounding)
@@ -900,7 +905,7 @@ apop_data_add_names_base(mydata, <span class="charliteral">&#39;c&#39;</span>, c
 <li>See also <a class="el" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> to allocate and fill on one line. E.g., to generate a unit vector for three dimensions: <div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *unit_vector = <a class="code" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3), 1, 1, 1);
 </pre></div></li>
 </ul>
-<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop_8h.html#a74dca50ea16ed7bf25cb152315642769">apop_text_fill</a>, <a class="el" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </dd></dl>
+<dl class="see"><dt><b>See also:</b></dt><dd><a class="el" href="apop_8h.html#a74dca50ea16ed7bf25cb152315642769">apop_text_fill</a>, <a class="el" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>, <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> </dd></dl>
 
 </div>
 </div>
@@ -1715,12 +1720,12 @@ printf(<span class="stringliteral">&quot;The correlation coefficient between row
       </table>
 </div>
 <div class="memdoc">
-<b>Value:</b><div class="fragment"><pre class="fragment">{\
+<b>Value:</b><div class="fragment"><pre class="fragment"><span class="keywordflow">do</span> {\
      if (test) {  \
         Apop_notify(level,  __VA_ARGS__);   \
         Apop_maybe_abort(level)  \
         onfail;  \
-    } }
+    } } <span class="keywordflow">while</span>(0)
 </pre></div><p>Execute an action and print a message to <code>stderr</code> (or the current <code>FILE</code> handle held by <code>apop_opts.log_file</code>). Intended for leaving a function on failure.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
@@ -2054,6 +2059,22 @@ gsl_matrix * o = &amp;( apop_mm_##o );
 </table>
 <p>Allocate using <code>apop_data_alloc</code>, free via <code>apop_data_free</code>, or more generally, see the <code>apop_data_</code>... section of the index (in the header links) for the many other functions that operate on this struct.</p>
 <p>See also the Data Sets section of the outline page (also in the header links) for further notes on getting and manipulating the elements of an <a class="el" href="gentle.html#apop_data">apop_data</a> set. </p>
+
+</div>
+</div>
+<a class="anchor" id="a3441b2386cb4d58601e5caf7ca4a1465"></a><!-- doxytag: member="apop.h::apop_mcmc_proposal_s" ref="a3441b2386cb4d58601e5caf7ca4a1465" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a>  <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A proposal distribution for <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> and its accompanying functions and information. By default, these will be <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> models. The <code>step_fn</code> and <code>adapt_fn</code> have to be written around the model and your preferences. For the defaults, the step function recenters the mean of the distribution around the last accepted proposal, and the adapt function widens the Σ for the Normal if the accept rate is too low; narrows it if the accept rate is too large.</p>
+<p>You may provide an array of proposals. The length of the list of proposals must match the number of chunks, as per the <code>gibbs_chunks</code> setting in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group that the array of proposals is a part of. Each proposal must be initialized to include all elements, and the step and adapt functions probably have to be written anew for each type of model.</p>
+<p>This segment of the interface is in beta. A future revision may make it easier to design new proposals. </p>
 
 </div>
 </div>
@@ -2625,7 +2646,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
       </table>
 </div>
 <div class="memdoc">
-<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_75.png"/> relating each column with each other.</p>
+<p>Returns the matrix of correlation coefficients <img class="formulaInl" alt="$(\sigma^2_{xy}/(\sigma_x\sigma_y))$" src="form_76.png"/> relating each column with each other.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">in</td><td>A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.</td></tr>
@@ -2664,7 +2685,7 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
   </dd>
 </dl>
 <ul>
-<li>This is the sample covariance---dividing by <img class="formulaInl" alt="$n-1$" src="form_56.png"/>, not <img class="formulaInl" alt="$n$" src="form_10.png"/>.</li>
+<li>This is the sample covariance---dividing by <img class="formulaInl" alt="$n-1$" src="form_57.png"/>, not <img class="formulaInl" alt="$n$" src="form_10.png"/>.</li>
 </ul>
 <dl class="return"><dt><b>Returns:</b></dt><dd>Returns a <a class="el" href="gentle.html#apop_data">apop_data</a> set the variance/covariance matrix relating each column with each other. </dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
@@ -2863,11 +2884,11 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
       </table>
 </div>
 <div class="memdoc">
-<p>Copy one <a class="el" href="gentle.html#apop_data">apop_data</a> structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a <code>for</code> loop over the data set's pages.]</p>
+<p>Copy one <a class="el" href="gentle.html#apop_data">apop_data</a> structure to another.</p>
 <p>This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.</p>
 <ul>
-<li>If you want space allocated, use <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>. </li>
-<li>I don't follow the <code>more</code> pointer, though <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> does. </li>
+<li>If you want space allocated or are unsure about dimensions, use <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>. </li>
+<li>If both <code>in</code> and <code>out</code> have a <code>more</code> pointer, also copy subsequent page(s). </li>
 <li>You can use the subsetting macros, <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> or <a class="el" href="apop_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, to copy within a data set:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="comment">//Copy the contents of row i of mydata to row j.</span>
@@ -2876,8 +2897,8 @@ insert into your_table values (<span class="stringliteral">&#39;r1&#39;</span>, 
 <a class="code" href="apop_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>(torow, fromrow);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">out</td><td>a structure that this function will fill. Must be preallocated with the appropriate sizes. </td></tr>
-    <tr><td class="paramname">in</td><td>the input data</td></tr>
+    <tr><td class="paramname">out</td><td>A structure that this function will fill. Must be preallocated with the appropriate sizes. </td></tr>
+    <tr><td class="paramname">in</td><td>The input data.</td></tr>
   </table>
   </dd>
 </dl>
@@ -4015,20 +4036,20 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <div class="memdoc">
 <p>Runs an F-test specified by <code>q</code> and <code>c</code>. Your best bet is to see the chapter on hypothesis testing in <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that: </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_88.png"/>
+<img class="formulaDsp" alt="\[{N-K\over q} {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c}) \over {\bf u}' {\bf u} } \sim F_{q,N-K},\]" src="form_89.png"/>
 </p>
 <p> and that's what this function is based on.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">est</td><td>an <a class="el" href="structapop__model.html">apop_model</a> that you have already calculated. (No default) </td></tr>
-    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_89.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_90.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_91.png"/> are zero.) </td></tr>
+    <tr><td class="paramname">contrast</td><td>The matrix <img class="formulaInl" alt="${\bf Q}$" src="form_90.png"/> and the vector <img class="formulaInl" alt="${\bf c}$" src="form_91.png"/>, where each row represents a hypothesis. (Defaults: if matrix is <code>NULL</code>, it is set to the identity matrix with the top row missing. If the vector is <code>NULL</code>, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire <code><a class="el" href="structapop__data.html">apop_data</a></code> set is NULL or omitted, we are testing the hypothesis that all but <img class="formulaInl" alt="$\beta_1$" src="form_92.png"/> are zero.) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>An <code><a class="el" href="structapop__data.html">apop_data</a></code> set with a few variants on the confidence with which we can reject the joint hypothesis. </dd></dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_92.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_93.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_94.png"/>.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>There should be a way to get OLS and GLS to store <img class="formulaInl" alt="$(X'X)^{-1}$" src="form_93.png"/>. In fact, if you did GLS, this is invalid, because you need <img class="formulaInl" alt="$(X'\Sigma X)^{-1}$" src="form_94.png"/>, and I didn't ask for <img class="formulaInl" alt="$\Sigma$" src="form_95.png"/>.</dd></dl>
 <ul>
-<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_82.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
+<li>There are two approaches to an <img class="formulaInl" alt="$F$" src="form_83.png"/>-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a <code>NULL</code> contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {<em>Modeling</em> with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.</li>
 </ul>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
@@ -4186,11 +4207,11 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 </div>
 <div class="memdoc">
 <p>Kullback-Leibler divergence.</p>
-<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_76.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_20.png"/> and <img class="formulaInl" alt="$q$" src="form_77.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_78.png"/>.</p>
+<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_77.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_20.png"/> and <img class="formulaInl" alt="$q$" src="form_78.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_79.png"/>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">from</td><td>the <img class="formulaInl" alt="$p$" src="form_20.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">to</td><td>the <img class="formulaInl" alt="$q$" src="form_77.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">to</td><td>the <img class="formulaInl" alt="$q$" src="form_78.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">draw_ct</td><td>If I do the calculation via random draws, how many? (Default = 1e5) </td></tr>
     <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>) </td></tr>
     <tr><td class="paramname">top</td><td>deprecated synonym for <code>from</code>. </td></tr>
@@ -4201,7 +4222,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <p>This function can take empirical histogram-type models (<a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>) or continuous models like <a class="el" href="group__models.html#gaf7d01cc4076c9319036a0cce882dac62">apop_loess</a> or <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>.</p>
 <p>If there is a PMF (I'll try <code>from</code> first, under the presumption that you are measuring the divergence of data from an observed data distribution), then I'll step through it for the points in the summation.</p>
 <ul>
-<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_79.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_80.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
+<li>If you have two empirical distributions, that they must be synced: if <img class="formulaInl" alt="$p_i>0$" src="form_80.png"/> but <img class="formulaInl" alt="$q_i=0$" src="form_81.png"/>, then the function returns <code>GSL_NEGINF</code>. If <code>apop_opts.verbose &gt;=1</code> I print a message as well.</li>
 </ul>
 <p>If neither distribution is a PMF, then I'll take <code>draw_ct</code> random draws from <code>to</code> and evaluate at those points.</p>
 <ul>
@@ -4623,7 +4644,7 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 <div class="memdoc">
 <p>Produce a model based on another model, but with some of the parameters fixed at a given value.</p>
 <p>You will send me the model whose parameters you want fixed, with the <code>parameters</code> element set as follows. For the fixed parameters, simply give the values to which they will be fixed. Set the free parameters to <code>NaN</code>.</p>
-<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_168.png"/> but <img class="formulaInl" alt="$p_1$" src="form_164.png"/> allowed to float freely:</p>
+<p>For example, here is a Binomial distribution with a fixed <img class="formulaInl" alt="$n=30$" src="form_169.png"/> but <img class="formulaInl" alt="$p_1$" src="form_165.png"/> allowed to float freely:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="structapop__model.html">apop_model</a> *bi30 = <a class="code" href="apop_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(<a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, 30, GSL_NAN));
 Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">double</span>[]){.5}); <span class="comment">// The Binomial doesn&#39;t like the default </span>
                                                                    <span class="comment">// starting point of 1.</span>
@@ -4748,12 +4769,12 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 
 </div>
 </div>
-<a class="anchor" id="a1a6180e8caa773e287c1fce1bd78c061"></a><!-- doxytag: member="apop.h::apop_model_metropolis" ref="a1a6180e8caa773e287c1fce1bd78c061" args="(apop_data *d, apop_model *m, gsl_rng *rng)" -->
+<a class="anchor" id="a733c60eab5b69d89729565a3aeeb15d9"></a><!-- doxytag: member="apop.h::apop_model_metropolis" ref="a733c60eab5b69d89729565a3aeeb15d9" args="(apop_data *d, gsl_rng *rng, apop_model *m)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="apop__update_8c.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a> </td>
+          <td class="memname"><a class="el" href="structapop__model.html">apop_model</a>* <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
           <td class="paramname"><em>d</em>, </td>
@@ -4761,14 +4782,14 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
+          <td class="paramtype">gsl_rng *&#160;</td>
+          <td class="paramname"><em>rng</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -4779,12 +4800,24 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 </div>
 <div class="memdoc">
 <p>Use <a href="https://en.wikipedia.org/wiki/Metropolis-Hastings">Metropolis-Hastings Markov chain Monte Carlo</a> to make draws from the given model.</p>
-<p>Attach a <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to your model to specify the proposal distribution, burnin, and other details of the search. See the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> documentation for details.</p>
+<p>The basic storyline is that draws are made from a proposal distribution, and the likelihood of your model given your data and the drawn parameters evaluated. At each step, a new set of proposal parameters are drawn, and if either they are more likely than the previous set the new proposal is accepted as the next step, else with probability (prob of new params)/(prob of old params), they are accepted as the next step anyway. Otherwise the last accepted proposal is repeated.</p>
+<p>The output is an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model with a data set listing the draws that were accepted, including those repetitions. The output model is modified so that subsequent draws are one more step from the Markov chain, via <a class="el" href="apop__model_8c.html#ac8a700ba4b9678433d2f84938c1c515f">apop_model_metropolis_draw</a>.</p>
+<ul>
+<li>If a proposal fails to meet the <code>constraint</code> element of the model you input, then the proposal is thrown out and a new one selected. By the default proposal distribution, this is not mathematically correct (it breaks detailed balance), and values near the constraint will be oversampled. The output model will have <code>outmodel-&gt;error=='c'</code>. It is up to you to decide whether the resulting distribution is good enough for your purposes or whether to take the time to write a custom proposal and step function to accommodate the constraint.</li>
+</ul>
+<p>Attach an <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to your model to specify the proposal distribution, burnin, and other details of the search. See the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> documentation for details.</p>
+<ul>
+<li>The default proposal includes an adaptive step: you specify a target accept rate (default: .35), and if the accept rate is currently higher the variance of the proposals is widened to explore more of the space; if the accept rate is currently lower the variance is narrowed to stay closer to the last accepted proposal. Technically, this breaks ergodicity of the Markov chain, but the consensus seems to be that this is not a serious problem. If it does concern you, you can set the <code>base_adapt_fn</code> in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to a do-nothing function, or one that damps its adaptation as <img class="formulaInl" alt="$n\to\infty$" src="form_43.png"/>.</li>
+</ul>
+<ul>
+<li>Note the <code>gibbs_chunks</code> element of the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group. If you set <code>gibbs_chunks='a'</code>, all parameters are drawn as a set, and accepted/rejected as a set. The variances are adapted at an identical rate. If you set <code>gibbs_chunks='i'</code>, then each scalar parameter is assigned its own proposal distribution, which is adapted at its own pace. With <code>gibbs_chunks='b'</code> (the default), then each of the vector, matrix, and weights of your model's parameters are drawn/accepted/adapted as a group (and so on to additional chunks if your model has <code>-&gt;more</code> pages). This works well for complex models which naturally break down into subsets of parameters.</li>
+</ul>
+<p>Each chunk counts as a step in the Markov chain. Therefore, if there are several chunks, you can expect chunks to repeat from step to step. If you want a draw after cycling through all chunks, try using <a class="el" href="apop__model_8c.html#ac8a700ba4b9678433d2f84938c1c515f">apop_model_metropolis_draw</a>, which has that behavior.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">d</td><td>The <a class="el" href="gentle.html#apop_data">apop_data</a> set used for evaluating the likelihood of a proposed parameter set.</td></tr>
-    <tr><td class="paramname">m</td><td>The <a class="el" href="structapop__model.html">apop_model</a> from which parameters are being drawn. (No default; must not be <code>NULL</code>)</td></tr>
     <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>, probably allocated via <a class="el" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>. (Default: an RNG from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>)</td></tr>
+    <tr><td class="paramname">m</td><td>The <a class="el" href="structapop__model.html">apop_model</a> from which parameters are being drawn. (No default; must not be <code>NULL</code>)</td></tr>
   </table>
   </dd>
 </dl>
@@ -4792,12 +4825,18 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 <li>If the likelihood model no parameters, I will allocate them. That means you can use one of the stock models that ship with Apophenia. If I need to run the model's prep routine to get the size of the parameters, then I'll make a copy of the likelihood model, run prep, and then allocate parameters for that copy of a model.</li>
 </ul>
 <ul>
-<li>Consider the state of the <code>parameters</code> element of your likelihood model to be undefined when this exits. This may be settled at a later date.</li>
+<li>On exit, the <code>parameters</code> element of your likelihood model has the last accepted parameter proposal.</li>
 </ul>
 <ul>
-<li>If you set <code>apop_opts.verbose=2</code> or greater, I will report the accept rate of the M-H sampler. It is a common rule of thumb to select a proposal so that this is between 20% and 50%. Set <code>apop_opts.verbose=3</code> to see the proposal points, their likelihoods, and the acceptance odds.</li>
+<li>If you set <code>apop_opts.verbose=2</code> or greater, I will report the accept rate of the M-H sampler. It is a common rule of thumb to select a proposal so that this is between 20% and 50%. Set <code>apop_opts.verbose=3</code> to see the stream of proposal points, their likelihoods, and the acceptance odds. You may want to set <code>apop_opts.log_file=fopen("yourlog", "w")</code> first.</li>
 </ul>
-<dl class="return"><dt><b>Returns:</b></dt><dd>A modified <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model representing the results of the search. It has a specialized <code>draw</code> method that returns another step from the Markov chain with each draw. Each draw is also recorded internally.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>A modified <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> model representing the results of the search. It has a specialized <code>draw</code> method that returns another step from the Markov chain with each draw.</dd></dl>
+<dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">out-&gt;error='c'</td><td>Proposal was outside of a constraint; see above.</td></tr>
+  </table>
+  </dd>
+</dl>
 <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
 </ul>
@@ -4875,9 +4914,9 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 <div class="memdoc">
 <p>The multivariate generalization of the Gamma distribution. </p>
 <p class="formulaDsp">
-<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_83.png"/>
+<img class="formulaDsp" alt="\[ \Gamma_p(a)= \pi^{p(p-1)/4}\prod_{j=1}^p \Gamma\left[ a+(1-j)/2\right]. \]" src="form_84.png"/>
 </p>
-<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_84.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_85.png"/>, this function returns <code>NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_86.png"/> takes on one of those values.</p>
+<p>Because <img class="formulaInl" alt="$\Gamma(x)$" src="form_85.png"/> is undefined for <img class="formulaInl" alt="$x\in\{0, -1, -2, ...\}$" src="form_86.png"/>, this function returns <code>NAN</code> when <img class="formulaInl" alt="$a+(1-j)/2$" src="form_87.png"/> takes on one of those values.</p>
 <p>See also <a class="el" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a>, which is more numerically stable in most cases. </p>
 
 </div>
@@ -5243,7 +5282,7 @@ Apop_model_add_group(bi30, apop_mle, .starting_pt=(<span class="keywordtype">dou
 <div class="memdoc">
 <p>Fit a log-linear model via iterative proportional fitting, aka raking.</p>
 <p>Raking has many uses. The <a href="http://modelingwithdata.org/arch/00000138.htm">Modeling with Data blog</a> presents a series of discussions of uses of raking, including some worked examples.</p>
-<p>Or see Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_45.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
+<p>Or see Wikipedia for an overview of Log linear models, aka <a href="http://en.wikipedia.org/wiki/Poisson_regression">Poisson regressions</a>. One approach toward log-linear modeling is a regression form; let there be four categories, A, B, C, and D, from which we can produce a model positing, for example, that cell count is a function of a form like <img class="formulaInl" alt="$g_1(A) + g_2(BC) + g_3(CD)$" src="form_46.png"/>. In this case, we would assign a separate coefficient to every possible value of A, every possible value of (B, C), and every value of (C, D). Raking is the technique that searches for that large set of parameters.</p>
 <p>The combinations of categories that are considered to be relevant are called <em>contrasts</em>, after ANOVA terminology of the 1940s.</p>
 <p>The other constraint on the search are structural zeros, which are values that you know can never be non-zero, due to field-specific facts about the variables. For example, U.S. Social Security payments are available only to those age 65 or older, so "age &lt;65 and
 gets_soc_security=1" is a structural zero.</p>
@@ -6017,7 +6056,7 @@ gets_soc_security=1" is a structural zero.</p>
 <p>Take in a prior and likelihood distribution, and output a posterior distribution.</p>
 <p>This function first checks a table of conjugate distributions for the pair you sent in. If the names match the table, then the function returns a closed-form model with updated parameters. If the parameters aren't in the table of conjugate priors/likelihoods, then it uses Markov Chain Monte Carlo to sample from the posterior distribution, and then outputs a histogram model for further analysis. Notably, the histogram can be used as the input to this function, so you can chain Bayesian updating procedures.</p>
 <ul>
-<li>If the prior distribution has a <code>p</code> or <code>log_likelihood</code> element, then I use <a class="el" href="apop__update_8c.html#a1a6180e8caa773e287c1fce1bd78c061">apop_model_metropolis</a> to generate the posterior.</li>
+<li>If the prior distribution has a <code>p</code> or <code>log_likelihood</code> element, then I use <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> to generate the posterior.</li>
 </ul>
 <ul>
 <li>If the prior does not have a <code>p</code> or <code>log_likelihood</code> but does have a <code>draw</code> element, then I make draws from the prior and weight them by the <code>p</code> given by the likelihood distribution. This is not a rejection sampling method, so the burnin is ignored.</li>
@@ -6031,9 +6070,9 @@ gets_soc_security=1" is a structural zero.</p>
 <tr>
 <td><a class="el" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">Beta</a> </td><td><a class="el" href="group__models.html#gac5437f95ff92d27f389a7b3e27812330">Bernoulli</a> </td><td></td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_95.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_96.png"/>   </td></tr>
+<td><a class="el" href="group__models.html#ga76b45a5681d30906572263eeef35aeff">Exponential</a> </td><td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td>Gamma likelihood represents the distribution of <img class="formulaInl" alt="$\lambda^{-1}$" src="form_96.png"/>, not plain <img class="formulaInl" alt="$\lambda$" src="form_97.png"/>   </td></tr>
 <tr>
-<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_71.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_74.png"/>  </td></tr>
+<td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td><a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">Normal</a> </td><td>Assumes prior with fixed <img class="formulaInl" alt="$\sigma$" src="form_72.png"/>; updates distribution for <img class="formulaInl" alt="$\mu$" src="form_75.png"/>  </td></tr>
 <tr>
 <td><a class="el" href="group__models.html#gad11b67493ee1e2038696268a38609367">Gamma</a> </td><td><a class="el" href="group__models.html#ga9c67838a4761452cc2c9113557f2a070">Poisson</a> </td><td>Uses sum and size of the data  </td></tr>
 </table>
@@ -6054,12 +6093,19 @@ gets_soc_security=1" is a structural zero.</p>
 <dl class="return"><dt><b>Returns:</b></dt><dd>an <a class="el" href="structapop__model.html">apop_model</a> struct representing the posterior, with updated parameters.</dd></dl>
 <p>Here is a test function that compares the output via conjugate table and via Metropolis-Hastings sampling: </p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
+
+<span class="comment">//For the test suite.</span>
+<span class="keywordtype">void</span> distances(gsl_vector *v1, gsl_vector *v2, <span class="keywordtype">double</span> tol){
+    <span class="keywordtype">double</span> error = <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1, v2, .metric=<span class="charliteral">&#39;m&#39;</span>);
+    <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(v1);
+    <a class="code" href="apop_8h.html#abd17601e642688d033f62d346f3dace6">Apop_stopif</a>(error/updated_size &gt; tol, exit(1), 0, <span class="stringliteral">&quot;The error is %g, which is too big.&quot;</span>, error/updated_size);
+}
+
 <span class="keywordtype">int</span> main(){
     gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(2468);
     <span class="keywordtype">double</span> binom_start = 0.6;
     <span class="keywordtype">double</span> beta_start_a = 0.3;
     <span class="keywordtype">double</span> beta_start_b = 0.5;
-    <span class="keywordtype">int</span> i, draws = 1500;
     <span class="keywordtype">double</span> n = 4000;
     <span class="comment">//First, the easy estimation using the conjugate distribution table.</span>
     apop_model *bin = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, binom_start);
@@ -6072,21 +6118,22 @@ gets_soc_security=1" is a structural zero.</p>
     apop_model *bcopy = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga20017e88fda3695f093279c8191f48e3">apop_binomial</a>, n, GSL_NAN);
     apop_data *bin_draws = <a class="code" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((1,2), n*(1-binom_start), n*binom_start);
     bin = <a class="code" href="apop_8h.html#ab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(bcopy);
-    <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(beta, apop_mcmc, .burnin=.1, .periods=1e4);
-    apop_model *out_h = <a class="code" href="apop_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
+    <a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(beta, apop_mcmc, .burnin=.2, .periods=1e5);
 
-    <span class="comment">//We now have a histogram of values for p. What&#39;s the closest beta</span>
-    <span class="comment">//distribution?</span>
+    apop_model *out_h = <a class="code" href="apop_8h.html#ac7c0ddb63673ddd40ba69f7dc8bff800">apop_update</a>(bin_draws, beta, bin, NULL);
+    apop_model *out_beta = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(out_h-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715c07c1183c">data</a>, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
+
+    <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
+    distances(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, 0.01);
+
+    <span class="comment">//The apop_update function used apop_model_metropolis to generate</span>
+    <span class="comment">//a batch of draws. Let&#39;s use apop_model_metropolis_draw to get draws.</span>
+    <span class="keywordtype">int</span> i, draws = 1.3e5;
     apop_data *d = <a class="code" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(draws, 1);
     <span class="keywordflow">for</span>(i=0; i &lt; draws; i ++)
         <a class="code" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>(<a class="code" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(d, i, 0), r, out_h);
-    apop_model *out_beta = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
-    <span class="comment">//Finally, we can compare the conjugate and Gibbs results:</span>
-    <a class="code" href="apop_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
-    <a class="code" href="apop_8h.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a>(out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
-    <span class="keywordtype">double</span> error = <a class="code" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, out_beta-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, .metric=<span class="charliteral">&#39;m&#39;</span>);
-    <span class="keywordtype">double</span> updated_size = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);
-    Apop_assert(error/updated_size &lt; 0.01, <span class="stringliteral">&quot;The error is %g, which is too big.&quot;</span>, error/updated_size);
+    apop_model *drawn = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, <a class="code" href="group__models.html#gac11decb2971532ada7d2cd4982848b90">apop_beta</a>);
+    distances(updated-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, drawn-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, 0.02);
 }
 </pre></div><ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -6250,8 +6297,8 @@ gets_soc_security=1" is a structural zero.</p>
     <tr><td class="paramname">out</td><td>If normalizing in place, <code>NULL</code>. If not, the address of a <code>gsl_vector</code>. Do not allocate. (default = <code>NULL</code>.)</td></tr>
     <tr><td class="paramname">normalization_type</td><td>'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br/>
  'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br/>
- 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_70.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_71.png"/> is the sample standard deviation.<br/>
- 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_72.png"/><br/>
+ 's': normalized vector will have mean zero and variance one. Replace each X with <img class="formulaInl" alt="$(X-\mu) / \sigma$" src="form_71.png"/>, where <img class="formulaInl" alt="$\sigma$" src="form_72.png"/> is the sample standard deviation.<br/>
+ 'm': normalize to mean zero: Replace each X with <img class="formulaInl" alt="$(X-\mu)$" src="form_73.png"/><br/>
 </td></tr>
   </table>
   </dd>
@@ -6448,7 +6495,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 <div class="memdoc">
 <p>Find the sample variance of a vector, weighted or unweighted.</p>
 <ul>
-<li>This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using <img class="formulaInl" alt="$\bar x$" src="form_73.png"/> instead of <img class="formulaInl" alt="$\mu$" src="form_74.png"/>.</li>
+<li>This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using <img class="formulaInl" alt="$\bar x$" src="form_74.png"/> instead of <img class="formulaInl" alt="$\mu$" src="form_75.png"/>.</li>
 </ul>
 <ul>
 <li>At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.</li>
@@ -6462,7 +6509,7 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>The weighted sample variance.</dd></dl>
 <ul>
-<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_56.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_10.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</li>
+<li>Apophenia tries to be smart about reading the weights. If weights sum to one, then the system uses <code>w-&gt;size</code> as the number of elements, and returns the usual sum over <img class="formulaInl" alt="$n-1$" src="form_57.png"/>. If weights &gt; 1, then the system uses the total weights as <img class="formulaInl" alt="$n$" src="form_10.png"/>. Thus, you can use the weights as standard weightings or to represent elements that appear repeatedly.</li>
 </ul>
 <ul>
 <li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
@@ -6487,4 +6534,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Fri Jun 6 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Aug 3 2014.</div></body></html>
