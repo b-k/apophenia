@@ -9,6 +9,12 @@ mv $workdir/apophenia-${version}.tar.gz .
 rm -r $workdir
 tar xz < apophenia-${version}.tar.gz && rm apophenia-${version}.tar.gz
 mv $workdir/* .
+mv $workdir/tests/* ./tests/
+mv $workdir/docs/* ./docs/
+mv $workdir/m4/* ./m4/
+rmdir $workdir/tests
+rmdir $workdir/docs
+rmdir $workdir/m4
 rmdir $workdir
 mv Readme-pkg README
 git add .
