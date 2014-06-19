@@ -1034,7 +1034,7 @@ apop_data *apop_data_pmf_compress(apop_data *in);
         Apop_notify(level,  __VA_ARGS__);   \
         Apop_maybe_abort(level)  \
         onfail;  \
-    } } while(0);
+    } } while(0)
 
 #define apop_errorlevel -5
 

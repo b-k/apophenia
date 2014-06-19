@@ -86,11 +86,9 @@ subdir = .
 DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in $(srcdir)/apophenia.pc.in \
-	$(top_srcdir)/../depcomp $(include_HEADERS) COPYING \
-	$(top_srcdir)/../config.guess $(top_srcdir)/../config.sub \
-	$(top_srcdir)/../install-sh $(top_srcdir)/../ltmain.sh \
-	$(top_srcdir)/../missing
+	$(srcdir)/config.h.in $(srcdir)/apophenia.pc.in depcomp \
+	$(include_HEADERS) COPYING config.guess config.sub install-sh \
+	missing ltmain.sh
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -179,7 +177,7 @@ am__v_at_ = $(am__v_at_$(AM_DEFAULT_VERBOSITY))
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.
-depcomp = $(SHELL) $(top_srcdir)/../depcomp
+depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -293,14 +291,14 @@ am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
 
-ACLOCAL = ${SHELL} /home/b/Apophenia/missing aclocal-1.13
+ACLOCAL = ${SHELL} /home/b/tmp/Apop_pkg/missing aclocal-1.13
 ALLOCA = 
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
-AUTOCONF = ${SHELL} /home/b/Apophenia/missing autoconf
-AUTOHEADER = ${SHELL} /home/b/Apophenia/missing autoheader
-AUTOMAKE = ${SHELL} /home/b/Apophenia/missing automake-1.13
+AUTOCONF = ${SHELL} /home/b/tmp/Apop_pkg/missing autoconf
+AUTOHEADER = ${SHELL} /home/b/tmp/Apop_pkg/missing autoheader
+AUTOMAKE = ${SHELL} /home/b/tmp/Apop_pkg/missing automake-1.13
 AWK = gawk
 CC = $(PTHREAD_CC)
 CCDEPMODE = depmode=gcc3
@@ -333,7 +331,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/b/Apophenia/missing makeinfo
+MAKEINFO = ${SHELL} /home/b/tmp/Apop_pkg/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MYSQL_CFLAGS = -I/usr/include/mysql -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches  -m64 -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -fPIC  -g -static-libgcc -fno-omit-frame-pointer -fno-strict-aliasing  -DMY_PTHREAD_FASTMUTEX=1
@@ -368,10 +366,10 @@ SQLITE3_LDFLAGS = -L/usr/lib -lsqlite3
 SQLITE3_VERSION = 3.8.4.3
 STRIP = strip
 VERSION = 0.999
-abs_builddir = /home/b/Apophenia
-abs_srcdir = /home/b/Apophenia
-abs_top_builddir = /home/b/Apophenia
-abs_top_srcdir = /home/b/Apophenia
+abs_builddir = /home/b/tmp/Apop_pkg
+abs_srcdir = /home/b/tmp/Apop_pkg
+abs_top_builddir = /home/b/tmp/Apop_pkg
+abs_top_srcdir = /home/b/tmp/Apop_pkg
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -401,7 +399,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/b/Apophenia/install-sh
+install_sh = ${SHELL} /home/b/tmp/Apop_pkg/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
