@@ -30,12 +30,16 @@ group by whatever
 
 \li The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
 
-\li For bonus points, there are the <tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>,
-<tt>log(x)</tt>, and trig functions. They call the standard math library function
-of the same name to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$,
-\f$\sin(x)\f$, \f$\arcsin(x)\f$, et cetera.
+\li Also provided: wrapper functions for standard math library
+functions---<tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, <tt>log(x)</tt>,
+and trig functions. They call the standard math library function of the same name
+to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$,
+\f$\arcsin(x)\f$, et cetera.
 
-\li The random() function keepts its own <tt>gsl_rng</tt>, which is intialized on first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented, so the next function to use it will get a different seed).
+\li The <tt>ran()</tt> function calls <tt>gsl_rng_uniform</tt> to produce a uniform
+draw between zero and one. It keeps its own <tt>gsl_rng</tt>, which is intialized on
+first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented,
+so the next function to use it will get a different seed).
 
 \code
 select sqrt(x), pow(x,0.5), exp(x), log(x), 

@@ -616,12 +616,12 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 \li If \c apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
 \li If \c apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
 */
-#define Apop_stopif(test, onfail, level, ...) {\
+#define Apop_stopif(test, onfail, level, ...) do {\
      if (test) {  \
         Apop_notify(level,  __VA_ARGS__);   \
         Apop_maybe_abort(level)  \
         onfail;  \
-    } }
+    } } while(0)
 
 #define apop_errorlevel -5
 
@@ -1301,7 +1301,8 @@ typedef struct{
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
     char method;
-    apop_model *proposal; /**< The distribution from which test parameters will be drawn. If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to parameterize your model with an initial position. */
+    apop_model *proposal; /**< The distribution from which test parameters will be drawn. After getting the draw using the \c draw method of the proposal, the base model's \c parameters element is filled using \ref apop_data_fill.
+If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to parameterize your model with an initial position. */
     void (*step_fn)(apop_data *, apop_model*); /**< Modifies the parameters of the
         proposal distribution given a successful draw. Thus, this function writes the
         drawn data point to the parameter set. If the draw is a scalar, the default

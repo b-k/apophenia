@@ -33,7 +33,7 @@ void xprintf(char **q, char *format, ...);
 #define XN(in) ((in) ? (in) : "")
 
 //For a pedantic compiler. Continues on error, because there's not much else to do: the computer is clearly broken.
-#define Asprintf(...) do {Apop_stopif(asprintf(__VA_ARGS__)==-1, , 0, "Error printing to a string.")} while(0)
+#define Asprintf(...) Apop_stopif(asprintf(__VA_ARGS__)==-1, , 0, "Error printing to a string.")
 
 #include <sqlite3.h>
 #include <stddef.h>
