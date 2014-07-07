@@ -862,7 +862,7 @@ generate a unit vector for three dimensions:
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
 
-\see apop_text_fill, apop_data_falloc
+\see apop_text_fill, apop_data_falloc, apop_data_unpack
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){

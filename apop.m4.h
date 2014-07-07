@@ -16,6 +16,10 @@ this more navigable.
 extern "C" {
 #endif
 
+#ifndef _GNU_SOURCE
+#define  _GNU_SOURCE //for asprintf
+#endif
+
 #include <assert.h>
 #include <signal.h> //raise(SIGTRAP)
 #include <string.h>

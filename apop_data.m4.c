@@ -200,12 +200,15 @@ char apop_data_free_base(apop_data *freeme){
     return 0;
 }
 
-/** Copy one \ref apop_data structure to another. That is, all data on the first page is duplicated. [To do multiple pages, call this via a \c for loop over the data set's pages.]
+/** Copy one \ref apop_data structure to another.
 
-  This function does not allocate the output structure or the vector, matrix, text, or weights elements---I assume you have already done this and got the dimensions right. I will assert that there is at least enough room in the destination for your data, and fail if the copy would write more elements than there are bins.
+This function does not allocate the output structure or the vector, matrix, text,
+or weights elements---I assume you have already done this and got the dimensions
+right. I will assert that there is at least enough room in the destination for your
+data, and fail if the copy would write more elements than there are bins.
 
-  \li If you want space allocated, use \ref apop_data_copy.
-  \li I don't follow the \c more pointer, though \ref apop_data_copy does.
+  \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
+  \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
   \li You can use the subsetting macros, \ref Apop_row or \ref Apop_rows, to copy within a data set:
 
 \code
@@ -215,8 +218,8 @@ Apop_row(mydata, j, torow);
 apop_data_memcpy(torow, fromrow);
 \endcode
  
-  \param out   a structure that this function will fill. Must be preallocated with the appropriate sizes.
-  \param in    the input data
+  \param out   A structure that this function will fill. Must be preallocated with the appropriate sizes.
+  \param in    The input data.
 
 \exception out.error='d'  Dimension error; couldn't copy.
 \exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
@@ -274,6 +277,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                      apop_text_blank(out, i, j);
                 else apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
+    if (in->more && out->more) apop_data_memcpy(out->more, in->more);
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.

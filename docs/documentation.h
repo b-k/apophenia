@@ -2583,8 +2583,8 @@ all of the models act over some data space and some parameter space (in some cas
 one or both is the empty set), and can assign a likelihood for a fixed pair of
 parameters and data given the model. This is a very broad requirement, often used
 in the statistical literature.  For discussion of the theoretical structures, see <a
-href="http://ben.klemens.org/pdfs/klemens-modelcats.pdf"><em>A Cross-paradigm Modeling
-Framework</em></a> (PDF).
+href="http://ben.klemens.org/pdfs/klemens-modelcats.pdf"><em>A Useful Algebraic System
+of Statistical Models</em></a> (PDF).
 
 This page includes:
 
