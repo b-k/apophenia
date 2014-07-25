@@ -42,6 +42,7 @@ apop_model *product = &(apop_model){"product of two models",
 Apop_settings_init(apop_mcmc,
    Apop_varad_set(periods, 6e3);
    Apop_varad_set(burnin, 0.05);
+   Apop_varad_set(target_accept_rate, 0.35);
    Apop_varad_set(method, 'd'); //default
    //all else defaults to zero/NULL
 )
@@ -56,10 +57,28 @@ Apop_settings_free(apop_mcmc,
 )
 
 
-static void step_to_vector(apop_data *d, apop_model *m){
+static void step_to_vector(apop_data *d, apop_mcmc_settings *ms){
+    apop_model *m = ms->proposal;
+    apop_data just_the_vector = {.vector=m->parameters->vector};
     gsl_vector *vv = apop_data_pack(d, .all_pages='y');
-    apop_data_unpack(vv, m->parameters);
+    apop_data_unpack(vv, &just_the_vector);
     gsl_vector_free(vv);
+
+    double ac = ms->accept_count/(ms->accept_count + ms->reject_count + 0.0);
+    double std_dev_scale= (ac > ms->target_accept_rate) 
+                            ? (2 - (1.-ac)/(1.-ms->target_accept_rate))
+                            : (1/(2-((ac+0.0)/ms->target_accept_rate)));
+    gsl_matrix_scale(m->parameters->matrix, std_dev_scale> 1e-5? std_dev_scale: 1e-5);
+}
+
+static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
+    apop_model *mvn =  apop_model_copy(apop_multivariate_normal);
+    mvn->parameters = apop_data_alloc(tsize, tsize, tsize);
+    gsl_vector_set_all(mvn->parameters->vector, 1);
+    gsl_matrix_set_identity(mvn->parameters->matrix);
+    s->proposal = mvn;
+    s->step_fn = step_to_vector;
+    s->proposal_is_cp = 1;
 }
 
 static apop_model *maybe_prep(apop_data *d, apop_model *m, bool *is_a_copy){
@@ -74,19 +93,6 @@ static apop_model *maybe_prep(apop_data *d, apop_model *m, bool *is_a_copy){
         m->parameters = apop_data_alloc(m->vsize, m->msize1, m->msize2);
     }
     return m;
-}
-
-static void setup_normal_proposals(apop_mcmc_settings *s, int tsize){
-    apop_model *mvn =  apop_model_copy(apop_multivariate_normal);
-    mvn->parameters = apop_data_alloc(tsize, tsize, tsize);
-    gsl_vector_set_all(mvn->parameters->vector, NAN);
-    gsl_matrix_set_identity(mvn->parameters->matrix);
-    s->proposal = apop_model_fix_params(mvn);
-    s->proposal->dsize = tsize;
-    s->proposal->parameters = apop_data_alloc(tsize);
-    gsl_vector_set_all(s->proposal->parameters->vector, 1);
-    s->step_fn = step_to_vector;
-    s->proposal_is_cp = 1;
 }
 
 /* The draw method for models estimated via apop_model_metropolis. */
@@ -112,7 +118,7 @@ OMP_critical (metro_draw)
     while (1){
         apop_draw(out, rng, s->proposal);
         apop_data_fill_base(m->parameters, out);
-        if (m->constraint(s->base_model->data, m)){
+        if (m->constraint && m->constraint(s->base_model->data, m)){
             constraint_fails++;
             continue;
         }
@@ -130,10 +136,12 @@ OMP_critical (metro_draw)
             break;  //success
         Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
         reject_count++;
+        s->reject_count++;
     }
 
+    s->accept_count++;
     apop_data_memcpy(current_param, m->parameters);
-    if (s->step_fn) s->step_fn(m->parameters, s->proposal);
+    if (s->step_fn) s->step_fn(m->parameters, s);
     s->last_ll = ll;
     earlier_draws->matrix = apop_matrix_realloc(earlier_draws->matrix, earlier_draws->matrix->size1+1, earlier_draws->matrix->size2);
     Apop_row_v(earlier_draws, earlier_draws->matrix->size1-1, v);
@@ -152,37 +160,41 @@ OMP_critical (metro_draw)
 }
 
 void main_mcmc_loop(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw, 
-                        apop_mcmc_settings *s, gsl_rng *rng, int i,
+                        apop_mcmc_settings *s, gsl_rng *rng,
                         int *constraint_fails, int *accept_count, apop_data *current_param){
-    double ratio, ll;
-    newdraw:
-    apop_draw(draw->data, rng, s->proposal);
-    apop_data_unpack(draw, m->parameters);
-    if (m->constraint && m->constraint(d, m)){
-        (*constraint_fails)++;
-        goto newdraw;
-    }
-    ll = apop_log_likelihood(d, m);
+    s->accept_count = 0;
+    for (s->proposal_count=1; s->proposal_count< s->periods+1; s->proposal_count++){
+        newdraw:
+        apop_draw(draw->data, rng, s->proposal);
+        apop_data_unpack(draw, m->parameters);
+        if (m->constraint && m->constraint(d, m)){
+            (*constraint_fails)++;
+            goto newdraw;
+        }
+        double ll = apop_log_likelihood(d, m);
 
-    Apop_notify(3, "ll=%g for parameters:\t", ll);
-    if (apop_opts.verbose >=3) apop_data_print(m->parameters);
+        Apop_notify(3, "ll=%g for parameters:\t", ll);
+        if (apop_opts.verbose >=3) apop_data_print(m->parameters);
 
-    Apop_stopif(gsl_isnan(ll) || !isfinite(ll), goto newdraw, 
-            1, "Trouble evaluating the m function at vector beginning with %g. "
-            "Throwing it out and trying again.\n"
-            , m->parameters->vector->data[0]);
-    ratio = ll - s->last_ll;
-    if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){//success
-        apop_data_memcpy(current_param, m->parameters);
-        if (s->step_fn) s->step_fn(current_param, s->proposal);
-        s->last_ll = ll;
-        (*accept_count)++;
-    } else {
-        Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
-    }
-    if (i >= s->periods * s->burnin){
-        Apop_row_v(out, i-(s->periods *s->burnin), v);
-        apop_data_pack(current_param, v, .all_pages='y');
+        Apop_stopif(gsl_isnan(ll) || !isfinite(ll), goto newdraw, 
+                1, "Trouble evaluating the m function at vector beginning with %g. "
+                "Throwing it out and trying again.\n"
+                , m->parameters->vector->data[0]);
+        double ratio = ll - s->last_ll;
+        if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){//success
+            apop_data_memcpy(current_param, m->parameters);
+            if (s->step_fn) s->step_fn(current_param, s);
+            s->last_ll = ll;
+            (s->accept_count)++;
+        } else {
+            s->reject_count++;
+            Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
+        }
+        if (s->proposal_count-1 >= s->periods * s->burnin){
+            Apop_row_v(out, s->proposal_count - 1 - (s->periods *s->burnin), v);
+            apop_data_pack(current_param, v, .all_pages='y');
+        }
+        //if (constraint_fails>10000) break;
     }
 }
 
@@ -250,10 +262,8 @@ APOP_VAR_END_HEAD
     //apop_data_fill_base(current_param, draw);
     int constraint_fails = 0;
 
-    for (int i=0; i< s->periods; i++){     //main loop
-        main_mcmc_loop(d, m, out, drawv, s, rng, i, &constraint_fails, &accept_count, current_param);
-        if (constraint_fails>10000) break;
-    }
+    main_mcmc_loop(d, m, out, drawv, s, rng, &constraint_fails, &accept_count, current_param);
+
     out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
     gsl_vector_set_all(out->weights, 1);
     outp = apop_estimate(out, apop_pmf);

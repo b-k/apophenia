@@ -718,7 +718,7 @@ APOP_VAR_ENDHEAD
 
 static size_t sizecount(const apop_data *in, bool all_pp, bool use_info_pp){ 
     if (!in) return 0;
-    if (!use_info_pp && apop_regex(in->names->title, "^<.*>$"))
+    if (!use_info_pp && in->names && apop_regex(in->names->title, "^<.*>$"))
         return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
              + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)

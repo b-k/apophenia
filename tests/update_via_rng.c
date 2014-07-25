@@ -130,7 +130,7 @@ void gammafish(){
     apop_model *proposal = apop_model_fix_params(apop_model_set_parameters(apop_normal, NAN, 1));
     proposal->parameters = apop_data_falloc((1), .9);
     //apop_data_set(apop_settings_get(gamma, apop_mcmc, proposal)->parameters, .val=.9);
-    Apop_settings_add_group(gamma, apop_mcmc, .burnin=.1, .periods=1e4, .proposal=proposal);
+    Apop_settings_add_group(gamma, apop_mcmc, .burnin=.1, .periods=1e4);
     apop_model *upd = apop_update(draws, gamma, apop_poisson);
     apop_model *gammafied = apop_estimate(upd->data, apop_gamma);
     deciles(gammafied, gammaup, 5);

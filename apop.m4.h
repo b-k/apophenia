@@ -1298,7 +1298,7 @@ typedef struct{
 /** Method settings for a model to be put through Bayesian updating. 
 \ingroup settings 
  */
-typedef struct{
+typedef struct apop_mcmc_settings {
     apop_data *data;
     long int periods; /**< For how many steps should the MCMC chain run? */
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
@@ -1307,7 +1307,7 @@ typedef struct{
     char method;
     apop_model *proposal; /**< The distribution from which test parameters will be drawn. After getting the draw using the \c draw method of the proposal, the base model's \c parameters element is filled using \ref apop_data_fill.
 If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to parameterize your model with an initial position. */
-    void (*step_fn)(apop_data *, apop_model*); /**< Modifies the parameters of the
+    void (*step_fn)(apop_data *, struct apop_mcmc_settings *); /**< Modifies the parameters of the
         proposal distribution given a successful draw. Thus, this function writes the
         drawn data point to the parameter set. If the draw is a scalar, the default
         function sets the 0th element of the model's \c parameter set with the draw
@@ -1318,6 +1318,10 @@ If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the a
     double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
     apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
     apop_model *base_model; /**< The model you provided with a \c log_likelihood or \c p element (which need not sum to one). You do not have to set this: if it is \c NULL on input to \ref apop_model_metropolis, I will fill it in.*/
+    double target_accept_rate; /**< The desired acceptance rate, for use by adaptive proposals. Default: .35 */
+    int proposal_count; /**< This will have the number of tried proposals.*/
+    int accept_count; /**< After calling apop_mcmc, this will have the number of accepted proposals.*/
+    int reject_count; /**< After calling apop_mcmc, this will have the number of rejected proposals.*/
     int proposal_is_cp; /**< For internal use. */
 } apop_mcmc_settings;
 
