@@ -1294,6 +1294,33 @@ typedef struct{
     int own_pmf, own_kernel; /**< For internal use only. */
 }apop_kernel_density_settings;
 
+struct apop_mcmc_settings;
+
+/** A proposal distribution for \ref apop_mcmc and its accompanying functions and
+information.  By default, these will be \ref apop_multivariate_normal models. The
+default step function, written around the multivariate normal, will recenter the mean
+around the last-accepted item, and expand or shrink the variance depending on the
+accept rate so far.
+*/
+typedef struct apop_mcmc_proposal_s {
+    apop_model *proposal; /**< The distribution from which test parameters will be
+        drawn. After getting the draw using the \c draw method of the proposal, the base
+        model's \c parameters element is filled using \ref apop_data_fill.
+        If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the
+        appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to
+        parameterize your model with an initial position. */
+
+    void (*step_fn)(double const *, struct apop_mcmc_proposal_s*, struct apop_mcmc_settings *); /**< Modifies the parameters of the
+        proposal distribution given a successful draw. Thus, this function writes the
+        drawn data point to the parameter set. If the draw is a scalar, the default
+        function sets the 0th element of the model's \c parameter set with the draw
+        (works for the \ref apop_normal and other models). If the draw has multiple
+        dimensions, they are all copied to the parameter set, which must have the same
+        size. */
+
+    double target_accept_rate;
+    int accept_count, reject_count; 
+} apop_mcmc_proposal_s;
 
 /** Method settings for a model to be put through Bayesian updating. 
 \ingroup settings 
@@ -1305,24 +1332,31 @@ typedef struct apop_mcmc_settings {
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
     char method;
-    apop_model *proposal; /**< The distribution from which test parameters will be drawn. After getting the draw using the \c draw method of the proposal, the base model's \c parameters element is filled using \ref apop_data_fill.
-If \c NULL, \ref apop_model_metropolis will use a Multivariate Normal with the appropriate dimension, mean zero, and covariance matrix I. If not \c NULL, be sure to parameterize your model with an initial position. */
-    void (*step_fn)(apop_data *, struct apop_mcmc_settings *); /**< Modifies the parameters of the
-        proposal distribution given a successful draw. Thus, this function writes the
-        drawn data point to the parameter set. If the draw is a scalar, the default
-        function sets the 0th element of the model's \c parameter set with the draw
-        (works for the \ref apop_normal and other models). If the draw has multiple
-        dimensions, they are all copied to the parameter set, which must have the same
-        size. */
     apop_data *starting_pt; /**< Deprecated and ignored. Starting point is drawn from your proposal distribution. */
     double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
-    apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
-    apop_model *base_model; /**< The model you provided with a \c log_likelihood or \c p element (which need not sum to one). You do not have to set this: if it is \c NULL on input to \ref apop_model_metropolis, I will fill it in.*/
+    apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model
+            so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
+    apop_model *base_model; /**< The model you provided with a \c log_likelihood or
+            \c p element (which need not sum to one). You do not have to set this: if it is
+            \c NULL on input to \ref apop_model_metropolis, I will fill it in.*/
+    apop_mcmc_proposal_s *proposals; /**< The list of proposals. You can probably use
+            the default of adaptive multivariate normals. See the \ref apop_mcmc_proposal_s
+            struct for details. */
+    int proposal_count; /**< The number of proposal sets; see \c gibbs_chunks below. */
     double target_accept_rate; /**< The desired acceptance rate, for use by adaptive proposals. Default: .35 */
-    int proposal_count; /**< This will have the number of tried proposals.*/
-    int accept_count; /**< After calling apop_mcmc, this will have the number of accepted proposals.*/
-    int reject_count; /**< After calling apop_mcmc, this will have the number of rejected proposals.*/
-    int proposal_is_cp; /**< For internal use. */
+    int accept_count;   /**< After calling apop_mcmc, this will have the number of accepted proposals.*/
+    int reject_count;   /**< After calling apop_mcmc, this will have the number of rejected proposals.*/
+    char gibbs_chunks;  /**< 'a': One step draws and accepts/rejects all parameters as a unit<br>
+                             'b': draw in blocks: the vector is a block, the matrix
+                                is a separate block, and so on through every page of the
+                                model parameters. Each block of parameters is drawn and
+                                accepted/rejected as a unit. One MCMC step consists of a
+                                set of draws for every block.<br>
+                             '1': draw each parameter and accept/reject separately. One
+                                MCMC step consists of a set of draws for every
+                                parameter.<br> **/
+    size_t *block_starts; /**< For internal use */
+    int block_count, proposal_is_cp; /**< For internal use. */
 } apop_mcmc_settings;
 
 //Loess, including the old FORTRAN-to-C.
