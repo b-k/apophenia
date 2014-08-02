@@ -206,7 +206,7 @@ can be reported to you. That run is done using \c model->data as input.
 int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *model){
     apop_mcmc_settings *s = apop_settings_get_group(model, apop_mcmc);
     if (!s || !s->pmf) {
-        apop_model_metropolis(model->data, model, rng);
+        apop_model_metropolis(model->data, rng, model);
         s = apop_settings_get_group(model, apop_mcmc);
     }
 OMP_critical (metro_draw)
@@ -273,7 +273,7 @@ a specialized \c draw method that returns another step from the Markov chain wit
 
 \li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, apop_model *m, gsl_rng *rng){
+APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, gsl_rng *rng, apop_model *m){
     apop_data *apop_varad_var(d, NULL);
     apop_model *apop_varad_var(m, NULL);
     Apop_stopif(!m, return NULL, 0, "NULL model input.");
@@ -504,7 +504,7 @@ APOP_VAR_END_HEAD
         p->parameters = apop_data_alloc(prior->dsize);
         p->data = data;
         if (s) apop_settings_copy_group(p, prior, "apop_mcmc");
-        apop_model *out = apop_model_metropolis(data, p, rng); 
+        apop_model *out = apop_model_metropolis(data, rng, p); 
         if (ll_is_a_copy) apop_model_free(likelihood);
         return out;
     }
