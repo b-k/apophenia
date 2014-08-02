@@ -8,7 +8,7 @@ libapophenia_la_SOURCES = \
             apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
             apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
 			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
-			apop_missing_data.c apop_mle.c apop_model.c   \
+			apop_mcmc.c apop_missing_data.c apop_mle.c apop_model.c   \
 			apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c apop_sort.c \
             apop_stats.c apop_tests.c apop_update.c	 apop_vtables.c            \
