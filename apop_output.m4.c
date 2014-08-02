@@ -48,6 +48,14 @@ function.
 
 At the end, \c output_name, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
+
+\li Tip: if writing to the database, you can get a major speed boost by wrapping the call in a begin/commit wrapper:
+
+\code
+apop_query("begin;");
+apop_data_print(your_data, .output_name="dbtab", .output_type='d');
+apop_query("commit;");
+\endcode
 */
 int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append : 'w';

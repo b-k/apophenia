@@ -16,6 +16,8 @@
 /* This will be used by apop_update to send to apop_mcmc below.
 
    To set it up, add a more pointer to an array of two models, the prior and likelihood. 
+   The total likelihood of a data point is (likelihood these parameters are drawn from
+   prior)*(likelihood of these parameters and the data set using the likelihood fn)
 */
 static long double product_ll(apop_data *d, apop_model *m){
     apop_model **pl = m->more;
@@ -70,17 +72,18 @@ Apop_settings_free(apop_mcmc,
 void adapt(apop_mcmc_proposal_s *ps, apop_mcmc_settings *ms){
     apop_model *m = ps->proposal;
     //accept rate. Add 1% * target to numerator; 1% to denominator, to slow early jumps
-    double ar = (ps->accept_count + .1*ms->periods *ms->target_accept_rate)
-               /(ps->accept_count + ps->reject_count + .1*ms->periods);
-    /*double std_dev_scale= (ar > ms->target_accept_rate) 
-                        ? ar/ms->target_accept_rate
-                        : ms->target_accept_rate/ar;
-                        //? (2 - (1.-ar)/(1.-ms->target_accept_rate))
-                        //: (1/(2-((ar+0.0)/ms->target_accept_rate)));
+    double ar = (ps->accept_count + .01*ms->periods *ms->target_accept_rate)
+               /(ps->accept_count + ps->reject_count + .01*ms->periods);
+/*    double std_dev_scale= (ar > ms->target_accept_rate) 
+                        ? (2 - (1.-ar)/(1.-ms->target_accept_rate))
+                        : (1/(2-((ar+0.0)/ms->target_accept_rate)));
                         */
     double scale = ar/ms->target_accept_rate;
-    gsl_matrix_scale(m->parameters->matrix, scale > .1? ( scale < 10 ? scale : 10) : .1);
-    printf("AD %i %i: ", ps->accept_count, ps->reject_count); apop_data_show(m->parameters);
+    scale = 1+ (scale-1)/100.;
+printf("A:%g S:%g acc: %i rej: %i\n", ar, scale, ps->accept_count, ps->reject_count);
+    //gsl_matrix_scale(m->parameters->matrix, scale > .1? ( scale < 10 ? scale : 10) : .1);
+    gsl_matrix_scale(m->parameters->matrix, scale/* *(ms->periods-ps->accept_count-ps->reject_count)/(ms->periods+0.0)*/);
+    //printf("AD %i %i: ", ps->accept_count, ps->reject_count); apop_data_show(m->parameters);
 }
 
 static void step_to_vector(double const *d, apop_mcmc_proposal_s *ps, apop_mcmc_settings *ms){
@@ -119,13 +122,12 @@ static void set_block_count_and_block_starts(apop_data *in,
         s->block_count = 1;
         s->block_starts = calloc(2, sizeof(size_t));
         s->block_starts[1] = total_len;
-    }
-    if (s->gibbs_chunks =='b') {
-        int count = 0;
+    } else if (s->gibbs_chunks =='b') {
+        s->block_count = 0;
         for (apop_data *d = in; d; d=d->more)
-            count += !!d->vector + !!d->matrix + !!d->weights;
+            s->block_count += !!d->vector + !!d->matrix + !!d->weights;
 
-        s->block_starts = calloc(count+1, sizeof(size_t));
+        s->block_starts = calloc(s->block_count+1, sizeof(size_t));
         int this=1, ctr=0;
         for (apop_data *d = in; d; d=d->more){
             #define markit(test, value) if (test)  \
@@ -135,36 +137,14 @@ static void set_block_count_and_block_starts(apop_data *in,
             markit(d->matrix, d->matrix->size1*d->matrix->size2);
             markit(d->weights, d->weights->size);
         }
-    }
-    //else, item-by-item
+    } else { // item-by-item
         s->block_count = total_len;
         s->block_starts = calloc(total_len+1, sizeof(size_t));
         for (int i=1; i<total_len+1; i++) s->block_starts[i] = i;
-}
-
-/*static void segment_draw(apop_mcmc_settings *s, double *out, int segment){
-    if 
-
-
-}*/
-
-void accept(apop_model *m, apop_mcmc_settings *s, apop_mcmc_proposal_s *this_proposal, double ll, apop_data *earlier_draws, double *out, size_t offset){
-    s->accept_count++;
-    this_proposal->accept_count++;
-    //apop_data_memcpy(current_param, m->parameters);
-    s->last_ll = ll;
-    earlier_draws->matrix = apop_matrix_realloc(earlier_draws->matrix, earlier_draws->matrix->size1+1, earlier_draws->matrix->size2);
-    Apop_row_v(earlier_draws, earlier_draws->matrix->size1-1, v);
-    apop_data_pack(m->parameters, v);
-    memcpy(out, v->data, sizeof(double)*v->size);
-    if (this_proposal->step_fn) this_proposal->step_fn(out+offset, this_proposal, s);
-    if(earlier_draws->vector) {
-        apop_vector_realloc(earlier_draws->vector, earlier_draws->vector->size + 1);
-        gsl_vector_set(earlier_draws->vector, earlier_draws->vector->size - 1, 1);
     }
 }
 
-static void one_step(apop_data *d, gsl_vector *draw, apop_model *m, apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails, apop_data *current_param, apop_data *out, size_t block){
+static void one_step(apop_data *d, gsl_vector *draw, apop_model *m, apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails, apop_data *out, size_t block){
     gsl_vector *clean_copy = apop_vector_copy(draw);
     newdraw:
     apop_draw(draw->data + s->block_starts[block], rng, s->proposals[block].proposal);
@@ -185,7 +165,6 @@ static void one_step(apop_data *d, gsl_vector *draw, apop_model *m, apop_mcmc_se
 
     double ratio = ll - s->last_ll;
     if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio){//success
-        //apop_data_memcpy(current_param, m->parameters);
         if (s->proposals[block].step_fn) 
             s->proposals[block].step_fn(draw->data + s->block_starts[block], s->proposals+block, s);
         s->last_ll = ll;
@@ -199,29 +178,41 @@ static void one_step(apop_data *d, gsl_vector *draw, apop_model *m, apop_mcmc_se
     }
     if (s->proposal_count-1 >= s->periods * s->burnin){
         Apop_row_v(out, s->proposal_count - 1 - (s->periods *s->burnin), v);
-        //apop_data_pack(current_param, v, .all_pages='y');
         apop_data_pack(m->parameters, v, .all_pages='y');
     }
 }
 
 
-/* The draw method for models estimated via apop_model_metropolis. */
-    /* params is the PMF. It has an apop_mcmc_settings group, which has the base_model
-       that the MCMC was originally run for.
-       The draw has the same size as the params of base_model.
-       The proposal distribution has parameters of unknown size---it is up to the step_fn
-       to get those right. The proposal distribution's dsize equals base_model param
-       size and thus the size of draw.
-       After pulling the attached settings group, the parent model is ignored. One expects that it is related to base_model.
-     */
-int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params){
-    Apop_stopif(!apop_settings_get_group(params, apop_mcmc), return 1, 0, "Something is wrong: you shouldn't be in this function without having apop_mcmc_settings attached to tne input model.");
+/** The draw method for models estimated via \ref apop_model_metropolis.
+
+That method produces a \ref apop_pmf, typically with a few thousand draws from the
+model in a batch. If you want to get a single next step from the Markov chain, use this.
+
+A Markov chain works by making a new draw and then accepting or rejecting the draw. If
+the draw is rejected, the last value is reported as the next step in the chain. Users
+sometimes mitigate this repetition by making a batch of ten draws and using only
+the last.
+
+If you run this without first running \ref apop_model_metropolis, I will run it for
+you, meaning that there will be an initial burn-in period before the first draw that
+can be reported to you. That run is done using \c model->data as input.
+
+\param out An array of \c doubles, which will hold the draw, in the style of \ref apop_draw.
+\param rng A \ref gsl_rng, already initialized, probably via \ref apop_rng_init.
+\param model A model which was probably already run through \ref apop_model_metropolis.
+
+\li After pulling the attached settings group, the parent model is ignored. One expects that base_model in the mcmc settings group == the parent model.
+*/
+int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *model){
+    apop_mcmc_settings *s = apop_settings_get_group(model, apop_mcmc);
+    if (!s || !s->pmf) {
+        apop_model_metropolis(model->data, model, rng);
+        s = apop_settings_get_group(model, apop_mcmc);
+    }
 OMP_critical (metro_draw)
 {
-    apop_mcmc_settings *s = apop_settings_get_group(params, apop_mcmc);
     apop_model *m = s->base_model;
-    //double ratio, ll;
-    int constraint_fails = 0, reject_count = 0;
+    int constraint_fails = 0;
     gsl_vector_view vv = gsl_vector_view_array(out, s->block_starts[s->block_count]);
     apop_data *earlier_draws = s->pmf->data;
     earlier_draws->matrix = apop_matrix_realloc(earlier_draws->matrix, earlier_draws->matrix->size1+1, earlier_draws->matrix->size2);
@@ -229,38 +220,12 @@ OMP_critical (metro_draw)
     int block = 0, done = 0;
     while (!done){
         one_step(s->base_model->data, &(vv.vector), m, s, rng, &constraint_fails, 
-                            s->base_model->parameters, earlier_draws, block);
+                            earlier_draws, block);
         block = (block+1) % s->block_count;
         done = !block; //have looped back to the start.
-        if (!(s->proposal_count%100)) adapt(s->proposals+block, s);
-    }
-    /*while (1){
-        apop_draw(out, rng, s->proposals[0].proposal);
-        apop_data_fill_base(m->parameters, out);
-        if (m->constraint && m->constraint(s->base_model->data, m)){
-            constraint_fails++;
-            continue;
-        }
-        ll = apop_log_likelihood(s->base_model->data, m);
-
-        Apop_notify(3, "ll=%g for parameters:\t", ll);
-        if (apop_opts.verbose >=3) apop_data_print(m->parameters);
-
-        Apop_stopif(gsl_isnan(ll) || !isfinite(ll), continue, 
-                2, "Trouble evaluating the m function at vector beginning with %g. "
-                "Throwing it out and trying again.\n"
-                , m->parameters->vector->data[0]);
-        ratio = ll - s->last_ll;
-        if (ratio >= 0 || log(gsl_rng_uniform(rng)) < ratio)
-            break;  //success
-        Apop_notify(3, "reject, with exp(ll_now-ll_proposal) = exp(%g-%g) = %g.", ll, s->last_ll, exp(ratio));
-        reject_count++;
-        s->reject_count++;
+        /*if (!(s->proposal_count%100))*/ adapt(s->proposals+block, s);
     }
 
-    accept(m, s, s->proposals+0, ll, earlier_draws, out, s->block_starts[0]);
-    if (reject_count) Apop_notify(2, "M-H rejections before an accept: %i.\n", reject_count);
-*/
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
 }
     return 0;
@@ -268,15 +233,14 @@ OMP_critical (metro_draw)
 
 
 void main_mcmc_loop(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw, 
-                        apop_mcmc_settings *s, gsl_rng *rng,
-                        int *constraint_fails, int *accept_count, apop_data *current_param){
+                        apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails){
     s->accept_count = 0;
     int block = 0;
     for (s->proposal_count=1; s->proposal_count< s->periods+1; s->proposal_count++){
-        //one_step(d, draw, m, s, rng, constraint_fails, current_param, out, block);
-        one_step(d, draw, m, s, rng, constraint_fails, s->base_model->parameters, out, block);
+        one_step(d, draw, m, s, rng, constraint_fails, out, block);
+printf("%i, %i, %i, %g\n", block,  s->proposals[block].accept_count,  s->proposals[block].reject_count, *s->proposals[block].proposal->parameters->matrix->data);
         block = (block+1) % s->block_count;
-        if (!(s->proposal_count%100)) adapt(s->proposals+block, s);
+        /*if (!(s->proposal_count%100))*/ adapt(s->proposals+block, s);
         //if (constraint_fails>10000) break;
     }
 }
@@ -325,13 +289,11 @@ APOP_VAR_END_HEAD
     m = maybe_prep(d, m, &m_is_a_copy);
     s->last_ll = GSL_NEGINF;
     gsl_vector * drawv = apop_data_pack(m->parameters, .all_pages='y');
-    //apop_data *current_param = apop_data_copy(m->parameters);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
                 1, "Burn-in should be a fraction of the number of periods, "
                    "not a whole number of periods. Rescaling to burnin=%g."
                    , s->burnin/=(s->periods+0.0));
     apop_data *out = apop_data_alloc(s->periods*(1-s->burnin), drawv->size);
-    int accept_count = 0;
 
     if (!s->proposals){
         set_block_count_and_block_starts(m->parameters, s, drawv->size);
@@ -351,11 +313,9 @@ APOP_VAR_END_HEAD
     for (int i=0; i< s->block_count; i++)          //set starting point.
         apop_draw(drawv->data + s->block_starts[i], rng, s->proposals[i].proposal);
     gsl_vector_set_all(drawv, 1); ////HACK.
-    //apop_data_unpack(drawv, current_param);
-    //apop_data_fill_base(current_param, draw);
     int constraint_fails = 0;
 
-    main_mcmc_loop(d, m, out, drawv, s, rng, &constraint_fails, &accept_count, NULL);
+    main_mcmc_loop(d, m, out, drawv, s, rng, &constraint_fails);
 
     out->weights = gsl_vector_alloc(s->periods*(1-s->burnin));
     gsl_vector_set_all(out->weights, 1);
@@ -366,9 +326,8 @@ APOP_VAR_END_HEAD
     apop_settings_copy_group(outp, m, "apop_mcmc");
 
     gsl_vector_free(drawv);
-    //apop_data_free(current_param);
     if (m_is_a_copy) apop_model_free(m);
-    Apop_notify(2, "M-H sampling accept percent = %3.3f%%", 100*(0.0+accept_count)/s->periods);
+    Apop_notify(2, "M-H sampling accept percent = %3.3f%%", 100*(0.0+s->accept_count)/s->periods);
     Apop_stopif(constraint_fails, , 2, "%i proposals failed to meet your model's parameter constraints", constraint_fails);
     }
     return outp;
