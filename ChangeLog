@@ -1,4 +1,8 @@
-[Key: 
+Since April 2014, this changelog includes only those changes that break existing code or are especially notable. For a full list of changes, see the Git history at 
+https://github.com/b-k/Apophenia/commits/master
+
+
+[Key, pre-March 2014: 
 --Addition or improvement
 **Change that could require recoding existing code.
 !!Big.

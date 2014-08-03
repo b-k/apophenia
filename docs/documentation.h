@@ -60,13 +60,12 @@ The <a href="globals.html">index</a> lists every function in the
 library, with detailed reference
 information. Notice that the header to every page has a link to the outline and the index.
 
-To really go in depth, download or pick up a copy of
-<a href="http://modelingwithdata.org">Modeling with Data</a>,
-which discusses general methods for doing statistics in C with the GSL 
-and SQLite, as well as Apophenia itself. <a
-href="http://ben.klemens.org/pdfs/klemens-modelcats.pdf"><em>A Cross-paradigm Modeling
-Framework</em></a> (PDF) discusses some of the theoretical structures underlying
-the library.
+To really go in depth, download or pick up a copy of <a
+href="http://modelingwithdata.org">Modeling with Data</a>, which discusses general
+methods for doing statistics in C with the GSL and SQLite, as well as Apophenia
+itself. <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf"><em>A Useful
+Algebraic System of Statistical Models</em></a> (PDF) discusses some of the theoretical
+structures underlying the library.
 
 There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience
 functions, tips, and so on.
@@ -110,11 +109,12 @@ dream up. By transforming and combining existing models, it is easy to build com
 models from simple sub-models.
 
 \li For example, the \ref apop_update function does Bayesian updating on any two
-well-formed models. If they are on the table of conjugates, that is correctly handled,
-and if they are not, an appropriate variant of MCMC 
-produces an empirical distribution. The output is yet another model, from which you
-can make random draws, or which you can use as a prior for another round of Bayesian
-updating.
+well-formed models. If they are on the table of conjugates, that is correctly
+handled, and if they are not, an appropriate variant of MCMC produces an empirical
+distribution. The output is yet another model, from which you can make random draws,
+or which you can use as a prior for another round of Bayesian updating. Outside of
+Bayesian updating, the \ref apop_model_metropolis function is good for approximating
+other complex models.
 
 \li Of course, it's a C library, meaning that you can build applications using Apophenia
 for the data-processing back-end of your program. For example, it is currently used
@@ -592,17 +592,19 @@ Here is a BibTeX-formatted entry, which should be be easy to re-shape for other 
 }
 \endcode
 
+The rationale for the \ref apop_model struct, based on an algebraic system of models, is detailed in a <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf">U.S. Census Bureau research report</a>.
+
 endofdiv
 
 Outlineheader status What is the status of the code?
 
-[This section last updated 3 January 2014.]
+[This section last updated 3 August 2014.]
 
 Apophenia was first posted to SourceForge in February 2005, which means that we've had
 several years to develop and test the code in real-world applications. 
 
 The test suite, including the sample code and solution set for _Modeling with Data_,
-is about 5,500 lines over 135 files. gprof reports that it covers about 90% of the
+is about 5,500 lines over 135 files. gprof reports that it covers over 90% of the
 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is
 that the well-worn parts, in this case functions like \ref apop_data_get and \ref
 apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
@@ -627,26 +629,24 @@ The promise underlying the structure is that you can provide just one item, such
 an RNG or a likelihood function, and the structure will do all of the work to fill in
 computationally-intensive methods for everything else; see \ref settingswriting for
 the gory details. Some directions aren't quite there yet (such as RNG -> most other
-things); the default likelihood -> RNG function only works for models with a domain of
-unidimensional reals; the PMF model (the essential bridge from data sets to empirical
-models) needs an internal index for faster lookups.  Readers are invited perhaps
-contribute better methods (such as an alternate means of estimating mixture models),
-or filling in more of existing models (write a dlog likelihood function for a model
-that does not currently have one), or submit new standard models not yet included.
+things); the PMF model (the essential bridge from data sets to empirical models) needs
+an internal index for faster lookups.  Readers are invited to contribute better methods
+(such as an alternate means of estimating mixture models), or filling in more of existing
+models (write a dlog likelihood function for a model that does not currently have one),
+or submit new standard models not yet included.
 
 
 endofdiv
 
 Outlineheader ext How do I write extensions?
 
-It's not a package, so you don't need an API---write your code and <tt>include</tt> it like any
-other C code. The system is written to not require a registration or initialization step
-to add a new model or other such parts.  You can read the notes below on generating
-new models, which have to conform to some rules if they are to play well with \ref
-apop_estimate, \ref apop_draw, and so forth.
-
-Once your new model or function is working, please post the code or a link to the code on the 
-<a href="https://github.com/b-k/Apophenia/wiki">Apophenia wiki</a>.
+It's not a package, so you don't need an API---write your code and <tt>include</tt>
+it like any other C code. The system is written to not require a registration or
+initialization step to add a new model or other such parts.  A new \ref apop_model
+has to conform to some rules if it is to play well with \ref apop_estimate,
+\ref apop_draw, and so forth.  See the notes at \ref modeldetails.  Once your new
+model or function is working, please post the code or a link to the code on the <a
+href="https://github.com/b-k/Apophenia/wiki">Apophenia wiki</a>.
 
 endofdiv
 
@@ -2405,11 +2405,12 @@ into one object, so that models can easily be swapped around, modified to create
 compared, and so on.
 
 From the figure above, you can see that the \ref apop_model structure is pretty big,
-including a number of informational items, key being the \c parameters, \c data, and \c
-info elements, a list of settings to be discussed below, and a set of procedures for many
-operations.  Its contents are not (entirely) arbitrary: the theoretical basis for what is and is not included in an \ref apop_model, as
-well as its overall intent, are described in this <a
-href="http://ben.klemens.org/klemens-model_objects.pdf">white paper</a>.
+including a number of informational items, key being the \c parameters, \c data, and
+\c info elements, a list of settings to be discussed below, and a set of procedures for
+many operations.  Its contents are not (entirely) arbitrary: the theoretical basis for
+what is and is not included in an \ref apop_model, as well as its overall intent, are
+described in this <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf">research
+report</a>.
 
 There are helper functions that will allow you to avoid deailing with the model internals. For example, the \ref apop_estimate helper function means you never have to look at the model's \c estimate method (if it even has one), and you will simply pass the model to a function, as with the above form:
 
@@ -2583,7 +2584,7 @@ all of the models act over some data space and some parameter space (in some cas
 one or both is the empty set), and can assign a likelihood for a fixed pair of
 parameters and data given the model. This is a very broad requirement, often used
 in the statistical literature.  For discussion of the theoretical structures, see <a
-href="http://ben.klemens.org/pdfs/klemens-modelcats.pdf"><em>A Useful Algebraic System
+href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf"><em>A Useful Algebraic System
 of Statistical Models</em></a> (PDF).
 
 This page includes:
