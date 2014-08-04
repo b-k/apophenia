@@ -1,4 +1,3 @@
-#define Apop_submatrix APOP_SUBMATRIX
 /** \file 
   Some printing and output interface functions. */
 /* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
@@ -637,7 +636,7 @@ APOP_VAR_ENDHEAD
         " set yrange [-.1:0.81]     \n"
         " plot '-' using (($2 + $3/2)/($1+$2+$3)):($3/($1+$2+$3)/sqrt(2)) with points;         \n"
     );
-    Apop_submatrix(in->matrix, 0,0, in->matrix->size1, 3, triplets);
+    gsl_matrix *triplets = Apop_subm(in->matrix, 0,0, in->matrix->size1,3);
     apop_matrix_print(triplets, .output_pipe=f, .output_type='p');
     if (output_name) fclose(f);
 }

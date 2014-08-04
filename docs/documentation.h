@@ -51,8 +51,7 @@ svn co https://apophenia.svn.sourceforge.net/svnroot/apophenia/trunk/apophenia -
 
 <h5>The documentation</h5>
 
-To start off, have a look at this <a href="gentle.html">Gentle Introduction</a> to the
-library.
+To start off, have a look at this \ref gentle "Gentle Introduction" to the library.
 
 <a href="outline.html">The outline</a> gives a more detailed narrative.
 
@@ -803,16 +802,14 @@ Apop_matrix_row(d->matrix, 0, v);
 double first_row_sum = apop_vector_sum(v);
 
 //Get a row or rows as a standalone one-row apop_data set
-Apop_row(d, 0, d1);
-apop_data_print(d1);
+apop_data_print(Apop_r(d, 0));
 
 //ten rows starting at row 3:
 Apop_data_rows(d, 3, 10, d10);
 apop_data_show(d10);
 
 //First column's sum
-Apop_col_v(d, 0, colone);
-double first_col_sum = apop_vector_sum(colone);
+double first_col_sum = apop_vector_sum(Apop_cv(d, 0));
 
 //Pull a 10x5 submatrix, whose first element is the (2,3)rd
 //element of the parent data set's matrix
@@ -820,19 +817,20 @@ Apop_submatrix(d, 2,3, 10,5, subm);
 double first_col_sum = apop_matrix_sum(subm);
 \endcode
 
-\li\ref Apop_col
-\li\ref Apop_row
+\li\ref Apop_c
+\li\ref Apop_r
+\li\ref Apop_cv
+\li\ref Apop_rv
+\li\ref Apop_subm
+
 \li\ref Apop_cols
 \li\ref Apop_rows
-\li\ref Apop_col_v
-\li\ref Apop_row_v
 \li\ref Apop_col_t
 \li\ref Apop_row_t
 \li\ref Apop_col_tv
 \li\ref Apop_row_tv
 \li\ref Apop_matrix_row
 \li\ref Apop_matrix_col
-\li\ref Apop_submatrix
 
 These types point to the source data, and add metadata to turn the data into a coherent
 matrix/vector.  The view is an automatic variable, not a pointer, and therefore
@@ -2610,9 +2608,8 @@ models don't apply.
 The first part of this program is identical to the program above. The second
 half executes the three steps uses many of the above tricks: one of the inputs to
 \ref apop_parameter_model (which row of the parameter set to use) is sent by adding a
-settings group, we pull that row into a separate data set using \ref Apop_row, and we
+settings group, we pull that row into a separate data set using \ref Apop_r, and we
 set its vector value by referring to it as the -1st element.
-
 
 \include ols2.c
 

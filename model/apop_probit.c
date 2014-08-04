@@ -282,10 +282,8 @@ static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
     Nullcheck_mpd(d, p, );
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data *cats = get_category_table(d);
-    for (int i=0; i< d->matrix->size1; i++){
-        Apop_data_row(d, i, onerow);
-        dlogit_foreach(onerow, gradient_matrix, p->parameters->matrix, cats);
-    }
+    for (int i=0; i< d->matrix->size1; i++)
+        dlogit_foreach(Apop_r(d, i), gradient_matrix, p->parameters->matrix, cats);
     apop_data_pack(gradient_matrix, gradient);
     apop_data_free(gradient_matrix);
 }

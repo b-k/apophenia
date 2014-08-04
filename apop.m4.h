@@ -781,9 +781,18 @@ gsl_vector * v = &( apop_vv_##v );*/
 // The above versions relied on gsl_views, which stick to C as of 1989 CE.
 // Better to just create the views via designated initializers.
 
+#define Apop_subm(data_to_view, srow, scol, nrows, ncols)(                  \
+        (!(data_to_view)                                                   \
+            || (data_to_view)->size1 < (srow)+(nrows) || (srow) < 0        \
+            || (data_to_view)->size2 < (scol)+(ncols) || (scol) < 0) ? NULL \
+        : &(gsl_matrix){.size1=(nrows), .size2=(ncols),                         \
+             .tda=(data_to_view)->tda,                                  \
+             .data=gsl_matrix_ptr((data_to_view), (srow), (scol))}      \
+        )
+
 #define Apop_rv(data_to_view, row) (                                            \
         ((data_to_view) == NULL || (data_to_view)->matrix == NULL               \
-            || (data_to_view)->matrix->size1 <= (row) || row < 0) ? NULL        \
+            || (data_to_view)->matrix->size1 <= (row) || (row) < 0) ? NULL        \
         : &(gsl_vector){.size=(data_to_view)->matrix->size2,                    \
              .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, (row), 0)} \
         )
@@ -920,8 +929,8 @@ double apop_vector_skew(const gsl_vector *in);
 
 */
 
-/** \def Apop_submatrix(m, srow, scol, nrow, ncol)
-Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_matrix_row, \ref Apop_row, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
+/** \def Apop_subm(m, srow, scol, nrow, ncol)
+Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
 
  \param m The root matrix
  \param srow the first row (in the root matrix) of the top of the submatrix
@@ -961,6 +970,11 @@ Deprecated. Use \ref Apop_rv.
 /** \def Apop_col_v(m, col, v)
 Deprecated. Use \ref Apop_cv.
 \hideinitializer */
+
+/** \def Apop_submatrix
+Deprecated. Use \ref Apop_subm.
+\hideinitializer */
+
 
 /** \def Apop_cols(d, col, len, outd)
 A macro to generate a temporary view of \ref apop_data set \c d, beginning at column \c col and having length \c len. 

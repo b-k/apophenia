@@ -93,7 +93,7 @@ static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
     apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;
     Get_vmsizes(pmf_data); //maxsize
     for (size_t k = 0; k < maxsize; k++){
-        Apop_row(pmf_data, k, r);
+        apop_data *r = Apop_r(pmf_data, k);
         double wt = r->weights ? *r->weights->data : 1;
         (ks->set_fn)(r, ks->kernel);
         total += fn(d, ks->kernel)*wt;
@@ -120,8 +120,7 @@ static int kernel_draw(double *d, gsl_rng *r, apop_model *m){
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
     apop_model *pmf = apop_settings_get(m, apop_kernel_density, base_pmf);
     apop_data *point = apop_data_alloc(1, pmf->dsize);
-    Apop_row_v(point, 0, draw_here);
-    Apop_stopif(apop_draw(draw_here->data, r, pmf), return 1, 0, "Unable to use the PMF over kernels to select a kernel from which to draw.");
+    Apop_stopif(apop_draw(Apop_rv(point, 0)->data, r, pmf), return 1, 0, "Unable to use the PMF over kernels to select a kernel from which to draw.");
     (ks->set_fn)(point, ks->kernel);
     //Now draw from the distribution around that point.
     Apop_stopif(apop_draw(d, r, ks->kernel), return 2, 0, "unable to draw from a single selected kernel.");

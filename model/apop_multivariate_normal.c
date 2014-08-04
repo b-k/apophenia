@@ -36,8 +36,7 @@ static long double apop_multinormal_ll(apop_data *data, apop_model * m){
             "is negative, but a covariance matrix must always be positive semidefinite "
             "(and so have nonnegative determinant). Maybe run apop_matrix_to_positive_semidefinite?");
     for (i=0; i< data->matrix->size1; i++){
-        Apop_row_v(data, i, vv);
-        gsl_vector_memcpy(x_minus_mu, vv);
+        gsl_vector_memcpy(x_minus_mu, Apop_rv(data, i));
         gsl_vector_sub(x_minus_mu, m->parameters->vector);
         ll += - x_prime_sigma_x(x_minus_mu, inverse) / 2;
     }

@@ -71,8 +71,7 @@ static long double multinomial_constraint(apop_data *data, apop_model *b){
         constr = apop_data_calloc(size*2-1, size*2-1, size);
 
         //top half: 0 < [param], including param 0
-        Apop_submatrix(constr->matrix, 0, 0, size, size, tophalf);
-        gsl_matrix_set_identity(tophalf);
+        gsl_matrix_set_identity(Apop_subm(constr->matrix, 0, 0, size, size));
 
         //bottom (almost) half: 1 >= [param], excluding param 0
         for (int i=size; i < size*2-1; i++){

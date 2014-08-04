@@ -139,8 +139,7 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
   gsl_matrix *data = d->matrix;
   gsl_vector *errors = gsl_vector_alloc(data->size1);
 	for (size_t i=0;i< data->size1; i++){
-        Apop_row_v(d, i, datarow);
-        gsl_blas_ddot(p->parameters->vector, datarow, &expected);
+        gsl_blas_ddot(p->parameters->vector, Apop_rv(d, i), &expected);
         if (d->vector){ //then this has been prepped
             actual = apop_data_get(d,i, -1);
         } else {
@@ -151,7 +150,7 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
     }
     sigma = sqrt(apop_vector_var(errors));
 	for(size_t i=0; i< data->size1; i++){
-        Apop_row(d, i, justarow);
+        apop_data *justarow = Apop_r(d, i);
         justarow->vector = NULL;
         x_prob = (input_distribution)
                     ? apop_p(justarow, input_distribution) //probably improper uniform, and so just 1 anyway.
@@ -173,8 +172,7 @@ static void ols_score(apop_data *d, gsl_vector *gradient, apop_model *p){
   gsl_vector *normscore = gsl_vector_alloc(2);
   apop_data  *subdata  = apop_data_alloc(1,1);
 	for(size_t i=0;i< data->size1; i++){
-        Apop_row_v(d, i, datarow);
-        gsl_blas_ddot(p->parameters->vector, datarow, &expected);
+        gsl_blas_ddot(p->parameters->vector, Apop_rv(d, i), &expected);
         if (d->vector){ //then this has been prepped
             actual       = apop_data_get(d,i, -1);
         } else {
