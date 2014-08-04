@@ -614,10 +614,9 @@ apop_data *apop_data_correlation(const apop_data *in){
     for(size_t i=0; i< in->matrix->size2; i++){
         Apop_col_v(in, i, cvin);
         Apop_col_v(out, i, cvout);
-        Apop_row_v(out, i, rvout);
         double std_dev = sqrt(apop_vector_var(cvin, in->weights));
         gsl_vector_scale(cvout, 1.0/std_dev);
-        gsl_vector_scale(rvout, 1.0/std_dev);
+        gsl_vector_scale(Apop_rv(out, i), 1.0/std_dev);
     }
     return out;
 }

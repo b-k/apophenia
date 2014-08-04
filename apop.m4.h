@@ -778,6 +778,52 @@ gsl_vector * v = &( apop_vv_##v );*/
                 .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
     apop_data *outd =  &apop_dd_##outd;
 
+// The above versions relied on gsl_views, which stick to C as of 1989 CE.
+// Better to just create the views via designated initializers.
+
+#define Apop_rv(data_to_view, row) (                                       \
+        ((data_to_view) == NULL || (data_to_view)->matrix == NULL         \
+            || (data_to_view)->matrix->size1 <= (row) || row < 0) ? NULL  \
+        : &(gsl_vector){.size=(data_to_view)->matrix->size2,              \
+             .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, row, 0)} \
+        )
+
+/* Not (yet) for public use. \hideinitializer */
+#define apop_subvector(v, start, len) (                                          \
+        ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
+        : &(gsl_vector){.size=(len), .stride=1, .data=(v)->data+(start)})
+
+/* Not (yet) for public use. \hideinitializer */
+#define apop_mrow(m, row) (                                       \
+        ((m) == NULL || (m)->size1 <= (row) || (row) < 0) ? NULL    \
+        : &(gsl_matrix){.size1=1, .size2=(m)->size2, \
+             .tda=(m)->tda, .data=gsl_matrix_ptr((m), (row), 0)} \
+        )
+
+#define Apop_r(d, rownum)(                                                       \
+        ((d) == NULL || rownum < 0) ? NULL                                       \
+        : &(apop_data){                                                          \
+         .names= ( !((d)->names) ? NULL :                                        \
+            &(apop_name){                                                        \
+                .title = (d)->names->title,                                      \
+                .vector = (d)->names->vector,                                    \
+                .col = (d)->names->col,                                          \
+                .row = ((d)->names->row && (d)->names->rowct > rownum) ? &((d)->names->row[rownum]) : NULL,  \
+                .text = (d)->names->text,                                        \
+                .colct = (d)->names->colct,                                      \
+                .rowct = (d)->names->row ? (GSL_MIN(1, GSL_MAX((d)->names->rowct - rownum, 0)))      \
+                                          : 0,                                   \
+                .textct = (d)->names->textct }),                                 \
+        .vector= apop_subvector((d->vector), (rownum), 1),                       \
+        .matrix = apop_mrow(((d)->matrix), (rownum)),                            \
+        .weights =  apop_subvector(((d)->weights), (rownum), 1),                 \
+        .textsize[0]=(d)->textsize[0] ? 1 : 0,                                   \
+        .textsize[1]=(d)->textsize[1],                                           \
+        .text = (d)->text ? &((d)->text[rownum]) : NULL,                         \
+        })
+
+
+
 #define Apop_col(d, col, outd) Apop_cols(d, col, 1, outd)
 
 #define APOP_COL Apop_col
@@ -899,9 +945,7 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_matrix_
 \hideinitializer */
 
 /** \def Apop_row_v(m, row, v)
- After this call, \c v will hold a vector view of the <tt>row</tt>th row of the \ref apop_data set \c m.
- This is like \ref Apop_row, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref Apop_matrix_row, but the input is a \ref apop_data set, not a \c gsl_matrix.
-\see Apop_rows, Apop_row, Apop_row_tv, Apop_row_t, Apop_matrix_row
+Deprecated. Use \ref Apop_rv.
 \hideinitializer */
 
 /** \def Apop_col_v(m, col, v)
@@ -936,12 +980,37 @@ it expires as soon as the program leaves the current scope (like with the usual 
 \see Apop_row, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
 \hideinitializer */
 
-/** \def Apop_row(d, row, outd)
+/** \def Apop_row(d, row)
+Deprecated. Use \ref Apop_r.
+\hideinitializer
+ */
+
+/** \def Apop_rv(d, row)
+A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
+row \c row. The view is a \ref gsl_vector set.
+
+\code
+gsl_vector *v = Apop_rv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size1; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_r(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
+\hideinitializer */
+
+/** \def Apop_r(d, row)
 A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
-row \c row. 
-After this call, \c outd will be a pointer to this temporary
-view, that you can use as you would any \ref apop_data set. This macro expands to
-<tt>Apop_rows(d, row, 1, outd)</tt>.
+row \c row. The view is also an \ref apop_data set, with names and other decorations.
+\code
+apop_data *v = Apop_r(your_data, i);
+
+for (int i=0; i< your_data->matrix->size1; i++)
+    apop_data_print(Apop_r(your_data, i));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
 \see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
 \hideinitializer */
 

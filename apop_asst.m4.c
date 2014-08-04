@@ -409,7 +409,7 @@ APOP_VAR_ENDHEAD
     apop_data *out = draws ? draws : apop_data_alloc(count, model->dsize);
 
     OMP_for (int i=0; i< count; i++){
-        Apop_row(out, i, onerow);
+        apop_data *onerow = Apop_r(out, i);
         Apop_stopif(apop_draw(onerow->matrix->data, apop_rng_get_thread(omp_threadnum), model),
                 gsl_matrix_set_all(onerow->matrix, GSL_NAN); out->error='d',
                 0, "Trouble drawing for row %i. "

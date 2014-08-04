@@ -41,10 +41,8 @@ APOP_VAR_HEAD apop_model *apop_model_to_pmf(apop_model *model, apop_data *binspe
 APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
     apop_data *outd = apop_data_alloc(draws, model->dsize); 
-    for (long int i=0; i< draws; i++){
-        Apop_row_v(outd, i, ach);
-        apop_draw(ach->data, rng, model);
-    }
+    for (long int i=0; i< draws; i++)
+        apop_draw(Apop_rv(outd, i)->data, rng, model);
     apop_data *outbinned = apop_data_to_bins(outd, binspec, .bin_count=bin_count);
     apop_data_free(outd);
     apop_vector_normalize(outbinned->weights);
@@ -71,9 +69,8 @@ apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model
     int df = observed->data->weights->size;
     double diff = 0;
     for (int i=0; i< observed->data->weights->size; i++){
-        Apop_row(observed->data, i, one_obs);
         double obs_val = gsl_vector_get(observed->data->weights, i);
-        double exp_val = apop_p(one_obs, expected);
+        double exp_val = apop_p(Apop_r(observed->data, i), expected);
         if (exp_val == 0){
             diff = GSL_POSINF; 
             break;
@@ -261,14 +258,14 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     double largest_diff = GSL_NEGINF;
     double sum = 0;
     for (size_t i=0; i< maxsize1; i++){
-        Apop_row(m1->data, i, arow);
+        apop_data *arow = Apop_r(m1->data, i);
         sum += m1->data->weights ? gsl_vector_get(m1->data->weights, i) : 1./maxsize1;
         largest_diff = GSL_MAX(largest_diff, fabs(sum-apop_cdf(arow, m2)));
     }
     if (m2_is_pmf){
         double sum = 0;
         for (size_t i=0; i< maxsize2; i++){     //There could be matched data rows to m1, so there is redundancy.
-            Apop_row(m2->data, i, arow);   // Feel free to submit a smarter version.
+            apop_data *arow = Apop_r(m2->data, i);   // Feel free to submit a smarter version.
             sum += m2->data->weights ? gsl_vector_get(m2->data->weights, i) : 1./maxsize2;
             largest_diff = GSL_MAX(largest_diff, fabs(sum-apop_cdf(arow, m2)));
         }

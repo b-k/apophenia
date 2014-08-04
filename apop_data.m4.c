@@ -222,13 +222,16 @@ data, and fail if the copy would write more elements than there are bins.
 
   \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
-  \li You can use the subsetting macros, \ref Apop_row or \ref Apop_rows, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rows, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
-Apop_row(mydata, i, fromrow);
-Apop_row(mydata, j, torow);
+apop_data *fromrow = Apop_r(mydata, i);
+apop_data *torow = Apop_r(mydata, j);
 apop_data_memcpy(torow, fromrow);
+
+// or just
+apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 \endcode
  
   \param out   A structure that this function will fill. Must be preallocated with the appropriate sizes.
@@ -973,7 +976,7 @@ APOP_VAR_ENDHEAD
 }
 /** \} //End data_set_get group */
 
-/** Now that you've used \ref Apop_row to pull a row from an \ref apop_data set,
+/** Now that you've used \ref Apop_r to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
 
@@ -1004,9 +1007,7 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     if (row->matrix && row->matrix->size2 > 0){
         Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
                 "an apop_data set with no matrix.");
-        Apop_row_v(d, row_number, a_row); 
-        Apop_row_v(row, 0, row_to_copy); 
-        gsl_vector_memcpy(a_row, row_to_copy);
+        gsl_vector_memcpy(Apop_rv(d, row_number), Apop_rv(row, 0));
     }
     if (row->textsize[1]){
         Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data row with text to "
@@ -1516,7 +1517,7 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \ref apop_data_rm_rows uses \ref Apop_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+  \ref apop_data_rm_rows uses \ref Apop_r to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
 
 \return Returns a pointer to the input data set, now pruned.
@@ -1543,15 +1544,11 @@ APOP_VAR_ENDHEAD
         int drop_row=0;
         if (drop && drop[i]) drop_row = 1;
         else if (do_drop){
-            Apop_row(in, i, onerow); 
-            drop_row = do_drop(onerow, drop_parameter);
+            drop_row = do_drop(Apop_r(in, i), drop_parameter);
         }
         if (!drop_row){
             if (outlength == i) outlength++;
-            else {
-                Apop_row(in, i, thisrow);
-                apop_data_set_row(in, thisrow, outlength++);
-            }
+            else                apop_data_set_row(in, Apop_r(in, i), outlength++);
         }
     }
     if (!outlength){

@@ -267,8 +267,7 @@ static void tracepath(const gsl_vector *beta, double value, apop_data **path){
     size_t msize1 = (*path && (*path)->matrix) ? (*path)->matrix->size1: 0;
     if (!*path) *path = apop_data_alloc();
     (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
-    Apop_row_v(*path, msize1, lastv);
-    gsl_vector_memcpy(lastv, beta);
+    gsl_vector_memcpy(Apop_rv(*path, msize1), beta);
 
     (*path)->vector = apop_vector_realloc((*path)->vector, msize1+1);
     gsl_vector_set((*path)->vector, msize1, value);

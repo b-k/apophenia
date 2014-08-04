@@ -241,8 +241,7 @@ APOP_VAR_END_HEAD
                 "likelihood function at vector beginning with %g. "
                 "Throwing it out and trying again.\n"
                 , likelihood->parameters->vector->data[0]);
-        Apop_row_v(out, i, v);
-        apop_data_pack(likelihood->parameters, v);
+        apop_data_pack(likelihood->parameters, Apop_rv(out, i));
         gsl_vector_set(out->weights, i, p);
     }
     apop_model *outp = apop_estimate(out, apop_pmf);

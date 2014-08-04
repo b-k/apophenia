@@ -195,9 +195,8 @@ APOP_VAR_ENDHEAD
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
-    Apop_row_v(d, row, vr);
     Apop_col_v(d, col, vc);
-    double rowexp  = apop_vector_sum(vr)/n;
+    double rowexp  = apop_vector_sum(Apop_rv(d, row))/n;
     double colexp  = apop_vector_sum(vc)/n;
     double observed = apop_data_get(d, row, col);
     double expected = n * rowexp * colexp;
@@ -305,14 +304,13 @@ APOP_VAR_ENDHEAD
     apop_name_stack(out->names, first->names, 'c');
     apop_data_add_names(out, 'r', first->names->row[0], second->names->row[0],
                                   "interaction", "residual", "total");
-    Apop_row_v(first, 0, firstrow);
-    Apop_row_v(second, 0, secondrow);
-    Apop_row_v(interaction, 0, interrow);
-    Apop_row_v(first, 2, totalrow);
+    gsl_vector *firstrow = Apop_rv(first, 0);
+    gsl_vector *secondrow = Apop_rv(second, 0);
+    gsl_vector *interrow = Apop_rv(interaction, 0);
     gsl_matrix_set_row(out->matrix, 0, firstrow);
     gsl_matrix_set_row(out->matrix, 1, secondrow);
     gsl_matrix_set_row(out->matrix, 2, interrow);
-    gsl_matrix_set_row(out->matrix, 4, totalrow);
+    gsl_matrix_set_row(out->matrix, 4, Apop_rv(first, 2));
     
     //residuals are just total-wss
     apop_data_set(out, 3, 0, apop_data_get(out, 4, 0) 
