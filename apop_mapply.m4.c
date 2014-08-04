@@ -187,11 +187,11 @@ APOP_VAR_ENDHEAD
                          mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'r', by_apop_rows);
                     else mapply_core(NULL, NULL, onevector, fn, Apop_rv(out, i), use_index, use_param, param, 'r', by_apop_rows);
                 } else {
-                    Apop_col_v(in, i, onevector);
+                    gsl_vector *onevector = Apop_cv(in, i);
                     if (inplace=='v')
                         mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'c', by_apop_rows);
                     else {
-                        Apop_col_v(out, i, twovector);
+                        gsl_vector *twovector = Apop_cv(out, i);
                         mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
                     }
                 }

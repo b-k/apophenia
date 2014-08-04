@@ -781,12 +781,22 @@ gsl_vector * v = &( apop_vv_##v );*/
 // The above versions relied on gsl_views, which stick to C as of 1989 CE.
 // Better to just create the views via designated initializers.
 
-#define Apop_rv(data_to_view, row) (                                       \
-        ((data_to_view) == NULL || (data_to_view)->matrix == NULL         \
-            || (data_to_view)->matrix->size1 <= (row) || row < 0) ? NULL  \
-        : &(gsl_vector){.size=(data_to_view)->matrix->size2,              \
-             .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, row, 0)} \
+#define Apop_rv(data_to_view, row) (                                            \
+        ((data_to_view) == NULL || (data_to_view)->matrix == NULL               \
+            || (data_to_view)->matrix->size1 <= (row) || row < 0) ? NULL        \
+        : &(gsl_vector){.size=(data_to_view)->matrix->size2,                    \
+             .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, (row), 0)} \
         )
+
+#define Apop_cv(data_to_view, col) (                                           \
+          !(data_to_view) ? NULL                                               \
+        : (col)==-1       ? (data_to_view)->vector                             \
+        : (!(data_to_view)->matrix                                             \
+            || (data_to_view)->matrix->size2 <= (col) || ((int)(col)) < -1) ? NULL    \
+        : &(gsl_vector){.size=(data_to_view)->matrix->size1,                   \
+             .stride=(data_to_view)->matrix->tda, .data=gsl_matrix_ptr((data_to_view)->matrix, 0, (col))} \
+        )
+
 
 /* Not (yet) for public use. \hideinitializer */
 #define apop_subvector(v, start, len) (                                          \
@@ -884,7 +894,7 @@ Apop_matrix_col(m, 3, colthree);
 printf("The correlation coefficient between columns two "
        "and three is %g.\n", apop_vector_correlation(coltwo, colthree));
 \endcode 
-\see Apop_cols, Apop_col, Apop_col_v, Apop_col_tv, Apop_col_t
+\see Apop_cols, Apop_col, Apop_cv, Apop_col_tv, Apop_col_t
 */
 #define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
@@ -929,7 +939,7 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_matrix_
 /** \def Apop_col_t(m, col_name, v)
  After this call, \c v will hold a view of an \ref apop_data set consisting only of  vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
  Unlike \ref Apop_col, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cols, Apop_col, Apop_col_v, Apop_col_tv, Apop_matrix_col
+\see Apop_cols, Apop_col, Apop_cv, Apop_col_tv, Apop_matrix_col
 \hideinitializer */
 
 /** \def Apop_row_tv(m, row_name, v)
@@ -940,8 +950,8 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_matrix_
 
 /** \def Apop_col_tv(m, col_name, v)
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_col_v, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cols, Apop_col, Apop_col_v, Apop_col_t, Apop_matrix_col
+ Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find.
+\see Apop_cols, Apop_col, Apop_cv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
 /** \def Apop_row_v(m, row, v)
@@ -949,9 +959,7 @@ Deprecated. Use \ref Apop_rv.
 \hideinitializer */
 
 /** \def Apop_col_v(m, col, v)
- After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- This is like \ref Apop_col, but the output is a \c gsl_vector, not a full \ref apop_data set. It is like \ref Apop_matrix_col, but the input is a \ref apop_data set, not a \c gsl_matrix.
-\see Apop_cols, Apop_col, Apop_col_tv, Apop_col_t, Apop_matrix_col
+Deprecated. Use \ref Apop_cv.
 \hideinitializer */
 
 /** \def Apop_cols(d, col, len, outd)
@@ -998,6 +1006,25 @@ for (int i=0; i< your_data->matrix->size1; i++)
 
 The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
 \see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
+\hideinitializer */
+
+/** \def Apop_cv(d, col)
+A macro to generate a temporary one-column view of the matrix in an \ref apop_data
+set \c d, pulling out only column \c col. The view is a \ref gsl_vector set.
+
+As usual, column -1 is the vector element of the \ref apop_data set.
+
+\code
+gsl_vector *v = Apop_cv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size2; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_c(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
+
+\see Apop_cols, Apop_col, Apop_col_tv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
 /** \def Apop_r(d, row)

@@ -384,7 +384,7 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
         return apop_estimate(param_draws, apop_pmf);
     else {
         apop_data *param_draws1 = apop_data_alloc(settings->draws, 0,0);
-        Apop_col_v(param_draws, settings->index, the_draws);
+        gsl_vector *the_draws = Apop_cv(param_draws, settings->index);
         gsl_vector_memcpy(param_draws1->vector, the_draws);
         apop_data_free(param_draws);
         return apop_estimate(param_draws1, apop_pmf);

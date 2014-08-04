@@ -327,13 +327,13 @@ APOP_VAR_ENDHEAD
                         apop_data_alloc(vsize? 2: 0, msize1? 2: 0, indata->matrix ? msize2: 0),
                         "<binspec>");
     for (int j= firstcol; j< msize2; j++){
-        Apop_col_v(out, j, onecol);
+        gsl_vector *onecol = Apop_cv(out, j);
         if (binspec){
            binwidth = apop_data_get(binspec, 0, j);
            offset = ((binspec->vector && binspec->vector->size==2 )
                    ||(binspec->matrix && binspec->matrix->size1==2)) ? apop_data_get(binspec, 1, j) : 0;
         } else {
-            Apop_col_v(bs, j, abin);
+            gsl_vector *abin = Apop_cv(bs, j);
             max = gsl_vector_max(onecol);
             offset = abin->data[1] = gsl_vector_min(onecol);
             binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(onecol->size));

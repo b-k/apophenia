@@ -50,8 +50,8 @@ static apop_model *betabinom(apop_data *data, apop_model *prior, apop_model *lik
         *gsl_vector_ptr(outp->parameters->vector, 0) += n*p;
         *gsl_vector_ptr(outp->parameters->vector, 1) += n*(1-p);
     } else {
-        Apop_col_v(data, 0, misses);
-        Apop_col_v(data, 1, hits);
+        gsl_vector *hits = Apop_cv(data, 1);
+        gsl_vector *misses = Apop_cv(data, 0);
         *gsl_vector_ptr(outp->parameters->vector, 0) += apop_sum(hits);
         *gsl_vector_ptr(outp->parameters->vector, 1) += apop_sum(misses);
     }

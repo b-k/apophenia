@@ -146,10 +146,8 @@ APOP_VAR_ENDHEAD
 
     //Find (\underbar x)'(\underbar x), where (\underbar x) = the data with means removed
     long double means[msize2];
-    for (int i=1; i< msize2; i++){
-        Apop_col_v(est->data, i, onecol)
-        means[i] = apop_vector_mean(onecol);
-    }
+    for (int i=1; i< msize2; i++)
+        means[i] = apop_vector_mean(Apop_cv(est->data, i));
     means[0]=0;// don't screw with the ones column.
     apop_data *xpx = apop_data_alloc(msize2, msize2);
     Apop_stopif(xpx->error, apop_data_free(xpx); out->error='a'; return out, 0, "allocation error");
@@ -195,9 +193,8 @@ APOP_VAR_ENDHEAD
 }
 
 static double one_chi_sq(apop_data *d, int row, int col, int n){
-    Apop_col_v(d, col, vc);
     double rowexp  = apop_vector_sum(Apop_rv(d, row))/n;
-    double colexp  = apop_vector_sum(vc)/n;
+    double colexp  = apop_vector_sum(Apop_cv(d, col))/n;
     double observed = apop_data_get(d, row, col);
     double expected = n * rowexp * colexp;
     return gsl_pow_2(observed - expected)/expected; 
