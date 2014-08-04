@@ -25,8 +25,7 @@ int main(){
 #endif
 
     //set up a specific column order
-    Apop_row(d, 0, onerow);
-    apop_data *perm = apop_data_copy(onerow);
+    apop_data *perm = apop_data_copy(Apop_r(d, 0));
     perm->vector = NULL;
     apop_data_fill(perm, 5, 3, 4);
     apop_text_add(perm, 0, 0, "2");
@@ -51,7 +50,7 @@ int main(){
     //sort in descending order.
     apop_data *rowvectors = apop_text_to_data("test_data");
     apop_map(rowvectors, .fn_v=get_distance, .part='r', .inplace='y');
-    Apop_row(rowvectors, 0, arow);
+    apop_data *arow = apop_data_copy(Apop_r(rowvectors, 0));
     arow->matrix=NULL; //sort only by the distance vector
     apop_data_sort(rowvectors, arow, .asc='d');
 #ifndef Testing

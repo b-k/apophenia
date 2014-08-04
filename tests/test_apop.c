@@ -1245,8 +1245,7 @@ void test_pmf_compress(gsl_rng *r){
     apop_text_add(b, 2, 0, "Type 1");
     apop_text_add(b, 3, 0, "Type 1");
     apop_text_add(b, 4, 0, "Type 2");
-    Apop_row(b, 0, arow);
-    apop_data *spec = apop_data_copy(arow);
+    apop_data *spec = apop_data_copy(Apop_r(b, 0));
     gsl_vector_set_all(spec->vector, 1);
     apop_data *c = apop_data_to_bins(b, .binspec=spec);
     apop_data_free(b);
