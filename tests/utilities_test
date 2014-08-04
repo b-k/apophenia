@@ -38,6 +38,9 @@ fixed_read(){
     fi
 }
 
+#Hard to find where Autoconf put the binaries we're testing.
+export PATH=..:.:$PATH
+
 ( #one big subshell, so exits don't kill the parent shell.
 if [ ! `echo 123 | bc` ]; 
     then echo "Missing POSIX-standard bc; exiting without running tests."; exit 0; #not a fail.

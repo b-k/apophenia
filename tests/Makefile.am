@@ -8,8 +8,13 @@ check_PROGRAMS= db_tests distribution_tests error_test nist_tests rake_test sort
 TESTS=utilities_test $(check_PROGRAMS)
 
 LDADD=../libapophenia.la
-#AM_CFLAGS = -DTesting $(CFLAGS) -I$(top_build_prefix)/$(top_builddir) -DDatadir=\"$(srcdir)/\"
-AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\"
+AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\" -I$(srcdir) -I$(srcdir)/..
 
 EXTRA_DIST = utilities_test Readme data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
 		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c
+
+
+AM_TESTS_ENVIRONMENT = for i in $(EXTRA_DIST); do \
+					   if [ ! -e $$i ]; then      \
+                            cp $(srcdir)/$$i .;   \
+                       fi; done;

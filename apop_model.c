@@ -427,7 +427,7 @@ int apop_draw(double *out, gsl_rng *r, apop_model *m){
         swapped->msize2 = m->dsize;
         swapped->data = m->parameters;
         Apop_settings_add_group(swapped, apop_mcmc, .burnin=0.999, .periods=1000);
-        apop_model *est = apop_model_metropolis(m->parameters, swapped, r); //leak.
+        apop_model *est = apop_model_metropolis(m->parameters, r, swapped); //leak.
         m->draw = apop_model_metropolis_draw;
         apop_settings_copy_group(m, est, "apop_mcmc");
     }

@@ -747,7 +747,7 @@ apop_varad_head(void, apop_data_unpack){
 
 static size_t sizecount(const apop_data *in, bool all_pp, bool use_info_pp){ 
     if (!in) return 0;
-    if (!use_info_pp && apop_regex(in->names->title, "^<.*>$"))
+    if (!use_info_pp && in->names && apop_regex(in->names->title, "^<.*>$"))
         return (all_pp ? sizecount(in->more, all_pp, use_info_pp) : 0);
     return (in->vector ? in->vector->size : 0)
              + (in->matrix ? in->matrix->size1 * in->matrix->size2 : 0)
@@ -898,7 +898,7 @@ generate a unit vector for three dimensions:
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
 
-\see apop_text_fill, apop_data_falloc
+\see apop_text_fill, apop_data_falloc, apop_data_unpack
 */
 
 apop_data *apop_data_fill_base(apop_data *in, double ap[]){

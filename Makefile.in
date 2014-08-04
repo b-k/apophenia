@@ -136,12 +136,12 @@ libapophenia_la_LIBADD =
 am_libapophenia_la_OBJECTS = apop_arms.lo apop_asst.lo \
 	apop_bootstrap.lo apop_conversions.lo apop_data.lo apop_db.lo \
 	apop_fexact.lo apop_hist.lo apop_linear_algebra.lo \
-	apop_linear_constraint.lo apop_mapply.lo apop_missing_data.lo \
-	apop_mle.lo apop_model.lo apop_name.lo apop_output.lo \
-	apop_rake.lo apop_regression.lo apop_settings.lo \
-	apop_smoothing.lo apop_sort.lo apop_stats.lo apop_tests.lo \
-	apop_update.lo apop_vtables.lo asprintf.lo apop_dcompose.lo \
-	apop_dconstrain.lo apop_fix_params.lo \
+	apop_linear_constraint.lo apop_mapply.lo apop_mcmc.lo \
+	apop_missing_data.lo apop_mle.lo apop_model.lo apop_name.lo \
+	apop_output.lo apop_rake.lo apop_regression.lo \
+	apop_settings.lo apop_smoothing.lo apop_sort.lo apop_stats.lo \
+	apop_tests.lo apop_update.lo apop_vtables.lo asprintf.lo \
+	apop_dcompose.lo apop_dconstrain.lo apop_fix_params.lo \
 	apop_coordinate_transform.lo apop_mixture.lo apop_stack.lo \
 	apop_bernoulli.lo apop_beta.lo apop_dirichlet.lo \
 	apop_exponential.lo apop_gamma.lo apop_histogram.lo \
@@ -427,7 +427,7 @@ libapophenia_la_SOURCES = \
             apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
             apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
 			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
-			apop_missing_data.c apop_mle.c apop_model.c   \
+			apop_mcmc.c apop_missing_data.c apop_mle.c apop_model.c   \
 			apop_name.c apop_output.c apop_rake.c     \
             apop_regression.c apop_settings.c apop_smoothing.c apop_sort.c \
             apop_stats.c apop_tests.c apop_update.c	 apop_vtables.c            \
@@ -650,6 +650,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_linear_constraint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_loess.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mapply.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mcmc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_missing_data.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mixture.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mle.Plo@am__quote@

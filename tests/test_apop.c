@@ -1372,7 +1372,7 @@ int main(int argc, char **argv){
     do_test("test data compressing", test_pmf_compress(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
-    do_test("default RNG", test_default_rng(r));
+    do_test("debault RNG", test_default_rng(r));
     do_test("test row set and remove", row_manipulations());
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));
