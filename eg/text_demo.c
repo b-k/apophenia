@@ -17,7 +17,7 @@ int main(){
     apop_text_add(tdata, *tdata->textsize-1, 1, "Berkeley");
     apop_text_add(tdata, *tdata->textsize-1, 2, "CA");
 
-    printf("\n\nAugmented data, printed via for loop (for demonstration purposes):\n");
+    printf("\n\nAugmented data, printed via for loop:\n");
     for (int i=0; i< tdata->textsize[0]; i++){
         for (int j=0; j< tdata->textsize[1]; j++)
             printf("%s\t", tdata->text[i][j]);

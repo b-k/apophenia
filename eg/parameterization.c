@@ -1,44 +1,11 @@
-/*Parameterizing or initializing a model
-
-Apophenia ships with several models, which have the requisite procedures for estimation,
-making draws, and so on, but have <tt>params==NULL</tt> and <tt>settings==NULL</tt>. The
-model is thus, for many purposes, incomplete, and you will need to take some action to
-complete the model. There are several possibilities:
-
-
-
-\li Estimate it! Almost all models can be sent with a data set as an argument to the
-<tt>apop_estimate</tt> function. The input model is unchanged, but the output model has
-parameters and settings in place.
-
-\li If your model has a fixed number of numeric parameters, then you can set them with
-\ref apop_model_set_parameters.
-
-\li If your model has a variable number of parameters, you can directly set the \c
-parameters element via \c apop_data_falloc.  For most purposes, you will also need to
-set the \c msize1, \c msize2, \c vsize, and \c dsize elements to the size you want. See
-the example below.
-
-\li Some models have disparate, non-numeric settings rather than a simple matrix of
-parameters. For example, an kernel density estimate needs a model as a kernel and a base data set, which can be set via \ref apop_model_copy_set.
-
-Here is an example that shows the options for parameterizing a model. After each parameterization, 20 draws are made and written to a file named draws-[modelname].
-*/
-
-
-
-
 #include <apop.h>
 
-#define print_draws(mm) apop_data_print(apop_model_draws(mm, 20), .output_name= "draws-" #mm);
-
-apop_data *draw_some_data(){
-    apop_model *uniform_0_20 = apop_model_set_parameters(apop_uniform, 0, 20);
-    return apop_model_draws(uniform_0_20, 10);
-}
+#define print_draws(mm) apop_data_print(apop_model_draws(mm, 20),\
+                                        .output_name= "draws-" #mm);
 
 int main(){
-    apop_data *d = draw_some_data();    
+    apop_model *uniform_20 = apop_model_set_parameters(apop_uniform, 0, 20);
+    apop_data *d = apop_model_draws(uniform_20, 10);
 
     //Estimate a Normal distribution from the data:
     apop_model *N = apop_estimate(d, apop_normal);

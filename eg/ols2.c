@@ -8,9 +8,11 @@ int main(void){
 
     Apop_settings_add_group(est, apop_pm, .index =1);  
     apop_model *first_param_distribution = apop_parameter_model(data, est);
+
     Apop_row(est->parameters, 1, param);
     double area_under_p = apop_cdf(param, first_param_distribution);
-    apop_data_set(param, 0, -1, 0);
+
+    apop_data_set(param, 0, -1, .val=0);
     double area_under_zero = apop_cdf(param, first_param_distribution);
     printf("reject the null for x_1 with %g percent confidence.\n",
                                  2*fabs(area_under_p-area_under_zero));

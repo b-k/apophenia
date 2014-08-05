@@ -108,13 +108,32 @@ APOP_VAR_ENDHEAD
     return setme;
 }
 
-/** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
- The matrix is not copied, but is pointed to by the new \ref apop_data struct.
+/** Deprecated; please do not use. Just use a compound literal:
 
-\param m  The existing matrix you'd like to turn into an \ref apop_data structure.
-\return   The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
-\li If you give me a \c NULL matrix, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
-             a warning if <tt>apop_opts.verbosity >=1</tt>
+\code
+//Given:
+gsl_vector *v;
+gsl_matrix *m;
+
+// Then this form wraps the elements into \ref apop_data structs. Note that
+// these are not pointers: they're automatically allocated and therefore
+// the extra memory use for the wrapper is cleaned up on exit from scope.
+
+apop_data *dv = &(apop_data){.vector=v};
+apop_data *dm = &(apop_data){.matrix=m};
+
+apop_data *v_dot_m = apop_dot(dv, dm);
+
+//Here is a macro to hide C's ugliness:
+#define As_data(...) (&(apop_data){__VA_ARGS__})
+
+apop_data *v_dot_m2 = apop_dot(As_data(.vector=v), As_data(.matrix=m));
+
+//The wrapped object is an automatically-allocated structure pointing to the
+//original data. If it needs to persist or be separate from the original,
+//make a copy:
+apop_data *dm_copy = apop_data_copy(As_data(.vector=v, .matrix=m));
+\endcode
 */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
     Apop_stopif(!m, return apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
@@ -123,14 +142,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
     return setme;
 }
 
-/** Wrap an \ref apop_data structure around an existing \c gsl_vector.
- The vector is not copied, but is pointed to by the new \ref apop_data struct.
-
-\param  v   The data vector
-\return     an allocated, ready-to-use \ref apop_data structure.
-\li If you give me a \c NULL vector, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
-             a warning if <tt>apop_opts.verbosity >=1</tt>
-*/
+/** Deprecated; please do not use. Just use a compound literal, as in the code sample in
+  the documentation for \ref apop_matrix_to_data. */
 apop_data * apop_vector_to_data(gsl_vector *v){
     Apop_stopif(!v, return apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
     apop_data *setme = apop_data_alloc();

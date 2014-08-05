@@ -1,13 +1,14 @@
 #include <apop.h>
-/* This sample code sets the elements of a data set's vector to one if the index is even.
-   Then, via the weights vector, it adds up the even indices.
+/* This sample code sets the elements of a data set's vector to one
+   if the index is even.  Then, via the weights vector, it adds up
+   the even indices.
 
-   There is really no need to use the weights vector; this code snippet is an
-   element of Apophenia's test suite, and goes the long way to test that the weights are
-   correctly handled. */
+   There is really no need to use the weights vector; this code
+   snippet is an element of Apophenia's test suite, and goes the long
+   way to test that the weights are correctly handled. */
 
 double set_vector_to_even(apop_data * r, int index){
-    apop_data_set(r, 0, -1, 1 - (index %2));
+    apop_data_set(r, 0, -1, .val=1-(index %2));
     return 0;
 }
 

@@ -208,8 +208,8 @@ freed location, and you can later safely test conditions like <tt>if (data) ...<
 #define apop_data_free(freeme) (apop_data_free_base(freeme) ? 0 : ((freeme)= NULL))
 
 char        apop_data_free_base(apop_data *freeme);
-apop_data * apop_matrix_to_data(gsl_matrix *m);
-apop_data * apop_vector_to_data(gsl_vector *v);
+apop_data * apop_matrix_to_data(gsl_matrix *m); //deprecated
+apop_data * apop_vector_to_data(gsl_vector *v); //deprecated
 Apop_var_declare( apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3) )
 Apop_var_declare( apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3) )
 Apop_var_declare( apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace) )
@@ -968,8 +968,8 @@ double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf
 
 int apop_data_to_db(const apop_data *set, const char *tabname, char);
 
-double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2);
-double apop_db_paired_t_test(char * tab1, char *col1, char *col2);
+double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2); //deprecated
+double apop_db_paired_t_test(char * tab1, char *col1, char *col2); //deprecated
 
 
         //////Settings groups
