@@ -9,40 +9,40 @@
 \form#8:$ 2\times 3$
 \form#9:$N \times 2$
 \form#10:$n$
-\form#11:$t$
-\form#12:$\sqrt{x}$
-\form#13:$x^y$
-\form#14:$e^x$
-\form#15:$\ln(x)$
-\form#16:$\sin(x)$
-\form#17:$\arcsin(x)$
-\form#18:$\sqrt(N)$
-\form#19:$\chi^2$
-\form#20:$p$
-\form#21:$\sqrt{N}$
-\form#22:$v_i$
-\form#23:$-\max < x < \max$
-\form#24:$ d1 \cdot d2$
-\form#25:$3 \times 5$
-\form#26:$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3$
-\form#27:$3 \times 3$
-\form#28:$5 \times 5$
-\form#29:$cdot$
-\form#30:$3\times 1$
-\form#31:$3\times 4$
-\form#32:$1 \times 4$
-\form#33:$N \times 1$
-\form#34:$\cdot$
-\form#35:$1 \times N$
-\form#36:$N \times N$
-\form#37:$v < m1x1+ m2x2 + ... + mnxn$
-\form#38:$3 < 2x + 4y - 7z$
-\form#39:$y$
-\form#40:$0 < y$
-\form#41:$(-1, +1)$
-\form#42:$\to$
-\form#43:$n\to\infty$
-\form#44:$\leq$
+\form#11:$\sqrt{x}$
+\form#12:$x^y$
+\form#13:$e^x$
+\form#14:$\ln(x)$
+\form#15:$\sin(x)$
+\form#16:$\arcsin(x)$
+\form#17:$\sqrt(N)$
+\form#18:$\chi^2$
+\form#19:$p$
+\form#20:$\sqrt{N}$
+\form#21:$v_i$
+\form#22:$-\max < x < \max$
+\form#23:$ d1 \cdot d2$
+\form#24:$3 \times 5$
+\form#25:$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3$
+\form#26:$3 \times 3$
+\form#27:$5 \times 5$
+\form#28:$cdot$
+\form#29:$3\times 1$
+\form#30:$3\times 4$
+\form#31:$1 \times 4$
+\form#32:$N \times 1$
+\form#33:$\cdot$
+\form#34:$1 \times N$
+\form#35:$N \times N$
+\form#36:$v < m1x1+ m2x2 + ... + mnxn$
+\form#37:$3 < 2x + 4y - 7z$
+\form#38:$y$
+\form#39:$0 < y$
+\form#40:$(-1, +1)$
+\form#41:$\to$
+\form#42:$n\to\infty$
+\form#43:$\leq$
+\form#44:$t$
 \form#45:$\hat{}p$
 \form#46:$g_1(A) + g_2(BC) + g_3(CD)$
 \form#47:$R^2$
@@ -119,12 +119,12 @@
 \form#118:$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $
 \form#119:$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $
 \form#120:$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $
-\form#121:$\mathbf{V}$
-\form#122:$p\times p$
-\form#123:${\mathbf{W}}$
-\form#124:$\Gamma_p(\cdot)$
-\form#125:\[ P(\mathbf{W}, \mathbf{V}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
-\form#126:$Y = f(x_1) + f(x_2) + ... + \epsilon$
+\form#121:$Y = f(x_1) + f(x_2) + ... + \epsilon$
+\form#122:$\mathbf{V}$
+\form#123:$p\times p$
+\form#124:${\mathbf{W}}$
+\form#125:$\Gamma_p(\cdot)$
+\form#126:\[ P(\mathbf{W}, \mathbf{V}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}} {2^\frac{np}{2}\left|{\mathbf V}\right|^\frac{n}{2}\Gamma_p(\frac{n}{2})} \exp\left(-\frac{1}{2}{\rm Tr}({\mathbf V}^{-1}\mathbf{W})\right)\]
 \form#127:$j$
 \form#128:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
 \form#129:$x\beta_j - ln(\sum_i{e^{x\beta_i}})$
@@ -132,12 +132,12 @@
 \form#131:$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$
 \form#132:$P(d)$
 \form#133:$d$
-\form#134:$p(k) = {\mu^k \over k!} \exp(-\mu), $
-\form#135:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
-\form#136:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
-\form#137:$d ln G/ da = -\psi(a) - ln b + ln(x) $
-\form#138:$d ln \gamma = \psi$
-\form#139:$d ln G/ db = -a/b + x/(b^2) $
+\form#134:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
+\form#135:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
+\form#136:$d ln G/ da = -\psi(a) - ln b + ln(x) $
+\form#137:$d ln \gamma = \psi$
+\form#138:$d ln G/ db = -a/b + x/(b^2) $
+\form#139:$p(k) = {\mu^k \over k!} \exp(-\mu), $
 \form#140:$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$
 \form#141:$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $
 \form#142:$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $
@@ -161,10 +161,10 @@
 \form#160:$\times$
 \form#161:$y_i = x\beta_i$
 \form#162:\[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\]
-\form#163:$a$
-\form#164:$b$
-\form#165:$p_1$
-\form#166:$\in[0,1]$
+\form#163:$\in[0,1]$
+\form#164:$p_1$
+\form#165:$a$
+\form#166:$b$
 \form#167:$p(1-p)$
 \form#168:$X'\beta$
 \form#169:$n=30$

@@ -29,7 +29,7 @@ urchinTracker();
 <div class="title">An outline of the library </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="outline"></a> <span class="trigger" onClick="showAll();"<a>Expand all </a></span> | <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span></p>
+<div class="textblock"><p><span class="trigger" onClick="showAll();"<a>Expand all </a></span> | <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span></p>
 <p><h2><a class="anchor" name="preliminaries"><div class="trigger" onClick="showBranch('preliminariesd');swapFolder('preliminariesf')"><img src="right.png" border="0" id="preliminariesf" alt="pip"> Getting started</div></a></h2><div class="branch" id="preliminariesd">
 <p>If you are entirely new to Apophenia, <a class="el" href="gentle.html">have a look at the Gentle Introduction here</a>.</p>
 <p>As well as the information in this outline, there is a separate page covering the details of <a class="el" href="setup.html">setting up a computing environment</a> and another page with <a class="el" href="eg.html">some sample code</a> for your perusal.</p>
@@ -160,7 +160,7 @@ omp_set_num_threads(N);
 <p>The <a class="el" href="structapop__model.html">apop_model</a> structure is much more ambitious---Apophenia is really intended to be a novel system for developing models---and its internals can still be improved. The promise underlying the structure is that you can provide just one item, such as an RNG or a likelihood function, and the structure will do all of the work to fill in computationally-intensive methods for everything else; see <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> for the details. Some directions aren't quite there yet (such as RNG -&gt; most other things), the PMF model needs an internal index for faster lookups, and so on. Readers are invited to contribute better methods (such as an alternate means of estimating mixture models), or filling in more of existing models (write a dlog likelihood function for a model that does not currently have one), or submit new standard models not yet included.</p>
 <p></div>
 <p><h2><a class="anchor" name="ext"><div class="trigger" onClick="showBranch('extd');swapFolder('extf')"><img src="right.png" border="0" id="extf" alt="pip"> How do I write extensions?</div></a></h2><div class="branch" id="extd">
-<p>It's not a package, so you don't need an API---write your code and <code>include</code> it like any other C code. The system is written to not require a registration or initialization step to add a new model or other such parts. A new <a class="el" href="structapop__model.html">apop_model</a> has to conform to some rules if it is to play well with <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, and so forth. See the notes at <a class="el" href="modeldetails.html">Writing new models</a>. Once your new model or function is working, please post the code or a link to the code on the <a href="https://github.com/b-k/Apophenia/wiki">Apophenia wiki</a>.</p>
+<p>It's not a package, so you don't need an API---write your code and <code>include</code> it like any other C code. The system is written to not require a registration or initialization step to add a new model or other such parts. A new <a class="el" href="structapop__model.html">apop_model</a> has to conform to some rules if it is to play well with <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, and so forth. See the notes at <a class="el" href="modeldetails.html">Writing new models</a>. Once your new model or function is working, please post the code or a link to the code on the <a href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.</p>
 <p></div>
 <p></div>
 <p><h2><a class="anchor" name="dataoverview"><div class="trigger" onClick="showBranch('dataoverviewd');swapFolder('dataoverviewf')"><img src="right.png" border="0" id="dataoverviewf" alt="pip"> Data sets</div></a></h2><div class="branch" id="dataoverviewd">
@@ -315,53 +315,55 @@ omp_set_num_threads(N);
 <a class="code" href="apop_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a>(d, <span class="stringliteral">&quot;obs1&quot;</span>, ov);
 <span class="keywordtype">double</span> obs1_sum = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(ov);
 
-<span class="comment">//Get a row using its index as a vector</span>
-<a class="code" href="apop_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(d-&gt;matrix, 0, v);
-<span class="keywordtype">double</span> first_row_sum = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(v);
+<span class="comment">//Get row zero of the data set&#39;s matrix as a vector; get its sum</span>
+<span class="keywordtype">double</span> first_row_sum = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(<a class="code" href="apop_8h.html#a314f28de914dfe6e45170e09d71d5429">Apop_rv</a>(d, 0));
 
 <span class="comment">//Get a row or rows as a standalone one-row apop_data set</span>
-<a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(d, 0, d1);
-<a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(d1);
+<a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(<a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(d, 0));
 
 <span class="comment">//ten rows starting at row 3:</span>
 Apop_data_rows(d, 3, 10, d10);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(d10);
 
 <span class="comment">//First column&#39;s sum</span>
-<a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(d, 0, colone);
-<span class="keywordtype">double</span> first_col_sum = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(colone);
+<span class="keywordtype">double</span> first_col_sum = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(<a class="code" href="apop_8h.html#a825321182fbaa7471069f13447170810">Apop_cv</a>(d, 0));
 
 <span class="comment">//Pull a 10x5 submatrix, whose first element is the (2,3)rd</span>
 <span class="comment">//element of the parent data set&#39;s matrix</span>
-<a class="code" href="apop_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a>(d, 2,3, 10,5, subm);
-<span class="keywordtype">double</span> first_col_sum = <a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(subm);
-</pre></div><ul>
-<li><a class="el" href="apop_8h.html#a84e73bf42af0baed7b13de3a43eebb72">Apop_col</a> </li>
-<li><a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> </li>
-<li><a class="el" href="apop_8h.html#afbfb5abe21c52dd24570b620ed069c4d">Apop_cols</a> </li>
-<li><a class="el" href="apop_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a> </li>
-<li><a class="el" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a> </li>
-<li><a class="el" href="apop_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a> </li>
+
+<span class="keywordtype">double</span> sub_sum = <a class="code" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<a class="code" href="apop_8h.html#ad0375e20079df9652337e39c1317a14d">Apop_subm</a>(d, 2,3, 10,5));
+</pre></div><p>To make it easier to use the result of these macros as an argument to a function, these macros have abbreviated names.</p>
+<ul>
+<li><a class="el" href="apop_8h.html#adabbf2a1717d5c76a834e090ddfcfeaa">Apop_c</a> </li>
+<li><a class="el" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a> </li>
+<li><a class="el" href="apop_8h.html#a825321182fbaa7471069f13447170810">Apop_cv</a> </li>
+<li><a class="el" href="apop_8h.html#a314f28de914dfe6e45170e09d71d5429">Apop_rv</a> </li>
+<li><a class="el" href="apop_8h.html#afc073d46416446dc4f0cdb9e4f1b9a03">Apop_cs</a> </li>
+<li><a class="el" href="apop_8h.html#a585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a> </li>
+<li><a class="el" href="apop_8h.html#ad0375e20079df9652337e39c1317a14d">Apop_subm</a></li>
+</ul>
+<p>A second set of macros have a slightly different syntax, taking the name of the object to be declared as the last argument. These can not be used as expressions such as function arguments.</p>
+<ul>
 <li><a class="el" href="apop_8h.html#aaaf15101ec60ce66e80737375baa7391">Apop_col_t</a> </li>
 <li><a class="el" href="apop_8h.html#a7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a> </li>
 <li><a class="el" href="apop_8h.html#ad56ce572c7489820777290153ab7d87b">Apop_col_tv</a> </li>
 <li><a class="el" href="apop_8h.html#a6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a> </li>
 <li><a class="el" href="apop_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </li>
-<li><a class="el" href="apop_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a> </li>
-<li><a class="el" href="apop_8h.html#a8c66c0e920b1898f13c58174ef2fbf86">Apop_submatrix</a></li>
+<li><a class="el" href="apop_8h.html#a3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a></li>
 </ul>
-<p>These types point to the source data, and add metadata to turn the data into a coherent matrix/vector. The view is an automatic variable, not a pointer, and therefore disappears at the end of the scope in which it is declared. If you want to retain the data after the function exits, copy it to another vector:</p>
+<p>The view is an automatic variable, not a pointer, and therefore disappears at the end of the scope in which it is declared. If you want to retain the data after the function exits, copy it to another vector:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#a9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(d-&gt;matrix, 2, rowtwo);
 gsl_vector *outvector = <a class="code" href="group__convenience__fns.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a>(rowtwo);
 </pre></div><p>Curly braces always delimit scope, not just at the end of a function. These macros work by generating a number of local variables, which you may be able to see in your debugger. When program evaluation exits a given block, all variables in that block are erased. Here is some sample code that won't work:</p>
-<div class="fragment"><pre class="fragment"><span class="keywordflow">if</span> (get_odd){
-    <a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(data, 1, outdata);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *outdata;
+<span class="keywordflow">if</span> (get_odd){
+    outdata = <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, 1);
 } <span class="keywordflow">else</span> {
-    <a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(data, 0, outdata);
+    outdata = <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, 0);
 }
-<a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(outdata); <span class="comment">//breaks: no outdata in scope.</span>
+<a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(outdata); <span class="comment">//breaks: outdata points to out-of-scope variables.</span>
 </pre></div><p>For this if/then statement, there are two sets of local variables generated: one for the <code>if</code> block, and one for the <code>else</code> block. By the last line, neither exists. You can get around the problem here by making sure to not put the macro declaring new variables in a block. E.g.:</p>
-<div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(data, get_odd ? 1 : 0, outdata);
+<div class="fragment"><pre class="fragment"><a class="code" href="structapop__data.html">apop_data</a> *outdata = <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, get_odd ? 1 : 0);
 <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(outdata);
 </pre></div><p>This is a general rule about how variables declared in blocks will behave, but because the macros obscure the variable declarations, it is especially worth watching out for here.</p>
 <p></div>
@@ -419,7 +421,7 @@ gsl_vector *outvector = <a class="code" href="group__convenience__fns.html#ga5ba
 <span class="keyword">static</span> <span class="keywordtype">double</span> apop_mean_no_nans(<a class="code" href="structapop__data.html">apop_data</a> *in){
     <span class="keywordflow">return</span> <a class="code" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(in, no_nan_val)/<a class="code" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(in, not_nan_check);
 }
-</pre></div><p>The following program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the <img class="formulaInl" alt="$t$" src="form_11.png"/> statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.</p>
+</pre></div><p>The following program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the <img class="formulaInl" alt="$t$" src="form_44.png"/> statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.</p>
 <p>Notice how the older <a class="el" href="group__mapply.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a> uses file-global variables to pass information into the functions, while the <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> uses a pointer to the constant parameters to input to the functions.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
@@ -438,7 +440,7 @@ gsl_rng *r;
     r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){
         row_offset = gsl_rng_uniform(r)*2 -1;
-        <a class="code" href="apop_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, i, onerow);
+        Apop_row_v(d, i, onerow);
         <a class="code" href="group__mapply.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(onerow, offset_rng);
     }
 
@@ -463,7 +465,7 @@ gsl_rng *r;
                     - <a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(tstats, i, -1) &lt; 1e-3));
     }
 }
-</pre></div><p>One more toy example, demonstrating the use of the <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> :</p>
+</pre></div><p>One more toy example, demonstrating the use of <a class="el" href="group__mapply.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and <a class="el" href="group__mapply.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> :</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 <span class="comment">/* This sample code sets the elements of a data set&#39;s vector to one</span>
 <span class="comment">   if the index is even.  Then, via the weights vector, it adds up</span>
@@ -534,7 +536,7 @@ gsl_rng *r;
 <p></div>
 <p><h2><a class="anchor" name="matrixmath"><div class="trigger" onClick="showBranch('matrixmathd');swapFolder('matrixmathf')"><img src="right.png" border="0" id="matrixmathf" alt="pip"> Matrix math</div></a></h2><div class="branch" id="matrixmathd">
 <ul>
-<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot()</a>: matrix <img class="formulaInl" alt="$\cdot$" src="form_34.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_34.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_34.png"/> matrix </li>
+<li><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot()</a>: matrix <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_33.png"/> matrix </li>
 <li><a class="el" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> </li>
 <li><a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> </li>
 <li><a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv()</a>: find determinant and inverse at the same time</li>
@@ -617,10 +619,10 @@ gsl_matrix *m;
 <span class="comment">//make a copy:</span>
 <a class="code" href="structapop__data.html">apop_data</a> *dm_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(As_data(.vector=v, .matrix=m));
 </pre></div><ul>
-<li><a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <code>gsl_vector</code> </li>
-<li><a class="el" href="apop_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_42.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. See also <a class="el" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </li>
-<li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_42.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
-<li><a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_42.png"/> database </li>
+<li><a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_41.png"/> <code>gsl_vector</code> </li>
+<li><a class="el" href="apop_8h.html#ad6be56d710a63aa1ceadf2242c553905">apop_data_fill()</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_41.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. See also <a class="el" href="apop_8h.html#acb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> </li>
+<li><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_41.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
+<li><a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db()</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_41.png"/> database </li>
 <li><a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix()</a></li>
 </ul>
 <p></div>
@@ -768,7 +770,6 @@ d2-&gt;more = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5c
 <ul>
 <li>The <code>apop_text_to_db</code> command line utility is a wrapper for the <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> command. </li>
 <li>The <code>apop_db_to_crosstab</code> function is a wrapper for the <a class="el" href="apop__conversions_8c.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a> function. </li>
-<li>For fans of Gnuplot, the <code>apop_plot_query</code> function produces a plot from the database. It is especially useful for histograms.</li>
 </ul>
 <p></div>
 <p></div>
@@ -992,7 +993,7 @@ end
 <li>State the statistic's hypothesized distribution </li>
 <li>Find the odds that the statistic would lie within some given range, like <em>greater than zero</em> or <em>near 1.1</em>.</li>
 </ul>
-<p>If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated <img class="formulaInl" alt="$t$" src="form_11.png"/> test is probably included as part of the estimation output, typically as a row in the <code>info</code> element of the <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
+<p>If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated <img class="formulaInl" alt="$t$" src="form_44.png"/> test is probably included as part of the estimation output, typically as a row in the <code>info</code> element of the <a class="el" href="gentle.html#apop_data">apop_data</a> set.</p>
 <p>Some tests, like ANOVA, produce a statistic using a specialized procedure, so Apophenia includes some functions, like <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> and <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a>, to produce the statistic and look up its significance level.</p>
 <p>If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> will do the final lookup step of checking where your statistic lies on your chosen distribution.</p>
 <ul>
@@ -1003,8 +1004,6 @@ end
 <li><a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence()</a> </li>
 <li><a class="el" href="apop_8h.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact()</a> </li>
 <li><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a> </li>
-<li><a class="el" href="apop__output_8c.html#a3c2937608a4e0b4008145174bc32b58d">apop_plot_qq()</a> </li>
-<li><a class="el" href="apop__output_8c.html#aa3551254c4b531a1da147821f81ffdc8">apop_plot_triangle()</a> </li>
 <li><a class="el" href="group__regression.html#gaceead3e4aaba543b7fc1d194fcbc40f8">apop_estimate_coefficient_of_determination()</a> </li>
 <li><a class="el" href="group__regression.html#ga33c353f768fb4b0e7a3f98ab7a546ba5">apop_estimate_r_squared()</a> </li>
 <li><a class="el" href="apop_8h.html#ae165633525c5272ab83794b60076eddc">apop_estimate_parameter_tests()</a></li>
@@ -1054,7 +1053,7 @@ end
 </ul>
 <p>It is the weights vector that holds the density represented by each row; the rest of the row represents the coordinates of that density. If the input data set has no <code>weights</code> segment, then I assume that all rows have equal weight.</p>
 <p>Most models have a <code>parameters</code> <a class="el" href="gentle.html#apop_data">apop_data</a> set that is filled when you call <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>. For a PMF model, the <code>parameters</code> are <code>NULL</code>, and the <code>data</code> itself is used for calculation. Therefore, modifying the data post-estimation can break some internal settings set during estimation. If you modify the data, throw away any existing PMFs (<code>apop_model_free</code>) and re-estimate a new one.</p>
-<p>Using <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram, which you can get via <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. It requires a bin specification. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/> bins from minimum to maximum. There are other preferred formulæ for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code>. See the <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> documentation on how to write a custom bin spec.</p>
+<p>Using <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> puts the data into one bin for each unique value in the data set. You may instead want bins of fixed with, in the style of a histogram, which you can get via <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. It requires a bin specification. If you send a <code>NULL</code> binspec, then the offset is zero and the bin size is big enough to ensure that there are <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/> bins from minimum to maximum. There are other preferred formulæ for bin widths that minimize MSE, which might be added as a future extension. The binspec will be added as a page to the data set, named <code>"&lt;binspec&gt;"</code>. See the <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> documentation on how to write a custom bin spec.</p>
 <p>There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec.</p>
 <p>For example, if you do not have a prior binspec in mind, then you can use the one generated by the first call to the histogram binning function to make sure that the second data set is in sync:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>(first_set, NULL);
@@ -1064,7 +1063,7 @@ end
 <ul>
 <li><a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress()</a> : merge together redundant rows in a data set before calling <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(<code>your_data</code>, <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>); optional. </li>
 <li><a class="el" href="apop_8h.html#acfa62ab9157d4d92338a29093c7d1b30">apop_vector_moving_average()</a> : smooth a vector (e.g., your_pmf-&gt;data-&gt;weights) via moving average. </li>
-<li><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a> : goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic </li>
+<li><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit()</a> : goodness-of-fit via <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic </li>
 <li><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov()</a> : goodness-of-fit via Kolmogorov-Smirnov statistic</li>
 </ul>
 <p></div>
@@ -1097,7 +1096,7 @@ end
     <a class="code" href="structcoeff__struct.html">coeff_struct</a> co = {.scaling=100};
     <a class="code" href="structapop__model.html">apop_model</a> b = {<span class="stringliteral">&quot;Bananas!&quot;</span>, .<a class="code" href="structapop__model.html#a6a098bc488ce578e0f9009f68a670cd3">log_likelihood</a>= ll, .vsize=2,
                                 .more = &amp;co, .more_size=<span class="keyword">sizeof</span>(<a class="code" href="structcoeff__struct.html">coeff_struct</a>)};
-</pre></div><p>The <code>.vsize=2</code> specified that your parameters are a vector of size two, which means that <code>in-&gt;parameters-&gt;vector-&gt;data</code> is the list of <code>double</code>s that you should send to <code>banana</code>. The <code>more</code> element of the structure is designed to hold any arbitrary structure; if you use it, you will also need to use the <code>more_size</code> element, as above.</p>
+</pre></div><p>The <code>vsize=2</code> specified that your parameters are a vector of size two, which means that <code>in-&gt;parameters-&gt;vector-&gt;data</code> is the list of <code>double</code>s that you should send to <code>banana</code>. The <code>more</code> element of the structure is designed to hold any arbitrary structure; if you use it, you will also need to use the <code>more_size</code> element, as above.</p>
 <ul>
 <li>Statisticians want the covariance and basic tests about the parameters. If you just want the optimal value, then adding this line will shut off all auxiliary calculations: <div class="fragment"><pre class="fragment"><a class="code" href="group__settings.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(your_model, apop_parts_wanted);
 </pre></div> See the documentation for <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> for details about how this works. It can also offer quite the speedup: especially for high-dimensional problems, finding the covariance matrix without any information can take dozens of evaluations of the objective funtion for each evaluation that is part of the search itself.</li>
@@ -1190,7 +1189,7 @@ end
 <p>C makes minimal distinction between pipes and files, so you can set a pipe or file as output and send all output there until further notice:</p>
 <div class="fragment"><pre class="fragment"><a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.output_type = <span class="charliteral">&#39;p&#39;</span>;
 <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.output_pipe = popen(<span class="stringliteral">&quot;gnuplot&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);
-<a class="code" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a>(...);
+apop_plot_lattice(...); <span class="comment">//see https://github.com/b-k/Apophenia/wiki/gnuplot_snippets</span>
 fclose(<a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.output_pipe);
 <a class="code" href="apop_8h.html#a7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.output_pipe = fopen(<span class="stringliteral">&quot;newfile&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);
 <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(set1);
@@ -1212,12 +1211,6 @@ pclose(lesspipe);
 <li><a class="el" href="group__apop__print.html#ga50915e9992a7cc880807cc266e9f5166">apop_matrix_print()</a> </li>
 <li><a class="el" href="group__apop__print.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print()</a> </li>
 <li><a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show()</a> : alias for <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> limited to <code>stdout</code>.</li>
-</ul>
-<p>The plot functions produce output for Gnuplot (so output type = <code>'d'</code> again does not make sense). As above, you can pipe directly to Gnuplot or write to a file. Please consider these to be deprecated, as there is better graphics support in the works.</p>
-<ul>
-<li><a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram()</a> </li>
-<li><a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter()</a> </li>
-<li><a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice()</a></li>
 </ul>
 <p></div>
 <p><h2><a class="anchor" name="moreasst"><div class="trigger" onClick="showBranch('moreasstd');swapFolder('moreasstf')"><img src="right.png" border="0" id="moreasstf" alt="pip"> Assorted</div></a></h2><div class="branch" id="moreasstd">
@@ -1254,4 +1247,4 @@ pclose(lesspipe);
 </ul>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

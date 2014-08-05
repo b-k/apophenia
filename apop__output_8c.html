@@ -32,35 +32,26 @@ urchinTracker();
 <div class="title">apop_output.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li><a class="anchor" id="a8c66c0e920b1898f13c58174ef2fbf86"></a><!-- doxytag: member="apop_output.c::Apop_submatrix" ref="a8c66c0e920b1898f13c58174ef2fbf86" args="" -->
-#define <b>Apop_submatrix</b>&#160;&#160;&#160;APOP_SUBMATRIX
-<li><a class="anchor" id="a419e26c0fb4f93a4126dddbaef0d1794"></a><!-- doxytag: member="apop_output.c::Output_vars" ref="a419e26c0fb4f93a4126dddbaef0d1794" args="" -->
-#define <b>Output_vars</b>&#160;&#160;&#160;output_name, output_pipe, output_type, output_append
-<li><a class="anchor" id="a4fcc7847142ed4254b5b88ca14b9ab9f"></a><!-- doxytag: member="apop_output.c::Output_declares" ref="a4fcc7847142ed4254b5b88ca14b9ab9f" args="" -->
-#define <b>Output_declares</b>&#160;&#160;&#160;char const * output_name, FILE * output_pipe, char output_type, char output_append
-<li>#define <b>Dispatch_output</b>
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>int <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> (char const *output_name, FILE **output_pipe, char *output_type, char *output_append)
-<li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
-<li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
-<li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li><a class="anchor" id="a96fbd2c4929c14af6e73ff416c89eaa5"></a><!-- doxytag: member="apop_output.c::p_fn" ref="a96fbd2c4929c14af6e73ff416c89eaa5" args="(FILE *f, double data)" -->
-void <b>p_fn</b> (FILE *f, double data)
-<li>void <a class="el" href="group__apop__print.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a> (gsl_vector *data, Output_declares)
-<li>void <a class="el" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a> (const gsl_vector *data)
-<li>void <a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, Output_declares)
-<li>void <a class="el" href="group__apop__print.html#ga50915e9992a7cc880807cc266e9f5166">apop_matrix_print</a> (const gsl_matrix *data, Output_declares)
-<li>void <a class="el" href="group__apop__print.html#gae7f619a8c83d791ce3d07bf4f6eecb32">apop_matrix_show</a> (const gsl_matrix *data)
-<li>void <a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d, Output_declares)
-<li>void <a class="el" href="apop__output_8c.html#a3c2937608a4e0b4008145174bc32b58d">apop_plot_qq</a> (gsl_vector *v, <a class="el" href="structapop__model.html">apop_model</a> *m, Output_declares, size_t bins, gsl_rng *r)
-<li>void <a class="el" href="apop__output_8c.html#aa3551254c4b531a1da147821f81ffdc8">apop_plot_triangle</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, Output_declares)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a419e26c0fb4f93a4126dddbaef0d1794"></a><!-- doxytag: member="apop_output.c::Output_vars" ref="a419e26c0fb4f93a4126dddbaef0d1794" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Output_vars</b>&#160;&#160;&#160;output_name, output_pipe, output_type, output_append</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4fcc7847142ed4254b5b88ca14b9ab9f"></a><!-- doxytag: member="apop_output.c::Output_declares" ref="a4fcc7847142ed4254b5b88ca14b9ab9f" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Output_declares</b>&#160;&#160;&#160;char const * output_name, FILE * output_pipe, char output_type, char output_append</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>Dispatch_output</b></td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> (char const *output_name, FILE **output_pipe, char *output_type, char *output_append)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a96fbd2c4929c14af6e73ff416c89eaa5"></a><!-- doxytag: member="apop_output.c::p_fn" ref="a96fbd2c4929c14af6e73ff416c89eaa5" args="(FILE *f, double data)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>p_fn</b> (FILE *f, double data)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a> (gsl_vector *data, Output_declares)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html#ga8eafc3727869f5ec195809ad6686ba7b">apop_vector_show</a> (const gsl_vector *data)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, Output_declares)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html#ga50915e9992a7cc880807cc266e9f5166">apop_matrix_print</a> (const gsl_matrix *data, Output_declares)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html#gae7f619a8c83d791ce3d07bf4f6eecb32">apop_matrix_show</a> (const gsl_matrix *data)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Some printing and output interface functions. </p>
 </div><hr/><h2>Define Documentation</h2>
@@ -84,105 +75,6 @@ void <b>p_fn</b> (FILE *f, double data)
 </div>
 </div>
 <hr/><h2>Function Documentation</h2>
-<a class="anchor" id="a3c2937608a4e0b4008145174bc32b58d"></a><!-- doxytag: member="apop_output.c::apop_plot_qq" ref="a3c2937608a4e0b4008145174bc32b58d" args="(gsl_vector *v, apop_model *m, Output_declares, size_t bins, gsl_rng *r)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="apop__output_8c.html#a3c2937608a4e0b4008145174bc32b58d">apop_plot_qq</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>v</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Output_declares&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>bins</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>r</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Plot the percentiles of a data set against the percentiles of a distribution.</p>
-<p>The distribution percentiles will be on the $x$-axis, your data percentiles on the $y$-.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">v</td><td>The data (No default, must not be <code>NULL</code>.) </td></tr>
-    <tr><td class="paramname">m</td><td>The distribution, such as apop_normal. I'll be using the <code>draw</code> method. (Default = best-fitting Normal) </td></tr>
-    <tr><td class="paramname">bins</td><td>The number of bins in the histogram. The number of points on the plot will always be 101 (i.e. percentiles). (default = MAX(10, data-&gt;size/10); denominator subject to future adjustment) </td></tr>
-    <tr><td class="paramname">r</td><td>A <code>gsl_rng</code>. If NULL, I'll get an RNG via <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>)</td></tr>
-  </table>
-  </dd>
-</dl>
-<ul>
-<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
-<li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
-<a class="anchor" id="aa3551254c4b531a1da147821f81ffdc8"></a><!-- doxytag: member="apop_output.c::apop_plot_triangle" ref="aa3551254c4b531a1da147821f81ffdc8" args="(apop_data *in, Output_declares)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="apop__output_8c.html#aa3551254c4b531a1da147821f81ffdc8">apop_plot_triangle</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>in</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Output_declares&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>This produces a nifty triangle plot from an input matrix with three columns. Each row is plotted inside an equilateral triangle such that (1, 0, 0) is the lower left corner, (0, 1, 0) the lower right corner, and (0, 0, 1) the middle, upper corner.</p>
-<div class="image">
-<img src="triangle.png" alt="triangle.png"/>
-<div class="caption">
-A triangle plot with a smattering of data points.</div></div>
- <ul>
-<li>Gnuplot will rescale for you, so you don't need to worry about whether the row sums to one. </li>
-<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
-<li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
 <a class="anchor" id="a4748bf59f5441cd27e5b93056c7ec1c7"></a><!-- doxytag: member="apop_output.c::apop_prep_output" ref="a4748bf59f5441cd27e5b93056c7ec1c7" args="(char const *output_name, FILE **output_pipe, char *output_type, char *output_append)" -->
 <div class="memitem">
 <div class="memproto">
@@ -243,4 +135,4 @@ A triangle plot with a smattering of data points.</div></div>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

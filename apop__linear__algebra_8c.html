@@ -32,41 +32,39 @@ urchinTracker();
 <div class="title">apop_linear_algebra.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li><a class="anchor" id="aa3fc4fc00b31f1c562f72ead9fb8802c"></a><!-- doxytag: member="apop_linear_algebra.c::Checkgsl" ref="aa3fc4fc00b31f1c562f72ead9fb8802c" args="(...)" -->
-#define <b>Checkgsl</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {goto done;}
-<li><a class="anchor" id="a7465cdb3f48f7175a1fecd56cc59a677"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gsl_with_out" ref="a7465cdb3f48f7175a1fecd56cc59a677" args="(...)" -->
-#define <b>Check_gsl_with_out</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {out-&gt;error='m'; goto done;}
-<li><a class="anchor" id="adaccc17349ae952085e963df9098ab8f"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gsl_with_outmp" ref="adaccc17349ae952085e963df9098ab8f" args="(...)" -->
-#define <b>Check_gsl_with_outmp</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {gsl_matrix_free(*out); *out=NULL; goto done;}
-<li><a class="anchor" id="a00f92dca5b99168cf3e80903ea0397a0"></a><!-- doxytag: member="apop_linear_algebra.c::Set_gsl_handler" ref="a00f92dca5b99168cf3e80903ea0397a0" args="" -->
-#define <b>Set_gsl_handler</b>&#160;&#160;&#160;gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
-<li><a class="anchor" id="acfbcbb797586564ad3a93dae058f43e1"></a><!-- doxytag: member="apop_linear_algebra.c::Unset_gsl_handler" ref="acfbcbb797586564ad3a93dae058f43e1" args="" -->
-#define <b>Unset_gsl_handler</b>&#160;&#160;&#160;gsl_set_error_handler(prior_handler);
-<li><a class="anchor" id="ad93cf95729a5c79612f7c7fe7347eb8d"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gslv" ref="ad93cf95729a5c79612f7c7fe7347eb8d" args="(...)" -->
-#define <b>Check_gslv</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {gsl_vector_free(out); out=NULL;}
-<li>#define <b>Dimcheck</b>(lr, lc, rr, rc)
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="anchor" id="a338351a2159c507ae1c69c195fae2e50"></a><!-- doxytag: member="apop_linear_algebra.c::apop_gsl_error" ref="a338351a2159c507ae1c69c195fae2e50" args="(const char *reason, const char *file, int line, int gsl_errno)" -->
-void <b>apop_gsl_error</b> (const char *reason, const char *file, int line, int gsl_errno)
-<li>double <a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> (const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv)
-<li>gsl_matrix * <a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> (const gsl_matrix *in)
-<li>double <a class="el" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> (const gsl_matrix *in)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__linear__algebra.html#gaa1715c468336800a21ca86971323ae3d">apop_matrix_pca</a> (gsl_matrix *data, int const dimensions_we_want)
-<li>void <a class="el" href="group__convenience__fns.html#ga1a4a67e0b0bec8205cfe75bd3786c30e">apop_vector_log10</a> (gsl_vector *v)
-<li>void <a class="el" href="group__convenience__fns.html#ga5a622b8360eba63795a6049c30ac54a2">apop_vector_log</a> (gsl_vector *v)
-<li>void <a class="el" href="group__convenience__fns.html#ga032dcecb67155c527c884dd2c1cc6a6e">apop_vector_exp</a> (gsl_vector *v)
-<li>gsl_vector * <a class="el" href="group__convenience__fns.html#gae603a7d511cf40b022f99dc69faa616a">apop_vector_stack</a> (gsl_vector *v1, gsl_vector *v2, char inplace)
-<li>gsl_matrix * <a class="el" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a> (gsl_matrix *m1, gsl_matrix *m2, char posn, char inplace)
-<li>gsl_matrix * <a class="el" href="apop__linear__algebra_8c.html#a5402b8254a90f2ac68770d6867502e5a">apop_matrix_rm_columns</a> (gsl_matrix *in, int *drop)
-<li>int <a class="el" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a> (const gsl_vector *in, long double max)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d1, const <a class="el" href="structapop__data.html">apop_data</a> *d2, char form1, char form2)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa3fc4fc00b31f1c562f72ead9fb8802c"></a><!-- doxytag: member="apop_linear_algebra.c::Checkgsl" ref="aa3fc4fc00b31f1c562f72ead9fb8802c" args="(...)" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Checkgsl</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {goto done;}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7465cdb3f48f7175a1fecd56cc59a677"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gsl_with_out" ref="a7465cdb3f48f7175a1fecd56cc59a677" args="(...)" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Check_gsl_with_out</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {out-&gt;error='m'; goto done;}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="adaccc17349ae952085e963df9098ab8f"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gsl_with_outmp" ref="adaccc17349ae952085e963df9098ab8f" args="(...)" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Check_gsl_with_outmp</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {gsl_matrix_free(*out); *out=NULL; goto done;}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00f92dca5b99168cf3e80903ea0397a0"></a><!-- doxytag: member="apop_linear_algebra.c::Set_gsl_handler" ref="a00f92dca5b99168cf3e80903ea0397a0" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Set_gsl_handler</b>&#160;&#160;&#160;gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfbcbb797586564ad3a93dae058f43e1"></a><!-- doxytag: member="apop_linear_algebra.c::Unset_gsl_handler" ref="acfbcbb797586564ad3a93dae058f43e1" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Unset_gsl_handler</b>&#160;&#160;&#160;gsl_set_error_handler(prior_handler);</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad93cf95729a5c79612f7c7fe7347eb8d"></a><!-- doxytag: member="apop_linear_algebra.c::Check_gslv" ref="ad93cf95729a5c79612f7c7fe7347eb8d" args="(...)" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Check_gslv</b>(...)&#160;&#160;&#160;if (__VA_ARGS__) {gsl_vector_free(out); out=NULL;}</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>Dimcheck</b>(lr, lc, rr, rc)</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a338351a2159c507ae1c69c195fae2e50"></a><!-- doxytag: member="apop_linear_algebra.c::apop_gsl_error" ref="a338351a2159c507ae1c69c195fae2e50" args="(const char *reason, const char *file, int line, int gsl_errno)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>apop_gsl_error</b> (const char *reason, const char *file, int line, int gsl_errno)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__linear__algebra.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> (const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__linear__algebra.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> (const gsl_matrix *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__linear__algebra.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> (const gsl_matrix *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__linear__algebra.html#gaa1715c468336800a21ca86971323ae3d">apop_matrix_pca</a> (gsl_matrix *data, int const dimensions_we_want)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga1a4a67e0b0bec8205cfe75bd3786c30e">apop_vector_log10</a> (gsl_vector *v)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga5a622b8360eba63795a6049c30ac54a2">apop_vector_log</a> (gsl_vector *v)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga032dcecb67155c527c884dd2c1cc6a6e">apop_vector_exp</a> (gsl_vector *v)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_vector *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#gae603a7d511cf40b022f99dc69faa616a">apop_vector_stack</a> (gsl_vector *v1, gsl_vector *v2, char inplace)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#gae50bc918e0d8b6ee913596f68ab731a8">apop_matrix_stack</a> (gsl_matrix *m1, gsl_matrix *m2, char posn, char inplace)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__linear__algebra_8c.html#a5402b8254a90f2ac68770d6867502e5a">apop_matrix_rm_columns</a> (gsl_matrix *in, int *drop)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a> (const gsl_vector *in, long double max)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d1, const <a class="el" href="structapop__data.html">apop_data</a> *d2, char form1, char form2)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Assorted things to do with matrices, such as take determinants or do singular value decompositions. Includes many convenience functions that don't actually do math but add/delete columns, check bounds, et cetera. </p>
 </div><hr/><h2>Define Documentation</h2>
@@ -158,4 +156,4 @@ void <b>apop_gsl_error</b> (const char *reason, const char *file, int line, int 
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

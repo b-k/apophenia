@@ -32,27 +32,25 @@ urchinTracker();
 <div class="title">apop_mcmc.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li>#define <b>markit</b>(test, value)
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="anchor" id="a3fd75cf9853d4d65144f6a1a7cc3d36e"></a><!-- doxytag: member="apop_mcmc.c::sigma_adapt" ref="a3fd75cf9853d4d65144f6a1a7cc3d36e" args="(apop_mcmc_proposal_s *ps, apop_mcmc_settings *ms)" -->
-int <b>sigma_adapt</b> (<a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *ps, <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *ms)
-<li><a class="anchor" id="a7e4038b7160e2a4ee3383ab412f19996"></a><!-- doxytag: member="apop_mcmc.c::Apop_settings_init" ref="a7e4038b7160e2a4ee3383ab412f19996" args="(Apop_settings_copy(apop_mcmc, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(target_accept_rate, 0.35);Apop_varad_set(gibbs_chunks, 'b');Apop_varad_set(start_at, '1');Apop_varad_set(base_step_fn, step_to_vector);Apop_varad_set(base_adapt_fn, sigma_adapt);)" -->
-<b>Apop_settings_init</b> (<a class="el" href="apop_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(apop_mcmc, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(target_accept_rate, 0.35);Apop_varad_set(gibbs_chunks, 'b');Apop_varad_set(start_at, '1');Apop_varad_set(base_step_fn, step_to_vector);Apop_varad_set(base_adapt_fn, sigma_adapt);)
-<li><a class="anchor" id="a15563f46a653bfa25aadb1626270de1e"></a><!-- doxytag: member="apop_mcmc.c::Apop_settings_free" ref="a15563f46a653bfa25aadb1626270de1e" args="(apop_mcmc)" -->
-<b>Apop_settings_free</b> (apop_mcmc)
-<li><a class="anchor" id="a0ebb5c8aa5b678855dd3f18038d499c2"></a><!-- doxytag: member="apop_mcmc.c::maybe_prep" ref="a0ebb5c8aa5b678855dd3f18038d499c2" args="(apop_data *d, apop_model *m, bool *is_a_copy)" -->
-<a class="el" href="structapop__model.html">apop_model</a> * <b>maybe_prep</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, bool *is_a_copy)
-<li>int <a class="el" href="apop__mcmc_8c.html#aa28fc59f2675fd5bcd530cb7325b6c60">apop_model_metropolis_draw</a> (double *out, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *model)
-<li><a class="anchor" id="a62d0ecb0b18117d54cbd825fcc9f8035"></a><!-- doxytag: member="apop_mcmc.c::main_mcmc_loop" ref="a62d0ecb0b18117d54cbd825fcc9f8035" args="(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw, apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails)" -->
-void <b>main_mcmc_loop</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, <a class="el" href="structapop__data.html">apop_data</a> *out, gsl_vector *draw, <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *s, gsl_rng *rng, int *constraint_fails)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *m)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>markit</b>(test, value)</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3fd75cf9853d4d65144f6a1a7cc3d36e"></a><!-- doxytag: member="apop_mcmc.c::sigma_adapt" ref="a3fd75cf9853d4d65144f6a1a7cc3d36e" args="(apop_mcmc_proposal_s *ps, apop_mcmc_settings *ms)" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>sigma_adapt</b> (<a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> *ps, <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *ms)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7e4038b7160e2a4ee3383ab412f19996"></a><!-- doxytag: member="apop_mcmc.c::Apop_settings_init" ref="a7e4038b7160e2a4ee3383ab412f19996" args="(Apop_settings_copy(apop_mcmc, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(target_accept_rate, 0.35);Apop_varad_set(gibbs_chunks, 'b');Apop_varad_set(start_at, '1');Apop_varad_set(base_step_fn, step_to_vector);Apop_varad_set(base_adapt_fn, sigma_adapt);)" -->
+&#160;</td><td class="memItemRight" valign="bottom"><b>Apop_settings_init</b> (<a class="el" href="apop_8h.html#a47600802191d9ccf5d48fce70e754294">Apop_settings_copy</a>(apop_mcmc, Apop_varad_set(periods, 6e3);Apop_varad_set(burnin, 0.05);Apop_varad_set(target_accept_rate, 0.35);Apop_varad_set(gibbs_chunks, 'b');Apop_varad_set(start_at, '1');Apop_varad_set(base_step_fn, step_to_vector);Apop_varad_set(base_adapt_fn, sigma_adapt);)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a15563f46a653bfa25aadb1626270de1e"></a><!-- doxytag: member="apop_mcmc.c::Apop_settings_free" ref="a15563f46a653bfa25aadb1626270de1e" args="(apop_mcmc)" -->
+&#160;</td><td class="memItemRight" valign="bottom"><b>Apop_settings_free</b> (apop_mcmc)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0ebb5c8aa5b678855dd3f18038d499c2"></a><!-- doxytag: member="apop_mcmc.c::maybe_prep" ref="a0ebb5c8aa5b678855dd3f18038d499c2" args="(apop_data *d, apop_model *m, bool *is_a_copy)" -->
+<a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>maybe_prep</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, bool *is_a_copy)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__mcmc_8c.html#aa28fc59f2675fd5bcd530cb7325b6c60">apop_model_metropolis_draw</a> (double *out, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *model)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a62d0ecb0b18117d54cbd825fcc9f8035"></a><!-- doxytag: member="apop_mcmc.c::main_mcmc_loop" ref="a62d0ecb0b18117d54cbd825fcc9f8035" args="(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw, apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>main_mcmc_loop</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__model.html">apop_model</a> *m, <a class="el" href="structapop__data.html">apop_data</a> *out, gsl_vector *draw, <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> *s, gsl_rng *rng, int *constraint_fails)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__mcmc_8c.html#a733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *m)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Markov Chain Monte Carlo. </p>
 </div><hr/><h2>Define Documentation</h2>
@@ -124,7 +122,7 @@ void <b>main_mcmc_loop</b> (<a class="el" href="structapop__data.html">apop_data
 </ul>
 <p>Attach an <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to your model to specify the proposal distribution, burnin, and other details of the search. See the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> documentation for details.</p>
 <ul>
-<li>The default proposal includes an adaptive step: you specify a target accept rate (default: .35), and if the accept rate is currently higher the variance of the proposals is widened to explore more of the space; if the accept rate is currently lower the variance is narrowed to stay closer to the last accepted proposal. Technically, this breaks ergodicity of the Markov chain, but the consensus seems to be that this is not a serious problem. If it does concern you, you can set the <code>base_adapt_fn</code> in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to a do-nothing function, or one that damps its adaptation as <img class="formulaInl" alt="$n\to\infty$" src="form_43.png"/>.</li>
+<li>The default proposal includes an adaptive step: you specify a target accept rate (default: .35), and if the accept rate is currently higher the variance of the proposals is widened to explore more of the space; if the accept rate is currently lower the variance is narrowed to stay closer to the last accepted proposal. Technically, this breaks ergodicity of the Markov chain, but the consensus seems to be that this is not a serious problem. If it does concern you, you can set the <code>base_adapt_fn</code> in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group to a do-nothing function, or one that damps its adaptation as <img class="formulaInl" alt="$n\to\infty$" src="form_42.png"/>.</li>
 </ul>
 <ul>
 <li>Note the <code>gibbs_chunks</code> element of the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group. If you set <code>gibbs_chunks='a'</code>, all parameters are drawn as a set, and accepted/rejected as a set. The variances are adapted at an identical rate. If you set <code>gibbs_chunks='i'</code>, then each scalar parameter is assigned its own proposal distribution, which is adapted at its own pace. With <code>gibbs_chunks='b'</code> (the default), then each of the vector, matrix, and weights of your model's parameters are drawn/accepted/adapted as a group (and so on to additional chunks if your model has <code>-&gt;more</code> pages). This works well for complex models which naturally break down into subsets of parameters.</li>
@@ -214,4 +212,4 @@ void <b>main_mcmc_loop</b> (<a class="el" href="structapop__data.html">apop_data
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

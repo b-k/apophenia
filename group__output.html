@@ -32,21 +32,16 @@ urchinTracker();
 <div class="title">Printing to the screen or a text file</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="groups"></a>
-Modules</h2>
-<ul>
-<li><a class="el" href="group__apop__print.html">Assorted printing functions</a>
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>void <a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me, FILE *ap)
-<li>void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, <a class="el" href="structapop__model.html">apop_model</a> *est, Output_declares)
-<li>void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> (gsl_vector *data, size_t bin_count, char *with, Output_declares)
-<li>void <a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li>void <a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a> (const <a class="el" href="structapop__data.html">apop_data</a> *d, Output_declares)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="groups"></a>
+Modules</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__apop__print.html">Assorted printing functions</a></td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__output.html#gab7bf9adff9b97c60c5839ae72ba4fb7f">apop_model_print</a> (<a class="el" href="structapop__model.html">apop_model</a> *print_me, FILE *ap)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>Most functions print only to the screen, but the <a class="el" href="group__apop__print.html">matrix and vector printing functions</a> will let you print to a text file as well. The presumption is that statistic estimates are for your own consumption, while you are printing a matrix for import into another program. </p>
 <hr/><h2>Function Documentation</h2>
@@ -171,176 +166,6 @@ fclose(out);  <span class="comment">//optional in most cases.</span>
 
 </div>
 </div>
-<a class="anchor" id="ga3928a05b001f61d6dac3911f359224c9"></a><!-- doxytag: member="apop_output.c::apop_plot_histogram" ref="ga3928a05b001f61d6dac3911f359224c9" args="(gsl_vector *data, size_t bin_count, char *with, Output_declares)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>bin_count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>with</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Output_declares&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>This convenience function will take in a <code>gsl_vector</code> of data and put out a histogram, ready to pipe to Gnuplot.</p>
-<p>The function respects the <code>output_type</code> option, so code like: </p>
-<div class="fragment"><pre class="fragment">FILE* f = popen(<span class="stringliteral">&quot;/usr/bin/gnuplot&quot;</span>, <span class="stringliteral">&quot;w&quot;</span>);
-<a class="code" href="group__output.html#ga3928a05b001f61d6dac3911f359224c9">apop_plot_histogram</a>(data, .bin_count=100, .output_pipe = f);
-</pre></div><p> will print directly to Gnuplot.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (default = <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>, where <img class="formulaInl" alt="$N$" src="form_6.png"/> is the length of the vector.) </td></tr>
-    <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<ul>
-<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
-<li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
-<a class="anchor" id="ga7e6f1b157a5e24f597187ad17bdaa738"></a><!-- doxytag: member="apop_output.c::apop_plot_lattice" ref="ga7e6f1b157a5e24f597187ad17bdaa738" args="(const apop_data *d, Output_declares)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="group__output.html#ga7e6f1b157a5e24f597187ad17bdaa738">apop_plot_lattice</a> </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>d</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Output_declares&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>This produces a Gnuplot file that will produce an array of 2-D plots, one for each pair of columns in the data set. Along the diagonal is a plot of the variable against itself---a density plot of the variable.</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">d</td><td>The data set whose (matrix) columns will be compared. (No default, must not be <code>NULL</code>.)</td></tr>
-  </table>
-  </dd>
-</dl>
-<div class="image">
-<img src="lattice.png" alt="lattice.png"/>
-<div class="caption">
-A lattice showing three variables graphed against each other.</div></div>
- <ul>
-<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how printing settings are set. </li>
-<li>See also the legible output section of the <a class="el" href="outline.html">An outline of the library</a> for more details and examples. </li>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
-<a class="anchor" id="ga0db4cee7586798d4fcdff8ebf67dd0b3"></a><!-- doxytag: member="apop_output.c::apop_plot_line_and_scatter" ref="ga0db4cee7586798d4fcdff8ebf67dd0b3" args="(apop_data *data, apop_model *est, Output_declares)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td>
-          <td class="paramname"><em>data</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>est</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Output_declares&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Prep for Gnuplot one of those cute scatterplots with a regression line through it.</p>
-<p>Currently, you only get two dimensions.</p>
-<p>Set the global <a class="el" href="structapop__opts__type.html">apop_opts.output_name</a> to the filename you want before running this. It appends instead of overwriting, so you can prep the file if you want; see sample code. [to overwrite a file, just remove it first with the standard C function <code>remove("filename");</code>]</p>
-<dl class="params"><dt><b>Parameters:</b></dt><dd>
-  <table class="params">
-    <tr><td class="paramname">data</td><td>This is a copy of what you'd sent to the regression fn. That is, the first column is the dependent variable and the second is the independent. That is, what will be on Y axis is the <em>first</em> column, and what is on the X axis is the second. Custom for regressions and custom for graphs just clash on this one. </td></tr>
-    <tr><td class="paramname">est</td><td>The <a class="el" href="structapop__model.html">apop_model</a> structure your regression function gave you. (if <code>NULL</code>, I'll estimate an OLS model for you).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>The sample program below will pull data from a database (ridership at the Silver Spring, MD Metro station; get the database in the {<em>Modeling</em> with Data} sample code, at <a href="http://modelingwithdata.org/appendices.html">http://modelingwithdata.org/appendices.html</a>), then runs OLS, and produce a Gnuplot file to write to a file named "scatter.eps". You can run the result through Gnuplot via <code> gnuplot scatter.gplot</code>, and if you don't like the results, you have the Gnuplot file ("scatter.gplot") on hand for modifications.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
-
-<span class="keywordtype">int</span> main(){
-    <span class="keywordtype">char</span> outfile[] = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
-
-    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
-    <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39; and riders&gt;0&quot;</span>);
-    <a class="code" href="apop_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
-
-    <span class="comment">//The regression destroys your data, so copy it first.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
-
-    <span class="comment">//Run OLS, display results on terminal</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
-    apop_model_show(est);
-
-    <span class="comment">//Prep the file with a header, then call the function.</span>
-    FILE *f = fopen(outfile, <span class="stringliteral">&quot;w&quot;</span>);
-    fprintf(f,<span class="stringliteral">&quot;set term postscript;\n set output \&quot;scatter.eps\&quot;\n set yrange [0:*]\n&quot;</span>);
-    <a class="code" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a>(data_copy, est, .output_pipe=f);
-    fclose(f);
-}
-</pre></div><ul>
-<li>See <a class="el" href="apop__output_8c.html#a4748bf59f5441cd27e5b93056c7ec1c7">apop_prep_output</a> for more on how settings are set. </li>
-<li>This function uses the <a class="el" href="designated.html">Designated initializers</a> syntax for inputs. </li>
-</ul>
-
-</div>
-</div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

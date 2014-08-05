@@ -32,41 +32,39 @@ urchinTracker();
 <div class="title">apop_stats.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li>#define <b>Check_vw</b>
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>long double <a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a> (const gsl_vector *in, const double mean)
-<li>double <a class="el" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a> (const gsl_vector *ina, const gsl_vector *inb)
-<li>double <a class="el" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a> (const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm)
-<li>void <a class="el" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> (gsl_vector *in, gsl_vector **out, const char normalization_type)
-<li>void <a class="el" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a> (gsl_matrix *data, const char row_or_col, const char normalization)
-<li>long double <a class="el" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a> (const gsl_matrix *m)
-<li>double <a class="el" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a> (const gsl_matrix *data)
-<li>void <a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)
-<li>double <a class="el" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a> (const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *weights)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li>double <a class="el" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a> (<a class="el" href="structapop__model.html">apop_model</a> *from, <a class="el" href="structapop__model.html">apop_model</a> *to, int draw_ct, gsl_rng *rng, <a class="el" href="structapop__model.html">apop_model</a> *top, <a class="el" href="structapop__model.html">apop_model</a> *bottom)
-<li>long double <a class="el" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> (double a, int p)
-<li>long double <a class="el" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> (double a, int p)
-<li>int <a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> (gsl_matrix *m, char semi)
-<li><a class="anchor" id="afc6ff60871ebd99031ac8355e427ab60"></a><!-- doxytag: member="apop_stats.c::vfabs" ref="afc6ff60871ebd99031ac8355e427ab60" args="(double *x)" -->
-void <b>vfabs</b> (double *x)
-<li>double <a class="el" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a> (gsl_matrix *m)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><b>Check_vw</b></td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a> (const gsl_vector *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a> (const gsl_vector *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> (const gsl_vector *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a> (const gsl_vector *in, const double mean)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a> (const gsl_vector *ina, const gsl_vector *inb)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a> (const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#a194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> (gsl_vector *in, gsl_vector **out, const char normalization_type)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#af6290c453c3012c1d0a6987688ebe795">apop_matrix_normalize</a> (gsl_matrix *data, const char row_or_col, const char normalization)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a> (const gsl_matrix *m)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#ga040b9e9fea1abe105de86081bf396d40">apop_matrix_mean</a> (const gsl_matrix *data)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__convenience__fns.html#gaf794cc2491ef147e0c67eb05feed7a87">apop_matrix_mean_and_var</a> (const gsl_matrix *data, double *mean, double *var)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__output.html#gaca60728fc3b691acfcadebf3a8535532">apop_data_summarize</a> (<a class="el" href="structapop__data.html">apop_data</a> *indata)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#aeb71737b8996eb15f7698246676a78dd">apop_vector_cov</a> (const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#aeae37a5bf11cddee59e272b083a4efc7">apop_data_covariance</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#afa3ab967f57f8ad3cfb99a4a82cfae02">apop_data_correlation</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#a97dac563372dff4430c21378a8fcee07">apop_kl_divergence</a> (<a class="el" href="structapop__model.html">apop_model</a> *from, <a class="el" href="structapop__model.html">apop_model</a> *to, int draw_ct, gsl_rng *rng)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#a2c76ad8792959b6605402a1d71a1b6c9">apop_multivariate_gamma</a> (double a, int p)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">long double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#a180b231acc3c64d07664ed2b1a8ad0e1">apop_multivariate_lngamma</a> (double a, int p)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#afc7707d44884aa63c298510a0662956a">apop_matrix_is_positive_semidefinite</a> (gsl_matrix *m, char semi)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="afc6ff60871ebd99031ac8355e427ab60"></a><!-- doxytag: member="apop_stats.c::vfabs" ref="afc6ff60871ebd99031ac8355e427ab60" args="(double *x)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>vfabs</b> (double *x)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__stats_8c.html#af1fc93322ffcb4e20cfc0b9af9e2aea0">apop_matrix_to_positive_semidefinite</a> (gsl_matrix *m)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Basic moments and some distributions. </p>
 </div><hr/><h2>Define Documentation</h2>
@@ -152,12 +150,12 @@ void <b>vfabs</b> (double *x)
 
 </div>
 </div>
-<a class="anchor" id="a10b4b9735a1475cfa5ebe2dd33686686"></a><!-- doxytag: member="apop_stats.c::apop_kl_divergence" ref="a10b4b9735a1475cfa5ebe2dd33686686" args="(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom)" -->
+<a class="anchor" id="a97dac563372dff4430c21378a8fcee07"></a><!-- doxytag: member="apop_stats.c::apop_kl_divergence" ref="a97dac563372dff4430c21378a8fcee07" args="(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double <a class="el" href="apop__stats_8c.html#a10b4b9735a1475cfa5ebe2dd33686686">apop_kl_divergence</a> </td>
+          <td class="memname">double <a class="el" href="apop__stats_8c.html#a97dac563372dff4430c21378a8fcee07">apop_kl_divergence</a> </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
           <td class="paramname"><em>from</em>, </td>
@@ -178,19 +176,7 @@ void <b>vfabs</b> (double *x)
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">gsl_rng *&#160;</td>
-          <td class="paramname"><em>rng</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>top</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td>
-          <td class="paramname"><em>bottom</em>&#160;</td>
+          <td class="paramname"><em>rng</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -201,15 +187,13 @@ void <b>vfabs</b> (double *x)
 </div>
 <div class="memdoc">
 <p>Kullback-Leibler divergence.</p>
-<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_77.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_20.png"/> and <img class="formulaInl" alt="$q$" src="form_78.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_79.png"/>.</p>
+<p>This measure of the divergence of one distribution from another has the form <img class="formulaInl" alt="$ D(p,q) = \sum_i \ln(p_i/q_i) p_i $" src="form_77.png"/>. Notice that it is not a distance, because there is an asymmetry between <img class="formulaInl" alt="$p$" src="form_19.png"/> and <img class="formulaInl" alt="$q$" src="form_78.png"/>, so one can expect that <img class="formulaInl" alt="$D(p, q) \neq D(q, p)$" src="form_79.png"/>.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
-    <tr><td class="paramname">from</td><td>the <img class="formulaInl" alt="$p$" src="form_20.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
+    <tr><td class="paramname">from</td><td>the <img class="formulaInl" alt="$p$" src="form_19.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">to</td><td>the <img class="formulaInl" alt="$q$" src="form_78.png"/> in the above formula. (No default; must not be <code>NULL</code>) </td></tr>
     <tr><td class="paramname">draw_ct</td><td>If I do the calculation via random draws, how many? (Default = 1e5) </td></tr>
-    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If NULL, I'll take care of the RNG; see <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>) </td></tr>
-    <tr><td class="paramname">top</td><td>deprecated synonym for <code>from</code>. </td></tr>
-    <tr><td class="paramname">bottom</td><td>deprecated synonym for <code>to</code>.</td></tr>
+    <tr><td class="paramname">rng</td><td>A <code>gsl_rng</code>. If <code>NULL</code> or number of threads is greater than 1, I'll take care of the RNG; see <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>. (Default = <code>NULL</code>)</td></tr>
   </table>
   </dd>
 </dl>
@@ -612,4 +596,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

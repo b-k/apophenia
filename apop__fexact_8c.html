@@ -34,48 +34,42 @@ urchinTracker();
 <div class="title">apop_fexact.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li><a class="anchor" id="a0b8714d6ef8673f674066dbe93cc62c8"></a><!-- doxytag: member="apop_fexact.c::i_real" ref="a0b8714d6ef8673f674066dbe93cc62c8" args="" -->
-#define <b>i_real</b>&#160;&#160;&#160;4
-<li><a class="anchor" id="aac7a62e9228cdaa3ad13255328c726ab"></a><!-- doxytag: member="apop_fexact.c::i_int" ref="aac7a62e9228cdaa3ad13255328c726ab" args="" -->
-#define <b>i_int</b>&#160;&#160;&#160;2
-<li><a class="anchor" id="a5fb608bc7255297a5fc1934443af3995"></a><!-- doxytag: member="apop_fexact.c::dwrk" ref="a5fb608bc7255297a5fc1934443af3995" args="" -->
-#define <b>dwrk</b>&#160;&#160;&#160;(equiv)
-<li><a class="anchor" id="a7433b75b46fead8c166c3e2e69bf9c4c"></a><!-- doxytag: member="apop_fexact.c::iwrk" ref="a7433b75b46fead8c166c3e2e69bf9c4c" args="" -->
-#define <b>iwrk</b>&#160;&#160;&#160;((int *)equiv)
-<li><a class="anchor" id="a1cdc4a69d32011d771cb5515a1dbbd64"></a><!-- doxytag: member="apop_fexact.c::rwrk" ref="a1cdc4a69d32011d771cb5515a1dbbd64" args="" -->
-#define <b>rwrk</b>&#160;&#160;&#160;((float *)equiv)
-</ul>
-<h2><a name="enum-members"></a>
-Enumerations</h2>
-<ul>
-<li>enum <b>Rboolean</b> { <b>FALSE</b> =  0, 
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0b8714d6ef8673f674066dbe93cc62c8"></a><!-- doxytag: member="apop_fexact.c::i_real" ref="a0b8714d6ef8673f674066dbe93cc62c8" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>i_real</b>&#160;&#160;&#160;4</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aac7a62e9228cdaa3ad13255328c726ab"></a><!-- doxytag: member="apop_fexact.c::i_int" ref="aac7a62e9228cdaa3ad13255328c726ab" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>i_int</b>&#160;&#160;&#160;2</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5fb608bc7255297a5fc1934443af3995"></a><!-- doxytag: member="apop_fexact.c::dwrk" ref="a5fb608bc7255297a5fc1934443af3995" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>dwrk</b>&#160;&#160;&#160;(equiv)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a7433b75b46fead8c166c3e2e69bf9c4c"></a><!-- doxytag: member="apop_fexact.c::iwrk" ref="a7433b75b46fead8c166c3e2e69bf9c4c" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>iwrk</b>&#160;&#160;&#160;((int *)equiv)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1cdc4a69d32011d771cb5515a1dbbd64"></a><!-- doxytag: member="apop_fexact.c::rwrk" ref="a1cdc4a69d32011d771cb5515a1dbbd64" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>rwrk</b>&#160;&#160;&#160;((float *)equiv)</td></tr>
+<tr><td colspan="2"><h2><a name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><b>Rboolean</b> { <b>FALSE</b> =  0, 
 <b>TRUE</b>
- }
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="anchor" id="a160488ed7fb533fe84efda5c8b4ed639"></a><!-- doxytag: member="apop_fexact.c::imax2" ref="a160488ed7fb533fe84efda5c8b4ed639" args="(int a, int b)" -->
-int <b>imax2</b> (int a, int b)
-<li><a class="anchor" id="a38485146ba26b5f2549bc1c65f81bd88"></a><!-- doxytag: member="apop_fexact.c::imin2" ref="a38485146ba26b5f2549bc1c65f81bd88" args="(int a, int b)" -->
-int <b>imin2</b> (int a, int b)
-<li><a class="anchor" id="a1768ac93a9c152c1566d6678dc9e4d7c"></a><!-- doxytag: member="apop_fexact.c::fmax2" ref="a1768ac93a9c152c1566d6678dc9e4d7c" args="(float a, float b)" -->
-float <b>fmax2</b> (float a, float b)
-<li><a class="anchor" id="a940793b0bbef98bb166e1c0e1fc2cc38"></a><!-- doxytag: member="apop_fexact.c::fmin2" ref="a940793b0bbef98bb166e1c0e1fc2cc38" args="(float a, float b)" -->
-float <b>fmin2</b> (float a, float b)
-<li><a class="anchor" id="a60ba8c341c320c30bc27a72b87f8cc99"></a><!-- doxytag: member="apop_fexact.c::prterr" ref="a60ba8c341c320c30bc27a72b87f8cc99" args="(int icode, const char *mes)" -->
-void <b>prterr</b> (int icode, const char *mes)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a> (<a class="el" href="structapop__data.html">apop_data</a> *intab)
-</ul>
-<h2><a name="var-members"></a>
-Variables</h2>
-<ul>
-<li><a class="anchor" id="a24658bfd004d05f737b069d3f9bebbde"></a><!-- doxytag: member="apop_fexact.c::has_error" ref="a24658bfd004d05f737b069d3f9bebbde" args="" -->
-threadlocal bool <b>has_error</b>
-</ul>
+ }</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a160488ed7fb533fe84efda5c8b4ed639"></a><!-- doxytag: member="apop_fexact.c::imax2" ref="a160488ed7fb533fe84efda5c8b4ed639" args="(int a, int b)" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>imax2</b> (int a, int b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a38485146ba26b5f2549bc1c65f81bd88"></a><!-- doxytag: member="apop_fexact.c::imin2" ref="a38485146ba26b5f2549bc1c65f81bd88" args="(int a, int b)" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>imin2</b> (int a, int b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1768ac93a9c152c1566d6678dc9e4d7c"></a><!-- doxytag: member="apop_fexact.c::fmax2" ref="a1768ac93a9c152c1566d6678dc9e4d7c" args="(float a, float b)" -->
+float&#160;</td><td class="memItemRight" valign="bottom"><b>fmax2</b> (float a, float b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a940793b0bbef98bb166e1c0e1fc2cc38"></a><!-- doxytag: member="apop_fexact.c::fmin2" ref="a940793b0bbef98bb166e1c0e1fc2cc38" args="(float a, float b)" -->
+float&#160;</td><td class="memItemRight" valign="bottom"><b>fmin2</b> (float a, float b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a60ba8c341c320c30bc27a72b87f8cc99"></a><!-- doxytag: member="apop_fexact.c::prterr" ref="a60ba8c341c320c30bc27a72b87f8cc99" args="(int icode, const char *mes)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>prterr</b> (int icode, const char *mes)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a> (<a class="el" href="structapop__data.html">apop_data</a> *intab)</td></tr>
+<tr><td colspan="2"><h2><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a24658bfd004d05f737b069d3f9bebbde"></a><!-- doxytag: member="apop_fexact.c::has_error" ref="a24658bfd004d05f737b069d3f9bebbde" args="" -->
+threadlocal bool&#160;</td><td class="memItemRight" valign="bottom"><b>has_error</b></td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>Fisher's exact test for contingency tables</p>
 <p>This file primarily consists of an algorithm from the ACM, fully documented below. The C code below was cut and pasted from the R project. Thanks, guys.</p>
@@ -124,4 +118,4 @@ threadlocal bool <b>has_error</b>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

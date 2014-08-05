@@ -34,60 +34,54 @@ urchinTracker();
 <div class="title">apop_data.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li><a class="anchor" id="a00f92dca5b99168cf3e80903ea0397a0"></a><!-- doxytag: member="apop_data.c::Set_gsl_handler" ref="a00f92dca5b99168cf3e80903ea0397a0" args="" -->
-#define <b>Set_gsl_handler</b>&#160;&#160;&#160;gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
-<li><a class="anchor" id="acfbcbb797586564ad3a93dae058f43e1"></a><!-- doxytag: member="apop_data.c::Unset_gsl_handler" ref="acfbcbb797586564ad3a93dae058f43e1" args="" -->
-#define <b>Unset_gsl_handler</b>&#160;&#160;&#160;gsl_set_error_handler(prior_handler);
-</ul>
-<h2><a name="typedef-members"></a>
-Typedefs</h2>
-<ul>
-<li><a class="anchor" id="a905abe294d4c6f82f5817a479352601f"></a><!-- doxytag: member="apop_data.c::apop_fn_ir" ref="a905abe294d4c6f82f5817a479352601f" args=")(apop_data *, void *)" -->
-typedef int(* <b>apop_fn_ir</b> )(<a class="el" href="structapop__data.html">apop_data</a> *, void *)
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> (const size_t size1, const size_t size2, const int size3)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> (const size_t size1, const size_t size2, const int size3)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> (gsl_matrix *m)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> (gsl_vector *v)
-<li>void <a class="el" href="apop__data_8c.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> (char ***freeme, int rows, int cols)
-<li>char <a class="el" href="apop__data_8c.html#a3e8377359d46c9bd02ea57205e7968d3">apop_data_free_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *freeme)
-<li>void <a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> (<a class="el" href="structapop__data.html">apop_data</a> *out, const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> (<a class="el" href="structapop__data.html">apop_data</a> *m1, <a class="el" href="structapop__data.html">apop_data</a> *m2, char posn, char inplace)
-<li><a class="el" href="structapop__data.html">apop_data</a> ** <a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int splitpoint, char r_or_c)
-<li>void <a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, int *drop)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char **colnames)
-<li>double * <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, int row, int col, const char *rowname, const char *colname, const char *page)
-<li>double <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const char *rowname, const char *colname, const char *page)
-<li><a class="anchor" id="ga39d2e5893f1631a7a1ef2d06f3925fe6"></a><!-- doxytag: member="apop_data.c::apop_gsl_error_for_set" ref="ga39d2e5893f1631a7a1ef2d06f3925fe6" args="(const char *reason, const char *file, int line, int gsl_errno)" -->
-void <b>apop_gsl_error_for_set</b> (const char *reason, const char *file, int line, int gsl_errno)
-<li>int <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page)
-<li>int <a class="el" href="apop__data_8c.html#a5acc9328f9c043be4cd6c12f57509df1">apop_data_set_row</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__data.html">apop_data</a> *row, int row_number)
-<li>void <a class="el" href="apop__data_8c.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char *name, double val)
-<li><a class="anchor" id="a1b050ee3cfbb8858576bca6ae07571df"></a><!-- doxytag: member="apop_data.c::apop_data_add_names_base" ref="a1b050ee3cfbb8858576bca6ae07571df" args="(apop_data *d, const char type, char const **names)" -->
-void <b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, const char type, char const **names)
-<li>int <a class="el" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col, const char *fmt,...)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, char transpose_text, char inplace)
-<li>gsl_matrix * <a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> (gsl_matrix *m, size_t newheight, size_t newwidth)
-<li>gsl_vector * <a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> (gsl_vector *v, size_t newheight)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char match)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *dataset, <a class="el" href="structapop__data.html">apop_data</a> *newpage, const char *title)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char free_p)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int *drop, apop_fn_ir do_drop, void *drop_parameter)
-</ul>
-<h2><a name="var-members"></a>
-Variables</h2>
-<ul>
-<li><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_data.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
-char * <b>apop_nul_string</b> = &quot;&quot;
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a00f92dca5b99168cf3e80903ea0397a0"></a><!-- doxytag: member="apop_data.c::Set_gsl_handler" ref="a00f92dca5b99168cf3e80903ea0397a0" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Set_gsl_handler</b>&#160;&#160;&#160;gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfbcbb797586564ad3a93dae058f43e1"></a><!-- doxytag: member="apop_data.c::Unset_gsl_handler" ref="acfbcbb797586564ad3a93dae058f43e1" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>Unset_gsl_handler</b>&#160;&#160;&#160;gsl_set_error_handler(prior_handler);</td></tr>
+<tr><td colspan="2"><h2><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a905abe294d4c6f82f5817a479352601f"></a><!-- doxytag: member="apop_data.c::apop_fn_ir" ref="a905abe294d4c6f82f5817a479352601f" args=")(apop_data *, void *)" -->
+typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><b>apop_fn_ir</b> )(<a class="el" href="structapop__data.html">apop_data</a> *, void *)</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> (const size_t size1, const size_t size2, const int size3)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> (const size_t size1, const size_t size2, const int size3)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> (gsl_matrix *m)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> (gsl_vector *v)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> (char ***freeme, int rows, int cols)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a3e8377359d46c9bd02ea57205e7968d3">apop_data_free_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *freeme)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a> (<a class="el" href="structapop__data.html">apop_data</a> *out, const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> (<a class="el" href="structapop__data.html">apop_data</a> *m1, <a class="el" href="structapop__data.html">apop_data</a> *m2, char posn, char inplace)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#aef0284036801cb75d465a1738f65397e">apop_data_split</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int splitpoint, char r_or_c)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a1312f6568cfe832f1e35f7f44482ffb4">apop_data_rm_columns</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, int *drop)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ad1efbe058d6ca85ece023eb471c66e58">apop_data_prune_columns_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char **colnames)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, int row, int col, const char *rowname, const char *colname, const char *page)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const char *rowname, const char *colname, const char *page)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga39d2e5893f1631a7a1ef2d06f3925fe6"></a><!-- doxytag: member="apop_data.c::apop_gsl_error_for_set" ref="ga39d2e5893f1631a7a1ef2d06f3925fe6" args="(const char *reason, const char *file, int line, int gsl_errno)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>apop_gsl_error_for_set</b> (const char *reason, const char *file, int line, int gsl_errno)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a5acc9328f9c043be4cd6c12f57509df1">apop_data_set_row</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, <a class="el" href="structapop__data.html">apop_data</a> *row, int row_number)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a44b767b375fb18f61f939c6869955331">apop_data_add_named_elmt</a> (<a class="el" href="structapop__data.html">apop_data</a> *d, char *name, double val)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b050ee3cfbb8858576bca6ae07571df"></a><!-- doxytag: member="apop_data.c::apop_data_add_names_base" ref="a1b050ee3cfbb8858576bca6ae07571df" args="(apop_data *d, const char type, char const **names)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, const char type, char const **names)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ac9c6f645acce82319fb85eb9d75112ba">apop_text_add</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col, const char *fmt,...)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, const size_t row, const size_t col)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a82281b8673cda3645054d7e061bb1167">apop_data_transpose</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, char transpose_text, char inplace)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#aa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> (gsl_matrix *m, size_t newheight, size_t newwidth)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_vector *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#af4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> (gsl_vector *v, size_t newheight)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a> (const <a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char match)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *dataset, <a class="el" href="structapop__data.html">apop_data</a> *newpage, const char *title)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a> (<a class="el" href="structapop__data.html">apop_data</a> *data, const char *title, const char free_p)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> (<a class="el" href="structapop__data.html">apop_data</a> *in, int *drop, apop_fn_ir do_drop, void *drop_parameter)</td></tr>
+<tr><td colspan="2"><h2><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_data.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
+char *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_nul_string</b> = &quot;&quot;</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The <a class="el" href="structapop__data.html">apop_data</a> structure joins together a gsl_matrix, <a class="el" href="structapop__name.html">apop_name</a>, and a table of strings. </p>
 </div><hr/><h2>Function Documentation</h2>
@@ -441,12 +435,15 @@ char * <b>apop_nul_string</b> = &quot;&quot;
 <ul>
 <li>If you want space allocated or are unsure about dimensions, use <a class="el" href="apop__data_8c.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>. </li>
 <li>If both <code>in</code> and <code>out</code> have a <code>more</code> pointer, also copy subsequent page(s). </li>
-<li>You can use the subsetting macros, <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> or <a class="el" href="apop_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>, to copy within a data set:</li>
+<li>You can use the subsetting macros, <a class="el" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a> or <a class="el" href="apop_8h.html#a585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a>, to copy within a data set:</li>
 </ul>
 <div class="fragment"><pre class="fragment"><span class="comment">//Copy the contents of row i of mydata to row j.</span>
-<a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, i, fromrow);
-<a class="code" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>(mydata, j, torow);
+<a class="code" href="structapop__data.html">apop_data</a> *fromrow = <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(mydata, i);
+<a class="code" href="structapop__data.html">apop_data</a> *torow = <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(mydata, j);
 <a class="code" href="apop_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>(torow, fromrow);
+
+<span class="comment">// or just</span>
+<a class="code" href="apop_8h.html#aa24d396c7fda38bc4ab03a3ba2db4943">apop_data_memcpy</a>(<a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(mydata, i), <a class="code" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(mydata, j));
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">out</td><td>A structure that this function will fill. Must be preallocated with the appropriate sizes. </td></tr>
@@ -632,7 +629,7 @@ char * <b>apop_nul_string</b> = &quot;&quot;
     <tr><td class="paramname">do_drop</td><td>A function that returns one for rows to drop and zero for rows to not drop. A sample function: <div class="fragment"><pre class="fragment">  <span class="keywordtype">int</span> your_drop_function(<a class="code" href="structapop__data.html">apop_data</a> *onerow, <span class="keywordtype">void</span> *extra_param){
     <span class="keywordflow">return</span> gsl_isnan(<a class="code" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(onerow)) || !strcmp(onerow-&gt;text[0][0], <span class="stringliteral">&quot;Uninteresting data point&quot;</span>);
   }
-</pre></div> <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> uses <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> <code>(onerow, .row=0, .col=0)</code>, which can help to keep things readable). </td></tr>
+</pre></div> <a class="el" href="apop__data_8c.html#ad6b6774d5ec4b12f0023e3afff7ccb65">apop_data_rm_rows</a> uses <a class="el" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a> to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> <code>(onerow, .row=0, .col=0)</code>, which can help to keep things readable). </td></tr>
     <tr><td class="paramname">drop_parameter</td><td>If your <code>do_drop</code> function requires additional input, put it here and it will be passed through.</td></tr>
   </table>
   </dd>
@@ -678,7 +675,7 @@ char * <b>apop_nul_string</b> = &quot;&quot;
       </table>
 </div>
 <div class="memdoc">
-<p>Now that you've used <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a> to pull a row from an <a class="el" href="gentle.html#apop_data">apop_data</a> set, this function lets you write that row to another position in the same data set or a different data set entirely.</p>
+<p>Now that you've used <a class="el" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a> to pull a row from an <a class="el" href="gentle.html#apop_data">apop_data</a> set, this function lets you write that row to another position in the same data set or a different data set entirely.</p>
 <p>The set written to must have the same form as the original: </p>
 <ul>
 <li>a vector element has to be present if one existed in the original, </li>
@@ -1170,4 +1167,4 @@ gsl_matrix *m;
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

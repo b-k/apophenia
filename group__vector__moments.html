@@ -32,26 +32,24 @@ urchinTracker();
 <div class="title">Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li>#define <a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)
-<li>#define <a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>double <a class="el" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> (const gsl_vector *in)
-<li>double <a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> (gsl_vector const *v, gsl_vector const *weights)
-<li>double <a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a> (const gsl_vector *in, const double mean)
-<li>double <a class="el" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a> (const gsl_vector *ina, const gsl_vector *inb)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#ga0f69c8414f1d93fa15f3a631710dcd7a">apop_mean</a>(in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gacc311abe133963c7959162a7d3d83fb8">apop_var</a>(in)&#160;&#160;&#160;<a class="el" href="apop__stats_8c.html#adcc397ab90933d79b3062206301a0aa0">apop_vector_var</a>(in)</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gac9d269f1dc62b038c0da72085cac1c28">apop_vector_skew</a> (const gsl_vector *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gaf5740c698174b1a265d182f4af1c0252">apop_vector_kurtosis</a> (const gsl_vector *in)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gafb284d668d567de4810620962043f827">apop_vector_skew_pop</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gaabe3183e8a6a496f3fd6ab316687381e">apop_vector_kurtosis_pop</a> (gsl_vector const *v, gsl_vector const *weights)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a> (const gsl_vector *in, const double mean)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__vector__moments.html#gae1154897fec0c56bc0161ed24c48759c">apop_vector_correlation</a> (const gsl_vector *ina, const gsl_vector *inb)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.</p>
 <dl class="see"><dt><b>See also:</b></dt><dd>db_moments</dd></dl>
-<p>For <a class="el" href="group__vector__moments.html#ga2446385225c68c62ade26402c63600a4">apop_vector_var_m</a><code>(vector, mean)</code>, <code>mean</code> is the mean of the vector. This saves the trouble of re-calculating the mean if you've already done so. E.g.,</p>
+<p>For <code>apop_vector_var_m(vector, mean)</code>, <code>mean</code> is the mean of the vector. This saves the trouble of re-calculating the mean if you've already done so. E.g.,</p>
 <div class="fragment"><pre class="fragment">gsl_vector *v;
 <span class="keywordtype">double</span> mean, var;
 
@@ -284,4 +282,4 @@ printf(<span class="stringliteral">&quot;Your vector has mean %g and variance %g
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

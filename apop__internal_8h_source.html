@@ -89,30 +89,32 @@ urchinTracker();
 <a name="l00058"></a>00058 <span class="preprocessor"></span><span class="preprocessor">#define PRAGMA(x) _Pragma(#x)</span>
 <a name="l00059"></a>00059 <span class="preprocessor"></span><span class="preprocessor">#define OMP_critical(tag) PRAGMA(omp critical ( tag ))</span>
 <a name="l00060"></a>00060 <span class="preprocessor"></span><span class="preprocessor">#define OMP_for(...) _Pragma(&quot;omp parallel for&quot;) for(__VA_ARGS__)</span>
-<a name="l00061"></a>00061 <span class="preprocessor"></span><span class="preprocessor">#else</span>
-<a name="l00062"></a>00062 <span class="preprocessor"></span><span class="preprocessor">#define OMP_critical(tag)</span>
-<a name="l00063"></a>00063 <span class="preprocessor"></span><span class="preprocessor">#define OMP_for(...) for(__VA_ARGS__)</span>
-<a name="l00064"></a>00064 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00065"></a>00065 <span class="preprocessor"></span>
-<a name="l00066"></a>00066 <span class="preprocessor">#include &quot;config.h&quot;</span>
-<a name="l00067"></a>00067 <span class="preprocessor">#ifndef HAVE___ATTRIBUTE__</span>
-<a name="l00068"></a>00068 <span class="preprocessor"></span><span class="preprocessor">#define __attribute__(...)</span>
-<a name="l00069"></a>00069 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00070"></a>00070 <span class="preprocessor"></span>
-<a name="l00071"></a>00071 <span class="preprocessor">#ifndef HAVE_ASPRINTF</span>
-<a name="l00072"></a>00072 <span class="preprocessor"></span><span class="preprocessor">#include &lt;stdarg.h&gt;</span>
-<a name="l00073"></a>00073 
-<a name="l00074"></a>00074 <span class="comment">//asprintf, vararg, &amp;c</span>
-<a name="l00075"></a>00075 <span class="keyword">extern</span> <span class="keywordtype">int</span> asprintf (<span class="keywordtype">char</span> **res, <span class="keyword">const</span> <span class="keywordtype">char</span> *format, ...)
-<a name="l00076"></a>00076        __attribute__ ((__format__ (__printf__, 2, 3)));
-<a name="l00077"></a>00077 extern <span class="keywordtype">int</span> vasprintf (<span class="keywordtype">char</span> **res, const <span class="keywordtype">char</span> *format, va_list args)
-<a name="l00078"></a>00078        __attribute__ ((__format__ (__printf__, 2, 0)));
-<a name="l00079"></a>00079 <span class="preprocessor">#endif</span>
-<a name="l00080"></a>00080 <span class="preprocessor"></span>
-<a name="l00081"></a>00081 <span class="preprocessor">#include &quot;<a class="code" href="apop_8h.html">apop.h</a>&quot;</span>
-<a name="l00082"></a>00082 <span class="keywordtype">void</span> add_info_criteria(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *m, <a class="code" href="structapop__model.html">apop_model</a> *est, <span class="keywordtype">double</span> ll); <span class="comment">//In apop_mle.c</span>
-<a name="l00083"></a>00083 
-<a name="l00084"></a>00084 <a class="code" href="structapop__model.html">apop_model</a> *maybe_prep(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *m, _Bool *is_a_copy); <span class="comment">//in apop_mcmc, for apop_update.</span>
+<a name="l00061"></a>00061 <span class="preprocessor"></span><span class="preprocessor">#define OMP_for_reduce(red, ...) PRAGMA(omp parallel for reduction( red )) for(__VA_ARGS__)</span>
+<a name="l00062"></a>00062 <span class="preprocessor"></span><span class="preprocessor">#else</span>
+<a name="l00063"></a>00063 <span class="preprocessor"></span><span class="preprocessor">#define OMP_critical(tag)</span>
+<a name="l00064"></a>00064 <span class="preprocessor"></span><span class="preprocessor">#define OMP_for(...) for(__VA_ARGS__)</span>
+<a name="l00065"></a>00065 <span class="preprocessor"></span><span class="preprocessor">#define OMP_for_reduce(...) for(__VA_ARGS__)</span>
+<a name="l00066"></a>00066 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00067"></a>00067 <span class="preprocessor"></span>
+<a name="l00068"></a>00068 <span class="preprocessor">#include &quot;config.h&quot;</span>
+<a name="l00069"></a>00069 <span class="preprocessor">#ifndef HAVE___ATTRIBUTE__</span>
+<a name="l00070"></a>00070 <span class="preprocessor"></span><span class="preprocessor">#define __attribute__(...)</span>
+<a name="l00071"></a>00071 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<a name="l00072"></a>00072 <span class="preprocessor"></span>
+<a name="l00073"></a>00073 <span class="preprocessor">#ifndef HAVE_ASPRINTF</span>
+<a name="l00074"></a>00074 <span class="preprocessor"></span><span class="preprocessor">#include &lt;stdarg.h&gt;</span>
+<a name="l00075"></a>00075 
+<a name="l00076"></a>00076 <span class="comment">//asprintf, vararg, &amp;c</span>
+<a name="l00077"></a>00077 <span class="keyword">extern</span> <span class="keywordtype">int</span> asprintf (<span class="keywordtype">char</span> **res, <span class="keyword">const</span> <span class="keywordtype">char</span> *format, ...)
+<a name="l00078"></a>00078        __attribute__ ((__format__ (__printf__, 2, 3)));
+<a name="l00079"></a>00079 extern <span class="keywordtype">int</span> vasprintf (<span class="keywordtype">char</span> **res, const <span class="keywordtype">char</span> *format, va_list args)
+<a name="l00080"></a>00080        __attribute__ ((__format__ (__printf__, 2, 0)));
+<a name="l00081"></a>00081 <span class="preprocessor">#endif</span>
+<a name="l00082"></a>00082 <span class="preprocessor"></span>
+<a name="l00083"></a>00083 <span class="preprocessor">#include &quot;<a class="code" href="apop_8h.html">apop.h</a>&quot;</span>
+<a name="l00084"></a>00084 <span class="keywordtype">void</span> add_info_criteria(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *m, <a class="code" href="structapop__model.html">apop_model</a> *est, <span class="keywordtype">double</span> ll, <span class="keywordtype">int</span> param_ct); <span class="comment">//In apop_mle.c</span>
+<a name="l00085"></a>00085 
+<a name="l00086"></a>00086 <a class="code" href="structapop__model.html">apop_model</a> *maybe_prep(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *m, _Bool *is_a_copy); <span class="comment">//in apop_mcmc, for apop_update.</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

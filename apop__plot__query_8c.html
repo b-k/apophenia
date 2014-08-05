@@ -29,36 +29,84 @@ urchinTracker();
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
-<div class="title">cmd/apop_plot_query.c File Reference</div>  </div>
+<div class="title">apop_plot_query.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="anchor" id="a1719c750931759f9769e8633f125efe2"></a><!-- doxytag: member="apop_plot_query.c::open_output" ref="a1719c750931759f9769e8633f125efe2" args="(char *outfile, int sf)" -->
-FILE * <b>open_output</b> (char *outfile, int sf)
-<li><a class="anchor" id="a75ac30e3b52edb3e2a4bf32cdbe284d4"></a><!-- doxytag: member="apop_plot_query.c::read_query" ref="a75ac30e3b52edb3e2a4bf32cdbe284d4" args="(char *infile)" -->
-char * <b>read_query</b> (char *infile)
-<li><a class="anchor" id="ac3279d39f10029cc8173818d4fa26f9b"></a><!-- doxytag: member="apop_plot_query.c::query" ref="ac3279d39f10029cc8173818d4fa26f9b" args="(char *d, char *q, int no_plot)" -->
-gsl_matrix * <b>query</b> (char *d, char *q, int no_plot)
-<li><a class="anchor" id="a4cef599db559c16345102b2a16626006"></a><!-- doxytag: member="apop_plot_query.c::print_out" ref="a4cef599db559c16345102b2a16626006" args="(FILE *f, char *outfile, gsl_matrix *m)" -->
-void <b>print_out</b> (FILE *f, char *outfile, gsl_matrix *m)
-<li><a class="anchor" id="a3c04138a5bfe5d72780bb7e82a18e627"></a><!-- doxytag: member="apop_plot_query.c::main" ref="a3c04138a5bfe5d72780bb7e82a18e627" args="(int argc, char **argv)" -->
-int <b>main</b> (int argc, char **argv)
-</ul>
-<h2><a name="var-members"></a>
-Variables</h2>
-<ul>
-<li><a class="anchor" id="a069e0b55cf88833c0b48958d0cc3ff53"></a><!-- doxytag: member="apop_plot_query.c::plot_type" ref="a069e0b55cf88833c0b48958d0cc3ff53" args="" -->
-char * <b>plot_type</b> = NULL
-<li><a class="anchor" id="ad5a24ab23321c2dea146c9e73d8c8dc0"></a><!-- doxytag: member="apop_plot_query.c::histobins" ref="ad5a24ab23321c2dea146c9e73d8c8dc0" args="" -->
-int <b>histobins</b> = 0
-<li><a class="anchor" id="ada77ca668f1549c94168095fc0379a67"></a><!-- doxytag: member="apop_plot_query.c::histoplotting" ref="ada77ca668f1549c94168095fc0379a67" args="" -->
-int <b>histoplotting</b> = 0
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__plot__query_8c.html#a7faae961cb03d58e7593f73b41347add">plot_histogram</a> (gsl_vector *data, FILE *f, size_t bin_count, char *with)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1719c750931759f9769e8633f125efe2"></a><!-- doxytag: member="apop_plot_query.c::open_output" ref="a1719c750931759f9769e8633f125efe2" args="(char *outfile, int sf)" -->
+FILE *&#160;</td><td class="memItemRight" valign="bottom"><b>open_output</b> (char *outfile, int sf)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a75ac30e3b52edb3e2a4bf32cdbe284d4"></a><!-- doxytag: member="apop_plot_query.c::read_query" ref="a75ac30e3b52edb3e2a4bf32cdbe284d4" args="(char *infile)" -->
+char *&#160;</td><td class="memItemRight" valign="bottom"><b>read_query</b> (char *infile)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ac3279d39f10029cc8173818d4fa26f9b"></a><!-- doxytag: member="apop_plot_query.c::query" ref="ac3279d39f10029cc8173818d4fa26f9b" args="(char *d, char *q, int no_plot)" -->
+gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><b>query</b> (char *d, char *q, int no_plot)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4cef599db559c16345102b2a16626006"></a><!-- doxytag: member="apop_plot_query.c::print_out" ref="a4cef599db559c16345102b2a16626006" args="(FILE *f, char *outfile, gsl_matrix *m)" -->
+void&#160;</td><td class="memItemRight" valign="bottom"><b>print_out</b> (FILE *f, char *outfile, gsl_matrix *m)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3c04138a5bfe5d72780bb7e82a18e627"></a><!-- doxytag: member="apop_plot_query.c::main" ref="a3c04138a5bfe5d72780bb7e82a18e627" args="(int argc, char **argv)" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>main</b> (int argc, char **argv)</td></tr>
+<tr><td colspan="2"><h2><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a069e0b55cf88833c0b48958d0cc3ff53"></a><!-- doxytag: member="apop_plot_query.c::plot_type" ref="a069e0b55cf88833c0b48958d0cc3ff53" args="" -->
+char *&#160;</td><td class="memItemRight" valign="bottom"><b>plot_type</b> = NULL</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad5a24ab23321c2dea146c9e73d8c8dc0"></a><!-- doxytag: member="apop_plot_query.c::histobins" ref="ad5a24ab23321c2dea146c9e73d8c8dc0" args="" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>histobins</b> = 0</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ada77ca668f1549c94168095fc0379a67"></a><!-- doxytag: member="apop_plot_query.c::histoplotting" ref="ada77ca668f1549c94168095fc0379a67" args="" -->
+int&#160;</td><td class="memItemRight" valign="bottom"><b>histoplotting</b> = 0</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
-<div class="textblock"><p>Command line utility to take in a query and put out a Gnuplottable file.</p>
+<div class="textblock"><p>Command line utility to take in a query and produce a plot of its output via Gnuplot.</p>
 <p>Copyright (c) 2006--2007 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
-</div></div><!-- contents -->
+</div><hr/><h2>Function Documentation</h2>
+<a class="anchor" id="a7faae961cb03d58e7593f73b41347add"></a><!-- doxytag: member="apop_plot_query.c::plot_histogram" ref="a7faae961cb03d58e7593f73b41347add" args="(gsl_vector *data, FILE *f, size_t bin_count, char *with)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="apop__plot__query_8c.html#a7faae961cb03d58e7593f73b41347add">plot_histogram</a> </td>
+          <td>(</td>
+          <td class="paramtype">gsl_vector *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">FILE *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>bin_count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>with</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>This convenience function will take in a <code>gsl_vector</code> of data and put out a histogram, ready to pipe to Gnuplot.</p>
+<dl class="params"><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>A <code>gsl_vector</code> holding the data. Do not pre-sort or bin; this function does that for you via apop_data_to_bins. </td></tr>
+    <tr><td class="paramname">bin_count</td><td>The number of bins in the output histogram (if you send zero, I set this to <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>, where <img class="formulaInl" alt="$N$" src="form_6.png"/> is the length of the vector.) </td></tr>
+    <tr><td class="paramname">with</td><td>The method for Gnuplot's plotting routine. Default is <code>"boxes"</code>, so the gnuplot call will read <code>plot '-' with boxes</code>. The <code>"lines"</code> option is also popular, and you can add extra terms if desired, like <code> "boxes linetype 3"</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

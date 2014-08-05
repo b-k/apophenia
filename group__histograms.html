@@ -31,13 +31,13 @@ urchinTracker();
 <div class="title">The GSL's histograms and Apophenia's PMFs.</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="group__histograms.html#ga12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit</a> (<a class="el" href="structapop__model.html">apop_model</a> *observed, <a class="el" href="structapop__model.html">apop_model</a> *expected)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> (<a class="el" href="structapop__model.html">apop_model</a> *m1, <a class="el" href="structapop__model.html">apop_model</a> *m2)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__histograms.html#ga12a8860fd05be2540b701fe7ec5acae4">apop_model_to_pmf</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, <a class="el" href="structapop__data.html">apop_data</a> *binspec, long int draws, int bin_count, gsl_rng *rng)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__histograms.html#gad999220164049ce7b22d2cd11bf74c26">apop_histograms_test_goodness_of_fit</a> (<a class="el" href="structapop__model.html">apop_model</a> *observed, <a class="el" href="structapop__model.html">apop_model</a> *expected)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> (<a class="el" href="structapop__model.html">apop_model</a> *m1, <a class="el" href="structapop__model.html">apop_model</a> *m2)</td></tr>
+</table>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="gad999220164049ce7b22d2cd11bf74c26"></a><!-- doxytag: member="apop_hist.c::apop_histograms_test_goodness_of_fit" ref="gad999220164049ce7b22d2cd11bf74c26" args="(apop_model *observed, apop_model *expected)" -->
 <div class="memitem">
@@ -65,7 +65,7 @@ Functions</h2>
 <div class="memdoc">
 <p>Test the goodness-of-fit between two <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a> models.</p>
 <p>If you send two histograms, I assume that the histograms are synced: for PMFs, you've used <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a> to generate two histograms using the same binspec, or you've used <a class="el" href="apop_8h.html#acc90578a8086a2e6f7b1575300260f08">apop_data_pmf_compress</a> to guarantee that each observation value appears exactly once in each data set.</p>
-<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
+<p>In any case, you are confident that all values in the <code>observed</code> set appear in the <code>expected</code> set with nonzero weight; otherwise this will return a <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/> statistic of <code>GSL_POSINF</code>, indicating that it is impossible for the <code>observed</code> data to have been drawn from the <code>expected</code> distribution.</p>
 <ul>
 <li>If an observation row has weight zero, I skip it. if <code>apop_opts.verbose &gt;=1 </code> I will show a warning. </li>
 </ul>
@@ -121,7 +121,7 @@ Functions</h2>
     <tr><td class="paramname">binspec</td><td>A description of the bins in which to place the draws; see <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>. (default: as in <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>.) </td></tr>
     <tr><td class="paramname">model</td><td>The model to be drawn from. Because this function works via random draws, the model needs to have a <code>draw</code> method. (No default) </td></tr>
     <tr><td class="paramname">draws</td><td>The number of random draws to make. (arbitrary default = 10,000) </td></tr>
-    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_18.png"/>) </td></tr>
+    <tr><td class="paramname">bin_count</td><td>If no bin spec, the number of bins to use (default: as per <a class="el" href="apop__hist_8c.html#a02cef4243593cf905fa54cb48d8b04c2">apop_data_to_bins</a>, <img class="formulaInl" alt="$\sqrt(N)$" src="form_17.png"/>) </td></tr>
     <tr><td class="paramname">rng</td><td>The <code>gsl_rng</code> used to make random draws. (default: an RNG from <a class="el" href="apop_8h.html#a1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread</a>)</td></tr>
   </table>
   </dd>
@@ -171,7 +171,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value from the Kolmogorov-Smirnov test that the two distributions are equal.</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An <a class="el" href="gentle.html#apop_data">apop_data</a> set including the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value from the Kolmogorov-Smirnov test that the two distributions are equal.</dd></dl>
 <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
   <table class="exception">
     <tr><td class="paramname">out-&gt;error='m'</td><td>Model error: <code>m1</code> is not an <a class="el" href="group__models.html#gaca8f3323c57e0223a9f3c0f991c9760e">apop_pmf</a>. I verify this by checking whether <code>m1-&gt;cdf == apop_pmf-&gt;cdf</code>.</td></tr>
@@ -230,4 +230,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

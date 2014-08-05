@@ -65,8 +65,8 @@ urchinTracker();
     <span class="comment">//pull the data from the database, converting it into a table along the way. </span>
     <a class="code" href="structapop__data.html">apop_data</a> *m  = <a class="code" href="apop_8h.html#aebe17fe6f2b0c49c0c90824b7a68ff90">apop_db_to_crosstab</a>(<span class="stringliteral">&quot;samples&quot;</span>, <span class="stringliteral">&quot;iteration&quot;</span>,<span class="stringliteral">&quot;process&quot;</span>, <span class="stringliteral">&quot;value&quot;</span>);
 
-    <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 0, v1); <span class="comment">//get vector views of the two table columns.</span>
-    <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(m, 1, v2);
+    gsl_vector *v1 = <a class="code" href="apop_8h.html#a825321182fbaa7471069f13447170810">Apop_cv</a>(m, 0); <span class="comment">//get vector views of the two table columns.</span>
+    gsl_vector *v2 = <a class="code" href="apop_8h.html#a825321182fbaa7471069f13447170810">Apop_cv</a>(m, 1);
 
     <span class="comment">//Output a table of means/variances, and t-test results.</span>
     printf(<span class="stringliteral">&quot;\t   mean\t\t   var\n&quot;</span>);
@@ -76,30 +76,7 @@ urchinTracker();
     <a class="code" href="group__output.html#ga9a30c437ec11a11e37e0db7f82386275">apop_data_show</a>(<a class="code" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a>(v1, v2));
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(m, <span class="stringliteral">&quot;the_data.txt&quot;</span>);
 }
-</pre></div><p>A demonstration of <a class="el" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a> . You'll need a database from the {<em>Modeling</em> with Data} sample code, at <a href="http://modelingwithdata.org/appendices.html">http://modelingwithdata.org/appendices.html</a>.</p>
-<div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
-
-<span class="keywordtype">int</span> main(){
-    <span class="keywordtype">char</span> outfile[] = <span class="stringliteral">&quot;scatter.gplot&quot;</span>;
-
-    <a class="code" href="apop_8h.html#a4d81aff912df2982697038c51795e358">apop_db_open</a>(<span class="stringliteral">&quot;data-metro.db&quot;</span>);
-    <a class="code" href="structapop__data.html">apop_data</a> *data = <a class="code" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>(<span class="stringliteral">&quot;select riders, year from riders where station like &#39;Silver%%&#39; and riders&gt;0&quot;</span>);
-    <a class="code" href="apop_8h.html#acf205f62e9432fe293b05c077d1b61d4">apop_db_close</a>();
-
-    <span class="comment">//The regression destroys your data, so copy it first.</span>
-    <a class="code" href="structapop__data.html">apop_data</a> *data_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(data);
-
-    <span class="comment">//Run OLS, display results on terminal</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *est = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(data, apop_OLS);
-    apop_model_show(est);
-
-    <span class="comment">//Prep the file with a header, then call the function.</span>
-    FILE *f = fopen(outfile, <span class="stringliteral">&quot;w&quot;</span>);
-    fprintf(f,<span class="stringliteral">&quot;set term postscript;\n set output \&quot;scatter.eps\&quot;\n set yrange [0:*]\n&quot;</span>);
-    <a class="code" href="group__output.html#ga0db4cee7586798d4fcdff8ebf67dd0b3">apop_plot_line_and_scatter</a>(data_copy, est, .output_pipe=f);
-    fclose(f);
-}
-</pre></div><p>In the <a class="el" href="outline.html">An outline of the library</a> section on map/apply, a new <img class="formulaInl" alt="$t$" src="form_11.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
+</pre></div><p>In the <a class="el" href="outline.html">An outline of the library</a> section on map/apply, a new <img class="formulaInl" alt="$t$" src="form_44.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">double</span> row_offset;
@@ -117,7 +94,7 @@ gsl_rng *r;
     r = <a class="code" href="group__convenience__fns.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);
     <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){
         row_offset = gsl_rng_uniform(r)*2 -1;
-        <a class="code" href="apop_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, i, onerow);
+        Apop_row_v(d, i, onerow);
         <a class="code" href="group__mapply.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(onerow, offset_rng);
     }
 
@@ -251,4 +228,4 @@ gsl_rng *r;
 }
 </pre></div> </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

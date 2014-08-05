@@ -31,16 +31,16 @@ urchinTracker();
 <div class="title">apop_tests.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a> (gsl_vector *a, gsl_vector *b)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a> (gsl_vector *a, gsl_vector *b)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="el" href="structapop__model.html">apop_model</a> *est, <a class="el" href="structapop__data.html">apop_data</a> *contrast)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> (<a class="el" href="structapop__data.html">apop_data</a> *d)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a> (char *table, char *data, char *grouping1, char *grouping2)
-<li>double <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> (double statistic, char *distribution, double p1, double p2, char tail)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ttest.html#ga65c94b79fe91308dc97829741acc9322">apop_t_test</a> (gsl_vector *a, gsl_vector *b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ttest.html#ga0ae576fb823e38f7b6f2ce1892e4b014">apop_paired_t_test</a> (gsl_vector *a, gsl_vector *b)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__tests_8c.html#a1902b3fd6a6682d1453a80b788e44ebb">apop_f_test</a> (<a class="el" href="structapop__model.html">apop_model</a> *est, <a class="el" href="structapop__data.html">apop_data</a> *contrast)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__asst__tests.html#ga12b92b7494f4e24d2f47244e3792d566">apop_test_anova_independence</a> (<a class="el" href="structapop__data.html">apop_data</a> *d)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a> (char *table, char *data, char *grouping1, char *grouping2)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> (double statistic, char *distribution, double p1, double p2, char tail)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"></div><hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a1309242dbb7f148916c71a9a70c6b64c"></a><!-- doxytag: member="apop_tests.c::apop_anova" ref="a1309242dbb7f148916c71a9a70c6b64c" args="(char *table, char *data, char *grouping1, char *grouping2)" -->
@@ -190,12 +190,12 @@ Functions</h2>
       </table>
 </div>
 <div class="memdoc">
-<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model---in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
+<p>This is a convenience function to do the lookup of a given statistic along a given distribution. You give me a statistic, its (hypothesized) distribution, and whether to use the upper tail, lower tail, or both. I will return the odds of a Type I error given the model---in statistician jargon, the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value. [Type I error: odds of rejecting the null hypothesis when it is true.]</p>
 <p>For example, </p>
 <div class="fragment"><pre class="fragment">   <a class="code" href="apop_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3);
 </pre></div><p>will return the density of the standard Normal distribution that is more than 1.3 from zero. If this function returns a small value, we can be confident that the statistic is significant. Or, </p>
 <div class="fragment"><pre class="fragment">   <a class="code" href="apop_8h.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>(1.3, <span class="stringliteral">&quot;t&quot;</span>, 10, tail=<span class="charliteral">&#39;u&#39;</span>);
-</pre></div><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_11.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_11.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
+</pre></div><p>will give the appropriate odds for an upper-tailed test using the <img class="formulaInl" alt="$t$" src="form_44.png"/>-distribution with 10 degrees of freedom (e.g., a <img class="formulaInl" alt="$t$" src="form_44.png"/>-test of the null hypothesis that the statistic is less than or equal to zero).</p>
 <p>Several more distributions are supported; see below.</p>
 <ul>
 <li>For a two-tailed test (the default), this returns the density outside the range. I'll only do this for symmetric distributions. </li>
@@ -212,7 +212,7 @@ Functions</h2>
   </table>
   </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_20.png"/>-value).</dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>The odds of a Type I error given the model (the <img class="formulaInl" alt="$p$" src="form_19.png"/>-value).</dd></dl>
 <p>Here is a list of distributions you can use, and their parameters.</p>
 <p><code>"normal"</code> or <code>"gaussian"</code> </p>
 <ul>
@@ -241,7 +241,7 @@ Functions</h2>
 <ul>
 <li>p1=df </li>
 <li>no default </li>
-<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_20.png"/>-value for typical cases)</li>
+<li>One-tailed tests only; default='u' ( <img class="formulaInl" alt="$p$" src="form_19.png"/>-value for typical cases)</li>
 </ul>
 <p><code>"f"</code> </p>
 <ul>
@@ -257,4 +257,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

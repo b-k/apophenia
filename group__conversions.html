@@ -31,17 +31,17 @@ urchinTracker();
 <div class="title">Conversion functions</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>gsl_vector * <a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)
-<li>gsl_matrix * <a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)
-<li>void <a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)
-<li>gsl_vector * <a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)
-<li>int <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters, char if_table_exists)
-<li>int <a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_vector *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> (double *in, int size)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_matrix *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a> (const gsl_vector *in, char row_col)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> (char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> (const gsl_vector *in, <a class="el" href="structapop__data.html">apop_data</a> *d, char use_info_pages)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">gsl_vector *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#ga7e31798ab418cbfc7488eaba27dad2af">apop_data_pack</a> (const <a class="el" href="structapop__data.html">apop_data</a> *in, gsl_vector *out, char all_pages, char use_info_pages)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> (char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, <a class="el" href="structapop__data.html">apop_data</a> *field_params, char *table_params, char const *delimiters, char if_table_exists)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__conversions.html#ga43aa7a723adab7a592a5e52961b338df">apop_data_to_db</a> (const <a class="el" href="structapop__data.html">apop_data</a> *set, const char *tabname, const char output_append)</td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <p>The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays. </p>
 
@@ -134,7 +134,7 @@ Functions</h2>
   <table class="params">
     <tr><td class="paramname">in</td><td>an <code><a class="el" href="structapop__data.html">apop_data</a></code> set. No default; if <code>NULL</code>, return <code>NULL</code>. </td></tr>
     <tr><td class="paramname">out</td><td>If this is not <code>NULL</code>, then put the output here. The dimensions must match exactly. If <code>NULL</code>, then allocate a new data set. Default = <code>NULL</code>. </td></tr>
-    <tr><td class="paramname">all_pages</td><td>If <code>'y'</code>, then follow the <code> -&gt;more</code> pointer to fill subsequent pages; else fill only the first page. Informational pages will still be ignored, unless you set <code>.use_info_pages='y'</code> as well. Default = <code>'n'</code>. </td></tr>
+    <tr><td class="paramname">all_pages</td><td>If <code>'y'</code>, then follow the <code> -&gt;more</code> pointer to fill subsequent pages; else fill only the first page. Informational pages will still be ignored, unless you set <code>.use_info_pages='y'</code> as well. Default = <code>'y'</code>. </td></tr>
     <tr><td class="paramname">use_info_pages</td><td>Pages in XML-style brackets, such as <code>&lt;Covariance&gt;</code> will be ignored unless you set <code>.use_info_pages='y'</code>. Be sure that this is set to the same thing when you both pack and unpack. Default: <code>'n'</code>.</td></tr>
   </table>
   </dd>
@@ -484,4 +484,4 @@ Functions</h2>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

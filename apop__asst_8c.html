@@ -34,38 +34,32 @@ urchinTracker();
 <div class="title">apop_asst.c File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<h2><a name="define-members"></a>
-Defines</h2>
-<ul>
-<li><a class="anchor" id="a8750ed6982fcba489a502ef79f023095"></a><!-- doxytag: member="apop_asst.c::omp_threadnum" ref="a8750ed6982fcba489a502ef79f023095" args="" -->
-#define <b>omp_threadnum</b>&#160;&#160;&#160;0
-</ul>
-<h2><a name="typedef-members"></a>
-Typedefs</h2>
-<ul>
-<li><a class="anchor" id="acd2c6f981f48df8c054b3469e958d316"></a><!-- doxytag: member="apop_asst.c::apop_fn_riip" ref="acd2c6f981f48df8c054b3469e958d316" args=")(apop_data *, int, int, void *)" -->
-typedef int(* <b>apop_fn_riip</b> )(<a class="el" href="structapop__data.html">apop_data</a> *, int, int, void *)
-</ul>
-<h2><a name="func-members"></a>
-Functions</h2>
-<ul>
-<li>char * <a class="el" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)
-<li>double <a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a> (int N, double s)
-<li>int <a class="el" href="apop__asst_8c.html#a153362f8a4c7f64e0c8dad893edadea4">apop_system</a> (const char *fmt,...)
-<li>double * <a class="el" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> (gsl_vector *data, char rounding)
-<li>int <a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> (const char *string, const char *regex, <a class="el" href="structapop__data.html">apop_data</a> **substrings, const char use_case)
-<li>double <a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)
-<li><a class="el" href="structapop__model.html">apop_model</a> * <a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)
-<li><a class="anchor" id="a72d8c995400d75922553d463f4b2b890"></a><!-- doxytag: member="apop_asst.c::apop_rng_get_thread_base" ref="a72d8c995400d75922553d463f4b2b890" args="(int thread)" -->
-gsl_rng * <b>apop_rng_get_thread_base</b> (int thread)
-<li><a class="el" href="structapop__data.html">apop_data</a> * <a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, <a class="el" href="structapop__data.html">apop_data</a> *draws)
-</ul>
-<h2><a name="var-members"></a>
-Variables</h2>
-<ul>
-<li><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_asst.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
-char * <b>apop_nul_string</b>
-</ul>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="define-members"></a>
+Defines</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a8750ed6982fcba489a502ef79f023095"></a><!-- doxytag: member="apop_asst.c::omp_threadnum" ref="a8750ed6982fcba489a502ef79f023095" args="" -->
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>omp_threadnum</b>&#160;&#160;&#160;0</td></tr>
+<tr><td colspan="2"><h2><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd2c6f981f48df8c054b3469e958d316"></a><!-- doxytag: member="apop_asst.c::apop_fn_riip" ref="acd2c6f981f48df8c054b3469e958d316" args=")(apop_data *, int, int, void *)" -->
+typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><b>apop_fn_riip</b> )(<a class="el" href="structapop__data.html">apop_data</a> *, int, int, void *)</td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#a28097fab95794bb0146de61f8461b843">apop_text_paste</a> (<a class="el" href="structapop__data.html">apop_data</a> const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#aeae8cdce5cd08d8ea29006c51b697ca5">apop_generalized_harmonic</a> (int N, double s)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#a153362f8a4c7f64e0c8dad893edadea4">apop_system</a> (const char *fmt,...)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#afb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> (gsl_vector *data, char rounding)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#aa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> (const char *string, const char *regex, <a class="el" href="structapop__data.html">apop_data</a> **substrings, const char use_case)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#aaf0d5d65f514d9894a4ca5b0e8755873">apop_rng_GHgB3</a> (gsl_rng *r, double *a)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#a69adca14afc66100168f585e05b59dcb">apop_beta_from_mean_var</a> (double m, double v)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a72d8c995400d75922553d463f4b2b890"></a><!-- doxytag: member="apop_asst.c::apop_rng_get_thread_base" ref="a72d8c995400d75922553d463f4b2b890" args="(int thread)" -->
+gsl_rng *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_rng_get_thread_base</b> (int thread)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop__asst_8c.html#a4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a> (<a class="el" href="structapop__model.html">apop_model</a> *model, int count, <a class="el" href="structapop__data.html">apop_data</a> *draws)</td></tr>
+<tr><td colspan="2"><h2><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a201b1c20fa5fc477ace17b83e559cc7c"></a><!-- doxytag: member="apop_asst.c::apop_nul_string" ref="a201b1c20fa5fc477ace17b83e559cc7c" args="" -->
+char *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_nul_string</b></td></tr>
+</table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><p>The odds and ends bin. Copyright (c) 2005--2007, 2010 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2. </p>
 </div><hr/><h2>Function Documentation</h2>
@@ -547,4 +541,4 @@ char * <b>apop_nul_string</b>
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>

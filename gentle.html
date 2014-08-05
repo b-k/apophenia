@@ -177,31 +177,36 @@ apop_data</h2>
 </table>
 <p>Apophenia will generally assume that one row across all of these elements describes a single observation or data point.</p>
 <p>See above for some examples of getting and setting individual elements.</p>
-<p>Also, <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>, <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>, and <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> consider the vector to be the -1st column, so using the data set in the figure, <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a><code>(sample_set, .row=0, .col=-1) == 1</code>.</p>
+<p>Also, <a class="el" href="group__data__set__get.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>, <a class="el" href="group__data__set__get.html#gaea55629952c595bc8211d3333077dc51">apop_data_set</a>, and <a class="el" href="group__data__set__get.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> consider the vector to be the -1st column, so using the data set in the figure, <code>apop_data_get(sample_set, .row=0, .col=-1) == 1</code>.</p>
 <dl class="user"><dt><b>Reading in data</b></dt><dd></dd></dl>
 <p>As per the example above, use <a class="el" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> or <a class="el" href="group__conversions.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> and then <a class="el" href="group__queries.html#gade862993166c6482f53562fb77721db9">apop_query_to_data</a>.</p>
 <dl class="user"><dt><b>Subsets</b></dt><dd></dd></dl>
 <p>There are many macros to get subsets of the data. Each generates what is considered to be a disposable view: once the variable goes out of scope (by the usual C rules of scoping), it is no longer valid. However, these structures are all wrappers for pointers to the base data, so all operations on the data view affect the base data.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
+<span class="preprocessor">#ifdef Datadir</span>
+<span class="preprocessor"></span><span class="preprocessor">#define DATAFILE Datadir &quot;/&quot; &quot;data&quot;</span>
+<span class="preprocessor"></span><span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="preprocessor">#define DATAFILE &quot;data&quot;</span>
+<span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
 <span class="keywordtype">int</span> main(){
-    <a class="code" href="apop_8h.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a>(<span class="stringliteral">&quot;data&quot;</span>, <span class="charliteral">&#39;d&#39;</span>);
-    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;data&quot;</span>);
+    <a class="code" href="apop_8h.html#a01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a>( DATAFILE , <span class="charliteral">&#39;d&#39;</span>);
+    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__conversions.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>( DATAFILE );
   
     <span class="comment">//tally row zero of the data set&#39;s matrix by viewing it as a vector:</span>
-    <a class="code" href="apop_8h.html#a39fd40c5f39795c077716dbaf122d270">Apop_row_v</a>(d, 0, one_row);
+    gsl_vector *one_row = <a class="code" href="apop_8h.html#a314f28de914dfe6e45170e09d71d5429">Apop_rv</a>(d, 0);
     <span class="keywordtype">double</span> sigma = <a class="code" href="group__convenience__fns.html#gaf6182181dd424bc4de98b4bfbd349b4e">apop_vector_sum</a>(one_row);
     printf(<span class="stringliteral">&quot;Sum of the first row: %g\n&quot;</span>, sigma);
     assert(sigma==14);
   
     <span class="comment">//view the first column as a vector; take its mean</span>
-    <a class="code" href="apop_8h.html#a4d7938112c815272f9737685bf128ccb">Apop_col_v</a>(d, 0, one_col);
-    <span class="keywordtype">double</span> mu = <a class="code" href="apop_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(one_col);
+    <span class="keywordtype">double</span> mu = <a class="code" href="apop_8h.html#ab20e5ad95df0f24a1ea06294695031a8">apop_vector_mean</a>(<a class="code" href="apop_8h.html#a825321182fbaa7471069f13447170810">Apop_cv</a>(d, 0));
     printf(<span class="stringliteral">&quot;Mean of the first col: %g\n&quot;</span>, mu);
     assert(fabs(mu - 19./6)&lt;1e-5);
   
     <span class="comment">//get a sub-data set (with names) of two rows beginning at row 3; print to screen</span>
-    <a class="code" href="apop_8h.html#aad1642d90f82ef1f5870a2de4e807005">Apop_rows</a>(d, 3, 2, six_elmts);
+    <a class="code" href="structapop__data.html">apop_data</a> *six_elmts = <a class="code" href="apop_8h.html#a585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a>(d, 3, 2);
     <a class="code" href="group__apop__print.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(six_elmts);
 }
 </pre></div><p>All of these slicing routines are macros, because they generate several background variables in the current scope (something a function can't do). Traditional custom is to put macro names in all caps, like <code>APOP_DATA_ROWS</code>, which to modern sensibilities looks like yelling. The custom has a logic: there are ways to hang yourself with macros, so it is worth distinguishing them typographically. The documentation always uses a single capital.</p>
@@ -222,7 +227,7 @@ apop_data</h2>
 <div class="image">
 <img src="http://apophenia.info/structs.png" alt="structs.png"/>
 </div>
- <p>All of the elements of the <a class="el" href="gentle.html#apop_data">apop_data</a> structure are laid out at middle-left. You have already met the vector, matrix, and weights, which are all a <code>gsl_vector</code> or <code>gsl_matrix</code>.</p>
+<p>All of the elements of the <a class="el" href="gentle.html#apop_data">apop_data</a> structure are laid out at middle-left. You have already met the vector, matrix, and weights, which are all a <code>gsl_vector</code> or <code>gsl_matrix</code>.</p>
 <p>The diagram shows the <a class="el" href="structapop__name.html">apop_name</a> structure, which has received little mention so far because names basically take care of themselves. Just use <a class="el" href="apop_8h.html#aeca6159c82c21da0db82ae9ed0582dc6">apop_data_add_names</a> to add names to your data set and <a class="el" href="apop__name_8c.html#ab4fd369dba75ec4782400cf7378e56ec">apop_name_stack</a> to copy from one data set to another.</p>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure has a <code>more</code> element, for when your data is best expressed in more than one page of data. Use <a class="el" href="apop__data_8c.html#a7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a>, <a class="el" href="apop__data_8c.html#ac434c9d08b6a8304107d9c93afb81914">apop_data_rm_page</a>, and <a class="el" href="apop__data_8c.html#a044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>. Output routines will sometimes append an extra page of auxiliary information to a data set, such as pages named <code>&lt;Covariance&gt;</code> or <code>&lt;Factors&gt;</code>. The angle-brackets indicate a page that describes the data set but is not a part of it (so an MLE search would ignore that page, for example).</p>
 <p>Now let us move up the structure diagram to the <a class="el" href="structapop__model.html">apop_model</a> structure.</p>
@@ -283,16 +288,16 @@ printf(<span class="stringliteral">&quot;ΔAIC_c=%g\n&quot;</span>, <a class="co
 <li>Describe the distribution of that statistic. </li>
 <li>Work out how much of the distribution is (above|below|closer to zero than) the statistic.</li>
 </ul>
-<p>There are a handful of named tests that produce a known statistic and then compare to a known distribution, like <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> or <a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>. For traditional distributions (Normal, <img class="formulaInl" alt="$t$" src="form_11.png"/>, <img class="formulaInl" alt="$\chi^2$" src="form_19.png"/>), use the <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> convenience function.</p>
+<p>There are a handful of named tests that produce a known statistic and then compare to a known distribution, like <a class="el" href="group__histograms.html#ga98ccaa9de7cb16e60a435c56eaf3400d">apop_test_kolmogorov</a> or <a class="el" href="apop__fexact_8c.html#a8627a1eebf904699e90e66adc8b4b021">apop_test_fisher_exact</a>. For traditional distributions (Normal, <img class="formulaInl" alt="$t$" src="form_44.png"/>, <img class="formulaInl" alt="$\chi^2$" src="form_18.png"/>), use the <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a> convenience function.</p>
 <p>But if your model is not from the textbook, then you have the tools to apply the above three-step process directly. First I'll give an overview of the three steps, then another working example.</p>
 <ul>
-<li>Model parameters are a statistic, and you know that <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a><code>(your_data, your_model)</code> will output a model with a <code>parameters</code> element. </li>
+<li>Model parameters are a statistic, and you know that <code>apop_estimate(your_data, your_model)</code> will output a model with a <code>parameters</code> element. </li>
 <li>The distribution of a parameter is also a model, so <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> will also return an <a class="el" href="structapop__model.html">apop_model</a>. </li>
 <li><a class="el" href="group__models.html#gaee16258d3e52671e254f3ce03bca7754">apop_cdf</a> takes in a model and a data point, and returns the area under the data point.</li>
 </ul>
 <p>Defaults for the parameter models are filled in via bootstrapping or resampling, meaning that if your model's parameters are decidedly off the Normal path, you can still test claims about the parameters.</p>
 <p>The introductory example ran a standard OLS regression, whose output includes some standard hypothesis tests; to conclude, let us go the long way and replicate those results via the general <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> mechanism. The results here will of course be identical, but the more general mechanism can be used in situations where the standard models don't apply.</p>
-<p>The first part of this program is identical to the program above. The second half executes the three steps uses many of the above tricks: one of the inputs to <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> (which row of the parameter set to use) is sent by adding a settings group, we pull that row into a separate data set using <a class="el" href="apop_8h.html#af9032e16affac10d90dd3565e709966d">Apop_row</a>, and we set its vector value by referring to it as the -1st element.</p>
+<p>The first part of this program is identical to the program above. The second half executes the three steps uses many of the above tricks: one of the inputs to <a class="el" href="group__models.html#ga92355da54ab91a8dee22192ae68a37d0">apop_parameter_model</a> (which row of the parameter set to use) is sent by adding a settings group, we pull that row into a separate data set using <a class="el" href="apop_8h.html#a401dbc60c9915be8e4c4def68b22d755">Apop_r</a>, and we set its vector value by referring to it as the -1st element.</p>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="keywordtype">int</span> main(<span class="keywordtype">void</span>){
@@ -316,4 +321,4 @@ printf(<span class="stringliteral">&quot;ΔAIC_c=%g\n&quot;</span>, <a class="co
 <p>This introduction has shown you the <a class="el" href="gentle.html#apop_data">apop_data</a> set and some of the functions associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed numeric/text values. You've seen how Apophenia encapsulates as many of a model's characteristics as possible into a single <a class="el" href="structapop__model.html">apop_model</a> object, which you can send with data to functions like <a class="el" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__models.html#ga867f0b8df261866bb18e9040871c51f0">apop_predict</a>, or <a class="el" href="group__models.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>. Once you've got your data in the right form, you can use this to simply estimate model parameters, or as an input to later analysis. </p>
 </div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Tue Aug 5 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>
