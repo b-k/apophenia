@@ -709,74 +709,24 @@ gsl_matrix * o = &( apop_mm_##o );
 #define Apop_col_v(m, col, v) gsl_vector apop_vv_##v = ((col) == -1) ? (gsl_vector){} : gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );
 
+/** Deprecated. Use \ref Apop_rs.  \hideinitializer */ 
+#define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)
+
+/** Deprecated. Use \ref Apop_r.  \hideinitializer */ 
+#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)
+
+/** Deprecated. Use \ref Apop_cs.  \hideinitializer */ 
+#define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len);
+
 #define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
 #define Apop_col_tv(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, apop_name_find((m)->names, col, 'c')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define Apop_rows(d, rownum, len, outd) \
-    gsl_vector apop_dd_##outd##_v = ((d)->vector && (d)->vector->size > (rownum)+(len)-1)  \
-                                    ? gsl_vector_subvector((d)->vector, (rownum), (len)).vector\
-                                    : (gsl_vector) { };\
-    gsl_vector apop_dd_##outd##_w = ((d)->weights && (d)->weights->size > (rownum)+(len)-1)  \
-                                    ? gsl_vector_subvector((d)->weights, (rownum), (len)).vector\
-                                    : (gsl_vector) { };\
-    gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size1 > (rownum)+(len)-1)  \
-                                ? gsl_matrix_submatrix((d)->matrix, rownum, 0, (len), (d)->matrix->size2).matrix\
-                                : (gsl_matrix) { };             \
-    apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
-            (apop_name){                                                         \
-                .title = (d)->names->title,                                      \
-                .vector = (d)->names->vector,                                    \
-                .col = (d)->names->col,                                          \
-                .row = ((d)->names->row && (d)->names->rowct > rownum) ? &((d)->names->row[rownum]) : NULL,  \
-                .text = (d)->names->text,                                        \
-                .colct = (d)->names->colct,                                      \
-                .rowct = (d)->names->row ? (GSL_MIN(len, GSL_MAX((d)->names->rowct - (rownum), 0)))      \
-                                          : 0,                                   \
-                .textct = (d)->names->textct };                                  \
-    apop_data apop_dd_##outd = (apop_data){                                      \
-                .vector= apop_dd_##outd##_v.size ? &apop_dd_##outd##_v : NULL,   \
-                .weights=apop_dd_##outd##_w.size ? &apop_dd_##outd##_w : NULL ,  \
-                .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
-                .textsize[0]=(d)->textsize[0] ? (len) : 0,                       \
-                .textsize[1]=(d)->textsize[1],                                   \
-                .text = (d)->text ? &((d)->text[rownum]) : NULL,                 \
-                .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
-    apop_data *outd =  &apop_dd_##outd;
-
-/** Deprecated. Use \ref Apop_r.  \hideinitializer */ 
-#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)
-
 #define Apop_row_t(d, rowname, outd) int apop_row_##outd = apop_name_find((d)->names, rowname, 'r'); Apop_rows(d, apop_row_##outd, 1, outd)
 
 #define Apop_col_t(d, colname, outd) int apop_col_##outd = apop_name_find((d)->names, colname, 'c'); Apop_cols(d, apop_col_##outd, 1, outd)
-
-#define Apop_cols(d, colnum, len, outd) \
-    gsl_matrix apop_dd_##outd##_m = ((d)->matrix && (d)->matrix->size2 > (colnum)+(len)-1)  \
-                                ? gsl_matrix_submatrix((d)->matrix, 0, colnum, (d)->matrix->size1, (len)).matrix\
-                                : (gsl_matrix) { };             \
-    apop_name apop_dd_##outd##_n = !((d)->names) ? (apop_name) {} :              \
-            (apop_name){                                                         \
-                .title = (d)->names->title,                                      \
-                .vector = NULL,                                    \
-                .row = (d)->names->row,                                          \
-                .col = ((d)->names->col && (d)->names->colct > colnum) ? &((d)->names->col[colnum]) : NULL,  \
-                .text = NULL,                                                    \
-                .rowct = (d)->names->rowct,                                      \
-                .colct = (d)->names->col ? (GSL_MIN(len, GSL_MAX((d)->names->colct - colnum, 0)))      \
-                                          : 0,                                   \
-                .textct = (d)->names->textct };                                  \
-    apop_data apop_dd_##outd = (apop_data){                                      \
-                .vector= NULL,                                                   \
-                .weights= (d)->weights,                                          \
-                .matrix = apop_dd_##outd##_m.size1 ? &apop_dd_##outd##_m : NULL, \
-                .textsize[0] = 0,                                                \
-                .textsize[1] = 0,                                                \
-                .text = NULL,                                                    \
-                .names= (d)->names ? &apop_dd_##outd##_n : NULL };               \
-    apop_data *outd =  &apop_dd_##outd;
 
 // The above versions relied on gsl_views, which stick to C as of 1989 CE.
 // Better to just create the views via designated initializers.
@@ -817,7 +767,6 @@ gsl_vector * v = &( apop_vv_##v );
         : &(gsl_matrix){.size1=1, .size2=(m)->size2, \
              .tda=(m)->tda, .data=gsl_matrix_ptr((m), (row), 0)} \
         )
-
 
 #define Apop_rs(d, rownum, len)(                                                      \
         (!(d) || (rownum) < 0) ? NULL                                       \
@@ -863,7 +812,6 @@ gsl_vector * v = &( apop_vv_##v );
                     .textct = (d)->names->textct } : NULL \
             })
 
-
 #define Apop_r(d, rownum) Apop_rs(d, rownum, 1)
 #define Apop_c(d, col) Apop_cs(d, col, 1)
 
@@ -905,7 +853,7 @@ Apop_matrix_row(m, 3, rowthree);
 printf("The correlation coefficient between rows two "
        "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
 \endcode 
-\see Apop_rs, Apop_row, Apop_row_v, Apop_row_tv, Apop_row_t
+\see Apop_rs, Apop_r, Apop_row_v, Apop_row_tv, Apop_row_t
 */
 #define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
 gsl_vector * v = &( apop_vv_##v );
@@ -925,7 +873,7 @@ Apop_matrix_col(m, 3, colthree);
 printf("The correlation coefficient between columns two "
        "and three is %g.\n", apop_vector_correlation(coltwo, colthree));
 \endcode 
-\see Apop_cols, Apop_col, Apop_cv, Apop_col_tv, Apop_col_t
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_col_t
 */
 #define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
@@ -969,8 +917,8 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et a
 
 /** \def Apop_col_t(m, col_name, v)
  After this call, \c v will hold a view of an \ref apop_data set consisting only of  vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_col, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cols, Apop_c, Apop_cv, Apop_col_tv, Apop_matrix_col
+ Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find.
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_matrix_col
 \hideinitializer */
 
 /** \def Apop_row_tv(m, row_name, v)
@@ -982,32 +930,27 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et a
 /** \def Apop_col_tv(m, col_name, v)
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
  Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cols, Apop_c, Apop_cv, Apop_col_t, Apop_matrix_col
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
-/** \def Apop_cols(d, col, len, outd)
+/** \def Apop_cs(d, col, len)
 A macro to generate a temporary view of \ref apop_data set \c d, beginning at column \c col and having length \c len. 
-After this call, \c outd will be a pointer to this temporary
-view, that you can use as you would any \ref apop_data set. However, 
-it expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
+It expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
 \see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
-/** \def Apop_col(d, col, v)
+/** \def Apop_c(d, col)
 A macro to generate a temporary one-column view of \ref apop_data set \c d, pulling out only
 column \c col. 
 After this call, \c outd will be a pointer to this temporary
-view, that you can use as you would any \ref apop_data set. This macro expands to
-<tt>Apop_cols(d, col, 1, outd)</tt>.
+view, that you can use as you would any \ref apop_data set.
 \see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
-/** \def Apop_rows(d, row, len, outd)
+/** \def Apop_rs(d, row, len)
 A macro to generate a temporary view of \ref apop_data set \c d, beginning at row \c row
 and having length \c len. 
-After this call, \c outd will be a pointer to this temporary
-view, that you can use as you would any \ref apop_data set. However, 
-it expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
+The view expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
 \see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_matrix_row
 \hideinitializer */
 
@@ -1042,7 +985,7 @@ for (int i=0; i< your_data->matrix->size2; i++)
 The view is automatically allocated, and disappears as soon as the program leaves the
 scope in which it is declared.
 
-\see Apop_cols, Apop_col, Apop_col_tv, Apop_col_t, Apop_matrix_col
+\see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_matrix_col
 \hideinitializer */
 
 /** \def Apop_r(d, row)
@@ -1056,7 +999,7 @@ for (int i=0; i< your_data->matrix->size1; i++)
 \endcode
 
 The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
+\see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
 \hideinitializer */
 
 /** \def apop_mean(v)

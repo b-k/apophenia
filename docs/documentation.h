@@ -817,14 +817,18 @@ double first_col_sum = apop_vector_sum(Apop_cv(d, 0));
 double sub_sum = apop_matrix_sum(Apop_subm(d, 2,3, 10,5));
 \endcode
 
+To make it easier to use the result of these macros as an argument to a function, these macros have abbreviated names.
+
 \li\ref Apop_c
 \li\ref Apop_r
 \li\ref Apop_cv
 \li\ref Apop_rv
+\li\ref Apop_cs
+\li\ref Apop_rs
 \li\ref Apop_subm
 
-\li\ref Apop_cols
-\li\ref Apop_rows
+A second set of macros have a slightly different syntax, taking the name of the object to be declared as the last argument. These can not be used as expressions such as function arguments.
+
 \li\ref Apop_col_t
 \li\ref Apop_row_t
 \li\ref Apop_col_tv
@@ -832,10 +836,9 @@ double sub_sum = apop_matrix_sum(Apop_subm(d, 2,3, 10,5));
 \li\ref Apop_matrix_row
 \li\ref Apop_matrix_col
 
-These types point to the source data, and add metadata to turn the data into a coherent
-matrix/vector.  The view is an automatic variable, not a pointer, and therefore
-disappears at the end of the scope in which it is declared. If you want to retain the
-data after the function exits, copy it to another vector:
+The view is an automatic variable, not a pointer, and therefore disappears at the end
+of the scope in which it is declared. If you want to retain the data after the function
+exits, copy it to another vector:
 
 \code
 Apop_matrix_row(d->matrix, 2, rowtwo);
@@ -863,7 +866,7 @@ neither exists. You can get around the problem here by making sure to not put th
 declaring new variables in a block. E.g.:
 
 \code
-apop_data *outdata = Apop_row(data, get_odd ? 1 : 0, outdata);
+apop_data *outdata = Apop_r(data, get_odd ? 1 : 0);
 apop_data_show(outdata);
 \endcode
 

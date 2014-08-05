@@ -27,12 +27,12 @@ int main(){
 
     int len = 100000;
     apop_data *d = apop_model_draws(many_humps, len);
-    Apop_col_v(d, 0, first);
+    gsl_vector *first = Apop_cv(d, 0);
     #ifndef Testing
     printf("mu=%g\n", apop_mean(first));
     #endif
     assert(fabs(apop_mean(first)- 0) < 5e-2);
-    Apop_col_v(d, 1, second);
+    gsl_vector *second = Apop_cv(d, 1);
     #ifndef Testing
     printf("mu=%g\n", apop_mean(second));
     #endif

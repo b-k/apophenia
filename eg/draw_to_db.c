@@ -31,8 +31,8 @@ int main(){
     //pull the data from the database, converting it into a table along the way. 
     apop_data *m  = apop_db_to_crosstab("samples", "iteration","process", "value");
 
-    Apop_col_v(m, 0, v1); //get vector views of the two table columns.
-    Apop_col_v(m, 1, v2);
+    gsl_vector *v1 = Apop_cv(m, 0); //get vector views of the two table columns.
+    gsl_vector *v2 = Apop_cv(m, 1);
 
     //Output a table of means/variances, and t-test results.
     printf("\t   mean\t\t   var\n");
