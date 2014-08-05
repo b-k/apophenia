@@ -181,10 +181,8 @@ static void lognormal_estimate(apop_data * data, apop_model *est){
         vvar = apop_var(cp->vector);
     }
     if (msize2){
-        for (int i=0; i< msize2; i++){
-            Apop_col_v(cp, i, onecol);
-            apop_vector_log(onecol);
-        }
+        for (int i=0; i< msize2; i++)
+            apop_vector_log(Apop_cv(cp, i));
         apop_matrix_mean_and_var(cp->matrix, &mmean, &mvar);	
     }
     apop_data_free(cp);

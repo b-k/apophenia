@@ -210,8 +210,7 @@ APOP_VAR_ENDHEAD
             double this_val=0;
             if ((i==height || (this_val=gsl_vector_get(thiscol, i)) != last_val) 
                     && bottom != i-1){
-                Apop_rows(out, bottom, i-bottom, subset);
-                apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
+                apop_data_sort_base(Apop_rs(out, bottom, i-bottom), sort_order, 'a', 'y', col_order+1);
             }
             if (last_val != this_val) bottom = i;
             last_val = this_val;
@@ -222,8 +221,7 @@ APOP_VAR_ENDHEAD
             char *this_val = i==height ? NULL : is_name ? out->names->row[i] : out->text[i][(int)(*col_order-0.5)];
             if ((i==height || strcasecmp(this_val, last_val)) 
                     && bottom != i-1){
-                Apop_rows(out, bottom, i-bottom, subset);
-                apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
+                apop_data_sort_base(Apop_rs(out, bottom, i-bottom), sort_order, 'a', 'y', col_order+1);
             }
             if (this_val && strcmp(last_val, this_val)) bottom = i;
             last_val = this_val;

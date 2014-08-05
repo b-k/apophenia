@@ -101,7 +101,7 @@ static void prep_names (apop_model *e){
 static void ols_shuffle(apop_data *d){
     if (!d) return;
     if (!d->vector){
-        Apop_col_v(d, 0, independent);
+        gsl_vector *independent = Apop_cv(d, 0);
         d->vector = apop_vector_copy(independent);
         gsl_vector_set_all(independent, 1);     //affine; first column is ones.
         if (d->names->colct > 0) {		
@@ -222,7 +222,7 @@ static void xpxinvxpy(apop_data const*data, gsl_matrix *xpx, apop_data const* xp
         apop_data *predicted_page = apop_data_get_page(out->info, "<Predicted>");
         gsl_matrix_set_col(predicted_page->matrix, 0, y_data);
         gsl_matrix_set_col(predicted_page->matrix, 2, error->vector);
-        Apop_col_v(predicted_page, 1, predicted);
+        gsl_vector *predicted = Apop_cv(predicted_page, 1);
         gsl_vector_memcpy(predicted, y_data);
         gsl_vector_add(predicted, error->vector); //pred = y_data + error
     }
@@ -325,10 +325,8 @@ static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
         apop_data_add_page(ep->parameters, apop_data_alloc(0, set->matrix->size2, set->matrix->size2), "<Covariance>");
     if (weights)
-        for (int i = -1; i < set->matrix->size2; i++){
-            Apop_col_v(set, i, v);
-            gsl_vector_mul(v, weights);
-        }
+        for (int i = -1; i < set->matrix->size2; i++)
+            gsl_vector_mul(Apop_cv(set, i), weights);
 
     apop_data *xpx_d = apop_dot(set, set, .form1='t'); //(X'X)
     apop_data *xpy_d = apop_dot(set, set, .form1='t', .form2='v'); //(X'y)
@@ -424,8 +422,8 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
     apop_data *out = apop_data_copy(x);
     if (instruments->vector)
         for (int i=0; i< instruments->vector->size; i++){
-            Apop_col_v(instruments, i, inv);
-            Apop_col_v(out, instruments->vector->data[i], outv);
+            gsl_vector *inv  = Apop_cv(instruments, i);
+            gsl_vector *outv = Apop_cv(out, instruments->vector->data[i]);
             gsl_vector_memcpy(outv, inv);
         }
     else if (instruments->names->colct)
@@ -433,9 +431,7 @@ static apop_data *prep_z(apop_data *x, apop_data *instruments){
             int colnumber = apop_name_find(x->names, instruments->names->col[i], 'c');
             Apop_assert(colnumber != -2, "You asked me to substitute instrument column %i "
                     "for the data column named %s, but I could find no such name.",  i, instruments->names->col[i]);
-            Apop_col_v(instruments, i, inv);
-            Apop_col_v(out, colnumber, outv);
-            gsl_vector_memcpy(outv, inv);
+            gsl_vector_memcpy(Apop_cv(out, colnumber), Apop_cv(instruments, i));
         }
     else Apop_assert(0, "Your instrument matrix has data, but neither a vector element "
                        "nor column names indicating what columns in the original data should be replaced.");
@@ -467,10 +463,8 @@ static void apop_estimate_IV(apop_data *inset, apop_model *ep){
     prep_names(ep);
     if (weights){
         gsl_vector_mul(set->vector, weights);
-        for (int i = 0; i < set->matrix->size2; i++){
-            Apop_col_v(set, i, v);
-            gsl_vector_mul(v, weights);
-        }
+        for (int i = 0; i < set->matrix->size2; i++)
+            gsl_vector_mul(Apop_cv(set, i), weights);
     }
 
     apop_data *zpx = apop_dot(z, set, .form1='t');

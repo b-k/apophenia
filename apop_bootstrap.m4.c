@@ -60,8 +60,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     gsl_vector *pseudoval = gsl_vector_alloc(overall_params->size);
 
     //Copy the original, minus the first row.
-    Apop_rows(in, 1, n-1, allbutfirst);
-    apop_data *subset = apop_data_copy(allbutfirst);
+    apop_data *subset = apop_data_copy(Apop_rs(in, 1, n-1));
     apop_name *tmpnames = in->names; 
     in->names = NULL;  //save on some copying below.
 

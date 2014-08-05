@@ -813,8 +813,8 @@ double first_col_sum = apop_vector_sum(Apop_cv(d, 0));
 
 //Pull a 10x5 submatrix, whose first element is the (2,3)rd
 //element of the parent data set's matrix
-Apop_submatrix(d, 2,3, 10,5, subm);
-double first_col_sum = apop_matrix_sum(subm);
+
+double sub_sum = apop_matrix_sum(Apop_subm(d, 2,3, 10,5));
 \endcode
 
 \li\ref Apop_c
@@ -848,14 +848,14 @@ debugger. When program evaluation exits a given block, all variables in that blo
 erased. Here is some sample code that won't work:
 
 \code
+apop_data *outdata;
 if (get_odd){
-    Apop_row(data, 1, outdata);
+    outdata = Apop_r(data, 1);
 } else {
-    Apop_row(data, 0, outdata);
+    outdata = Apop_r(data, 0);
 }
-apop_data_show(outdata); //breaks: no outdata in scope.
+apop_data_show(outdata); //breaks: outdata points to out-of-scope variables.
 \endcode
-
 
 For this if/then statement, there are two sets of local variables
 generated: one for the \c if block, and one for the \c else block. By the last line,
@@ -863,7 +863,7 @@ neither exists. You can get around the problem here by making sure to not put th
 declaring new variables in a block. E.g.:
 
 \code
-Apop_row(data, get_odd ? 1 : 0, outdata);
+apop_data *outdata = Apop_row(data, get_odd ? 1 : 0, outdata);
 apop_data_show(outdata);
 \endcode
 
@@ -967,7 +967,7 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 
 \include t_test_by_rows.c
 
-One more toy example, demonstrating the use of the \ref Apop_row :
+One more toy example, demonstrating the use of \ref Apop_map and \ref apop_map_sum :
 
 \include apop_map_row.c
 

@@ -222,7 +222,7 @@ data, and fail if the copy would write more elements than there are bins.
 
   \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
-  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rows, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rs, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
