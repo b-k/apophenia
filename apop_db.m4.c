@@ -719,38 +719,3 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
 	free(q);
     return 0;
 }
-
-// Some stats wrappers
-
-/** Do a \f$t\f$-test entirely inside the database.
-  Returns only the two-tailed p-value.
-\ingroup ttest
-*/
-double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2){
-    gsl_matrix *result1, *result2;
-	result1	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col1, col1, tab1);
-	result2	= apop_query_to_matrix("select avg(%s), var(%s), count(*) from %s", col2, col2, tab2);
-    double a_avg = gsl_matrix_get(result1, 0, 0),
-		a_var	= gsl_matrix_get(result1, 0, 1),
-		a_count	= gsl_matrix_get(result1, 0, 2),
-		b_avg	= gsl_matrix_get(result2, 0, 0),
-		b_var	= gsl_matrix_get(result2, 0, 1),
-		b_count	= gsl_matrix_get(result2, 0, 2),
-		stat	= (a_avg - b_avg)/ sqrt(b_var/(b_count-1) + a_var/(a_count-1));
-        return	fabs(1 - (1 - gsl_cdf_tdist_P(stat, a_count+b_count-2))*2); //two-tailify a one-tailed lookup.
-}
-
-/** Do a paired \f$t\f$-test entirely inside the database.
-  Returns only the two-tailed p-value.
-\ingroup ttest
-*/
-double	apop_db_paired_t_test(char * tab1, char *col1, char *col2){
-    gsl_matrix	*result=
-	        apop_query_to_matrix("select avg(%s - %s), var(%s - %s), count(*) from %s tab1",
-                                            col1,col2,   col1, col2,             tab1);
-    double avg	 = gsl_matrix_get(result, 0, 0),
-		   var	 = gsl_matrix_get(result, 0, 1),
-		   count = gsl_matrix_get(result, 0, 2),
-		   stat	 = avg/ sqrt(var/(count-1));
-	return 2*GSL_MIN(gsl_cdf_tdist_P(stat, count-1),gsl_cdf_tdist_Q(stat, count-1));
-}

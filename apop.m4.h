@@ -1025,9 +1025,6 @@ double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf
 
 int apop_data_to_db(const apop_data *set, const char *tabname, char);
 
-double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2); //deprecated
-double apop_db_paired_t_test(char * tab1, char *col1, char *col2); //deprecated
-
 
         //////Settings groups
 
