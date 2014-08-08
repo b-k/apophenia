@@ -314,7 +314,7 @@ static double negshell (const gsl_vector *beta, void * in){
                                "adjusted p of %g. Please make sure that this is positive, perhaps by "
                                "rescaling your penalty. Continuing, but will not report covariance or other "
                                "log likelihood-based statistics.\n", f_val, penalty, f_val-penalty);
-            Apop_stopif(1, apop_data_show(i->model->parameters); longjmp(i->bad_eval_jump, -1),
+            Apop_stopif(1, apop_data_show(i->model->parameters); i->want_info='n',
                         1, "NaN resulted from the following value tried by the maximum likelihood system. "
                            "Tighten your constraint? Log of a negative p?\n");
         }
@@ -439,6 +439,8 @@ Inside the infostruct, you'll find these elements:
         .n		= betasize,
         .params	= i};
     ctrl_c = 0;
+    if (setjmp(i->bad_eval_jump))
+        Apop_stopif(1, return, 0, "Failure evaluating likelihood at the starting point. Add a starting point?");
 	gsl_multimin_fdfminimizer_set (s, &minme, i->beta, mp->step_size, mp->tolerance);
     signal(SIGINT, mle_sigint);
     do { 	
@@ -483,6 +485,8 @@ static void apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
     apopstatus = 0; //assume failure until we score a success.
     gsl_vector_set_all (ss,  mp->step_size);
     gsl_multimin_function  minme = {.f = negshell, .n= betasize, .params = i};
+    if (setjmp(i->bad_eval_jump))
+        Apop_stopif(1, return, 0, "Failure evaluating likelihood at the starting point. Add a starting point?");
     gsl_multimin_fminimizer_set (s, &minme, i->beta,  ss);
     //i->beta = s->x;
     signal(SIGINT, mle_sigint);
