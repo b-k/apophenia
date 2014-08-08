@@ -51,10 +51,9 @@ int main(){
     #endif
 
     //the data with no noise will be the instrument.
-    Apop_col_v(data, 1, col1);
+    gsl_vector *col1 = Apop_cv(data, 1);
     apop_data *instrument_data = apop_data_alloc(data->matrix->size1, 1);
-    Apop_col_v(instrument_data, 0, firstcol);
-    gsl_vector_memcpy(firstcol, col1);
+    gsl_vector_memcpy(Apop_cv(instrument_data, 0), col1);
     apop_name_add(instrument_data->names, "independent", 'c');
     Apop_model_add_group(apop_iv, apop_lm, .instruments = instrument_data);
 

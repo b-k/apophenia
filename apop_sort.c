@@ -89,13 +89,11 @@ static void rearrange(apop_data *data, size_t height, size_t *perm){
         i     =
         start = find_min_unsorted(sorted, height, start);
         if (i==-1) break;
-        Apop_row(data, start, firstrow);
-        apop_data *first_row_storage = apop_data_copy(firstrow);
+        apop_data *first_row_storage = apop_data_copy(Apop_r(data, start));
         sorted[start]++;
         while (perm[i]!=start){
             //copy from perm[i] to i
-            Apop_row(data, perm[i], onerow);
-            apop_data_set_row(data, onerow, i);
+            apop_data_set_row(data, Apop_r(data, perm[i]), i);
             sorted[perm[i]]++;
             i = perm[i];
         }
@@ -107,14 +105,13 @@ static void rearrange(apop_data *data, size_t height, size_t *perm){
 /** Sort an \ref apop_data set on an arbitrary sequence of columns. 
 
 The \c sort_order set is a one-row data set that should look like the data set being
-sorted. The easiest way to generate it is to use \ref Apop_row to pull one row of the
+sorted. The easiest way to generate it is to use \ref Apop_r to pull one row of the
 table, then copy and fill it. For each column you want used in the sort, assign a ranking giving whether the column should be sorted first, second, .... Columns you don't want used in the sorting should be set to \c NAN. Ties are broken by the earlier element in the default order (see below).
 
 E.g., to sort by the last column of a five-column matrix first, then the next-to-last column, then the next-to-next-to-last, then by the first text column, then by the second text column:
 
 \code
-Apop_row(data, 0, so)
-apop_data *sort_order = apop_data_copy(so);
+apop_data *sort_order = apop_data_copy(Apop_r(data, 0));
 sort_order->vector = NULL; //so it will be skipped.
 Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
 apop_text_add(sort_order, 0, 0, "4");
@@ -221,8 +218,7 @@ apop_varad_head(apop_data *, apop_data_sort){
             double this_val=0;
             if ((i==height || (this_val=gsl_vector_get(thiscol, i)) != last_val) 
                     && bottom != i-1){
-                Apop_rows(out, bottom, i-bottom, subset);
-                apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
+                apop_data_sort_base(Apop_rs(out, bottom, i-bottom), sort_order, 'a', 'y', col_order+1);
             }
             if (last_val != this_val) bottom = i;
             last_val = this_val;
@@ -233,8 +229,7 @@ apop_varad_head(apop_data *, apop_data_sort){
             char *this_val = i==height ? NULL : is_name ? out->names->row[i] : out->text[i][(int)(*col_order-0.5)];
             if ((i==height || strcasecmp(this_val, last_val)) 
                     && bottom != i-1){
-                Apop_rows(out, bottom, i-bottom, subset);
-                apop_data_sort_base(subset, sort_order, 'a', 'y', col_order+1);
+                apop_data_sort_base(Apop_rs(out, bottom, i-bottom), sort_order, 'a', 'y', col_order+1);
             }
             if (this_val && strcmp(last_val, this_val)) bottom = i;
             last_val = this_val;

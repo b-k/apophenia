@@ -61,8 +61,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     gsl_vector *pseudoval = gsl_vector_alloc(overall_params->size);
 
     //Copy the original, minus the first row.
-    Apop_rows(in, 1, n-1, allbutfirst);
-    apop_data *subset = apop_data_copy(allbutfirst);
+    apop_data *subset = apop_data_copy(Apop_rs(in, 1, n-1));
     apop_name *tmpnames = in->names; 
     in->names = NULL;  //save on some copying below.
 
@@ -70,11 +69,7 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
 
     for(i = -1; i< n-1; i++){
         //Get a view of row i, and copy it to position i-1 in the short matrix.
-        if (i >= 0){
-            Apop_row(in, i, onerow);
-            Apop_row(subset, i, subsetrow);
-            apop_data_memcpy(subsetrow, onerow);
-        }
+        if (i >= 0) apop_data_memcpy(Apop_r(subset, i), Apop_r(in, i));
         apop_model *est = apop_estimate(subset, e);
         gsl_vector *estp = apop_data_pack(est->parameters);
         gsl_vector_memcpy(pseudoval, overall_params);// *n above.
@@ -152,10 +147,8 @@ apop_varad_head(apop_data *, apop_bootstrap_cov) {
     int height = GSL_MAX(msize1, GSL_MAX(vsize, data->textsize[0]));
 	for (i=0; i<iterations && nan_draws < iterations; i++){
 		for (size_t j=0; j< height; j++){       //create the data set
-			size_t row	= gsl_rng_uniform_int(rng, height);
-			Apop_row(data, row, random_data_row);
-			Apop_row(subset, j, subset_row_j);
-            apop_data_memcpy(subset_row_j, random_data_row);
+			size_t randrow	= gsl_rng_uniform_int(rng, height);
+            apop_data_memcpy(Apop_r(subset, j), Apop_r(data, randrow));
 		}
 		//get the parameter estimates.
 		apop_model *est = apop_estimate(subset, e);

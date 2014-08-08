@@ -123,13 +123,32 @@ apop_varad_head(apop_data *, apop_data_calloc){
     return setme;
 }
 
-/** Wrap an \ref apop_data structure around an existing \c gsl_matrix.
- The matrix is not copied, but is pointed to by the new \ref apop_data struct.
+/** Deprecated; please do not use. Just use a compound literal:
 
-\param m  The existing matrix you'd like to turn into an \ref apop_data structure.
-\return   The \ref apop_data structure whose \c matrix pointer points to the input matrix. The rest of the struct is basically blank.
-\li If you give me a \c NULL matrix, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
-             a warning if <tt>apop_opts.verbosity >=1</tt>
+\code
+//Given:
+gsl_vector *v;
+gsl_matrix *m;
+
+// Then this form wraps the elements into \ref apop_data structs. Note that
+// these are not pointers: they're automatically allocated and therefore
+// the extra memory use for the wrapper is cleaned up on exit from scope.
+
+apop_data *dv = &(apop_data){.vector=v};
+apop_data *dm = &(apop_data){.matrix=m};
+
+apop_data *v_dot_m = apop_dot(dv, dm);
+
+//Here is a macro to hide C's ugliness:
+#define As_data(...) (&(apop_data){__VA_ARGS__})
+
+apop_data *v_dot_m2 = apop_dot(As_data(.vector=v), As_data(.matrix=m));
+
+//The wrapped object is an automatically-allocated structure pointing to the
+//original data. If it needs to persist or be separate from the original,
+//make a copy:
+apop_data *dm_copy = apop_data_copy(As_data(.vector=v, .matrix=m));
+\endcode
 */
 apop_data * apop_matrix_to_data(gsl_matrix *m){
     Apop_stopif(!m, return apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
@@ -138,14 +157,8 @@ apop_data * apop_matrix_to_data(gsl_matrix *m){
     return setme;
 }
 
-/** Wrap an \ref apop_data structure around an existing \c gsl_vector.
- The vector is not copied, but is pointed to by the new \ref apop_data struct.
-
-\param  v   The data vector
-\return     an allocated, ready-to-use \ref apop_data structure.
-\li If you give me a \c NULL vector, I return a blank \ref apop_data set, equivalent to <tt>apop_data_alloc()</tt>, and print 
-             a warning if <tt>apop_opts.verbosity >=1</tt>
-*/
+/** Deprecated; please do not use. Just use a compound literal, as in the code sample in
+  the documentation for \ref apop_matrix_to_data. */
 apop_data * apop_vector_to_data(gsl_vector *v){
     Apop_stopif(!v, return apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
     apop_data *setme = apop_data_alloc();
@@ -224,13 +237,16 @@ data, and fail if the copy would write more elements than there are bins.
 
   \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
-  \li You can use the subsetting macros, \ref Apop_row or \ref Apop_rows, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rs, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
-Apop_row(mydata, i, fromrow);
-Apop_row(mydata, j, torow);
+apop_data *fromrow = Apop_r(mydata, i);
+apop_data *torow = Apop_r(mydata, j);
 apop_data_memcpy(torow, fromrow);
+
+// or just
+apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 \endcode
  
   \param out   A structure that this function will fill. Must be preallocated with the appropriate sizes.
@@ -1003,7 +1019,7 @@ apop_varad_head(int, apop_data_set){
 }
 /** \} //End data_set_get group */
 
-/** Now that you've used \ref Apop_row to pull a row from an \ref apop_data set,
+/** Now that you've used \ref Apop_r to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
   different data set entirely.  
 
@@ -1034,9 +1050,7 @@ int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
     if (row->matrix && row->matrix->size2 > 0){
         Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
                 "an apop_data set with no matrix.");
-        Apop_row_v(d, row_number, a_row); 
-        Apop_row_v(row, 0, row_to_copy); 
-        gsl_vector_memcpy(a_row, row_to_copy);
+        gsl_vector_memcpy(Apop_rv(d, row_number), Apop_rv(row, 0));
     }
     if (row->textsize[1]){
         Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data row with text to "
@@ -1567,7 +1581,7 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \ref apop_data_rm_rows uses \ref Apop_row to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+  \ref apop_data_rm_rows uses \ref Apop_r to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
   \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
 
 \return Returns a pointer to the input data set, now pruned.
@@ -1601,15 +1615,11 @@ apop_varad_head(apop_data*, apop_data_rm_rows){
         int drop_row=0;
         if (drop && drop[i]) drop_row = 1;
         else if (do_drop){
-            Apop_row(in, i, onerow); 
-            drop_row = do_drop(onerow, drop_parameter);
+            drop_row = do_drop(Apop_r(in, i), drop_parameter);
         }
         if (!drop_row){
             if (outlength == i) outlength++;
-            else {
-                Apop_row(in, i, thisrow);
-                apop_data_set_row(in, thisrow, outlength++);
-            }
+            else                apop_data_set_row(in, Apop_r(in, i), outlength++);
         }
     }
     if (!outlength){

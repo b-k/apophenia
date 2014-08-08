@@ -64,7 +64,7 @@ static void probit_prep(apop_data *d, apop_model *m){
       */
     size_t matrix_cols = m->data->matrix->size2;
     for (size_t i=0; i< matrix_cols; i++){
-        Apop_col_v(m->data, i, onecol);
+        gsl_vector *onecol = Apop_cv(m->data, i);
         long double logtotal = 0;
         for (int i=0; i< onecol->size; i++){
             double val =gsl_vector_get(onecol, i);
@@ -117,10 +117,9 @@ static long double multiprobit_log_likelihood(apop_data *d, apop_model *p){
     double ll = 0;
     double *vals = val_vector->data;
     for(size_t i=0; i < p->parameters->matrix->size2; i++){
-        Apop_col_v(p->parameters, i, param);
         val = vals[i];
         working_data->vector = apop_vector_map(original_outcome, unordered);
-        spare_probit->parameters->matrix = apop_vector_to_matrix(param);
+        spare_probit->parameters->matrix = apop_vector_to_matrix(Apop_cv(p->parameters, 1));
         ll  += apop_log_likelihood(working_data, spare_probit);
         gsl_vector_free(working_data->vector); //yup. It's inefficient.
         gsl_matrix_free(spare_probit->parameters->matrix);
@@ -180,7 +179,7 @@ static apop_data *multilogit_expected(apop_data *in, apop_model *m){
                 oneterm = 0;
                 gsl_vector_set(outrow, j, 1);
             } else {
-                Apop_col_v(m->parameters, j-1, p);
+                gsl_vector *p = Apop_cv(m->parameters, j-1);
                 gsl_blas_ddot(observation, p, &oneterm);
                 gsl_vector_set(outrow, j, exp(oneterm));
             }
@@ -282,10 +281,8 @@ static void logit_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
     Nullcheck_mpd(d, p, );
     apop_data *gradient_matrix = apop_data_calloc(p->parameters->matrix->size1, p->parameters->matrix->size2);
     apop_data *cats = get_category_table(d);
-    for (int i=0; i< d->matrix->size1; i++){
-        Apop_data_row(d, i, onerow);
-        dlogit_foreach(onerow, gradient_matrix, p->parameters->matrix, cats);
-    }
+    for (int i=0; i< d->matrix->size1; i++)
+        dlogit_foreach(Apop_r(d, i), gradient_matrix, p->parameters->matrix, cats);
     apop_data_pack(gradient_matrix, gradient);
     apop_data_free(gradient_matrix);
 }

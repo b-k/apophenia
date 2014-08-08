@@ -180,12 +180,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
         for (size_t i=0; i< (*factor_list)->vector->size; i++)
             apop_data_set(*factor_list, i, -1, i);
     } else {
-        if (col==-1)
-            delmts = apop_vector_unique_elements(d->vector);
-        else{
-            Apop_col_v(d, col, to_search);
-            delmts = apop_vector_unique_elements(to_search);
-        }
+        delmts = apop_vector_unique_elements(Apop_cv(d, col));
         elmt_ctr = delmts->size;
         *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), catname);
         apop_text_alloc((*factor_list), delmts->size, 1);
@@ -541,7 +536,7 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
         gsl_blas_ddot(v_times_w, v, &sse);
         gsl_vector_free(v_times_w);
     }
-    Apop_col_v(expected, 0, vv);
+    gsl_vector *vv = Apop_cv(expected, 0);
     sst = apop_vector_var(vv, m->data->weights) * (vv->size-1);
     rsq = 1. - (sse/sst);
     adjustment  = ((obs -1.) /(obs - indep_ct)) * (1.-rsq) ;

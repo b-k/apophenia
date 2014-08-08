@@ -15,13 +15,12 @@ int main(){
     }
 
     //The rest of the test script recovers the parameters.
-    //First, set up a two-page data set: poisson data on p1, Normal on p2:
+    //First, set up a two-page data set: poisson data (column 0 of the draws) on p1,
+    //Normal (column 1 of the draws) on p2
     apop_data *comeback = apop_data_alloc();
-    Apop_col_v(draws, 0,fishdraws)
-    comeback->vector = apop_vector_copy(fishdraws);
+    comeback->vector = apop_vector_copy(Apop_cv(draws, 0));
     apop_data_add_page(comeback, apop_data_alloc(), "p2");
-    Apop_col_v(draws, 1, meandraws)
-    comeback->more->vector = apop_vector_copy(meandraws);
+    comeback->more->vector = apop_vector_copy(Apop_cv(draws, 1));
 
     //set up the un-parameterized stacked model, including
     //the name at which to split the data set

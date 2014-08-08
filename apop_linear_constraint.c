@@ -55,12 +55,12 @@ static void get_candiate(gsl_vector *beta, apop_data *constraint, int current, g
     gsl_vector *pseudocandidate   = NULL;
     gsl_vector *pseudocandidate2  = NULL;
     gsl_vector *fix               = NULL;
-    Apop_row_v(constraint, current, cc);
+    gsl_vector *cc = Apop_rv(constraint, current);
     ck = gsl_vector_get(constraint->vector, current);
     find_nearest_point(beta, ck, cc, candidate);
     for (size_t i=0; i< constraint->vector->size; i++){
         if (i!=current){
-            Apop_row_v(constraint, i, other);
+            gsl_vector *other = Apop_rv(constraint, i);
             k   =apop_data_get(constraint, i, -1);
             if (binds(candidate, k, other, margin)){
                 if (!pseudobeta){
@@ -163,15 +163,15 @@ apop_varad_head(long double, apop_linear_constraint){
     /* Do any constraints bind?*/
     memset(bindlist, 0, sizeof(int)*constraint_ct);
     for (i=0; i< constraint_ct; i++){
-        Apop_row_v(constraint, i, c);
-        bound           +=
-        bindlist[i]      = binds(beta, apop_data_get(constraint, i, -1), c, margin);
+        gsl_vector *c = Apop_rv(constraint, i);
+        bound       +=
+        bindlist[i] = binds(beta, apop_data_get(constraint, i, -1), c, margin);
     }
     if (!bound) return 0;   //All constraints met.
     gsl_vector *base_beta = apop_vector_copy(beta);
     /* With only one constraint, it's easy. */
     if (constraint->vector->size==1){
-        Apop_row_v(constraint, 0, c);
+        gsl_vector *c = Apop_rv(constraint, 0);
         find_nearest_point(base_beta, constraint->vector->data[0], c, beta);
         goto add_margin;
     }
@@ -194,8 +194,7 @@ apop_varad_head(long double, apop_linear_constraint){
 add_margin:
     for (i=0; i< constraint_ct; i++){
         if(bindlist[i]){
-            Apop_row_v(constraint, i, c);
-            gsl_vector_memcpy(fix, c);
+            gsl_vector_memcpy(fix, Apop_rv(constraint, i));
             gsl_vector_scale(fix, magnitude(fix));
             gsl_vector_scale(fix, margin);
             gsl_vector_add(beta, fix);

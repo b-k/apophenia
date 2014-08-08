@@ -149,10 +149,7 @@ static void one_step(apop_data *d, gsl_vector *draw, apop_model *m, apop_mcmc_se
         gsl_vector_memcpy(draw, clean_copy);
         apop_data_unpack(draw, m->parameters); //keep the last success in m->parameters.
     }
-    if (out_row>=0){
-        Apop_row_v(out, out_row, v);
-        gsl_vector_memcpy(v, draw);
-    }
+    if (out_row>=0) gsl_vector_memcpy(Apop_rv(out, out_row), draw);
 }
 
 
@@ -254,7 +251,7 @@ documentation for details.
 is widened to explore more of the space; if the accept rate is currently lower the
 variance is narrowed to stay closer to the last accepted proposal. Technically, this
 breaks ergodicity of the Markov chain, but the consensus seems to be that this is
-not a serious problem. If it does concern you, you can set the \c base_adapt_fn in the \ref Apop_mcmc_settings group to a do-nothing function, or one that damps its adaptation as \f$n\to\infty\f$.
+not a serious problem. If it does concern you, you can set the \c base_adapt_fn in the \ref apop_mcmc_settings group to a do-nothing function, or one that damps its adaptation as \f$n\to\infty\f$.
 
 \li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
 gibbs_chunks='a', all parameters are drawn as a set, and accepted/rejected as a set. The

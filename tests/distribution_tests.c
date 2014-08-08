@@ -78,14 +78,15 @@ void test_one_distribution(gsl_rng *r, apop_model *model, apop_model *true_param
     if (!strcmp(model->name, "Wishart distribution")){
         data = apop_data_calloc(runsize,4);
         true_params->parameters->vector->data[0] = runsize-4;
+        //Use Apop_r to get one row's data and fill it with a draw
         for (size_t i=0; i< runsize; i++){
-            Apop_row_v(data, i, v)
+            gsl_vector *v = Apop_rv(data, i);
             true_params->draw(v->data, r, true_params);
             assert(!isnan(apop_sum(v)));
         }
     } else {
         for (size_t i=0; i< runsize; i++){
-            Apop_row_v(data, i, v)
+            gsl_vector *v = Apop_rv(data, i);
             true_params->draw(v->data, r, true_params);
             assert(!isnan(apop_sum(v)));
         }
@@ -109,10 +110,8 @@ void test_cdf(gsl_rng *r, apop_model *m){//m is parameterized
     apop_data *draws = apop_data_alloc(drawct, m->dsize);
     apop_data *cdfs = apop_data_alloc(drawct);
     for (int i=0; i< drawct; i++){
-        Apop_row(draws, i, onerow);
-        Apop_stopif(apop_draw(onerow->matrix->data, r, m), abort(), 0, "bad draw.");
-        Apop_row(draws, i, one_data_pt);
-        apop_data_set(cdfs, i, -1, apop_cdf(one_data_pt, m));
+        Apop_stopif(apop_draw(Apop_r(draws, i)->matrix->data, r, m), abort(), 0, "bad draw.");
+        apop_data_set(cdfs, i, -1, apop_cdf(Apop_r(draws, i), m));
     }
     apop_model *cdf = apop_estimate(apop_data_sort(cdfs), apop_pmf);
     apop_model *u01 = apop_model_set_parameters(apop_uniform, 0, 1);

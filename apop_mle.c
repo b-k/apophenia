@@ -146,7 +146,7 @@ apop_varad_head(gsl_vector *, apop_numerical_gradient){
 #endif
     Get_vmsizes(model->parameters); //tsize
     apop_fn_with_params ll = model->log_likelihood ? model->log_likelihood : model->p;
-    Apop_stopif(!ll, return 0, 0, "Input model has neither p nor log_likelihood method. Returning zero.");
+    Apop_stopif(!ll, return NULL, 0, "Input model has neither p nor log_likelihood method. Returning NULL.");
     gsl_vector *out = gsl_vector_calloc(tsize);
     infostruct i = (infostruct) {.model = model, .data = data};
     apop_internal_numerical_gradient(ll, &i, out, delta);
@@ -289,8 +289,7 @@ static void tracepath(const gsl_vector *beta, double value, apop_data **path){
     size_t msize1 = (*path && (*path)->matrix) ? (*path)->matrix->size1: 0;
     if (!*path) *path = apop_data_alloc();
     (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
-    Apop_row_v(*path, msize1, lastv);
-    gsl_vector_memcpy(lastv, beta);
+    gsl_vector_memcpy(Apop_rv(*path, msize1), beta);
 
     (*path)->vector = apop_vector_realloc((*path)->vector, msize1+1);
     gsl_vector_set((*path)->vector, msize1, value);
@@ -332,12 +331,13 @@ static double negshell (const gsl_vector *beta, void * in){
         long double this_ll = i->model->log_likelihood? -out : log(-out); //negative negative llikelihood.
 
         if(gsl_isnan(this_ll)){
-            Apop_stopif(!i->model->log_likelihood && penalty > f_val, /*continue*/,
-                            0, "Your model's p evaluates as %g, and your penalty is %g, for an "
+            Apop_stopif(!i->model->log_likelihood && penalty > f_val, i->want_info='n',
+                            1, "Your model's p evaluates as %g, and your penalty is %g, for an "
                                "adjusted p of %g. Please make sure that this is positive, perhaps by "
-                               "rescaling your penalty.\n", f_val, penalty, f_val-penalty);
-            Apop_stopif(1, apop_data_show(i->model->parameters); longjmp(i->bad_eval_jump, -1),
-                        0, "NaN resulted from the following value tried by the maximum likelihood system. "
+                               "rescaling your penalty. Continuing, but will not report covariance or other "
+                               "log likelihood-based statistics.\n", f_val, penalty, f_val-penalty);
+            Apop_stopif(1, apop_data_show(i->model->parameters); i->want_info='n',
+                        1, "NaN resulted from the following value tried by the maximum likelihood system. "
                            "Tighten your constraint? Log of a negative p?\n");
         }
         i->best_ll = GSL_MAX(i->best_ll, this_ll);
@@ -461,6 +461,8 @@ Inside the infostruct, you'll find these elements:
         .n		= betasize,
         .params	= i};
     ctrl_c = 0;
+    if (setjmp(i->bad_eval_jump))
+        Apop_stopif(1, return, 0, "Failure evaluating likelihood at the starting point. Add a starting point?");
 	gsl_multimin_fdfminimizer_set (s, &minme, i->beta, mp->step_size, mp->tolerance);
     signal(SIGINT, mle_sigint);
     do { 	
@@ -505,6 +507,8 @@ static void apop_maximum_likelihood_no_d(apop_data * data, infostruct * i){
     apopstatus = 0; //assume failure until we score a success.
     gsl_vector_set_all (ss,  mp->step_size);
     gsl_multimin_function  minme = {.f = negshell, .n= betasize, .params = i};
+    if (setjmp(i->bad_eval_jump))
+        Apop_stopif(1, return, 0, "Failure evaluating likelihood at the starting point. Add a starting point?");
     gsl_multimin_fminimizer_set (s, &minme, i->beta,  ss);
     //i->beta = s->x;
     signal(SIGINT, mle_sigint);

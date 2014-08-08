@@ -81,13 +81,13 @@ static void log_and_exp(gsl_rng *r){
     Apop_col_tv(d, "10", tencol);
     apop_vector_log10(tencol);
     apop_vector_apply(tencol, v_pow10);
-    Apop_col_v(d2, 0, o_tencol);
+    gsl_vector *o_tencol = Apop_cv(d2, 0);
     assert(apop_vector_distance(tencol, o_tencol) < 1e-3);
     
     Apop_col_tv(d, "e", ecol);
     apop_vector_log(ecol);
     apop_vector_exp(ecol);
-    Apop_col_v(d2, 1, o_ecol);
+    gsl_vector *o_ecol = Apop_cv(d2, 1);
     assert(apop_vector_distance(ecol, o_ecol) < 1e-3);
 
     apop_data *d5 = apop_data_alloc(5,5);
@@ -1055,8 +1055,7 @@ void test_probit_and_logit(gsl_rng *r){
     Apop_model_add_group(apop_logit, apop_mle, .tolerance=1e-5);
     Apop_model_add_group(apop_logit, apop_parts_wanted);
     apop_model *m = apop_estimate(data, apop_logit);
-    Apop_col_v(m->parameters, 0, logit_params);
-    assert(apop_vector_distance(logit_params, true_params) < 0.07);
+    assert(apop_vector_distance(Apop_cv(m->parameters, 0), true_params) < 0.07);
     apop_data_free(data);
     apop_model_free(m);
 
@@ -1065,8 +1064,7 @@ void test_probit_and_logit(gsl_rng *r){
     Apop_model_add_group(apop_probit, apop_mle);
     Apop_model_add_group(apop_logit, apop_parts_wanted);
     m = apop_estimate(data2, apop_probit);
-    Apop_col_v(m->parameters, 0, probit_params);
-    assert(apop_vector_distance(probit_params, true_params) < 0.07);
+    assert(apop_vector_distance(Apop_cv(m->parameters, 0), true_params) < 0.07);
     gsl_vector_free(true_params);
     apop_model_free(m);
     apop_data_free(data2);
@@ -1245,8 +1243,7 @@ void test_pmf_compress(gsl_rng *r){
     apop_text_add(b, 2, 0, "Type 1");
     apop_text_add(b, 3, 0, "Type 1");
     apop_text_add(b, 4, 0, "Type 2");
-    Apop_row(b, 0, arow);
-    apop_data *spec = apop_data_copy(arow);
+    apop_data *spec = apop_data_copy(Apop_r(b, 0));
     gsl_vector_set_all(spec->vector, 1);
     apop_data *c = apop_data_to_bins(b, .binspec=spec);
     apop_data_free(b);
@@ -1314,8 +1311,7 @@ void test_ols_offset(gsl_rng *r){
     }
     apop_data *cp = apop_data_copy(useme);
     apop_model *zero_off = apop_estimate(useme, apop_ols);
-    Apop_col_v(cp, 1, off);
-    gsl_vector_add_constant(off, 20);
+    gsl_vector_add_constant(Apop_cv(cp, 1), 20);
     apop_model *way_off = apop_estimate(cp, apop_ols);
     assert(apop_vector_distance(zero_off->info->vector, way_off->info->vector) < 1e-4);
     gsl_vector *zcov = apop_data_pack(apop_data_get_page(zero_off->parameters, "<covariance>"), .use_info_pages='y');
@@ -1372,7 +1368,7 @@ int main(int argc, char **argv){
     do_test("test data compressing", test_pmf_compress(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
-    do_test("debault RNG", test_default_rng(r));
+    do_test("default RNG", test_default_rng(r));
     do_test("test row set and remove", row_manipulations());
     do_test("test PMF", test_pmf());
     do_test("apop_pack/unpack test", apop_pack_test(r));

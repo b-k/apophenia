@@ -95,7 +95,7 @@ lost.<br>
 If 'v' (as in void), return \c NULL.  (Default = 'n')
 
 \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
-\ref Apop_row to get each row in turn, and send it to the function. The first
+\ref Apop_r to get each row in turn, and send it to the function. The first
 implication is that your function should be expecting a \ref apop_data set with
 exactly one row in it. The second is that \c part is ignored: it only makes sense to go
 row-by-row. 
@@ -190,19 +190,16 @@ apop_varad_head(apop_data*, apop_map){
             int smaller_dim = GSL_MIN(in->matrix->size1, in->matrix->size2);
             for (int i=0; i< smaller_dim; i++){
                 if (smaller_dim == in->matrix->size1){
-                    Apop_row_v(in, i, onevector);
+                    gsl_vector *onevector = Apop_rv(in, i);
                     if (inplace=='v')
-                        mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'r', by_apop_rows);
-                    else {
-                        Apop_row_v(out, i, twovector);
-                        mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'r', by_apop_rows);
-                    }
+                         mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'r', by_apop_rows);
+                    else mapply_core(NULL, NULL, onevector, fn, Apop_rv(out, i), use_index, use_param, param, 'r', by_apop_rows);
                 } else {
-                    Apop_col_v(in, i, onevector);
+                    gsl_vector *onevector = Apop_cv(in, i);
                     if (inplace=='v')
                         mapply_core(NULL, NULL, onevector, fn, NULL, use_index, use_param, param, 'c', by_apop_rows);
                     else {
-                        Apop_col_v(out, i, twovector);
+                        gsl_vector *twovector = Apop_cv(out, i);
                         mapply_core(NULL, NULL, onevector, fn, twovector, use_index, use_param, param, 'c', by_apop_rows);
                     }
                 }
@@ -241,7 +238,7 @@ static void rowloop(threadpass *tc){
     apop_fn_ri  *fn_ri=tc->fn;
     Get_vmsizes(tc->d); //maxsize
     OMP_for (int i=0; i< maxsize; i++){
-        Apop_row(tc->d, i, onerow);
+        apop_data *onerow = Apop_r(tc->d, i);
         double val = 
         tc->use_param ? (tc->use_index ? fn_rpi(onerow, tc->param, i) : fn_rp(onerow, tc->param) )
                       : (tc->use_index ? fn_ri(onerow, i) : rtod(onerow) );

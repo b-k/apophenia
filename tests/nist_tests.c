@@ -42,7 +42,7 @@ void wampler1(){
 
 void numacc4(){
     apop_data *d  = apop_text_to_data("numacc4.dat");
-    Apop_col_v(d, 0, v)
+    gsl_vector *v = Apop_cv(d, 0);
     Diff(apop_vector_mean(v), 10000000.2, 1e-5);
     Diff(apop_vector_var(v)*(v->size -1)/v->size, 0.01, TOL3);
     //I don't do this yet:

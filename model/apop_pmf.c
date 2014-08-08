@@ -125,7 +125,7 @@ then I will return the row number of the draw, not the data in that row.
 vector tallying the cumulative mass. Subsequent draws will have no computational
 overhead. Because the  vector is built using the data on the first call to this or
 the \c cdf method, do not rearrange or modify the data after the first call. I.e.,
-if you choose to use \ref apop_data_sort or \ref apop_data_pmf_sort on your data,
+if you choose to use \ref apop_data_sort or \ref apop_data_sort on your data,
 do it before the first draw or CDF calculation.
 
 \exception m->error='f' There is zero or NaN density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
@@ -176,7 +176,7 @@ static int draw (double *out, gsl_rng *r, apop_model *m){
         *out = current;
         return 0;
     }
-    Apop_row(m->data, current, outrow);
+    apop_data *outrow = Apop_r(m->data, current);
     int i = 0;
     if (outrow->vector)
         out[i++] = outrow->vector->data[0];
@@ -224,11 +224,9 @@ static int are_equal(apop_data *left, apop_data *right){
 
 static int find_in_data(apop_data *searchme, apop_data *findme){//findme is one row tall.
     Get_vmsizes(searchme)
-    for(int i=0; i < GSL_MAX(vsize, GSL_MAX(searchme->textsize[0], msize1)); i++){
-        Apop_row(searchme, i, onerow);
-        if (are_equal(findme, onerow))
+    for(int i=0; i < GSL_MAX(vsize, GSL_MAX(searchme->textsize[0], msize1)); i++)
+        if (are_equal(findme, Apop_r(searchme, i)))
             return i;
-    }
     return -1;
 }
 
@@ -244,8 +242,7 @@ static long double pmf_p(apop_data *d, apop_model *m){
     Get_vmsizes(d)//maxsize
     long double p = 1;
     for (int i=0; i< maxsize; i++){
-        Apop_row(d, i, onerow);
-        int elmt = find_in_data(m->data, onerow);
+        int elmt = find_in_data(m->data, Apop_r(d, i));
         if (elmt == -1) return 0; //Can't find one observation: prob=0;
         p *= m->data->weights
                  ? m->data->weights->data[elmt] /settings->total_weight 
@@ -267,13 +264,12 @@ define using \ref apop_data_sort defines that ordering.
 will generate a vector tallying the cumulative mass. Subsequent draws will have no
 computational overhead. Because the  vector is built using the data on the first call
 to this or the \c cdf method, do not rearrange or modify the data after the first
-call. I.e., if you choose to use \ref apop_data_sort or \ref apop_data_pmf_sort on
+call. I.e., if you choose to use \ref apop_data_sort or \ref apop_data_sort on
 your data, do it before the first draw or CDF calculation.
  */
 static long double pmf_cmf(apop_data *d, apop_model *m){
     Get_vmsizes(m->data); //maxsize
-    Apop_row(d, 0, onerow);
-    int elmt = find_in_data(m->data, onerow);
+    int elmt = find_in_data(m->data, Apop_r(d, 0));
     if (elmt == -1) return 0; //Can't find one observation: prob=0;
     if (!m->data->weights) return (elmt+0.0)/maxsize;
     else {

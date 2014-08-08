@@ -5,7 +5,8 @@ typedef struct {
 } coeff_struct;
 
 long double banana (double *params, coeff_struct *in){
-    return (gsl_pow_2(1-params[0]) + in->scaling*gsl_pow_2(params[1]-gsl_pow_2(params[0])));
+    return (gsl_pow_2(1-params[0]) 
+               + in->scaling*gsl_pow_2(params[1]-gsl_pow_2(params[0])));
 }
 
 long double ll (apop_data *d, apop_model *in){
@@ -14,8 +15,8 @@ long double ll (apop_data *d, apop_model *in){
 
 int main(){
     coeff_struct co = {.scaling=100};
-    apop_model *b = &(apop_model) {"¡Bananas!", .log_likelihood= ll, .vsize=2, 
-                                .more = &co, .more_size=sizeof(coeff_struct)};
+    apop_model *b = &(apop_model) {"¡Bananas!", .log_likelihood= ll,
+                     .vsize=2, .more = &co, .more_size=sizeof(coeff_struct)};
     Apop_model_add_group(b, apop_mle, .verbose='y', .method="NM simplex");
     Apop_model_add_group(b, apop_parts_wanted);
     apop_model *e1 = apop_estimate(NULL, b);

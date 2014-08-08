@@ -68,8 +68,7 @@ mnode_t **index_generate(apop_data const *in, apop_data const *in2){
     mnode_t **mnodes = malloc(sizeof(mnode_t*)*(margin_ct+1));
     //allocate every node
     for(size_t i=0; i < margin_ct; i ++){
-        Apop_col_v(in, i, col);
-        gsl_vector *vals = apop_vector_unique_elements(col);
+        gsl_vector *vals = apop_vector_unique_elements(Apop_cv(in, i));
         mnodes[i] = malloc(sizeof(mnode_t)*(vals->size+1));
         for(size_t j=0; j < vals->size; j ++)
             mnodes[i][j] = (mnode_t) {.val = gsl_vector_get(vals, j),
@@ -256,7 +255,7 @@ static void main_loop(int config_ct, rake_t *rakeinfo, int k){
 /* Following the FORTRAN, 1 contrast ==> icon. Here, icon will be a
 subset of the main index including only the columns pertaining to a given margin. */
 void generate_margin_index(mnode_t **icon, const apop_data *margin, mnode_t **mainindex, size_t col){
-    Apop_col_v(margin, col, iconv);
+    gsl_vector *iconv = Apop_cv(margin, col);
     int ct = 0;
     for (int j=0; mainindex[j]; j++)
         if (gsl_vector_get(iconv, j))
@@ -298,7 +297,7 @@ static void c_loglin(const apop_data *config, const apop_data *indata,
     rake_t rakeinfos[contrast_ct];
     double maxdev=0;
     for(size_t i=0; i < contrast_ct; i ++){
-        Apop_col_v(config, i, iconv)
+        gsl_vector *iconv = Apop_cv(config, i);
         rakeinfos[i] = (rake_t) {
             .indata = indata, 
             .fit = fit, 

@@ -489,7 +489,7 @@ apop_data * apop_data_summarize(apop_data *indata){
 			apop_name_add(out->names, rowname, 'r');
 		}
 	for (size_t i=0; i< indata->matrix->size2; i++){
-        Apop_col_v(indata, i, v);
+        gsl_vector *v = Apop_cv(indata, i);
         if (!indata->weights){
             mean = apop_vector_mean(v);
             var  = apop_vector_var_m(v, mean);
@@ -640,9 +640,7 @@ apop_data *apop_data_covariance(const apop_data *in){
     Apop_stopif(out->error, return out, 0, "allocation error.");
     for (size_t i=0; i < in->matrix->size2; i++){
         for (size_t j=i; j < in->matrix->size2; j++){
-            Apop_col_v(in, i, v1);
-            Apop_col_v(in, j, v2);
-            double var = apop_vector_cov(v1, v2, in->weights);
+            double var = apop_vector_cov(Apop_cv(in, i), Apop_cv(in, j), in->weights);
             gsl_matrix_set(out->matrix, i,j, var);
             if (i!=j) gsl_matrix_set(out->matrix, j,i, var);
         }
@@ -662,12 +660,9 @@ apop_data *apop_data_covariance(const apop_data *in){
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
     for(size_t i=0; i< in->matrix->size2; i++){
-        Apop_col_v(in, i, cvin);
-        Apop_col_v(out, i, cvout);
-        Apop_row_v(out, i, rvout);
-        double std_dev = sqrt(apop_vector_var(cvin, in->weights));
-        gsl_vector_scale(cvout, 1.0/std_dev);
-        gsl_vector_scale(rvout, 1.0/std_dev);
+        double std_dev = sqrt(apop_vector_var(Apop_cv(in, i), in->weights));
+        gsl_vector_scale(Apop_cv(out, i), 1.0/std_dev);
+        gsl_vector_scale(Apop_rv(out, i), 1.0/std_dev);
     }
     return out;
 }

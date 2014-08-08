@@ -377,15 +377,14 @@ apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_data *param_draws = apop_data_alloc(0, settings->draws, vsize+msize1+msize2);
     for (int i=0; i < settings->draws; i++){
         apop_model *mm = apop_estimate (NULL, m);//If you're here, d==NULL.
-        Apop_row_v(param_draws, i, onerow);
-        apop_data_pack(mm->parameters, onerow);
+        apop_data_pack(mm->parameters, Apop_rv(param_draws, i));
         apop_model_free(mm);
     }
     if (settings->index == -1)
         return apop_estimate(param_draws, apop_pmf);
     else {
         apop_data *param_draws1 = apop_data_alloc(settings->draws, 0,0);
-        Apop_col_v(param_draws, settings->index, the_draws);
+        gsl_vector *the_draws = Apop_cv(param_draws, settings->index);
         gsl_vector_memcpy(param_draws1->vector, the_draws);
         apop_data_free(param_draws);
         return apop_estimate(param_draws1, apop_pmf);
@@ -522,8 +521,8 @@ double apop_cdf(apop_data *d, apop_model *m){
     apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);
     if (!cs) cs = Apop_model_add_group(m, apop_cdf);
     long int tally = 0; 
-    Apop_row(d, 0, row);
-    gsl_vector *ref = apop_data_pack(row);
+    
+    gsl_vector *ref = apop_data_pack(Apop_r(d, 0));
     if (!cs->draws_made){
         if (m->dsize == -1) apop_prep(d, m);
         Apop_stopif(m->dsize==0, return GSL_NAN, 0, "I need to make random draws from your model, but it has dsize==0. Returning NaN");

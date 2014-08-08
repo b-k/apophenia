@@ -38,11 +38,11 @@ Calculate the determinant of a matrix, its inverse, or both, via LU decompositio
 \param out If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. 
 
 \param calc_det 
-0: Do not calculate the determinant.\\
+0: Do not calculate the determinant.<br>
 1: Do.
 
 \param calc_inv
-0: Do not calculate the inverse.\\
+0: Do not calculate the inverse.<br>
 1: Do.
 
 \return If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.  If <tt>calc_inv!=0</tt>, 
@@ -146,7 +146,7 @@ apop_varad_head(apop_data *, apop_matrix_pca) {
 	for (int i=0; i< all_evalues->size; i++)
 		eigentotals	+= gsl_vector_get(all_evalues, i);
 	for (int i=0; i<dimensions_we_want; i++){
-		Apop_col_v(&(apop_data){.matrix=eigenvectors}, i, v);
+		gsl_vector *v = Apop_cv(&(apop_data){.matrix=eigenvectors}, i);
 		gsl_matrix_set_col(pc_space->matrix, i, v);
 		gsl_vector_set(pc_space->vector, i, gsl_vector_get(all_evalues, i)/eigentotals);
 	}
@@ -361,7 +361,7 @@ gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
     gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
     for (size_t i=0; i < in->size2; i++){
         if (drop[i]==0){
-            Apop_col_v(&(apop_data){.matrix=in}, i, v);
+            gsl_vector *v = Apop_cv(&(apop_data){.matrix=in}, i);
             gsl_matrix_set_col(out, j, v);
             j   ++;
         }
