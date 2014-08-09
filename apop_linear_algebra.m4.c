@@ -37,11 +37,11 @@ Calculate the determinant of a matrix, its inverse, or both, via LU decompositio
 \param out If you want an inverse, this is where to place the matrix to be filled with the inverse. Will be allocated by the function. 
 
 \param calc_det 
-0: Do not calculate the determinant.\\
+0: Do not calculate the determinant.<br>
 1: Do.
 
 \param calc_inv
-0: Do not calculate the inverse.\\
+0: Do not calculate the inverse.<br>
 1: Do.
 
 \return If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.  If <tt>calc_inv!=0</tt>, 

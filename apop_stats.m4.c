@@ -632,9 +632,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
-  \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
-  \param top deprecated synonym for \c from.
-  \param bottom deprecated synonym for \c to.
+  \param rng    A \c gsl_rng. If \c NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
 
   This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
   or \ref apop_normal.
@@ -652,13 +650,11 @@ If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c
 
 \li This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
-    apop_model * apop_varad_var(top, NULL);
-    apop_model * apop_varad_var(bottom, NULL);
-    apop_model * apop_varad_var(from, (top ? top : NULL));
-    apop_model * apop_varad_var(to, (bottom ? bottom : NULL));
-    Apop_assert(from, "The first model is NULL.");
-    Apop_assert(to, "The second model is NULL.");
+APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
+    apop_model * apop_varad_var(from, NULL);
+    apop_model * apop_varad_var(to, NULL);
+    Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
+    Apop_stopif(!to, return NAN, 0, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
     gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
 APOP_VAR_ENDHEAD
@@ -677,8 +673,8 @@ APOP_VAR_ENDHEAD
             } //else:
             get_one_row(p, a_row, i, firstcol, msize2);
             double qi = apop_p(a_row, to);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
-                                                "from-distribution doesn't (which produces infinite divergence).");
+            Apop_stopif(!qi, return GSL_NEGINF, 1, "The PMFs aren't synced: from-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             div += pi * log(pi/qi);
         }
@@ -691,8 +687,8 @@ APOP_VAR_ENDHEAD
             apop_draw(a_row->matrix->data, rng, from);
             double pi = apop_p(a_row, from);
             double qi = apop_p(a_row, to);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
-                                                "from-distribution doesn't (which produces infinite divergence).");
+            Apop_stopif(!qi, return GSL_NEGINF, 1, "From-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             if (pi) //else add zero.
                 div += pi * log(pi/qi);
