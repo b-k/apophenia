@@ -15,44 +15,41 @@ static double find_nans(double in){ return isnan(in); }
 static void addin(apop_data *predict, size_t i, int j, size_t page){
     int len;
     if (!predict->matrix){
-        predict->matrix = gsl_matrix_alloc(1,5); 
+        predict->matrix = gsl_matrix_alloc(1, 4); 
         len = 0;
     } else 
         len = predict->matrix->size1;
-    apop_matrix_realloc(predict->matrix, len + 1, predict->matrix->size2);
+    apop_matrix_realloc(predict->matrix, len + 1, 4);
     apop_data_set(predict, .row=len, .colname="row", .val=i);
     apop_data_set(predict, .row=len, .colname="col", .val=j);
     apop_data_set(predict, .row=len, .colname="page", .val=page);
 }
 
-static int find_missing(const apop_data *data, apop_data *predict, size_t page, int ct){
+static void find_missing(const apop_data *data, apop_data *predict, size_t page){
     //generate a list of fixed-parameter positions, and their paramvals.
-   apop_data * mask = apop_map((apop_data*)data, find_nans, .all_pages='y');
+   apop_data * mask = apop_map((apop_data*)data, find_nans);
     //find out where the NaNs are
     for (size_t i=0; mask->vector && i< mask->vector->size; i++)
-            if (apop_data_get(mask, i, -1))
-                addin(predict, i, -1, page);
+        if (apop_data_get(mask, i, -1))
+            addin(predict, i, -1, page);
     for (size_t i=0; mask->matrix && i< mask->matrix->size1; i++)
         for (int j=0; j <mask->matrix->size2; j++)
             if (apop_data_get(mask, i, j))
                 addin(predict, i, j, page);
-    if (mask->more)
-        ct += mask->vector ? apop_sum(mask->vector) : 0
-              + mask->matrix ? apop_matrix_sum(mask->matrix) : 0
-              + find_missing(mask->more, predict, page+1, ct);
     apop_data_free(mask);
-    return ct;
 }
 
-static apop_data *apop_predict_table_prep(apop_data *in, char fill_with_nans){
+static apop_data *apop_predict_table_prep(apop_data *in){
     apop_data *out = apop_data_alloc( );
     apop_name_add(out->names, "<fillins>", 'h');
     apop_name_add(out->names, "row", 'c');
     apop_name_add(out->names, "col", 'c');
     apop_name_add(out->names, "page", 'c');
     apop_name_add(out->names, "value", 'c');
-    if (fill_with_nans == 'y')
-        find_missing(in, out, 0, 0);
+    for (int page=0; in; page++){
+        find_missing(in, out, page);
+        in = in->more;
+    }
     return out;
 }
 
@@ -73,8 +70,8 @@ static void apop_data_predict_fill(apop_data *data, apop_data *predict){
     apop_data *this_page = data;
     for (int i=0; i < predict->matrix->size1; i++){
         int p = apop_data_get(predict, .row=i, .colname="page");
-        if (p != this_page_ct){
-            this_page_ct = p; 
+        while (p != this_page_ct){//entries are in sequential order, but may skip pages.
+            this_page_ct++;
             this_page = this_page->more;
         }
         apop_data_set(this_page, .row= apop_data_get(predict, .row=i, .colname="row"),
@@ -92,7 +89,7 @@ typedef struct {
 } apop_fix_params_settings;
 
 static void unpack(apop_data *out, apop_model *m){
-    //real param set --> predict table 
+    //predict table --> real param set 
    apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
    Apop_col_tv(mset->predict, "value", p_in_tab);
    gsl_vector_memcpy(p_in_tab, m->parameters->vector);
@@ -100,7 +97,7 @@ static void unpack(apop_data *out, apop_model *m){
 }
 
 static void pack(apop_data *in, apop_model *m){
-    //predict table --> real param set 
+    //real param set --> predict table 
    apop_fix_params_settings *mset = Apop_settings_get_group(m, apop_fix_params);
    apop_data *predict = mset->predict;
     for(int i =0; i< predict->matrix->size1; i++){
@@ -112,7 +109,8 @@ static void pack(apop_data *in, apop_model *m){
             in = in->more;
     }
    Apop_col_tv(mset->predict, "value", p_in_tab);
-   gsl_vector_memcpy(m->parameters->vector, p_in_tab);
+   if (m->parameters) //empty only during set_starting_point
+       gsl_vector_memcpy(m->parameters->vector, p_in_tab);
 }
 
 //The macros generating the fixed_param_settings group's init/copy/free functions:
@@ -178,6 +176,22 @@ static apop_model *fixed_param_model = &(apop_model){"Fill me", .estimate=fixed_
             .log_likelihood=fix_params_ll, .constraint= fix_params_constraint, 
             .draw=fix_params_draw, .prep=fixed_param_prep};
 
+
+void set_starting_point(apop_data * in_params, apop_model * model_out, double *start, apop_data *predict_tab){
+    //reshape the starting_pt to the shape of typical params
+    apop_data *param_cp = apop_data_copy(in_params);
+    Get_vmsizes(in_params);//tsize
+    gsl_vector_view v = gsl_vector_view_array(start, tsize);
+    apop_data_unpack(&(v.vector), param_cp);
+
+    pack(param_cp, model_out); //write to the fill tab.
+    apop_data_free(param_cp);
+    Apop_col_tv(predict_tab, "value", ptv);
+    double *new_start = malloc(ptv->size * sizeof(double)); //leak!!
+    memcpy(new_start, ptv->data, ptv->size* sizeof(double));
+    Apop_settings_add(model_out, apop_mle, starting_pt, new_start);
+}
+
 /** Produce a model based on another model, but with some of the parameters fixed at a given value. 
   
 You will send me the model whose parameters you want fixed, with the \c parameters element
@@ -218,8 +232,8 @@ apop_model * apop_model_fix_params(apop_model *model_in){
     apop_model *model_out  = Apop_model_copy_set(fixed_param_model,
                                 apop_fix_params, .base_model = model_in);
 
-    apop_data *predict_tab; //Keep the predict tab on the data set and in the settings struct
-    predict_tab = apop_predict_table_prep(model_in->parameters, 'y');
+    apop_data *predict_tab; //Keep the predict tab as a data set and in the settings struct
+    predict_tab = apop_predict_table_prep(model_in->parameters);
     Apop_stopif (!predict_tab || !predict_tab->matrix|| !predict_tab->matrix->size2,
         apop_data_free(predict_tab);
         apop_model_free(model_out);
@@ -228,19 +242,25 @@ apop_model * apop_model_fix_params(apop_model *model_in){
                 "Returning a copy of the input model."
     );
     apop_settings_set(model_out, apop_fix_params, predict, predict_tab);
+    model_out->vsize = predict_tab->matrix->size1;
+    model_out->dsize = model_in->dsize;
 
-    if (Apop_settings_get_group(model_in, apop_mle))
+    if (Apop_settings_get_group(model_in, apop_mle)){
         apop_settings_copy_group(model_out, model_in, "apop_mle");
+        double *start = Apop_settings_get(model_in, apop_mle, starting_pt);
+        if (start) set_starting_point(model_in->parameters, model_out, start, predict_tab);
+    }
     else Apop_model_add_group(model_out, apop_mle, .method="PR cg",
                                      .step_size=1, .tolerance=0.2);
+    if (Apop_settings_get_group(model_in, apop_parts_wanted))
+        apop_settings_copy_group(model_out, model_in, "apop_parts_wanted");
+
 
     #define cut_if_missing(method) if (!model_in->method) model_out->method = NULL;
     cut_if_missing(p);
     cut_if_missing(draw);
     cut_if_missing(constraint);
     cut_if_missing(log_likelihood);
-    model_out->vsize = predict_tab->matrix->size1;
-    model_out->dsize = model_in->dsize;
     snprintf(model_out->name, 100, "%s, with some params fixed", model_in->name);
     return model_out;
 }

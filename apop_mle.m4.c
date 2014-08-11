@@ -538,6 +538,7 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
     apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
     double tol = mp->dim_cycle_tolerance;
     int betasize = info.beta->size;
+    Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
     do {
         if (mp->verbose){
             if (!(iteration++))
@@ -545,7 +546,6 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
             printf("Iteration %i:\n", iteration);
         }
         last_ll = this_ll;
-        Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
         for (int i=0; i< betasize; i++){
             gsl_vector_set(info.beta, i, GSL_NAN);
             apop_data_unpack(info.beta, est->parameters);
