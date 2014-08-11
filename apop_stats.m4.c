@@ -617,11 +617,6 @@ apop_data *apop_data_correlation(const apop_data *in){
     return out;
 }
 
-static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max){
-    for (int j=min; j< max; j++)
-        apop_data_set(a_row, 0, j-min, apop_data_get(p, i, j));
-}
-
 /** Kullback-Leibler divergence.
 
   This measure of the divergence of one distribution from another
@@ -632,7 +627,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
-  \param rng    A \c gsl_rng. If \c NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
+  \param rng    A \c gsl_rng. If \c NULL or number of threads is greater than 1, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
 
   This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
   or \ref apop_normal.
@@ -664,36 +659,33 @@ APOP_VAR_ENDHEAD
         apop_data *p = from->data;
         apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
         Get_vmsizes(p); //maxsize
-        apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);
-        for (int i=0; i < (vsize ? vsize : msize1); i++){
+        OMP_for_reduce (+:div,    int i=0; i < (vsize ? vsize : msize1); i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i)/settings->total_weight : 1./maxsize;
             if (!pi){
                 Apop_notify(3, "0\t--\t0");
                 continue;
             } //else:
-            get_one_row(p, a_row, i, firstcol, msize2);
-            double qi = apop_p(a_row, to);
-            Apop_stopif(!qi, return GSL_NEGINF, 1, "The PMFs aren't synced: from-distribution has a value where "
-                                                "to-distribution doesn't (which produces infinite divergence).");
+            double qi = apop_p(Apop_r(p, i), to);
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
+            Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "The PMFs aren't synced: from-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             div += pi * log(pi/qi);
         }
-        apop_data_free(a_row);
     } else { //the version with the RNG.
         Apop_stopif(!from->dsize, return GSL_NAN, 0, "I need to make random draws from the 'from' model, "
                                                      "but its dsize (draw size)==0. Returning NaN.");
-        apop_data *a_row = apop_data_alloc(1, from->dsize);
-        for (int i=0; i < draw_ct; i++){
-            apop_draw(a_row->matrix->data, rng, from);
-            double pi = apop_p(a_row, from);
-            double qi = apop_p(a_row, to);
-            Apop_stopif(!qi, return GSL_NEGINF, 1, "From-distribution has a value where "
-                                                "to-distribution doesn't (which produces infinite divergence).");
+        OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
+            double draw[from->dsize];
+            apop_draw(draw, apop_rng_get_thread(), from);
+            gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
+            double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
+            double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
+            Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             if (pi) //else add zero.
                 div += pi * log(pi/qi);
         }
-        apop_data_free(a_row);
     }
     return div;
 }

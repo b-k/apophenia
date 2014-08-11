@@ -58,9 +58,11 @@ void apop_gsl_error(char const *reason, char const *file, int line, int gsl_errn
 #define PRAGMA(x) _Pragma(#x)
 #define OMP_critical(tag) PRAGMA(omp critical ( tag ))
 #define OMP_for(...) _Pragma("omp parallel for") for(__VA_ARGS__)
+#define OMP_for_reduce(red, ...) PRAGMA(omp parallel for reduction( red )) for(__VA_ARGS__)
 #else
 #define OMP_critical(tag)
 #define OMP_for(...) for(__VA_ARGS__)
+#define OMP_for_reduce(...) for(__VA_ARGS__)
 #endif
 
 #include "config.h"
