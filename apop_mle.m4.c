@@ -539,6 +539,8 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
     double tol = mp->dim_cycle_tolerance;
     int betasize = info.beta->size;
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
+    gsl_vector *paramv = apop_data_pack(est->parameters);
+    apop_model *full_est = NULL; //an alias
     do {
         if (mp->verbose){
             if (!(iteration++))
@@ -553,14 +555,17 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
             apop_prep(d, m_onedim);
             apop_maximum_likelihood(d, m_onedim);
             gsl_vector_set(info.beta, i, m_onedim->parameters->vector->data[0]);
-            apop_model *full_est = apop_model_fix_params_get_base(m_onedim);//points to est, but filled.
+            full_est = apop_model_fix_params_get_base(m_onedim);//points to est, but filled.
             this_ll = get_ll(d, full_est);//only used on the last iteration.
             if (mp->verbose) printf("(%i):%g\t", i, this_ll), fflush(NULL);
             apop_model_free(m_onedim);
         }
         if (mp->verbose) printf("\n");
+        apop_data_pack(full_est->parameters, paramv);
+        Apop_settings_add(est, apop_mle, starting_pt, paramv->data);
     } while (fabs(this_ll - last_ll) > tol);
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
+    gsl_vector_free(paramv);
 }
 
 void get_desires(apop_model *m, infostruct *info){

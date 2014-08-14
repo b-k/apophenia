@@ -86,7 +86,6 @@ static void apop_kernel_estimate(apop_data *d, apop_model *m){
 
 static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
         double (*fn)(apop_data*,apop_model*)){
-    Nullcheck_d(d, GSL_NAN);
     Nullcheck_m(m, GSL_NAN);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);

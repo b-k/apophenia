@@ -77,7 +77,6 @@ doc:
 	@sed -i 's|<td width="100%"></td>||g' html/*html
 	@sed -i -f docs/edit_group html/group__models.html 
 	cp docs/*js html/
-	sudo cp man/man3/* /usr/share/man/man3/
 
 install-data-local:
 	@echo 
