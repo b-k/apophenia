@@ -19,7 +19,7 @@ char errorbuff[10000];
 void check_log(char*fn_to_check, char*msg){
 #ifdef HAVE_FMEMOPEN
     fflush(NULL);
-    Apop_stopif (!apop_regex(errorbuff, fn_to_check), abort(), 0, msg);
+    Apop_stopif (!apop_regex(errorbuff, fn_to_check), abort(), 0, "%s", msg);
 #endif
 }
 
