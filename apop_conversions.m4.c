@@ -740,7 +740,7 @@ will return the original data set (stripped of text and names).
  \param in an \c apop_data set. No default; if \c NULL, return \c NULL.
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
   \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
-pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'n'. 
+pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'y'. 
 \param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
@@ -754,7 +754,7 @@ APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, 
     const apop_data * apop_varad_var(in, NULL);
     if (!in) return NULL;
     gsl_vector * apop_varad_var(out, NULL);
-    char apop_varad_var(all_pages, 'n');
+    char apop_varad_var(all_pages, 'y');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
         size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
@@ -790,7 +790,7 @@ APOP_VAR_ENDHEAD
             in = in->more;
         if (in->more){
             vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
-            apop_data_pack(in->more, &vout, .all_pages='y');
+            apop_data_pack(in->more, &vout);
         }
     }
     return out;

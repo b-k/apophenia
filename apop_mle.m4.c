@@ -97,7 +97,7 @@ static double one_d(double b, void *in){
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, 
                             infostruct* info, gsl_vector *out, double delta){
     double result, err;
-    gsl_vector *beta = apop_data_pack(info->model->parameters, NULL, .all_pages='y');
+    gsl_vector *beta = apop_data_pack(info->model->parameters);
     infostruct i = *info;
     i.f = &ll;
     i.gp = &(grad_params){ .beta = gsl_vector_alloc(beta->size)};
@@ -296,7 +296,7 @@ static double negshell (const gsl_vector *beta, void * in){
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-    if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
+    if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta);
     double f_val = f(i->data, i->model);
     out = penalty - f_val; //negative llikelihood
     Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
@@ -340,7 +340,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     /* In all cases, negshell gets called first, so the constraint is already
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
-            apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta); */
     apop_score_type ms = apop_score_vtable_get(i->model);
     if (ms) ms(i->data, g, i->model);
     else {
@@ -641,7 +641,7 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
                        .path           = mp->path,
                        .model          = dist};
     get_desires(dist, &info);
-    info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
+    info.beta = apop_data_pack(dist->parameters);
     if (info.path) *info.path = apop_data_alloc();
     if (setup_starting_point(mp, info.beta)) return;
     info.model->data = data;
@@ -716,12 +716,12 @@ APOP_VAR_ENDHEAD
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
     else if (!strcmp(starting_pt, "np")){
-        v = apop_data_pack(copy->parameters, NULL, .all_pages='y'); 
+        v = apop_data_pack(copy->parameters); 
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     else if (e->parameters){//"ep" or default.
-        v = apop_data_pack(e->parameters, NULL, .all_pages='y'); 
+        v = apop_data_pack(e->parameters); 
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
@@ -772,7 +772,7 @@ static double annealing_distance(void *xin, void *yin) {
 static void annealing_check_constraint(infostruct *i){
     apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model))
-        apop_data_pack(i->model->parameters, i->beta, .all_pages='y');
+        apop_data_pack(i->model->parameters, i->beta);
 }
 
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
@@ -844,7 +844,7 @@ static void apop_annealing(infostruct *i){
                          .t_min         = mp->t_min};
     gsl_rng *r = mp->rng ? mp->rng : apop_rng_get_thread();
     //these two are done at apop_maximum_likelihood:
-    //i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
+    //i->beta = apop_data_pack(ep->parameters);
     //setup_starting_point(mp, i->beta);
     int betasize = i->beta->size;
     int apopstatus = -1;

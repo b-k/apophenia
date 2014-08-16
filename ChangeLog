@@ -8,6 +8,9 @@ https://github.com/b-k/Apophenia/commits/master
 !!Big.
 ]
 
+    August 2014
+** default for apop_data_pack is .all_pages='y' (was 'n').
+
 	March 2014
 --Command-line tools print help should a user add a --help option.
 

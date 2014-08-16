@@ -192,7 +192,9 @@ APOP_VAR_END_HEAD
 
     bool ll_is_a_copy = false;
     likelihood = maybe_prep(data, likelihood, &ll_is_a_copy); //in apop_mcmc.c
-    Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2, tsize
+    gsl_vector *pack = apop_data_pack(likelihood->parameters);
+    int tsize = pack->size;
+    gsl_vector_free(pack);
     Apop_stopif(prior->dsize != tsize, 
                 return apop_model_copy(&(apop_model){.error='d'}),
                 0, "Size of a draw from the prior does not match "
