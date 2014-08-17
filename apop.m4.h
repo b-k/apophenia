@@ -759,7 +759,7 @@ gsl_vector * v = &( apop_vv_##v );
 /* Not (yet) for public use. \hideinitializer */
 #define apop_subvector(v, start, len) (                                          \
         ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
-        : &(gsl_vector){.size=(len), .stride=1, .data=(v)->data+(start)})
+        : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
 
 /* Not (yet) for public use. \hideinitializer */
 #define apop_mrow(m, row) (                                       \
