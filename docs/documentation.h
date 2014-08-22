@@ -24,15 +24,15 @@ The library has been growing and improving since 2005, and has been downloaded o
 \li t-tests, F-tests, et cetera
 \li Several optimization methods available for your own new models
 \li It does <em>not</em> re-implement basic matrix operations or build yet another database
-engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU
+engine. Instead, it builds upon the excellent <a href="http://www.gnu.org/software/gsl/">GNU
 Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/mariaDB is also supported.
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
+<h5><a href="https://github.com/b-ka/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
 Most users will just want to download the latest packaged version linked from the <a
-href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download
+href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
 Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
@@ -41,7 +41,7 @@ the command line. If you follow this route, be sure to read the development READ
 <tt>Apophenia</tt> directory this command will create.
 
 \code
-git clone https://github.com/b-k/Apophenia.git
+git clone https://github.com/b-k/apophenia.git
 \endcode
 
 <!--git clone git://apophenia.git.sourceforge.net/gitroot/apophenia/apophenia
@@ -66,7 +66,7 @@ itself. <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf"><em>A Usef
 Algebraic System of Statistical Models</em></a> (PDF) discusses some of the theoretical
 structures underlying the library.
 
-There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience
+There is a <a href="https://github.com/b-k/apophenia/wiki">wiki</a> with some convenience
 functions, tips, and so on.
 
 <h5>Notable features</h5> 
@@ -133,7 +133,7 @@ wrapper</a> and <a href="https://r-forge.r-project.org/projects/rapophenia/">an 
 wrapper</a> which you could expand upon.
 
 If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
-<a href="https://github.com/b-k/Apophenia">GitHub</a> project.
+<a href="https://github.com/b-k/apophenia">GitHub</a> project.
 */
 
 /** \page eg Some examples
@@ -188,7 +188,7 @@ or
 sudo yum install make gcc gsl-devel libsqlite3x-devel
 \endcode
 
-\li <a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>. 
+\li <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>. 
 
 \li Once you have the library downloaded, compile it using 
 
@@ -662,7 +662,7 @@ initialization step to add a new model or other such parts.  A new \ref apop_mod
 has to conform to some rules if it is to play well with \ref apop_estimate,
 \ref apop_draw, and so forth.  See the notes at \ref modeldetails.  Once your new
 model or function is working, please post the code or a link to the code on the <a
-href="https://github.com/b-k/Apophenia/wiki">Apophenia wiki</a>.
+href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.
 
 endofdiv
 
