@@ -222,17 +222,17 @@ APOP_VAR_END_HEAD
 
     if (!s) s = Apop_model_add_group(prior, apop_mcmc);
 
-    double *draw = malloc(sizeof(double)* (tsize));
+    gsl_vector *draw = gsl_vector_alloc(tsize);
     apop_data *out = apop_data_alloc(s->periods, tsize);
     out->weights = gsl_vector_alloc(s->periods);
 
-    apop_draw(draw, rng, prior); //set starting point.
-    apop_data_fill_base(likelihood->parameters, draw);
+    apop_draw(draw->data, rng, prior); //set starting point.
+    apop_data_unpack(draw, likelihood->parameters);
 
     for (int i=0; i< s->periods; i++){
         newdraw:
-        apop_draw(draw, rng, prior);
-        apop_data_fill_base(likelihood->parameters, draw);
+        apop_draw(draw->data, rng, prior);
+        apop_data_unpack(draw, likelihood->parameters);
         long double p = apop_p(data, likelihood);
 
         Apop_notify(3, "p=%Lg for parameters:\t", p);
@@ -247,7 +247,7 @@ APOP_VAR_END_HEAD
         gsl_vector_set(out->weights, i, p);
     }
     apop_model *outp = apop_estimate(out, apop_pmf);
-    free(draw);
+    gsl_vector_free(draw);
     if (ll_is_a_copy) apop_model_free(likelihood);
     return outp;
 }
