@@ -338,7 +338,7 @@ static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
     if ((pwant &&pwant->covariance) || (!pwant && olp && olp->want_cov=='y'))
         apop_estimate_parameter_tests(ep);
 
-    add_info_criteria(ep->data, ep, ep, apop_log_likelihood(ep->data, ep)); //in apop_mle.c
+    add_info_criteria(ep->data, ep, ep, apop_log_likelihood(ep->data, ep), set->matrix->size2); //in apop_mle.c
 
     apop_data *r_sq = apop_estimate_coefficient_of_determination(ep); //Add R^2-type info to info page.
     apop_data_stack(ep->info, r_sq, .inplace='y');

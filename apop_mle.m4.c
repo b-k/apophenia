@@ -310,13 +310,11 @@ static double negshell (const gsl_vector *beta, void * in){
 
         if(gsl_isnan(this_ll)){
             Apop_stopif(!i->model->log_likelihood && penalty > f_val, i->want_info='n',
-                            1, "Your model's p evaluates as %g, and your penalty is %g, for an "
-                               "adjusted p of %g. Please make sure that this is positive, perhaps by "
-                               "rescaling your penalty. Continuing, but will not report covariance or other "
-                               "log likelihood-based statistics.\n", f_val, penalty, f_val-penalty);
+                            1, "Model's p=%g, penalty=%g, for a negative adjusted p=%g. "
+                               "Continuing, but can not report covariance or other "
+                               "log likelihood-based statistics.", f_val, penalty, f_val-penalty);
             Apop_stopif(1, apop_data_show(i->model->parameters); i->want_info='n',
-                        1, "NaN resulted from the following value tried by the maximum likelihood system. "
-                           "Tighten your constraint? Log of a negative p?\n");
+                        1, "NaN resulted from the following value tried by the maximum likelihood system.");
         }
         i->best_ll = GSL_MAX(i->best_ll, this_ll);
     }
@@ -369,12 +367,9 @@ static int setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
     return 0;
 }
 
-void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll){
+void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll, int param_ct){
     //Did the sending function save last value of f()?
     if (!ll) ll = apop_log_likelihood(d, m);
-
-    Get_vmsizes(est->parameters); //tsize
-    int param_ct = tsize;
 
     if (!est->info) est->info = apop_data_alloc();
     apop_data_add_named_elmt(est->info, "log likelihood", ll);
@@ -402,7 +397,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
     }
     if (!est->info) est->info = apop_data_alloc();
     apop_data_add_named_elmt(est->info, "status", status);
-    if (i->want_info=='y') add_info_criteria(i->data, i->model, est, ll);
+    if (i->want_info=='y') add_info_criteria(i->data, i->model, est, ll, i->beta->size);
 }
 
 static void apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
