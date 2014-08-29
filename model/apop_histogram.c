@@ -84,8 +84,8 @@ static void apop_kernel_estimate(apop_data *d, apop_model *m){
         Apop_settings_add_group(m, apop_kernel_density, .base_data=d);
 }
 
-static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
-        double (*fn)(apop_data*,apop_model*)){
+/* \adoc    CDF Sums the CDF to the given point of all the sub-distributions.*/
+static long double kernel_cdf(apop_data *d, apop_model *m){
     Nullcheck_m(m, GSL_NAN);
     long double total = 0;
     apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
@@ -94,21 +94,52 @@ static long double kernel_p_cdf_base(apop_data *d, apop_model *m,
     for (size_t k = 0; k < maxsize; k++){
         apop_data *r = Apop_r(pmf_data, k);
         double wt = r->weights ? *r->weights->data : 1;
+        OMP_critical(kernel_p_cdf)
+        {
         (ks->set_fn)(r, ks->kernel);
-        total += fn(d, ks->kernel)*wt;
+        total += apop_cdf(d, ks->kernel)*wt;
+        }
     }
     long double weight = pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize;
     total /= weight;
     return total;
 }
 
-static long double kernel_p(apop_data *d, apop_model *m){
-    return kernel_p_cdf_base(d, m, apop_p);
-}
+static long double kernel_ll(apop_data *d, apop_model *m){
+    Nullcheck_m(m, GSL_NAN);
+    size_t datasize;
+    {Get_vmsizes(d); datasize=maxsize;}
+    apop_kernel_density_settings *ks = apop_settings_get_group(m, apop_kernel_density);
+    apop_data *pmf_data = apop_settings_get(m, apop_kernel_density, base_pmf)->data;
+    Get_vmsizes(pmf_data); //maxsize
+    long double ll = 0;
+    OMP_for_reduce(+:ll,    int i=0; i< datasize; i++){
+        long double lls[maxsize];
+        apop_data *datapt = Apop_r(d, i);
+        for(int k=0; k< maxsize; k++){
+            apop_data *r = Apop_r(pmf_data, k);
+            OMP_critical(kernel_p_cdf)
+            {
+            (ks->set_fn)(r, ks->kernel);
+            lls[k] = apop_log_likelihood(datapt, ks->kernel);
+            }
+        }
 
-/* \adoc    CDF Sums the CDF to the given point of all the sub-distributions.*/
-static long double kernel_cdf(apop_data *d, apop_model *m){
-    return kernel_p_cdf_base(d, m, apop_cdf);
+        //let p_m w_m be the largest value among the p_i w_is. Then
+        //log (Σp_i w_i) = log(p_m w_m) + log(Σ(p_i w_i/p_m w_m).
+        //This gives us a little more numeric accuracy.
+        double max_ll = -INFINITY;
+        double total = 0;
+        #define getwt(i) (pmf_data->weights ? gsl_vector_get(pmf_data->weights, i) : 1);
+        for (int i=0; i< maxsize; i++) if (lls[i]>max_ll) max_ll = lls[i];
+        if (max_ll==-INFINITY) {ll=-INFINITY; continue;}
+        for (int i=0; i< maxsize; i++) lls[i]-=max_ll;
+        for (int i=0; i< maxsize; i++) lls[i]= exp(lls[i]) * getwt(i);
+        for (int i=0; i< maxsize; i++) total += lls[i];
+        ll += max_ll + log(total);
+    }
+    ll -= datasize * log(pmf_data->weights ? apop_sum(pmf_data->weights) : maxsize);
+    return ll;
 }
 
 /* \adoc    RNG  Randomly selects a data point, then randomly draws from that sub-distribution.
@@ -128,4 +159,5 @@ static int kernel_draw(double *d, gsl_rng *r, apop_model *m){
 }
 
 apop_model *apop_kernel_density = &(apop_model){"kernel density estimate", .dsize=1,
-	.estimate = apop_kernel_estimate, .p = kernel_p, .cdf=kernel_cdf, .draw=kernel_draw};
+    .estimate = apop_kernel_estimate, .log_likelihood = kernel_ll,
+	.cdf=kernel_cdf, .draw=kernel_draw};

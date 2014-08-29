@@ -357,7 +357,6 @@ Just a few page links:
 */
 
 /** \page outline An outline of the library
-  \anchor outline
 
 ALLBUTTON
 
@@ -970,7 +969,7 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 
 \include t_test_by_rows.c
 
-One more toy example, demonstrating the use of \ref Apop_map and \ref apop_map_sum :
+One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_sum :
 
 \include apop_map_row.c
 
@@ -1785,7 +1784,7 @@ int main(){
                                 .more = &co, .more_size=sizeof(coeff_struct)};
 \endcode
 
-The <tt>.vsize=2</tt> specified that your parameters are a vector of size two, which
+The <tt>vsize=2</tt> specified that your parameters are a vector of size two, which
 means that <tt>in->parameters->vector->data</tt> is the list of <tt>double</tt>s that you
 should send to \c banana. The \c more element of the structure is designed to hold any
 arbitrary structure; if you use it, you will also need to use the \c more_size element, as
@@ -2347,7 +2346,7 @@ describes a single observation or data point.
 See above for some examples of getting and setting individual elements.
 
 Also, \ref apop_data_get, \ref apop_data_set, and \ref apop_data_ptr consider the vector to be the -1st column,
-so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, .col=-1) == 1</tt>.
+so using the data set in the figure, <tt>apop_data_get(sample_set, .row=0, .col=-1) == 1</tt>.
 
 \par Reading in data
 
@@ -2591,7 +2590,7 @@ But if your model is not from the textbook, then you have the tools to apply the
 above three-step process directly. First I'll give an overview of the three steps,
 then another working example.
 
-\li Model parameters are a statistic, and you know that  \ref apop_estimate<tt>(your_data,
+\li Model parameters are a statistic, and you know that  <tt>apop_estimate(your_data,
         your_model)</tt> will output a model with a <tt>parameters</tt> element.
 \li The distribution of a parameter is also a model, so 
 \ref apop_parameter_model will also return an \ref apop_model.

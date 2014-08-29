@@ -16,7 +16,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 
 \see db_moments
 
-For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
+For <tt>apop_vector_var_m(vector, mean)</tt>, <tt>mean</tt> is the mean of the
 vector. This saves the trouble of re-calculating the mean if you've
 already done so. E.g.,
 
@@ -659,7 +659,7 @@ APOP_VAR_ENDHEAD
         apop_data *p = from->data;
         apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
         Get_vmsizes(p); //maxsize
-        OMP_for_reduce (+:div,    int i=0; i < (vsize ? vsize : msize1); i++){
+        OMP_for_reduce (+:div,    int i=0; i < maxsize; i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i)/settings->total_weight : 1./maxsize;
             if (!pi){
                 Apop_notify(3, "0\t--\t0");

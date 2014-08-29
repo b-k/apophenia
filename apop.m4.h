@@ -899,14 +899,14 @@ double apop_vector_skew(const gsl_vector *in);
 
 */
 
-/** \def Apop_subm(m, srow, scol, nrow, ncol)
+/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
 Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
 
- \param m The root matrix
+ \param data_to_view The root matrix
  \param srow the first row (in the root matrix) of the top of the submatrix
  \param scol the first column (in the root matrix) of the left edge of the submatrix
- \param nrow number of rows in the submatrix
- \param ncol number of columns in the submatrix
+ \param nrows number of rows in the submatrix
+ \param ncols number of columns in the submatrix
 \hideinitializer */
 
 /** \def Apop_row_t(m, row_name, v)
@@ -956,7 +956,7 @@ The view expires as soon as the program leaves the current scope (like with the 
 
 /** \def Apop_rv(d, row)
 A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
-row \c row. The view is a \ref gsl_vector set.
+row \c row. The view is a \c gsl_vector set.
 
 \code
 gsl_vector *v = Apop_rv(your_data, i);
@@ -971,7 +971,7 @@ The view is automatically allocated, and disappears as soon as the program leave
 
 /** \def Apop_cv(d, col)
 A macro to generate a temporary one-column view of the matrix in an \ref apop_data
-set \c d, pulling out only column \c col. The view is a \ref gsl_vector set.
+set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
 
 As usual, column -1 is the vector element of the \ref apop_data set.
 

@@ -81,6 +81,6 @@ extern int vasprintf (char **res, const char *format, va_list args)
 #endif
 
 #include "apop.h"
-void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll); //In apop_mle.c
+void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll, int param_ct); //In apop_mle.c
 
 apop_model *maybe_prep(apop_data *d, apop_model *m, _Bool *is_a_copy); //in apop_mcmc, for apop_update.
