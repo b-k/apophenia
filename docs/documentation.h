@@ -29,7 +29,7 @@ Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="https://github.com/b-ka/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
+<h5><a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
 Most users will just want to download the latest packaged version linked from the <a
 href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
