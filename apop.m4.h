@@ -392,11 +392,7 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
 
         // Some output routines
 
-Apop_var_declare( void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char const * output_name, FILE *output_pipe, char output_type, char output_append) )
 Apop_var_declare( void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
-Apop_var_declare(  void apop_plot_lattice(const apop_data *d, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
-Apop_var_declare( void apop_plot_qq(gsl_vector *v, apop_model *m, char const *output_name, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r) )
-Apop_var_declare( void apop_plot_triangle(apop_data *in, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
 
 Apop_var_declare( void apop_matrix_print(const gsl_matrix *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
 Apop_var_declare( void apop_vector_print(gsl_vector *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) )

@@ -145,12 +145,6 @@ From the \ref setup page, an example of gathering data from two processes, savin
 
 \include draw_to_db.c
 
-A demonstration of \ref apop_plot_line_and_scatter . You'll need a
-database from the {\em Modeling with Data} sample code, at
-http://modelingwithdata.org/appendices.html.
-
-\include scatter.c
-
 In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with all operations acting on entire rows rather than individual data points:
 
 \include t_test_by_rows.c
@@ -1607,8 +1601,6 @@ If you are producing a statistic that you know has a common form, like a central
 \li\ref apop_test_anova_independence()
 \li\ref apop_test_fisher_exact()
 \li\ref apop_test_kolmogorov()
-\li\ref apop_plot_qq()
-\li\ref apop_plot_triangle()
 \li\ref apop_estimate_coefficient_of_determination()
 \li\ref apop_estimate_r_squared()
 \li\ref apop_estimate_parameter_tests()
@@ -1889,7 +1881,7 @@ pipe or file as output and send all output there until further notice:
 \code
 apop_opts.output_type = 'p';
 apop_opts.output_pipe = popen("gnuplot", "w");
-apop_plot_lattice(...);
+apop_plot_lattice(...); //see https://github.com/b-k/Apophenia/wiki/gnuplot_snippets
 fclose(apop_opts.output_pipe);
 apop_opts.output_pipe = fopen("newfile", "w");
 apop_data_print(set1);
@@ -1931,8 +1923,6 @@ make sense). As above, you can pipe directly to Gnuplot or write to a file. Plea
 consider these to be deprecated, as there is better graphics support in the works.
 
 \li\ref apop_plot_histogram()
-\li\ref apop_plot_line_and_scatter()
-\li\ref apop_plot_lattice()
 
 endofdiv
 
@@ -2420,7 +2410,6 @@ which will be useful to you if only because it lists some of the functions that 
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
 \image html http://apophenia.info/structs.png
-\image latex structs.png
 
 
 All of the elements of the \ref apop_data structure are laid out at middle-left. You have
