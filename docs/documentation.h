@@ -38,7 +38,7 @@ Apophenia here</a> header.
 Those who would like to work on a cutting-edge copy of the source code
 can get the latest version by cutting and pasting the following onto
 the command line. If you follow this route, be sure to read the development README in the
-<tt>Apophenia</tt> directory this command will create.
+<tt>apophenia</tt> directory this command will create.
 
 \code
 git clone https://github.com/b-k/apophenia.git
@@ -176,7 +176,7 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 sudo apt-get install make gcc libgsl0-dev libsqlite3-dev
 \endcode
 
-or 
+or
 
 \code
 sudo yum install make gcc gsl-devel libsqlite3x-devel
@@ -184,7 +184,7 @@ sudo yum install make gcc gsl-devel libsqlite3x-devel
 
 \li <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>. 
 
-\li Once you have the library downloaded, compile it using 
+\li Once you have the library downloaded, compile it using
 
 \code
 tar xvzf apop*tgz && cd apophenia-0.999

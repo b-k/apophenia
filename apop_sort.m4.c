@@ -136,7 +136,7 @@ numbers: (1, 2, 3) and (-1.32, 0, 27) work identically.
 
 A few examples:
 
-\include "../tests/sort_example.c"
+\include "sort_example.c"
 
 \li This function uses the \ref designated syntax for inputs.
 */
