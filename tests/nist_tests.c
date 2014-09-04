@@ -2,6 +2,12 @@
 Notice that I use various levels of tolerance, so this gives you an idea
 of the relative accuracies of various operations. */
 
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 #include <unistd.h>
 
@@ -12,7 +18,7 @@ of the relative accuracies of various operations. */
 #define Diff(L, R, eps) Apop_stopif(isnan(L-R) || fabs((L)-(R))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 void pontius(){
-    apop_text_to_db("pontius.dat","pont", .delimiters=" ");
+    apop_text_to_db( DATADIR "/" "pontius.dat" ,"pont", .delimiters=" ");
     apop_data *d = apop_query_to_data("select y, x, pow(x,2) as p from pont");
     apop_model *est =  apop_estimate(d, apop_ols);
 
@@ -28,7 +34,7 @@ void pontius(){
 }
 
 void wampler1(){
-    apop_text_to_db("wampler1.dat","w1", .delimiters=" ");
+    apop_text_to_db( DATADIR "/" "wampler1.dat" ,"w1", .delimiters=" ");
     apop_data *d = apop_query_to_data("select y, x, pow(x,2) as p2, \
                                 pow(x,3) as p3, pow(x,4) as p4, pow(x,5) as p5 from w1");
     apop_model *est = apop_estimate(d, apop_ols);
@@ -41,7 +47,7 @@ void wampler1(){
 }
 
 void numacc4(){
-    apop_data *d  = apop_text_to_data("numacc4.dat");
+    apop_data *d  = apop_text_to_data( DATADIR "/" "numacc4.dat" );
     gsl_vector *v = Apop_cv(d, 0);
     Diff(apop_vector_mean(v), 10000000.2, 1e-5);
     Diff(apop_vector_var(v)*(v->size -1)/v->size, 0.01, TOL3);
@@ -50,8 +56,6 @@ void numacc4(){
 }
 
 int main(){
-    chdir(Datadir); //Datadir is defined via autoconf.
-
     pontius();
     wampler1();
     numacc4();

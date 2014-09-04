@@ -3,39 +3,41 @@
 m4_define([m4_apop_version], [m4_esyscmd_s(date +%Y%m%d)]) #will switch to this soon.
 
 AC_PREREQ(2.60)
-AC_INIT([apophenia], [0.999], [fluffmail@f-m.fm])
+AC_INIT([apophenia], [0.999a], [fluffmail@f-m.fm])
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([apop_arms.c])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
+AM_MAINTAINER_MODE
 
 # The normal /usr/local default confused too many people
-AC_PREFIX_DEFAULT([/usr])
+##AC_PREFIX_DEFAULT([/usr])
 
-# Windows:
+# libtool:
 LT_INIT
+
+# check linker script support
+gl_LD_VERSION_SCRIPT
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C99
 
+ACX_PTHREAD
+AC_OPENMP
+
 # Checks for libraries.
-AC_CHECK_LIB([m],[cos])
-AC_CHECK_LIB([gslcblas],[cblas_dgemm])
-AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
-#AC_CHECK_LIB([mysqlclient], [mysql_query], , , [-L/usr/lib/mysql -lz])
-AC_CHECK_LIB([sqlite3], [sqlite3_exec])
-
-AC_CHECK_HEADER([gsl/gsl_matrix.h], , [AC_MSG_ERROR(
-    [Couldn't find the GSL header files (I searched for <gsl/gsl_matrix.h> on the include path). \
-If you are using a package manager, don't forget to install the libgsl-devel package, as well as \
-libgsl itself (and the same for SQLite3).])])
-
-AC_CHECK_HEADER([sqlite3.h], , [AC_MSG_ERROR(
-    [Couldn't find the SQLite3 header file, sqlite3.h, on the include path. \
-If you are using a package manager, don't forget to install the libsqlite3-devel \
-package, as well as libsqlite3 itself.])])
+## math library
+LT_LIB_M
+## GNU Scientific Library (GSL)
+AX_PATH_GSL([1.12.0],[],[AC_MSG_ERROR(could not find required version of GSL)])
+## DataBase system libraries
+#### MySQL library
+AX_LIB_MYSQL
+#### SQLite3 library
+AX_LIB_SQLITE3
 
 # Checks for header files.
 AC_FUNC_ALLOCA
@@ -56,48 +58,30 @@ AC_FUNC_REALLOC
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp asprintf])
 
-#Check for database systems, then export results to automake
-AX_LIB_MYSQL
-AX_LIB_SQLITE3
-AM_CONDITIONAL([HAVE_MYSQL], [test x$HAVE_MYSQL = xtrue])
+# Checks for tests tools
+AC_PATH_PROGS([BC],[bc],[/usr/bin/bc])
+AC_PATH_PROGS([SQLITE3],[sqlite3],[/usr/bin/sqlite3])
 
 
-PACKAGE_NAME=apophenia
+AC_CONFIG_FILES([
+	apophenia.pc
+	Makefile
+	transform/Makefile
+	model/Makefile
+	cmd/Makefile
+	tests/Makefile
+	docs/doxygen.conf
+	docs/Makefile
+	eg/Makefile
+	])
 
-ACX_PTHREAD
-AC_OPENMP
-
-AC_CONFIG_FILES([Makefile tests/Makefile apophenia.pc])
+AC_CONFIG_FILES([
+	tests/utilities_test
+	],
+	[
+	chmod a+x tests/utilities_test
+	])
 AC_OUTPUT
 
-echo \
-"-----------------------------------------------------------
-
-Thanks for trying ${PACKAGE_NAME} v.${PACKAGE_VERSION}.
-
-Root for the install: '${prefix}'.
- Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
-"
-echo $mysql_message
-
-echo \
-"
-Now type 'make @<:@<target>@:>@'
-   where the optional <target> is:
-     all      - build all binaries
-     check    - test the installation
-     install  - install everything [e.g., sudo make install]
-     doc      - generate documentation via doxygen 
-
-------------------------------------------------------------"
-
-#mySQL claims these vars as its own.
-sed '$a\
-\#undef PACKAGE     \
-\#undef PACKAGE_BUGREPORT   \
-\#undef PACKAGE_NAME        \
-\#undef PACKAGE_STRING      \
-\#undef PACKAGE_TARNAME     \
-\#undef PACKAGE_VERSION     \
-\#undef VERSION' < config.h > conftmp
-mv conftmp config.h
+##
+## eof

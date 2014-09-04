@@ -1,5 +1,6 @@
 # Part one decides whether to use -pthread or -lpthread
 # Part two is for __attribute__
+# Part three is gl_LD_VERSION_SCRIPT
 
 # ===========================================================================
 #           http://www.nongnu.org/autoconf-archive/acx_pthread.html
@@ -654,4 +655,61 @@ AC_DEFUN([AX_C___ATTRIBUTE__], [
   if test "$ax_cv___attribute__" = "yes"; then
     AC_DEFINE([HAVE___ATTRIBUTE__], 1, [define if your compiler has __attribute__])
   fi
+])
+
+
+
+
+# ld-version-script.m4 serial 3
+dnl Copyright (C) 2008-2014 Free Software Foundation, Inc.
+dnl This file is free software; the Free Software Foundation
+dnl gives unlimited permission to copy and/or distribute it,
+dnl with or without modifications, as long as this notice is preserved.
+
+dnl From Simon Josefsson
+
+# FIXME: The test below returns a false positive for mingw
+# cross-compiles, 'local:' statements does not reduce number of
+# exported symbols in a DLL. Use --disable-ld-version-script to work
+# around the problem.
+
+# gl_LD_VERSION_SCRIPT
+# --------------------
+# Check if LD supports linker scripts, and define automake conditional
+# HAVE_LD_VERSION_SCRIPT if so.
+AC_DEFUN([gl_LD_VERSION_SCRIPT],
+[
+ AC_ARG_ENABLE([ld-version-script],
+ AS_HELP_STRING([--enable-ld-version-script],
+ [enable linker version script (default is enabled when possible)]),
+ [have_ld_version_script=$enableval], [])
+ if test -z "$have_ld_version_script"; then
+ AC_MSG_CHECKING([if LD -Wl,--version-script works])
+ save_LDFLAGS="$LDFLAGS"
+ LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
+ cat > conftest.map <<EOF
+foo
+EOF
+ AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+ [accepts_syntax_errors=yes], [accepts_syntax_errors=no])
+ if test "$accepts_syntax_errors" = no; then
+ cat > conftest.map <<EOF
+VERS_1 {
+ global: sym;
+};
+
+VERS_2 {
+ global: sym;
+} VERS_1;
+EOF
+ AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+ [have_ld_version_script=yes], [have_ld_version_script=no])
+ else
+ have_ld_version_script=no
+ fi
+ rm -f conftest.map
+ LDFLAGS="$save_LDFLAGS"
+ AC_MSG_RESULT($have_ld_version_script)
+ fi
+ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 ])

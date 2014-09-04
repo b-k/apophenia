@@ -633,8 +633,6 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
   \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
-  \param top deprecated synonym for \c from.
-  \param bottom deprecated synonym for \c to.
 
   This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
   or \ref apop_normal.
@@ -652,11 +650,9 @@ If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c
 
 \li This function uses the \ref designated syntax for inputs.
  */
-APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
-    apop_model * apop_varad_var(top, NULL);
-    apop_model * apop_varad_var(bottom, NULL);
-    apop_model * apop_varad_var(from, (top ? top : NULL));
-    apop_model * apop_varad_var(to, (bottom ? bottom : NULL));
+APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
+    apop_model * apop_varad_var(from, NULL);
+    apop_model * apop_varad_var(to, NULL);
     Apop_assert(from, "The first model is NULL.");
     Apop_assert(to, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
