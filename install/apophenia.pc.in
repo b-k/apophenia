@@ -6,6 +6,10 @@ includedir=@includedir@
 
 Name: Apophenia
 Description: The Apophenia library
+URL: http://apophenia.info/
+Requires: gsl
+Requires.private: sqlite3
 Version: @VERSION@
-Libs: -L@libdir@ -lapophenia @LIBS@
-Cflags: @CFLAGS@
+Cflags: @MYSQL_CFLAGS@
+Libs: -L${libdir} -lapophenia
+Libs.private: @MYSQL_LDFLAGS@

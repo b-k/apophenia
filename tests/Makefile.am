@@ -1,20 +1,84 @@
-check_PROGRAMS= db_tests distribution_tests error_test nist_tests rake_test sort_example test_apop test_kernel_ll update_via_rng \
-../eg/apop_map_row ../eg/binning ../eg/dconstrain ../eg/draw_to_db ../eg/db_fns ../eg/dot_products  			 \
-../eg/fake_logit ../eg/fix_params ../eg/hills2 ../eg/iv ../eg/jacobian ../eg/ks_tests ../eg/normalizations \
-../eg/parameterization ../eg/pmf_test ../eg/simple_subsets ../eg/some_cdfs ../eg/stack_models 		 \
-../eg/test_distances ../eg/test_fisher ../eg/test_harmonic ../eg/test_kl_divergence \
-../eg/test_pruning ../eg/test_ranks ../eg/test_regex ../eg/test_updating
+check_PROGRAMS= \
+	db_tests \
+	distribution_tests \
+	error_test \
+	nist_tests \
+	rake_test \
+	sort_example \
+	test_apop \
+	update_via_rng \
+	$(top_builddir)/eg/apop_map_row \
+	$(top_builddir)/eg/binning \
+	$(top_builddir)/eg/dconstrain \
+	$(top_builddir)/eg/draw_to_db \
+	$(top_builddir)/eg/db_fns \
+	$(top_builddir)/eg/dot_products \
+	$(top_builddir)/eg/fake_logit \
+	$(top_builddir)/eg/fix_params \
+	$(top_builddir)/eg/hills2 \
+	$(top_builddir)/eg/iv \
+	$(top_builddir)/eg/jacobian \
+	$(top_builddir)/eg/ks_tests \
+	$(top_builddir)/eg/normalizations \
+	$(top_builddir)/eg/parameterization \
+	$(top_builddir)/eg/pmf_test \
+	$(top_builddir)/eg/simple_subsets \
+	$(top_builddir)/eg/some_cdfs \
+	$(top_builddir)/eg/stack_models \
+	$(top_builddir)/eg/test_distances \
+	$(top_builddir)/eg/test_fisher \
+	$(top_builddir)/eg/test_harmonic \
+	$(top_builddir)/eg/test_kernel_ll \
+	$(top_builddir)/eg/test_kl_divergence \
+	$(top_builddir)/eg/test_pruning \
+	$(top_builddir)/eg/test_ranks \
+	$(top_builddir)/eg/test_regex \
+	$(top_builddir)/eg/test_updating
 
-TESTS=utilities_test $(check_PROGRAMS)
+TESTS = \
+	utilities_test \
+	$(check_PROGRAMS)
 
-LDADD=../libapophenia.la
-AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\" -I$(srcdir) -I$(srcdir)/..
+AM_CFLAGS = \
+	-DTesting \
+	-DDatadir=\"$(top_srcdir)/tests/\" \
+	-I$(top_srcdir)/tests \
+	-I$(top_srcdir) \
+	$(GSL_CFLAGS)
 
-EXTRA_DIST = utilities_test Readme data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
-		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c
+AM_LDFLAGS = \
+	$(top_builddir)/libapophenia.la \
+	$(GSL_LIBS)
 
+DATA_DIST = \
+	data \
+	data-mixed \
+	printing_sample \
+	test_data \
+	test_data2 \
+	test_data_nans\
+	test_data_fixed_width \
+	amash_vote_analysis.csv \
+	numacc4.dat \
+	pontius.dat \
+	wampler1.dat \
+	faith.data \
+	sort_tests.c
 
-AM_TESTS_ENVIRONMENT = for i in $(EXTRA_DIST); do \
-					   if [ ! -e $$i ]; then      \
-                            cp $(srcdir)/$$i .;   \
-                       fi; done;
+EXTRA_DIST = \
+	Readme \
+	$(DATA_DIST)
+
+CLEANFILES = \
+	ff.db \
+	runs.db \
+	td.db \
+	draws-k \
+	draws-k2 \
+	draws-mvN \
+	draws-N \
+	draws-std_multinormal \
+	draws-std_normal \
+	the_data.txt \
+	print_test.out \
+	xxx

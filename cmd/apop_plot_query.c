@@ -1,5 +1,5 @@
 /** \file 
- Command line utility to take in a query and put out a Gnuplottable file.
+ Command line utility to take in a query and produce a plot of its output via Gnuplot.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
@@ -64,21 +64,24 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 }
 
 int main(int argc, char **argv){
-    char c, *q = NULL, 
+    char c, *q = NULL,
          *d = NULL,
          *outfile = NULL;
     int sf = 0,
         no_plot = 0;
 
-    const char* msg= "%s [opts] dbname query\n\n"
+    const char* msg= "Usage: %s [opts] dbname query\n"
+"\n"
 "Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout or a file.\n"
-"-d\tdatabase to use\t\t\t\t\tmandatory \n"
-"-q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n"
-"-Q\tfile from which to read the query\t\t\n"
-"-n\tno plot: just run the query and display results to stdout\t\t\n"
-"-t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n"
-"-H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n"
-"-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n";
+" -d\tdatabase to use (mandatory)\n"
+" -q\tquery to run (mandatory or use -Q)\n"
+" -Q\tfile from which to read the query\t\t\n"
+" -n\tno plot: just run the query and display results to stdout\t\t\n"
+" -t\tplot type (points, bars, ...) (default: \"lines\")\n"
+" -H\tplot histogram with this many bins (e.g., -H100) (to let the system auto-select bin sizes, use -H0)\n"
+" -f\tfile to dump to. If -f- then use stdout (default: pipe to Gnuplot)\n"
+" -h\tdisplay this help and exit\n"
+"\n";
 
 	Apop_stopif(argc<2, return 1, 0, msg, argv[0]);
 	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:-")) != -1)
@@ -88,7 +91,7 @@ int main(int argc, char **argv){
         } else if (c=='H'){
               histoplotting = 1;
               histobins = atoi(optarg);
-        } 
+        }
         else if (c=='h'||c=='-') {
             printf(msg, argv[0]);
 			return 0;
@@ -104,7 +107,7 @@ int main(int argc, char **argv){
         q = argv[optind+1];
     } else if (optind == argc-1)
         q = argv[optind];
-    
+
     Apop_stopif(!q, return 1, 0, "I need a query specified with -q.\n");
 
     if (!plot_type) plot_type = strdup("lines");
