@@ -6,6 +6,7 @@ check_PROGRAMS= \
 	rake_test \
 	sort_example \
 	test_apop \
+	test_kernel_ll \
 	update_via_rng \
 	$(top_builddir)/eg/apop_map_row \
 	$(top_builddir)/eg/binning \
@@ -28,7 +29,6 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/test_distances \
 	$(top_builddir)/eg/test_fisher \
 	$(top_builddir)/eg/test_harmonic \
-	$(top_builddir)/eg/test_kernel_ll \
 	$(top_builddir)/eg/test_kl_divergence \
 	$(top_builddir)/eg/test_pruning \
 	$(top_builddir)/eg/test_ranks \

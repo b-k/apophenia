@@ -22,7 +22,6 @@ EXTRA_DIST = \
 	ols.c \
 	parameterization.c \
 	pmf_test.c \
-	scatter.c \
 	simple_subsets.c \
 	some_cdfs.c \
 	sql_to_html.c \

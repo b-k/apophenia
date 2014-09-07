@@ -81,45 +81,6 @@ int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_
     Apop_stopif(apop_prep_output(output_name, &output_pipe, &output_type, &output_append), \
             return, 0, "Trouble preparing to write output.");
 
-/** This convenience function will take in a \c gsl_vector of data and put out a histogram, ready to pipe to Gnuplot.
-
-The function respects the <tt>output_type</tt> option, so code like:
-\code
-FILE* f = popen("/usr/bin/gnuplot", "w");
-apop_plot_histogram(data, .bin_count=100, .output_pipe = f);
-\endcode
-will print directly to Gnuplot.
-
-\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you. (no default, must not be \c NULL)
-\param bin_count   The number of bins in the output histogram (default = \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
-\param with The method for Gnuplot's plotting routine. Default is \c "boxes", so the gnuplot call will read <tt>plot '-' with boxes</tt>. The \c "lines" option is also popular, and you can add extra terms if desired, like <tt> "boxes linetype 3"</tt>.
-
-\li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
-\li This function uses the \ref designated syntax for inputs.
-  \ingroup output
-*/
-APOP_VAR_HEAD void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, Output_declares){
-    gsl_vector * apop_varad_var(data, NULL);
-    Apop_assert_n(data, "Input vector is NULL.");
-    size_t apop_varad_var(bin_count, 0);
-    char * apop_varad_var(with, "impulses");
-    Dispatch_output
-APOP_VAR_ENDHEAD
-    apop_data vector_as_data = (apop_data){.vector=data};
-    apop_data *histodata = apop_data_to_bins(&vector_as_data, .bin_count=bin_count, .close_top_bin='y');
-    apop_data_sort(histodata);
-    apop_data_free(histodata->more); //the binspec.
-
-    fprintf(output_pipe, "set key off	;\n"
-               "plot '-' with %s\n", with);
-    apop_data_print(histodata, .output_pipe=output_pipe);
-    fprintf(output_pipe, "e\n");
-
-    if (output_type == 'p') fflush(output_pipe);
-    else if (output_name)   fclose(output_pipe);
-    apop_data_free(histodata);
-}
 
 /////The printing functions.
 
