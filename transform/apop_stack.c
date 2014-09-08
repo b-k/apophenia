@@ -6,7 +6,7 @@
 For the case when you need to bundle two uncorrelated models into one larger model. For example, the prior for a multivariate normal (whose parameters are a vector of means and a covariance matrix) is a Multivariate Normal-Wishart pair.
 
 \adoc    Input_format     There are two means of handling the input format. If the settings group attached to the data set has a non-\c NULL \c splitpage element, then 
-Append the second data set as an additional page to the first data set, and name the second set with the name you listed in \c splitpage; see the example.  
+append the second data set as an additional page to the first data set, and name the second set with the name you listed in \c splitpage; see the example.  
 
 If \c splitpage is \c NULL, then I will send the same data set to both models.
 

@@ -80,23 +80,37 @@ host_triplet = @host@
 check_PROGRAMS = db_tests$(EXEEXT) distribution_tests$(EXEEXT) \
 	error_test$(EXEEXT) nist_tests$(EXEEXT) rake_test$(EXEEXT) \
 	sort_example$(EXEEXT) test_apop$(EXEEXT) \
-	update_via_rng$(EXEEXT) ../eg/apop_map_row$(EXEEXT) \
-	../eg/binning$(EXEEXT) ../eg/dconstrain$(EXEEXT) \
-	../eg/draw_to_db$(EXEEXT) ../eg/db_fns$(EXEEXT) \
-	../eg/dot_products$(EXEEXT) ../eg/fake_logit$(EXEEXT) \
-	../eg/fix_params$(EXEEXT) ../eg/hills2$(EXEEXT) \
-	../eg/iv$(EXEEXT) ../eg/jacobian$(EXEEXT) \
-	../eg/ks_tests$(EXEEXT) ../eg/normalizations$(EXEEXT) \
-	../eg/parameterization$(EXEEXT) ../eg/pmf_test$(EXEEXT) \
-	../eg/simple_subsets$(EXEEXT) ../eg/some_cdfs$(EXEEXT) \
-	../eg/stack_models$(EXEEXT) ../eg/test_distances$(EXEEXT) \
-	../eg/test_fisher$(EXEEXT) ../eg/test_harmonic$(EXEEXT) \
-	../eg/test_kl_divergence$(EXEEXT) ../eg/test_pruning$(EXEEXT) \
-	../eg/test_ranks$(EXEEXT) ../eg/test_regex$(EXEEXT) \
-	../eg/test_updating$(EXEEXT)
+	test_kernel_ll$(EXEEXT) update_via_rng$(EXEEXT) \
+	$(top_builddir)/eg/apop_map_row$(EXEEXT) \
+	$(top_builddir)/eg/binning$(EXEEXT) \
+	$(top_builddir)/eg/dconstrain$(EXEEXT) \
+	$(top_builddir)/eg/draw_to_db$(EXEEXT) \
+	$(top_builddir)/eg/db_fns$(EXEEXT) \
+	$(top_builddir)/eg/dot_products$(EXEEXT) \
+	$(top_builddir)/eg/fake_logit$(EXEEXT) \
+	$(top_builddir)/eg/fix_params$(EXEEXT) \
+	$(top_builddir)/eg/hills2$(EXEEXT) \
+	$(top_builddir)/eg/iv$(EXEEXT) \
+	$(top_builddir)/eg/jacobian$(EXEEXT) \
+	$(top_builddir)/eg/ks_tests$(EXEEXT) \
+	$(top_builddir)/eg/normalizations$(EXEEXT) \
+	$(top_builddir)/eg/parameterization$(EXEEXT) \
+	$(top_builddir)/eg/pmf_test$(EXEEXT) \
+	$(top_builddir)/eg/simple_subsets$(EXEEXT) \
+	$(top_builddir)/eg/some_cdfs$(EXEEXT) \
+	$(top_builddir)/eg/stack_models$(EXEEXT) \
+	$(top_builddir)/eg/test_distances$(EXEEXT) \
+	$(top_builddir)/eg/test_fisher$(EXEEXT) \
+	$(top_builddir)/eg/test_harmonic$(EXEEXT) \
+	$(top_builddir)/eg/test_kl_divergence$(EXEEXT) \
+	$(top_builddir)/eg/test_pruning$(EXEEXT) \
+	$(top_builddir)/eg/test_ranks$(EXEEXT) \
+	$(top_builddir)/eg/test_regex$(EXEEXT) \
+	$(top_builddir)/eg/test_updating$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/depcomp $(top_srcdir)/test-driver
+	$(srcdir)/utilities_test.in $(top_srcdir)/build-aux/depcomp \
+	$(top_srcdir)/build-aux/test-driver
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -106,149 +120,138 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = utilities_test
 CONFIG_CLEAN_VPATH_FILES =
-___eg_apop_map_row_SOURCES = ../eg/apop_map_row.c
-___eg_apop_map_row_OBJECTS = apop_map_row.$(OBJEXT)
-___eg_apop_map_row_LDADD = $(LDADD)
-___eg_apop_map_row_DEPENDENCIES = ../libapophenia.la
+__top_builddir__eg_apop_map_row_SOURCES =  \
+	$(top_builddir)/eg/apop_map_row.c
+__top_builddir__eg_apop_map_row_OBJECTS = apop_map_row.$(OBJEXT)
+__top_builddir__eg_apop_map_row_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am__dirstamp = $(am__leading_dot)dirstamp
-___eg_binning_SOURCES = ../eg/binning.c
-___eg_binning_OBJECTS = binning.$(OBJEXT)
-___eg_binning_LDADD = $(LDADD)
-___eg_binning_DEPENDENCIES = ../libapophenia.la
-___eg_db_fns_SOURCES = ../eg/db_fns.c
-___eg_db_fns_OBJECTS = db_fns.$(OBJEXT)
-___eg_db_fns_LDADD = $(LDADD)
-___eg_db_fns_DEPENDENCIES = ../libapophenia.la
-___eg_dconstrain_SOURCES = ../eg/dconstrain.c
-___eg_dconstrain_OBJECTS = dconstrain.$(OBJEXT)
-___eg_dconstrain_LDADD = $(LDADD)
-___eg_dconstrain_DEPENDENCIES = ../libapophenia.la
-___eg_dot_products_SOURCES = ../eg/dot_products.c
-___eg_dot_products_OBJECTS = dot_products.$(OBJEXT)
-___eg_dot_products_LDADD = $(LDADD)
-___eg_dot_products_DEPENDENCIES = ../libapophenia.la
-___eg_draw_to_db_SOURCES = ../eg/draw_to_db.c
-___eg_draw_to_db_OBJECTS = draw_to_db.$(OBJEXT)
-___eg_draw_to_db_LDADD = $(LDADD)
-___eg_draw_to_db_DEPENDENCIES = ../libapophenia.la
-___eg_fake_logit_SOURCES = ../eg/fake_logit.c
-___eg_fake_logit_OBJECTS = fake_logit.$(OBJEXT)
-___eg_fake_logit_LDADD = $(LDADD)
-___eg_fake_logit_DEPENDENCIES = ../libapophenia.la
-___eg_fix_params_SOURCES = ../eg/fix_params.c
-___eg_fix_params_OBJECTS = fix_params.$(OBJEXT)
-___eg_fix_params_LDADD = $(LDADD)
-___eg_fix_params_DEPENDENCIES = ../libapophenia.la
-___eg_hills2_SOURCES = ../eg/hills2.c
-___eg_hills2_OBJECTS = hills2.$(OBJEXT)
-___eg_hills2_LDADD = $(LDADD)
-___eg_hills2_DEPENDENCIES = ../libapophenia.la
-___eg_iv_SOURCES = ../eg/iv.c
-___eg_iv_OBJECTS = iv.$(OBJEXT)
-___eg_iv_LDADD = $(LDADD)
-___eg_iv_DEPENDENCIES = ../libapophenia.la
-___eg_jacobian_SOURCES = ../eg/jacobian.c
-___eg_jacobian_OBJECTS = jacobian.$(OBJEXT)
-___eg_jacobian_LDADD = $(LDADD)
-___eg_jacobian_DEPENDENCIES = ../libapophenia.la
-___eg_ks_tests_SOURCES = ../eg/ks_tests.c
-___eg_ks_tests_OBJECTS = ks_tests.$(OBJEXT)
-___eg_ks_tests_LDADD = $(LDADD)
-___eg_ks_tests_DEPENDENCIES = ../libapophenia.la
-___eg_normalizations_SOURCES = ../eg/normalizations.c
-___eg_normalizations_OBJECTS = normalizations.$(OBJEXT)
-___eg_normalizations_LDADD = $(LDADD)
-___eg_normalizations_DEPENDENCIES = ../libapophenia.la
-___eg_parameterization_SOURCES = ../eg/parameterization.c
-___eg_parameterization_OBJECTS = parameterization.$(OBJEXT)
-___eg_parameterization_LDADD = $(LDADD)
-___eg_parameterization_DEPENDENCIES = ../libapophenia.la
-___eg_pmf_test_SOURCES = ../eg/pmf_test.c
-___eg_pmf_test_OBJECTS = pmf_test.$(OBJEXT)
-___eg_pmf_test_LDADD = $(LDADD)
-___eg_pmf_test_DEPENDENCIES = ../libapophenia.la
-___eg_simple_subsets_SOURCES = ../eg/simple_subsets.c
-___eg_simple_subsets_OBJECTS = simple_subsets.$(OBJEXT)
-___eg_simple_subsets_LDADD = $(LDADD)
-___eg_simple_subsets_DEPENDENCIES = ../libapophenia.la
-___eg_some_cdfs_SOURCES = ../eg/some_cdfs.c
-___eg_some_cdfs_OBJECTS = some_cdfs.$(OBJEXT)
-___eg_some_cdfs_LDADD = $(LDADD)
-___eg_some_cdfs_DEPENDENCIES = ../libapophenia.la
-___eg_stack_models_SOURCES = ../eg/stack_models.c
-___eg_stack_models_OBJECTS = stack_models.$(OBJEXT)
-___eg_stack_models_LDADD = $(LDADD)
-___eg_stack_models_DEPENDENCIES = ../libapophenia.la
-___eg_test_distances_SOURCES = ../eg/test_distances.c
-___eg_test_distances_OBJECTS = test_distances.$(OBJEXT)
-___eg_test_distances_LDADD = $(LDADD)
-___eg_test_distances_DEPENDENCIES = ../libapophenia.la
-___eg_test_fisher_SOURCES = ../eg/test_fisher.c
-___eg_test_fisher_OBJECTS = test_fisher.$(OBJEXT)
-___eg_test_fisher_LDADD = $(LDADD)
-___eg_test_fisher_DEPENDENCIES = ../libapophenia.la
-___eg_test_harmonic_SOURCES = ../eg/test_harmonic.c
-___eg_test_harmonic_OBJECTS = test_harmonic.$(OBJEXT)
-___eg_test_harmonic_LDADD = $(LDADD)
-___eg_test_harmonic_DEPENDENCIES = ../libapophenia.la
-___eg_test_kl_divergence_SOURCES = ../eg/test_kl_divergence.c
-___eg_test_kl_divergence_OBJECTS = test_kl_divergence.$(OBJEXT)
-___eg_test_kl_divergence_LDADD = $(LDADD)
-___eg_test_kl_divergence_DEPENDENCIES = ../libapophenia.la
-___eg_test_pruning_SOURCES = ../eg/test_pruning.c
-___eg_test_pruning_OBJECTS = test_pruning.$(OBJEXT)
-___eg_test_pruning_LDADD = $(LDADD)
-___eg_test_pruning_DEPENDENCIES = ../libapophenia.la
-___eg_test_ranks_SOURCES = ../eg/test_ranks.c
-___eg_test_ranks_OBJECTS = test_ranks.$(OBJEXT)
-___eg_test_ranks_LDADD = $(LDADD)
-___eg_test_ranks_DEPENDENCIES = ../libapophenia.la
-___eg_test_regex_SOURCES = ../eg/test_regex.c
-___eg_test_regex_OBJECTS = test_regex.$(OBJEXT)
-___eg_test_regex_LDADD = $(LDADD)
-___eg_test_regex_DEPENDENCIES = ../libapophenia.la
-___eg_test_updating_SOURCES = ../eg/test_updating.c
-___eg_test_updating_OBJECTS = test_updating.$(OBJEXT)
-___eg_test_updating_LDADD = $(LDADD)
-___eg_test_updating_DEPENDENCIES = ../libapophenia.la
+__top_builddir__eg_binning_SOURCES = $(top_builddir)/eg/binning.c
+__top_builddir__eg_binning_OBJECTS = binning.$(OBJEXT)
+__top_builddir__eg_binning_LDADD = $(LDADD)
+__top_builddir__eg_db_fns_SOURCES = $(top_builddir)/eg/db_fns.c
+__top_builddir__eg_db_fns_OBJECTS = db_fns.$(OBJEXT)
+__top_builddir__eg_db_fns_LDADD = $(LDADD)
+__top_builddir__eg_dconstrain_SOURCES =  \
+	$(top_builddir)/eg/dconstrain.c
+__top_builddir__eg_dconstrain_OBJECTS = dconstrain.$(OBJEXT)
+__top_builddir__eg_dconstrain_LDADD = $(LDADD)
+__top_builddir__eg_dot_products_SOURCES =  \
+	$(top_builddir)/eg/dot_products.c
+__top_builddir__eg_dot_products_OBJECTS = dot_products.$(OBJEXT)
+__top_builddir__eg_dot_products_LDADD = $(LDADD)
+__top_builddir__eg_draw_to_db_SOURCES =  \
+	$(top_builddir)/eg/draw_to_db.c
+__top_builddir__eg_draw_to_db_OBJECTS = draw_to_db.$(OBJEXT)
+__top_builddir__eg_draw_to_db_LDADD = $(LDADD)
+__top_builddir__eg_fake_logit_SOURCES =  \
+	$(top_builddir)/eg/fake_logit.c
+__top_builddir__eg_fake_logit_OBJECTS = fake_logit.$(OBJEXT)
+__top_builddir__eg_fake_logit_LDADD = $(LDADD)
+__top_builddir__eg_fix_params_SOURCES =  \
+	$(top_builddir)/eg/fix_params.c
+__top_builddir__eg_fix_params_OBJECTS = fix_params.$(OBJEXT)
+__top_builddir__eg_fix_params_LDADD = $(LDADD)
+__top_builddir__eg_hills2_SOURCES = $(top_builddir)/eg/hills2.c
+__top_builddir__eg_hills2_OBJECTS = hills2.$(OBJEXT)
+__top_builddir__eg_hills2_LDADD = $(LDADD)
+__top_builddir__eg_iv_SOURCES = $(top_builddir)/eg/iv.c
+__top_builddir__eg_iv_OBJECTS = iv.$(OBJEXT)
+__top_builddir__eg_iv_LDADD = $(LDADD)
+__top_builddir__eg_jacobian_SOURCES = $(top_builddir)/eg/jacobian.c
+__top_builddir__eg_jacobian_OBJECTS = jacobian.$(OBJEXT)
+__top_builddir__eg_jacobian_LDADD = $(LDADD)
+__top_builddir__eg_ks_tests_SOURCES = $(top_builddir)/eg/ks_tests.c
+__top_builddir__eg_ks_tests_OBJECTS = ks_tests.$(OBJEXT)
+__top_builddir__eg_ks_tests_LDADD = $(LDADD)
+__top_builddir__eg_normalizations_SOURCES =  \
+	$(top_builddir)/eg/normalizations.c
+__top_builddir__eg_normalizations_OBJECTS = normalizations.$(OBJEXT)
+__top_builddir__eg_normalizations_LDADD = $(LDADD)
+__top_builddir__eg_parameterization_SOURCES =  \
+	$(top_builddir)/eg/parameterization.c
+__top_builddir__eg_parameterization_OBJECTS =  \
+	parameterization.$(OBJEXT)
+__top_builddir__eg_parameterization_LDADD = $(LDADD)
+__top_builddir__eg_pmf_test_SOURCES = $(top_builddir)/eg/pmf_test.c
+__top_builddir__eg_pmf_test_OBJECTS = pmf_test.$(OBJEXT)
+__top_builddir__eg_pmf_test_LDADD = $(LDADD)
+__top_builddir__eg_simple_subsets_SOURCES =  \
+	$(top_builddir)/eg/simple_subsets.c
+__top_builddir__eg_simple_subsets_OBJECTS = simple_subsets.$(OBJEXT)
+__top_builddir__eg_simple_subsets_LDADD = $(LDADD)
+__top_builddir__eg_some_cdfs_SOURCES = $(top_builddir)/eg/some_cdfs.c
+__top_builddir__eg_some_cdfs_OBJECTS = some_cdfs.$(OBJEXT)
+__top_builddir__eg_some_cdfs_LDADD = $(LDADD)
+__top_builddir__eg_stack_models_SOURCES =  \
+	$(top_builddir)/eg/stack_models.c
+__top_builddir__eg_stack_models_OBJECTS = stack_models.$(OBJEXT)
+__top_builddir__eg_stack_models_LDADD = $(LDADD)
+__top_builddir__eg_test_distances_SOURCES =  \
+	$(top_builddir)/eg/test_distances.c
+__top_builddir__eg_test_distances_OBJECTS = test_distances.$(OBJEXT)
+__top_builddir__eg_test_distances_LDADD = $(LDADD)
+__top_builddir__eg_test_fisher_SOURCES =  \
+	$(top_builddir)/eg/test_fisher.c
+__top_builddir__eg_test_fisher_OBJECTS = test_fisher.$(OBJEXT)
+__top_builddir__eg_test_fisher_LDADD = $(LDADD)
+__top_builddir__eg_test_harmonic_SOURCES =  \
+	$(top_builddir)/eg/test_harmonic.c
+__top_builddir__eg_test_harmonic_OBJECTS = test_harmonic.$(OBJEXT)
+__top_builddir__eg_test_harmonic_LDADD = $(LDADD)
+__top_builddir__eg_test_kl_divergence_SOURCES =  \
+	$(top_builddir)/eg/test_kl_divergence.c
+__top_builddir__eg_test_kl_divergence_OBJECTS =  \
+	test_kl_divergence.$(OBJEXT)
+__top_builddir__eg_test_kl_divergence_LDADD = $(LDADD)
+__top_builddir__eg_test_pruning_SOURCES =  \
+	$(top_builddir)/eg/test_pruning.c
+__top_builddir__eg_test_pruning_OBJECTS = test_pruning.$(OBJEXT)
+__top_builddir__eg_test_pruning_LDADD = $(LDADD)
+__top_builddir__eg_test_ranks_SOURCES =  \
+	$(top_builddir)/eg/test_ranks.c
+__top_builddir__eg_test_ranks_OBJECTS = test_ranks.$(OBJEXT)
+__top_builddir__eg_test_ranks_LDADD = $(LDADD)
+__top_builddir__eg_test_regex_SOURCES =  \
+	$(top_builddir)/eg/test_regex.c
+__top_builddir__eg_test_regex_OBJECTS = test_regex.$(OBJEXT)
+__top_builddir__eg_test_regex_LDADD = $(LDADD)
+__top_builddir__eg_test_updating_SOURCES =  \
+	$(top_builddir)/eg/test_updating.c
+__top_builddir__eg_test_updating_OBJECTS = test_updating.$(OBJEXT)
+__top_builddir__eg_test_updating_LDADD = $(LDADD)
 db_tests_SOURCES = db_tests.c
 db_tests_OBJECTS = db_tests.$(OBJEXT)
 db_tests_LDADD = $(LDADD)
-db_tests_DEPENDENCIES = ../libapophenia.la
 distribution_tests_SOURCES = distribution_tests.c
 distribution_tests_OBJECTS = distribution_tests.$(OBJEXT)
 distribution_tests_LDADD = $(LDADD)
-distribution_tests_DEPENDENCIES = ../libapophenia.la
 error_test_SOURCES = error_test.c
 error_test_OBJECTS = error_test.$(OBJEXT)
 error_test_LDADD = $(LDADD)
-error_test_DEPENDENCIES = ../libapophenia.la
 nist_tests_SOURCES = nist_tests.c
 nist_tests_OBJECTS = nist_tests.$(OBJEXT)
 nist_tests_LDADD = $(LDADD)
-nist_tests_DEPENDENCIES = ../libapophenia.la
 rake_test_SOURCES = rake_test.c
 rake_test_OBJECTS = rake_test.$(OBJEXT)
 rake_test_LDADD = $(LDADD)
-rake_test_DEPENDENCIES = ../libapophenia.la
 sort_example_SOURCES = sort_example.c
 sort_example_OBJECTS = sort_example.$(OBJEXT)
 sort_example_LDADD = $(LDADD)
-sort_example_DEPENDENCIES = ../libapophenia.la
 test_apop_SOURCES = test_apop.c
 test_apop_OBJECTS = test_apop.$(OBJEXT)
 test_apop_LDADD = $(LDADD)
-test_apop_DEPENDENCIES = ../libapophenia.la
+test_kernel_ll_SOURCES = test_kernel_ll.c
+test_kernel_ll_OBJECTS = test_kernel_ll.$(OBJEXT)
+test_kernel_ll_LDADD = $(LDADD)
 update_via_rng_SOURCES = update_via_rng.c
 update_via_rng_OBJECTS = update_via_rng.$(OBJEXT)
 update_via_rng_LDADD = $(LDADD)
-update_via_rng_DEPENDENCIES = ../libapophenia.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -262,7 +265,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -283,30 +286,56 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = ../eg/apop_map_row.c ../eg/binning.c ../eg/db_fns.c \
-	../eg/dconstrain.c ../eg/dot_products.c ../eg/draw_to_db.c \
-	../eg/fake_logit.c ../eg/fix_params.c ../eg/hills2.c \
-	../eg/iv.c ../eg/jacobian.c ../eg/ks_tests.c \
-	../eg/normalizations.c ../eg/parameterization.c \
-	../eg/pmf_test.c ../eg/simple_subsets.c ../eg/some_cdfs.c \
-	../eg/stack_models.c ../eg/test_distances.c \
-	../eg/test_fisher.c ../eg/test_harmonic.c \
-	../eg/test_kl_divergence.c ../eg/test_pruning.c \
-	../eg/test_ranks.c ../eg/test_regex.c ../eg/test_updating.c \
-	db_tests.c distribution_tests.c error_test.c nist_tests.c \
-	rake_test.c sort_example.c test_apop.c update_via_rng.c
-DIST_SOURCES = ../eg/apop_map_row.c ../eg/binning.c ../eg/db_fns.c \
-	../eg/dconstrain.c ../eg/dot_products.c ../eg/draw_to_db.c \
-	../eg/fake_logit.c ../eg/fix_params.c ../eg/hills2.c \
-	../eg/iv.c ../eg/jacobian.c ../eg/ks_tests.c \
-	../eg/normalizations.c ../eg/parameterization.c \
-	../eg/pmf_test.c ../eg/simple_subsets.c ../eg/some_cdfs.c \
-	../eg/stack_models.c ../eg/test_distances.c \
-	../eg/test_fisher.c ../eg/test_harmonic.c \
-	../eg/test_kl_divergence.c ../eg/test_pruning.c \
-	../eg/test_ranks.c ../eg/test_regex.c ../eg/test_updating.c \
-	db_tests.c distribution_tests.c error_test.c nist_tests.c \
-	rake_test.c sort_example.c test_apop.c update_via_rng.c
+SOURCES = $(top_builddir)/eg/apop_map_row.c \
+	$(top_builddir)/eg/binning.c $(top_builddir)/eg/db_fns.c \
+	$(top_builddir)/eg/dconstrain.c \
+	$(top_builddir)/eg/dot_products.c \
+	$(top_builddir)/eg/draw_to_db.c \
+	$(top_builddir)/eg/fake_logit.c \
+	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
+	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jacobian.c \
+	$(top_builddir)/eg/ks_tests.c \
+	$(top_builddir)/eg/normalizations.c \
+	$(top_builddir)/eg/parameterization.c \
+	$(top_builddir)/eg/pmf_test.c \
+	$(top_builddir)/eg/simple_subsets.c \
+	$(top_builddir)/eg/some_cdfs.c \
+	$(top_builddir)/eg/stack_models.c \
+	$(top_builddir)/eg/test_distances.c \
+	$(top_builddir)/eg/test_fisher.c \
+	$(top_builddir)/eg/test_harmonic.c \
+	$(top_builddir)/eg/test_kl_divergence.c \
+	$(top_builddir)/eg/test_pruning.c \
+	$(top_builddir)/eg/test_ranks.c \
+	$(top_builddir)/eg/test_regex.c \
+	$(top_builddir)/eg/test_updating.c db_tests.c \
+	distribution_tests.c error_test.c nist_tests.c rake_test.c \
+	sort_example.c test_apop.c test_kernel_ll.c update_via_rng.c
+DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
+	$(top_builddir)/eg/binning.c $(top_builddir)/eg/db_fns.c \
+	$(top_builddir)/eg/dconstrain.c \
+	$(top_builddir)/eg/dot_products.c \
+	$(top_builddir)/eg/draw_to_db.c \
+	$(top_builddir)/eg/fake_logit.c \
+	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
+	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jacobian.c \
+	$(top_builddir)/eg/ks_tests.c \
+	$(top_builddir)/eg/normalizations.c \
+	$(top_builddir)/eg/parameterization.c \
+	$(top_builddir)/eg/pmf_test.c \
+	$(top_builddir)/eg/simple_subsets.c \
+	$(top_builddir)/eg/some_cdfs.c \
+	$(top_builddir)/eg/stack_models.c \
+	$(top_builddir)/eg/test_distances.c \
+	$(top_builddir)/eg/test_fisher.c \
+	$(top_builddir)/eg/test_harmonic.c \
+	$(top_builddir)/eg/test_kl_divergence.c \
+	$(top_builddir)/eg/test_pruning.c \
+	$(top_builddir)/eg/test_ranks.c \
+	$(top_builddir)/eg/test_regex.c \
+	$(top_builddir)/eg/test_updating.c db_tests.c \
+	distribution_tests.c error_test.c nist_tests.c rake_test.c \
+	sort_example.c test_apop.c test_kernel_ll.c update_via_rng.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -517,7 +546,7 @@ RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
-LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
+LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
@@ -532,7 +561,7 @@ am__set_b = \
 am__test_logs1 = $(TESTS:=.log)
 am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
 TEST_LOGS = $(am__test_logs2:.test.log=.log)
-TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
+TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -545,6 +574,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BC = @BC@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -563,6 +593,9 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_CONFIG = @GSL_CONFIG@
+GSL_LIBS = @GSL_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -570,12 +603,14 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -606,6 +641,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SQLITE3 = @SQLITE3@
 SQLITE3_CFLAGS = @SQLITE3_CFLAGS@
 SQLITE3_LDFLAGS = @SQLITE3_LDFLAGS@
 SQLITE3_VERSION = @SQLITE3_VERSION@
@@ -664,22 +700,59 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-TESTS = utilities_test $(check_PROGRAMS)
-LDADD = ../libapophenia.la
-AM_CFLAGS = -DTesting $(CFLAGS) -DDatadir=\"$(srcdir)/\" -I$(srcdir) -I$(srcdir)/..
-EXTRA_DIST = utilities_test Readme data numacc4.dat pontius.dat amash_vote_analysis.csv faith.data test_data test_data2 \
-		data-mixed test_data_nans wampler1.dat printing_sample test_data_fixed_width sort_tests.c
+TESTS = \
+	utilities_test \
+	$(check_PROGRAMS)
 
-AM_TESTS_ENVIRONMENT = for i in $(EXTRA_DIST); do \
-					   if [ ! -e $$i ]; then      \
-                            cp $(srcdir)/$$i .;   \
-                       fi; done;
+AM_CFLAGS = \
+	-DTesting \
+	-DDatadir=\"$(top_srcdir)/tests/\" \
+	-I$(top_srcdir)/tests \
+	-I$(top_srcdir) \
+	$(GSL_CFLAGS)
+
+AM_LDFLAGS = \
+	$(top_builddir)/libapophenia.la \
+	$(GSL_LIBS)
+
+DATA_DIST = \
+	data \
+	data-mixed \
+	printing_sample \
+	test_data \
+	test_data2 \
+	test_data_nans\
+	test_data_fixed_width \
+	amash_vote_analysis.csv \
+	numacc4.dat \
+	pontius.dat \
+	wampler1.dat \
+	faith.data \
+	sort_tests.c
+
+EXTRA_DIST = \
+	Readme \
+	$(DATA_DIST)
+
+CLEANFILES = \
+	ff.db \
+	runs.db \
+	td.db \
+	draws-k \
+	draws-k2 \
+	draws-mvN \
+	draws-N \
+	draws-std_multinormal \
+	draws-std_normal \
+	the_data.txt \
+	print_test.out \
+	xxx
 
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .log .o .obj .test .test$(EXEEXT) .trs
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -704,11 +777,13 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+utilities_test: $(top_builddir)/config.status $(srcdir)/utilities_test.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 clean-checkPROGRAMS:
 	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
@@ -718,113 +793,113 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-../eg/$(am__dirstamp):
-	@$(MKDIR_P) ../eg
-	@: > ../eg/$(am__dirstamp)
+$(top_builddir)/eg/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/eg
+	@: > $(top_builddir)/eg/$(am__dirstamp)
 
-../eg/apop_map_row$(EXEEXT): $(___eg_apop_map_row_OBJECTS) $(___eg_apop_map_row_DEPENDENCIES) $(EXTRA____eg_apop_map_row_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/apop_map_row$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_apop_map_row_OBJECTS) $(___eg_apop_map_row_LDADD) $(LIBS)
+$(top_builddir)/eg/apop_map_row$(EXEEXT): $(__top_builddir__eg_apop_map_row_OBJECTS) $(__top_builddir__eg_apop_map_row_DEPENDENCIES) $(EXTRA___top_builddir__eg_apop_map_row_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/apop_map_row$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_apop_map_row_OBJECTS) $(__top_builddir__eg_apop_map_row_LDADD) $(LIBS)
 
-../eg/binning$(EXEEXT): $(___eg_binning_OBJECTS) $(___eg_binning_DEPENDENCIES) $(EXTRA____eg_binning_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/binning$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_binning_OBJECTS) $(___eg_binning_LDADD) $(LIBS)
+$(top_builddir)/eg/binning$(EXEEXT): $(__top_builddir__eg_binning_OBJECTS) $(__top_builddir__eg_binning_DEPENDENCIES) $(EXTRA___top_builddir__eg_binning_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/binning$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_binning_OBJECTS) $(__top_builddir__eg_binning_LDADD) $(LIBS)
 
-../eg/db_fns$(EXEEXT): $(___eg_db_fns_OBJECTS) $(___eg_db_fns_DEPENDENCIES) $(EXTRA____eg_db_fns_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/db_fns$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_db_fns_OBJECTS) $(___eg_db_fns_LDADD) $(LIBS)
+$(top_builddir)/eg/db_fns$(EXEEXT): $(__top_builddir__eg_db_fns_OBJECTS) $(__top_builddir__eg_db_fns_DEPENDENCIES) $(EXTRA___top_builddir__eg_db_fns_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/db_fns$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_db_fns_OBJECTS) $(__top_builddir__eg_db_fns_LDADD) $(LIBS)
 
-../eg/dconstrain$(EXEEXT): $(___eg_dconstrain_OBJECTS) $(___eg_dconstrain_DEPENDENCIES) $(EXTRA____eg_dconstrain_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/dconstrain$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_dconstrain_OBJECTS) $(___eg_dconstrain_LDADD) $(LIBS)
+$(top_builddir)/eg/dconstrain$(EXEEXT): $(__top_builddir__eg_dconstrain_OBJECTS) $(__top_builddir__eg_dconstrain_DEPENDENCIES) $(EXTRA___top_builddir__eg_dconstrain_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/dconstrain$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_dconstrain_OBJECTS) $(__top_builddir__eg_dconstrain_LDADD) $(LIBS)
 
-../eg/dot_products$(EXEEXT): $(___eg_dot_products_OBJECTS) $(___eg_dot_products_DEPENDENCIES) $(EXTRA____eg_dot_products_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/dot_products$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_dot_products_OBJECTS) $(___eg_dot_products_LDADD) $(LIBS)
+$(top_builddir)/eg/dot_products$(EXEEXT): $(__top_builddir__eg_dot_products_OBJECTS) $(__top_builddir__eg_dot_products_DEPENDENCIES) $(EXTRA___top_builddir__eg_dot_products_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/dot_products$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_dot_products_OBJECTS) $(__top_builddir__eg_dot_products_LDADD) $(LIBS)
 
-../eg/draw_to_db$(EXEEXT): $(___eg_draw_to_db_OBJECTS) $(___eg_draw_to_db_DEPENDENCIES) $(EXTRA____eg_draw_to_db_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/draw_to_db$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_draw_to_db_OBJECTS) $(___eg_draw_to_db_LDADD) $(LIBS)
+$(top_builddir)/eg/draw_to_db$(EXEEXT): $(__top_builddir__eg_draw_to_db_OBJECTS) $(__top_builddir__eg_draw_to_db_DEPENDENCIES) $(EXTRA___top_builddir__eg_draw_to_db_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/draw_to_db$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_draw_to_db_OBJECTS) $(__top_builddir__eg_draw_to_db_LDADD) $(LIBS)
 
-../eg/fake_logit$(EXEEXT): $(___eg_fake_logit_OBJECTS) $(___eg_fake_logit_DEPENDENCIES) $(EXTRA____eg_fake_logit_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/fake_logit$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_fake_logit_OBJECTS) $(___eg_fake_logit_LDADD) $(LIBS)
+$(top_builddir)/eg/fake_logit$(EXEEXT): $(__top_builddir__eg_fake_logit_OBJECTS) $(__top_builddir__eg_fake_logit_DEPENDENCIES) $(EXTRA___top_builddir__eg_fake_logit_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/fake_logit$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_fake_logit_OBJECTS) $(__top_builddir__eg_fake_logit_LDADD) $(LIBS)
 
-../eg/fix_params$(EXEEXT): $(___eg_fix_params_OBJECTS) $(___eg_fix_params_DEPENDENCIES) $(EXTRA____eg_fix_params_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/fix_params$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_fix_params_OBJECTS) $(___eg_fix_params_LDADD) $(LIBS)
+$(top_builddir)/eg/fix_params$(EXEEXT): $(__top_builddir__eg_fix_params_OBJECTS) $(__top_builddir__eg_fix_params_DEPENDENCIES) $(EXTRA___top_builddir__eg_fix_params_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/fix_params$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_fix_params_OBJECTS) $(__top_builddir__eg_fix_params_LDADD) $(LIBS)
 
-../eg/hills2$(EXEEXT): $(___eg_hills2_OBJECTS) $(___eg_hills2_DEPENDENCIES) $(EXTRA____eg_hills2_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/hills2$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_hills2_OBJECTS) $(___eg_hills2_LDADD) $(LIBS)
+$(top_builddir)/eg/hills2$(EXEEXT): $(__top_builddir__eg_hills2_OBJECTS) $(__top_builddir__eg_hills2_DEPENDENCIES) $(EXTRA___top_builddir__eg_hills2_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/hills2$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_hills2_OBJECTS) $(__top_builddir__eg_hills2_LDADD) $(LIBS)
 
-../eg/iv$(EXEEXT): $(___eg_iv_OBJECTS) $(___eg_iv_DEPENDENCIES) $(EXTRA____eg_iv_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/iv$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_iv_OBJECTS) $(___eg_iv_LDADD) $(LIBS)
+$(top_builddir)/eg/iv$(EXEEXT): $(__top_builddir__eg_iv_OBJECTS) $(__top_builddir__eg_iv_DEPENDENCIES) $(EXTRA___top_builddir__eg_iv_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/iv$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_iv_OBJECTS) $(__top_builddir__eg_iv_LDADD) $(LIBS)
 
-../eg/jacobian$(EXEEXT): $(___eg_jacobian_OBJECTS) $(___eg_jacobian_DEPENDENCIES) $(EXTRA____eg_jacobian_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/jacobian$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_jacobian_OBJECTS) $(___eg_jacobian_LDADD) $(LIBS)
+$(top_builddir)/eg/jacobian$(EXEEXT): $(__top_builddir__eg_jacobian_OBJECTS) $(__top_builddir__eg_jacobian_DEPENDENCIES) $(EXTRA___top_builddir__eg_jacobian_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/jacobian$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_jacobian_OBJECTS) $(__top_builddir__eg_jacobian_LDADD) $(LIBS)
 
-../eg/ks_tests$(EXEEXT): $(___eg_ks_tests_OBJECTS) $(___eg_ks_tests_DEPENDENCIES) $(EXTRA____eg_ks_tests_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/ks_tests$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_ks_tests_OBJECTS) $(___eg_ks_tests_LDADD) $(LIBS)
+$(top_builddir)/eg/ks_tests$(EXEEXT): $(__top_builddir__eg_ks_tests_OBJECTS) $(__top_builddir__eg_ks_tests_DEPENDENCIES) $(EXTRA___top_builddir__eg_ks_tests_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/ks_tests$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_ks_tests_OBJECTS) $(__top_builddir__eg_ks_tests_LDADD) $(LIBS)
 
-../eg/normalizations$(EXEEXT): $(___eg_normalizations_OBJECTS) $(___eg_normalizations_DEPENDENCIES) $(EXTRA____eg_normalizations_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/normalizations$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_normalizations_OBJECTS) $(___eg_normalizations_LDADD) $(LIBS)
+$(top_builddir)/eg/normalizations$(EXEEXT): $(__top_builddir__eg_normalizations_OBJECTS) $(__top_builddir__eg_normalizations_DEPENDENCIES) $(EXTRA___top_builddir__eg_normalizations_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/normalizations$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_normalizations_OBJECTS) $(__top_builddir__eg_normalizations_LDADD) $(LIBS)
 
-../eg/parameterization$(EXEEXT): $(___eg_parameterization_OBJECTS) $(___eg_parameterization_DEPENDENCIES) $(EXTRA____eg_parameterization_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/parameterization$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_parameterization_OBJECTS) $(___eg_parameterization_LDADD) $(LIBS)
+$(top_builddir)/eg/parameterization$(EXEEXT): $(__top_builddir__eg_parameterization_OBJECTS) $(__top_builddir__eg_parameterization_DEPENDENCIES) $(EXTRA___top_builddir__eg_parameterization_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/parameterization$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_parameterization_OBJECTS) $(__top_builddir__eg_parameterization_LDADD) $(LIBS)
 
-../eg/pmf_test$(EXEEXT): $(___eg_pmf_test_OBJECTS) $(___eg_pmf_test_DEPENDENCIES) $(EXTRA____eg_pmf_test_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/pmf_test$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_pmf_test_OBJECTS) $(___eg_pmf_test_LDADD) $(LIBS)
+$(top_builddir)/eg/pmf_test$(EXEEXT): $(__top_builddir__eg_pmf_test_OBJECTS) $(__top_builddir__eg_pmf_test_DEPENDENCIES) $(EXTRA___top_builddir__eg_pmf_test_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/pmf_test$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_pmf_test_OBJECTS) $(__top_builddir__eg_pmf_test_LDADD) $(LIBS)
 
-../eg/simple_subsets$(EXEEXT): $(___eg_simple_subsets_OBJECTS) $(___eg_simple_subsets_DEPENDENCIES) $(EXTRA____eg_simple_subsets_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/simple_subsets$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_simple_subsets_OBJECTS) $(___eg_simple_subsets_LDADD) $(LIBS)
+$(top_builddir)/eg/simple_subsets$(EXEEXT): $(__top_builddir__eg_simple_subsets_OBJECTS) $(__top_builddir__eg_simple_subsets_DEPENDENCIES) $(EXTRA___top_builddir__eg_simple_subsets_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/simple_subsets$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_simple_subsets_OBJECTS) $(__top_builddir__eg_simple_subsets_LDADD) $(LIBS)
 
-../eg/some_cdfs$(EXEEXT): $(___eg_some_cdfs_OBJECTS) $(___eg_some_cdfs_DEPENDENCIES) $(EXTRA____eg_some_cdfs_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/some_cdfs$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_some_cdfs_OBJECTS) $(___eg_some_cdfs_LDADD) $(LIBS)
+$(top_builddir)/eg/some_cdfs$(EXEEXT): $(__top_builddir__eg_some_cdfs_OBJECTS) $(__top_builddir__eg_some_cdfs_DEPENDENCIES) $(EXTRA___top_builddir__eg_some_cdfs_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/some_cdfs$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_some_cdfs_OBJECTS) $(__top_builddir__eg_some_cdfs_LDADD) $(LIBS)
 
-../eg/stack_models$(EXEEXT): $(___eg_stack_models_OBJECTS) $(___eg_stack_models_DEPENDENCIES) $(EXTRA____eg_stack_models_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/stack_models$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_stack_models_OBJECTS) $(___eg_stack_models_LDADD) $(LIBS)
+$(top_builddir)/eg/stack_models$(EXEEXT): $(__top_builddir__eg_stack_models_OBJECTS) $(__top_builddir__eg_stack_models_DEPENDENCIES) $(EXTRA___top_builddir__eg_stack_models_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/stack_models$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_stack_models_OBJECTS) $(__top_builddir__eg_stack_models_LDADD) $(LIBS)
 
-../eg/test_distances$(EXEEXT): $(___eg_test_distances_OBJECTS) $(___eg_test_distances_DEPENDENCIES) $(EXTRA____eg_test_distances_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_distances$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_distances_OBJECTS) $(___eg_test_distances_LDADD) $(LIBS)
+$(top_builddir)/eg/test_distances$(EXEEXT): $(__top_builddir__eg_test_distances_OBJECTS) $(__top_builddir__eg_test_distances_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_distances_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_distances$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_distances_OBJECTS) $(__top_builddir__eg_test_distances_LDADD) $(LIBS)
 
-../eg/test_fisher$(EXEEXT): $(___eg_test_fisher_OBJECTS) $(___eg_test_fisher_DEPENDENCIES) $(EXTRA____eg_test_fisher_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_fisher$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_fisher_OBJECTS) $(___eg_test_fisher_LDADD) $(LIBS)
+$(top_builddir)/eg/test_fisher$(EXEEXT): $(__top_builddir__eg_test_fisher_OBJECTS) $(__top_builddir__eg_test_fisher_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_fisher_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_fisher$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_fisher_OBJECTS) $(__top_builddir__eg_test_fisher_LDADD) $(LIBS)
 
-../eg/test_harmonic$(EXEEXT): $(___eg_test_harmonic_OBJECTS) $(___eg_test_harmonic_DEPENDENCIES) $(EXTRA____eg_test_harmonic_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_harmonic$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_harmonic_OBJECTS) $(___eg_test_harmonic_LDADD) $(LIBS)
+$(top_builddir)/eg/test_harmonic$(EXEEXT): $(__top_builddir__eg_test_harmonic_OBJECTS) $(__top_builddir__eg_test_harmonic_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_harmonic_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_harmonic$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_harmonic_OBJECTS) $(__top_builddir__eg_test_harmonic_LDADD) $(LIBS)
 
-../eg/test_kl_divergence$(EXEEXT): $(___eg_test_kl_divergence_OBJECTS) $(___eg_test_kl_divergence_DEPENDENCIES) $(EXTRA____eg_test_kl_divergence_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_kl_divergence$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_kl_divergence_OBJECTS) $(___eg_test_kl_divergence_LDADD) $(LIBS)
+$(top_builddir)/eg/test_kl_divergence$(EXEEXT): $(__top_builddir__eg_test_kl_divergence_OBJECTS) $(__top_builddir__eg_test_kl_divergence_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_kl_divergence_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_kl_divergence$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_kl_divergence_OBJECTS) $(__top_builddir__eg_test_kl_divergence_LDADD) $(LIBS)
 
-../eg/test_pruning$(EXEEXT): $(___eg_test_pruning_OBJECTS) $(___eg_test_pruning_DEPENDENCIES) $(EXTRA____eg_test_pruning_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_pruning$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_pruning_OBJECTS) $(___eg_test_pruning_LDADD) $(LIBS)
+$(top_builddir)/eg/test_pruning$(EXEEXT): $(__top_builddir__eg_test_pruning_OBJECTS) $(__top_builddir__eg_test_pruning_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_pruning_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_pruning$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_pruning_OBJECTS) $(__top_builddir__eg_test_pruning_LDADD) $(LIBS)
 
-../eg/test_ranks$(EXEEXT): $(___eg_test_ranks_OBJECTS) $(___eg_test_ranks_DEPENDENCIES) $(EXTRA____eg_test_ranks_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_ranks$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_ranks_OBJECTS) $(___eg_test_ranks_LDADD) $(LIBS)
+$(top_builddir)/eg/test_ranks$(EXEEXT): $(__top_builddir__eg_test_ranks_OBJECTS) $(__top_builddir__eg_test_ranks_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_ranks_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_ranks$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_ranks_OBJECTS) $(__top_builddir__eg_test_ranks_LDADD) $(LIBS)
 
-../eg/test_regex$(EXEEXT): $(___eg_test_regex_OBJECTS) $(___eg_test_regex_DEPENDENCIES) $(EXTRA____eg_test_regex_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_regex$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_regex_OBJECTS) $(___eg_test_regex_LDADD) $(LIBS)
+$(top_builddir)/eg/test_regex$(EXEEXT): $(__top_builddir__eg_test_regex_OBJECTS) $(__top_builddir__eg_test_regex_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_regex_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_regex$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_regex_OBJECTS) $(__top_builddir__eg_test_regex_LDADD) $(LIBS)
 
-../eg/test_updating$(EXEEXT): $(___eg_test_updating_OBJECTS) $(___eg_test_updating_DEPENDENCIES) $(EXTRA____eg_test_updating_DEPENDENCIES) ../eg/$(am__dirstamp)
-	@rm -f ../eg/test_updating$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(___eg_test_updating_OBJECTS) $(___eg_test_updating_LDADD) $(LIBS)
+$(top_builddir)/eg/test_updating$(EXEEXT): $(__top_builddir__eg_test_updating_OBJECTS) $(__top_builddir__eg_test_updating_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_updating_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/test_updating$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_test_updating_OBJECTS) $(__top_builddir__eg_test_updating_LDADD) $(LIBS)
 
 db_tests$(EXEEXT): $(db_tests_OBJECTS) $(db_tests_DEPENDENCIES) $(EXTRA_db_tests_DEPENDENCIES) 
 	@rm -f db_tests$(EXEEXT)
@@ -853,6 +928,10 @@ sort_example$(EXEEXT): $(sort_example_OBJECTS) $(sort_example_DEPENDENCIES) $(EX
 test_apop$(EXEEXT): $(test_apop_OBJECTS) $(test_apop_DEPENDENCIES) $(EXTRA_test_apop_DEPENDENCIES) 
 	@rm -f test_apop$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_apop_OBJECTS) $(test_apop_LDADD) $(LIBS)
+
+test_kernel_ll$(EXEEXT): $(test_kernel_ll_OBJECTS) $(test_kernel_ll_DEPENDENCIES) $(EXTRA_test_kernel_ll_DEPENDENCIES) 
+	@rm -f test_kernel_ll$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_kernel_ll_OBJECTS) $(test_kernel_ll_LDADD) $(LIBS)
 
 update_via_rng$(EXEEXT): $(update_via_rng_OBJECTS) $(update_via_rng_DEPENDENCIES) $(EXTRA_update_via_rng_DEPENDENCIES) 
 	@rm -f update_via_rng$(EXEEXT)
@@ -892,6 +971,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_distances.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_fisher.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_harmonic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_kernel_ll.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_kl_divergence.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pruning.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ranks.Po@am__quote@
@@ -920,376 +1000,376 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-apop_map_row.o: ../eg/apop_map_row.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_map_row.o -MD -MP -MF $(DEPDIR)/apop_map_row.Tpo -c -o apop_map_row.o `test -f '../eg/apop_map_row.c' || echo '$(srcdir)/'`../eg/apop_map_row.c
+apop_map_row.o: $(top_builddir)/eg/apop_map_row.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_map_row.o -MD -MP -MF $(DEPDIR)/apop_map_row.Tpo -c -o apop_map_row.o `test -f '$(top_builddir)/eg/apop_map_row.c' || echo '$(srcdir)/'`$(top_builddir)/eg/apop_map_row.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_map_row.Tpo $(DEPDIR)/apop_map_row.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/apop_map_row.c' object='apop_map_row.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/apop_map_row.c' object='apop_map_row.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_map_row.o `test -f '../eg/apop_map_row.c' || echo '$(srcdir)/'`../eg/apop_map_row.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_map_row.o `test -f '$(top_builddir)/eg/apop_map_row.c' || echo '$(srcdir)/'`$(top_builddir)/eg/apop_map_row.c
 
-apop_map_row.obj: ../eg/apop_map_row.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_map_row.obj -MD -MP -MF $(DEPDIR)/apop_map_row.Tpo -c -o apop_map_row.obj `if test -f '../eg/apop_map_row.c'; then $(CYGPATH_W) '../eg/apop_map_row.c'; else $(CYGPATH_W) '$(srcdir)/../eg/apop_map_row.c'; fi`
+apop_map_row.obj: $(top_builddir)/eg/apop_map_row.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_map_row.obj -MD -MP -MF $(DEPDIR)/apop_map_row.Tpo -c -o apop_map_row.obj `if test -f '$(top_builddir)/eg/apop_map_row.c'; then $(CYGPATH_W) '$(top_builddir)/eg/apop_map_row.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/apop_map_row.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_map_row.Tpo $(DEPDIR)/apop_map_row.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/apop_map_row.c' object='apop_map_row.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/apop_map_row.c' object='apop_map_row.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_map_row.obj `if test -f '../eg/apop_map_row.c'; then $(CYGPATH_W) '../eg/apop_map_row.c'; else $(CYGPATH_W) '$(srcdir)/../eg/apop_map_row.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_map_row.obj `if test -f '$(top_builddir)/eg/apop_map_row.c'; then $(CYGPATH_W) '$(top_builddir)/eg/apop_map_row.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/apop_map_row.c'; fi`
 
-binning.o: ../eg/binning.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT binning.o -MD -MP -MF $(DEPDIR)/binning.Tpo -c -o binning.o `test -f '../eg/binning.c' || echo '$(srcdir)/'`../eg/binning.c
+binning.o: $(top_builddir)/eg/binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT binning.o -MD -MP -MF $(DEPDIR)/binning.Tpo -c -o binning.o `test -f '$(top_builddir)/eg/binning.c' || echo '$(srcdir)/'`$(top_builddir)/eg/binning.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/binning.Tpo $(DEPDIR)/binning.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/binning.c' object='binning.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/binning.c' object='binning.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o binning.o `test -f '../eg/binning.c' || echo '$(srcdir)/'`../eg/binning.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o binning.o `test -f '$(top_builddir)/eg/binning.c' || echo '$(srcdir)/'`$(top_builddir)/eg/binning.c
 
-binning.obj: ../eg/binning.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT binning.obj -MD -MP -MF $(DEPDIR)/binning.Tpo -c -o binning.obj `if test -f '../eg/binning.c'; then $(CYGPATH_W) '../eg/binning.c'; else $(CYGPATH_W) '$(srcdir)/../eg/binning.c'; fi`
+binning.obj: $(top_builddir)/eg/binning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT binning.obj -MD -MP -MF $(DEPDIR)/binning.Tpo -c -o binning.obj `if test -f '$(top_builddir)/eg/binning.c'; then $(CYGPATH_W) '$(top_builddir)/eg/binning.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/binning.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/binning.Tpo $(DEPDIR)/binning.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/binning.c' object='binning.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/binning.c' object='binning.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o binning.obj `if test -f '../eg/binning.c'; then $(CYGPATH_W) '../eg/binning.c'; else $(CYGPATH_W) '$(srcdir)/../eg/binning.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o binning.obj `if test -f '$(top_builddir)/eg/binning.c'; then $(CYGPATH_W) '$(top_builddir)/eg/binning.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/binning.c'; fi`
 
-db_fns.o: ../eg/db_fns.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT db_fns.o -MD -MP -MF $(DEPDIR)/db_fns.Tpo -c -o db_fns.o `test -f '../eg/db_fns.c' || echo '$(srcdir)/'`../eg/db_fns.c
+db_fns.o: $(top_builddir)/eg/db_fns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT db_fns.o -MD -MP -MF $(DEPDIR)/db_fns.Tpo -c -o db_fns.o `test -f '$(top_builddir)/eg/db_fns.c' || echo '$(srcdir)/'`$(top_builddir)/eg/db_fns.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/db_fns.Tpo $(DEPDIR)/db_fns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/db_fns.c' object='db_fns.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/db_fns.c' object='db_fns.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o db_fns.o `test -f '../eg/db_fns.c' || echo '$(srcdir)/'`../eg/db_fns.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o db_fns.o `test -f '$(top_builddir)/eg/db_fns.c' || echo '$(srcdir)/'`$(top_builddir)/eg/db_fns.c
 
-db_fns.obj: ../eg/db_fns.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT db_fns.obj -MD -MP -MF $(DEPDIR)/db_fns.Tpo -c -o db_fns.obj `if test -f '../eg/db_fns.c'; then $(CYGPATH_W) '../eg/db_fns.c'; else $(CYGPATH_W) '$(srcdir)/../eg/db_fns.c'; fi`
+db_fns.obj: $(top_builddir)/eg/db_fns.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT db_fns.obj -MD -MP -MF $(DEPDIR)/db_fns.Tpo -c -o db_fns.obj `if test -f '$(top_builddir)/eg/db_fns.c'; then $(CYGPATH_W) '$(top_builddir)/eg/db_fns.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/db_fns.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/db_fns.Tpo $(DEPDIR)/db_fns.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/db_fns.c' object='db_fns.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/db_fns.c' object='db_fns.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o db_fns.obj `if test -f '../eg/db_fns.c'; then $(CYGPATH_W) '../eg/db_fns.c'; else $(CYGPATH_W) '$(srcdir)/../eg/db_fns.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o db_fns.obj `if test -f '$(top_builddir)/eg/db_fns.c'; then $(CYGPATH_W) '$(top_builddir)/eg/db_fns.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/db_fns.c'; fi`
 
-dconstrain.o: ../eg/dconstrain.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dconstrain.o -MD -MP -MF $(DEPDIR)/dconstrain.Tpo -c -o dconstrain.o `test -f '../eg/dconstrain.c' || echo '$(srcdir)/'`../eg/dconstrain.c
+dconstrain.o: $(top_builddir)/eg/dconstrain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dconstrain.o -MD -MP -MF $(DEPDIR)/dconstrain.Tpo -c -o dconstrain.o `test -f '$(top_builddir)/eg/dconstrain.c' || echo '$(srcdir)/'`$(top_builddir)/eg/dconstrain.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/dconstrain.Tpo $(DEPDIR)/dconstrain.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/dconstrain.c' object='dconstrain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/dconstrain.c' object='dconstrain.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dconstrain.o `test -f '../eg/dconstrain.c' || echo '$(srcdir)/'`../eg/dconstrain.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dconstrain.o `test -f '$(top_builddir)/eg/dconstrain.c' || echo '$(srcdir)/'`$(top_builddir)/eg/dconstrain.c
 
-dconstrain.obj: ../eg/dconstrain.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dconstrain.obj -MD -MP -MF $(DEPDIR)/dconstrain.Tpo -c -o dconstrain.obj `if test -f '../eg/dconstrain.c'; then $(CYGPATH_W) '../eg/dconstrain.c'; else $(CYGPATH_W) '$(srcdir)/../eg/dconstrain.c'; fi`
+dconstrain.obj: $(top_builddir)/eg/dconstrain.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dconstrain.obj -MD -MP -MF $(DEPDIR)/dconstrain.Tpo -c -o dconstrain.obj `if test -f '$(top_builddir)/eg/dconstrain.c'; then $(CYGPATH_W) '$(top_builddir)/eg/dconstrain.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/dconstrain.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/dconstrain.Tpo $(DEPDIR)/dconstrain.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/dconstrain.c' object='dconstrain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/dconstrain.c' object='dconstrain.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dconstrain.obj `if test -f '../eg/dconstrain.c'; then $(CYGPATH_W) '../eg/dconstrain.c'; else $(CYGPATH_W) '$(srcdir)/../eg/dconstrain.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dconstrain.obj `if test -f '$(top_builddir)/eg/dconstrain.c'; then $(CYGPATH_W) '$(top_builddir)/eg/dconstrain.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/dconstrain.c'; fi`
 
-dot_products.o: ../eg/dot_products.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dot_products.o -MD -MP -MF $(DEPDIR)/dot_products.Tpo -c -o dot_products.o `test -f '../eg/dot_products.c' || echo '$(srcdir)/'`../eg/dot_products.c
+dot_products.o: $(top_builddir)/eg/dot_products.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dot_products.o -MD -MP -MF $(DEPDIR)/dot_products.Tpo -c -o dot_products.o `test -f '$(top_builddir)/eg/dot_products.c' || echo '$(srcdir)/'`$(top_builddir)/eg/dot_products.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/dot_products.Tpo $(DEPDIR)/dot_products.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/dot_products.c' object='dot_products.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/dot_products.c' object='dot_products.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dot_products.o `test -f '../eg/dot_products.c' || echo '$(srcdir)/'`../eg/dot_products.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dot_products.o `test -f '$(top_builddir)/eg/dot_products.c' || echo '$(srcdir)/'`$(top_builddir)/eg/dot_products.c
 
-dot_products.obj: ../eg/dot_products.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dot_products.obj -MD -MP -MF $(DEPDIR)/dot_products.Tpo -c -o dot_products.obj `if test -f '../eg/dot_products.c'; then $(CYGPATH_W) '../eg/dot_products.c'; else $(CYGPATH_W) '$(srcdir)/../eg/dot_products.c'; fi`
+dot_products.obj: $(top_builddir)/eg/dot_products.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT dot_products.obj -MD -MP -MF $(DEPDIR)/dot_products.Tpo -c -o dot_products.obj `if test -f '$(top_builddir)/eg/dot_products.c'; then $(CYGPATH_W) '$(top_builddir)/eg/dot_products.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/dot_products.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/dot_products.Tpo $(DEPDIR)/dot_products.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/dot_products.c' object='dot_products.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/dot_products.c' object='dot_products.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dot_products.obj `if test -f '../eg/dot_products.c'; then $(CYGPATH_W) '../eg/dot_products.c'; else $(CYGPATH_W) '$(srcdir)/../eg/dot_products.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dot_products.obj `if test -f '$(top_builddir)/eg/dot_products.c'; then $(CYGPATH_W) '$(top_builddir)/eg/dot_products.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/dot_products.c'; fi`
 
-draw_to_db.o: ../eg/draw_to_db.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT draw_to_db.o -MD -MP -MF $(DEPDIR)/draw_to_db.Tpo -c -o draw_to_db.o `test -f '../eg/draw_to_db.c' || echo '$(srcdir)/'`../eg/draw_to_db.c
+draw_to_db.o: $(top_builddir)/eg/draw_to_db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT draw_to_db.o -MD -MP -MF $(DEPDIR)/draw_to_db.Tpo -c -o draw_to_db.o `test -f '$(top_builddir)/eg/draw_to_db.c' || echo '$(srcdir)/'`$(top_builddir)/eg/draw_to_db.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/draw_to_db.Tpo $(DEPDIR)/draw_to_db.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/draw_to_db.c' object='draw_to_db.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/draw_to_db.c' object='draw_to_db.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o draw_to_db.o `test -f '../eg/draw_to_db.c' || echo '$(srcdir)/'`../eg/draw_to_db.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o draw_to_db.o `test -f '$(top_builddir)/eg/draw_to_db.c' || echo '$(srcdir)/'`$(top_builddir)/eg/draw_to_db.c
 
-draw_to_db.obj: ../eg/draw_to_db.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT draw_to_db.obj -MD -MP -MF $(DEPDIR)/draw_to_db.Tpo -c -o draw_to_db.obj `if test -f '../eg/draw_to_db.c'; then $(CYGPATH_W) '../eg/draw_to_db.c'; else $(CYGPATH_W) '$(srcdir)/../eg/draw_to_db.c'; fi`
+draw_to_db.obj: $(top_builddir)/eg/draw_to_db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT draw_to_db.obj -MD -MP -MF $(DEPDIR)/draw_to_db.Tpo -c -o draw_to_db.obj `if test -f '$(top_builddir)/eg/draw_to_db.c'; then $(CYGPATH_W) '$(top_builddir)/eg/draw_to_db.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/draw_to_db.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/draw_to_db.Tpo $(DEPDIR)/draw_to_db.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/draw_to_db.c' object='draw_to_db.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/draw_to_db.c' object='draw_to_db.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o draw_to_db.obj `if test -f '../eg/draw_to_db.c'; then $(CYGPATH_W) '../eg/draw_to_db.c'; else $(CYGPATH_W) '$(srcdir)/../eg/draw_to_db.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o draw_to_db.obj `if test -f '$(top_builddir)/eg/draw_to_db.c'; then $(CYGPATH_W) '$(top_builddir)/eg/draw_to_db.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/draw_to_db.c'; fi`
 
-fake_logit.o: ../eg/fake_logit.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fake_logit.o -MD -MP -MF $(DEPDIR)/fake_logit.Tpo -c -o fake_logit.o `test -f '../eg/fake_logit.c' || echo '$(srcdir)/'`../eg/fake_logit.c
+fake_logit.o: $(top_builddir)/eg/fake_logit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fake_logit.o -MD -MP -MF $(DEPDIR)/fake_logit.Tpo -c -o fake_logit.o `test -f '$(top_builddir)/eg/fake_logit.c' || echo '$(srcdir)/'`$(top_builddir)/eg/fake_logit.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fake_logit.Tpo $(DEPDIR)/fake_logit.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/fake_logit.c' object='fake_logit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/fake_logit.c' object='fake_logit.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fake_logit.o `test -f '../eg/fake_logit.c' || echo '$(srcdir)/'`../eg/fake_logit.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fake_logit.o `test -f '$(top_builddir)/eg/fake_logit.c' || echo '$(srcdir)/'`$(top_builddir)/eg/fake_logit.c
 
-fake_logit.obj: ../eg/fake_logit.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fake_logit.obj -MD -MP -MF $(DEPDIR)/fake_logit.Tpo -c -o fake_logit.obj `if test -f '../eg/fake_logit.c'; then $(CYGPATH_W) '../eg/fake_logit.c'; else $(CYGPATH_W) '$(srcdir)/../eg/fake_logit.c'; fi`
+fake_logit.obj: $(top_builddir)/eg/fake_logit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fake_logit.obj -MD -MP -MF $(DEPDIR)/fake_logit.Tpo -c -o fake_logit.obj `if test -f '$(top_builddir)/eg/fake_logit.c'; then $(CYGPATH_W) '$(top_builddir)/eg/fake_logit.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/fake_logit.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fake_logit.Tpo $(DEPDIR)/fake_logit.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/fake_logit.c' object='fake_logit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/fake_logit.c' object='fake_logit.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fake_logit.obj `if test -f '../eg/fake_logit.c'; then $(CYGPATH_W) '../eg/fake_logit.c'; else $(CYGPATH_W) '$(srcdir)/../eg/fake_logit.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fake_logit.obj `if test -f '$(top_builddir)/eg/fake_logit.c'; then $(CYGPATH_W) '$(top_builddir)/eg/fake_logit.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/fake_logit.c'; fi`
 
-fix_params.o: ../eg/fix_params.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fix_params.o -MD -MP -MF $(DEPDIR)/fix_params.Tpo -c -o fix_params.o `test -f '../eg/fix_params.c' || echo '$(srcdir)/'`../eg/fix_params.c
+fix_params.o: $(top_builddir)/eg/fix_params.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fix_params.o -MD -MP -MF $(DEPDIR)/fix_params.Tpo -c -o fix_params.o `test -f '$(top_builddir)/eg/fix_params.c' || echo '$(srcdir)/'`$(top_builddir)/eg/fix_params.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fix_params.Tpo $(DEPDIR)/fix_params.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/fix_params.c' object='fix_params.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/fix_params.c' object='fix_params.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fix_params.o `test -f '../eg/fix_params.c' || echo '$(srcdir)/'`../eg/fix_params.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fix_params.o `test -f '$(top_builddir)/eg/fix_params.c' || echo '$(srcdir)/'`$(top_builddir)/eg/fix_params.c
 
-fix_params.obj: ../eg/fix_params.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fix_params.obj -MD -MP -MF $(DEPDIR)/fix_params.Tpo -c -o fix_params.obj `if test -f '../eg/fix_params.c'; then $(CYGPATH_W) '../eg/fix_params.c'; else $(CYGPATH_W) '$(srcdir)/../eg/fix_params.c'; fi`
+fix_params.obj: $(top_builddir)/eg/fix_params.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fix_params.obj -MD -MP -MF $(DEPDIR)/fix_params.Tpo -c -o fix_params.obj `if test -f '$(top_builddir)/eg/fix_params.c'; then $(CYGPATH_W) '$(top_builddir)/eg/fix_params.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/fix_params.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fix_params.Tpo $(DEPDIR)/fix_params.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/fix_params.c' object='fix_params.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/fix_params.c' object='fix_params.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fix_params.obj `if test -f '../eg/fix_params.c'; then $(CYGPATH_W) '../eg/fix_params.c'; else $(CYGPATH_W) '$(srcdir)/../eg/fix_params.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fix_params.obj `if test -f '$(top_builddir)/eg/fix_params.c'; then $(CYGPATH_W) '$(top_builddir)/eg/fix_params.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/fix_params.c'; fi`
 
-hills2.o: ../eg/hills2.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hills2.o -MD -MP -MF $(DEPDIR)/hills2.Tpo -c -o hills2.o `test -f '../eg/hills2.c' || echo '$(srcdir)/'`../eg/hills2.c
+hills2.o: $(top_builddir)/eg/hills2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hills2.o -MD -MP -MF $(DEPDIR)/hills2.Tpo -c -o hills2.o `test -f '$(top_builddir)/eg/hills2.c' || echo '$(srcdir)/'`$(top_builddir)/eg/hills2.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hills2.Tpo $(DEPDIR)/hills2.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/hills2.c' object='hills2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/hills2.c' object='hills2.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hills2.o `test -f '../eg/hills2.c' || echo '$(srcdir)/'`../eg/hills2.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hills2.o `test -f '$(top_builddir)/eg/hills2.c' || echo '$(srcdir)/'`$(top_builddir)/eg/hills2.c
 
-hills2.obj: ../eg/hills2.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hills2.obj -MD -MP -MF $(DEPDIR)/hills2.Tpo -c -o hills2.obj `if test -f '../eg/hills2.c'; then $(CYGPATH_W) '../eg/hills2.c'; else $(CYGPATH_W) '$(srcdir)/../eg/hills2.c'; fi`
+hills2.obj: $(top_builddir)/eg/hills2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT hills2.obj -MD -MP -MF $(DEPDIR)/hills2.Tpo -c -o hills2.obj `if test -f '$(top_builddir)/eg/hills2.c'; then $(CYGPATH_W) '$(top_builddir)/eg/hills2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/hills2.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hills2.Tpo $(DEPDIR)/hills2.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/hills2.c' object='hills2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/hills2.c' object='hills2.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hills2.obj `if test -f '../eg/hills2.c'; then $(CYGPATH_W) '../eg/hills2.c'; else $(CYGPATH_W) '$(srcdir)/../eg/hills2.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o hills2.obj `if test -f '$(top_builddir)/eg/hills2.c'; then $(CYGPATH_W) '$(top_builddir)/eg/hills2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/hills2.c'; fi`
 
-iv.o: ../eg/iv.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iv.o -MD -MP -MF $(DEPDIR)/iv.Tpo -c -o iv.o `test -f '../eg/iv.c' || echo '$(srcdir)/'`../eg/iv.c
+iv.o: $(top_builddir)/eg/iv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iv.o -MD -MP -MF $(DEPDIR)/iv.Tpo -c -o iv.o `test -f '$(top_builddir)/eg/iv.c' || echo '$(srcdir)/'`$(top_builddir)/eg/iv.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/iv.Tpo $(DEPDIR)/iv.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/iv.c' object='iv.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/iv.c' object='iv.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iv.o `test -f '../eg/iv.c' || echo '$(srcdir)/'`../eg/iv.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iv.o `test -f '$(top_builddir)/eg/iv.c' || echo '$(srcdir)/'`$(top_builddir)/eg/iv.c
 
-iv.obj: ../eg/iv.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iv.obj -MD -MP -MF $(DEPDIR)/iv.Tpo -c -o iv.obj `if test -f '../eg/iv.c'; then $(CYGPATH_W) '../eg/iv.c'; else $(CYGPATH_W) '$(srcdir)/../eg/iv.c'; fi`
+iv.obj: $(top_builddir)/eg/iv.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT iv.obj -MD -MP -MF $(DEPDIR)/iv.Tpo -c -o iv.obj `if test -f '$(top_builddir)/eg/iv.c'; then $(CYGPATH_W) '$(top_builddir)/eg/iv.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/iv.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/iv.Tpo $(DEPDIR)/iv.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/iv.c' object='iv.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/iv.c' object='iv.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iv.obj `if test -f '../eg/iv.c'; then $(CYGPATH_W) '../eg/iv.c'; else $(CYGPATH_W) '$(srcdir)/../eg/iv.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o iv.obj `if test -f '$(top_builddir)/eg/iv.c'; then $(CYGPATH_W) '$(top_builddir)/eg/iv.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/iv.c'; fi`
 
-jacobian.o: ../eg/jacobian.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT jacobian.o -MD -MP -MF $(DEPDIR)/jacobian.Tpo -c -o jacobian.o `test -f '../eg/jacobian.c' || echo '$(srcdir)/'`../eg/jacobian.c
+jacobian.o: $(top_builddir)/eg/jacobian.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT jacobian.o -MD -MP -MF $(DEPDIR)/jacobian.Tpo -c -o jacobian.o `test -f '$(top_builddir)/eg/jacobian.c' || echo '$(srcdir)/'`$(top_builddir)/eg/jacobian.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/jacobian.Tpo $(DEPDIR)/jacobian.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/jacobian.c' object='jacobian.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/jacobian.c' object='jacobian.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jacobian.o `test -f '../eg/jacobian.c' || echo '$(srcdir)/'`../eg/jacobian.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jacobian.o `test -f '$(top_builddir)/eg/jacobian.c' || echo '$(srcdir)/'`$(top_builddir)/eg/jacobian.c
 
-jacobian.obj: ../eg/jacobian.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT jacobian.obj -MD -MP -MF $(DEPDIR)/jacobian.Tpo -c -o jacobian.obj `if test -f '../eg/jacobian.c'; then $(CYGPATH_W) '../eg/jacobian.c'; else $(CYGPATH_W) '$(srcdir)/../eg/jacobian.c'; fi`
+jacobian.obj: $(top_builddir)/eg/jacobian.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT jacobian.obj -MD -MP -MF $(DEPDIR)/jacobian.Tpo -c -o jacobian.obj `if test -f '$(top_builddir)/eg/jacobian.c'; then $(CYGPATH_W) '$(top_builddir)/eg/jacobian.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/jacobian.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/jacobian.Tpo $(DEPDIR)/jacobian.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/jacobian.c' object='jacobian.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/jacobian.c' object='jacobian.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jacobian.obj `if test -f '../eg/jacobian.c'; then $(CYGPATH_W) '../eg/jacobian.c'; else $(CYGPATH_W) '$(srcdir)/../eg/jacobian.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jacobian.obj `if test -f '$(top_builddir)/eg/jacobian.c'; then $(CYGPATH_W) '$(top_builddir)/eg/jacobian.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/jacobian.c'; fi`
 
-ks_tests.o: ../eg/ks_tests.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ks_tests.o -MD -MP -MF $(DEPDIR)/ks_tests.Tpo -c -o ks_tests.o `test -f '../eg/ks_tests.c' || echo '$(srcdir)/'`../eg/ks_tests.c
+ks_tests.o: $(top_builddir)/eg/ks_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ks_tests.o -MD -MP -MF $(DEPDIR)/ks_tests.Tpo -c -o ks_tests.o `test -f '$(top_builddir)/eg/ks_tests.c' || echo '$(srcdir)/'`$(top_builddir)/eg/ks_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/ks_tests.Tpo $(DEPDIR)/ks_tests.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/ks_tests.c' object='ks_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/ks_tests.c' object='ks_tests.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ks_tests.o `test -f '../eg/ks_tests.c' || echo '$(srcdir)/'`../eg/ks_tests.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ks_tests.o `test -f '$(top_builddir)/eg/ks_tests.c' || echo '$(srcdir)/'`$(top_builddir)/eg/ks_tests.c
 
-ks_tests.obj: ../eg/ks_tests.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ks_tests.obj -MD -MP -MF $(DEPDIR)/ks_tests.Tpo -c -o ks_tests.obj `if test -f '../eg/ks_tests.c'; then $(CYGPATH_W) '../eg/ks_tests.c'; else $(CYGPATH_W) '$(srcdir)/../eg/ks_tests.c'; fi`
+ks_tests.obj: $(top_builddir)/eg/ks_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ks_tests.obj -MD -MP -MF $(DEPDIR)/ks_tests.Tpo -c -o ks_tests.obj `if test -f '$(top_builddir)/eg/ks_tests.c'; then $(CYGPATH_W) '$(top_builddir)/eg/ks_tests.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/ks_tests.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/ks_tests.Tpo $(DEPDIR)/ks_tests.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/ks_tests.c' object='ks_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/ks_tests.c' object='ks_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ks_tests.obj `if test -f '../eg/ks_tests.c'; then $(CYGPATH_W) '../eg/ks_tests.c'; else $(CYGPATH_W) '$(srcdir)/../eg/ks_tests.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ks_tests.obj `if test -f '$(top_builddir)/eg/ks_tests.c'; then $(CYGPATH_W) '$(top_builddir)/eg/ks_tests.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/ks_tests.c'; fi`
 
-normalizations.o: ../eg/normalizations.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT normalizations.o -MD -MP -MF $(DEPDIR)/normalizations.Tpo -c -o normalizations.o `test -f '../eg/normalizations.c' || echo '$(srcdir)/'`../eg/normalizations.c
+normalizations.o: $(top_builddir)/eg/normalizations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT normalizations.o -MD -MP -MF $(DEPDIR)/normalizations.Tpo -c -o normalizations.o `test -f '$(top_builddir)/eg/normalizations.c' || echo '$(srcdir)/'`$(top_builddir)/eg/normalizations.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/normalizations.Tpo $(DEPDIR)/normalizations.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/normalizations.c' object='normalizations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/normalizations.c' object='normalizations.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalizations.o `test -f '../eg/normalizations.c' || echo '$(srcdir)/'`../eg/normalizations.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalizations.o `test -f '$(top_builddir)/eg/normalizations.c' || echo '$(srcdir)/'`$(top_builddir)/eg/normalizations.c
 
-normalizations.obj: ../eg/normalizations.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT normalizations.obj -MD -MP -MF $(DEPDIR)/normalizations.Tpo -c -o normalizations.obj `if test -f '../eg/normalizations.c'; then $(CYGPATH_W) '../eg/normalizations.c'; else $(CYGPATH_W) '$(srcdir)/../eg/normalizations.c'; fi`
+normalizations.obj: $(top_builddir)/eg/normalizations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT normalizations.obj -MD -MP -MF $(DEPDIR)/normalizations.Tpo -c -o normalizations.obj `if test -f '$(top_builddir)/eg/normalizations.c'; then $(CYGPATH_W) '$(top_builddir)/eg/normalizations.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/normalizations.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/normalizations.Tpo $(DEPDIR)/normalizations.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/normalizations.c' object='normalizations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/normalizations.c' object='normalizations.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalizations.obj `if test -f '../eg/normalizations.c'; then $(CYGPATH_W) '../eg/normalizations.c'; else $(CYGPATH_W) '$(srcdir)/../eg/normalizations.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o normalizations.obj `if test -f '$(top_builddir)/eg/normalizations.c'; then $(CYGPATH_W) '$(top_builddir)/eg/normalizations.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/normalizations.c'; fi`
 
-parameterization.o: ../eg/parameterization.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT parameterization.o -MD -MP -MF $(DEPDIR)/parameterization.Tpo -c -o parameterization.o `test -f '../eg/parameterization.c' || echo '$(srcdir)/'`../eg/parameterization.c
+parameterization.o: $(top_builddir)/eg/parameterization.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT parameterization.o -MD -MP -MF $(DEPDIR)/parameterization.Tpo -c -o parameterization.o `test -f '$(top_builddir)/eg/parameterization.c' || echo '$(srcdir)/'`$(top_builddir)/eg/parameterization.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/parameterization.Tpo $(DEPDIR)/parameterization.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/parameterization.c' object='parameterization.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/parameterization.c' object='parameterization.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parameterization.o `test -f '../eg/parameterization.c' || echo '$(srcdir)/'`../eg/parameterization.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parameterization.o `test -f '$(top_builddir)/eg/parameterization.c' || echo '$(srcdir)/'`$(top_builddir)/eg/parameterization.c
 
-parameterization.obj: ../eg/parameterization.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT parameterization.obj -MD -MP -MF $(DEPDIR)/parameterization.Tpo -c -o parameterization.obj `if test -f '../eg/parameterization.c'; then $(CYGPATH_W) '../eg/parameterization.c'; else $(CYGPATH_W) '$(srcdir)/../eg/parameterization.c'; fi`
+parameterization.obj: $(top_builddir)/eg/parameterization.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT parameterization.obj -MD -MP -MF $(DEPDIR)/parameterization.Tpo -c -o parameterization.obj `if test -f '$(top_builddir)/eg/parameterization.c'; then $(CYGPATH_W) '$(top_builddir)/eg/parameterization.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/parameterization.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/parameterization.Tpo $(DEPDIR)/parameterization.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/parameterization.c' object='parameterization.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/parameterization.c' object='parameterization.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parameterization.obj `if test -f '../eg/parameterization.c'; then $(CYGPATH_W) '../eg/parameterization.c'; else $(CYGPATH_W) '$(srcdir)/../eg/parameterization.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parameterization.obj `if test -f '$(top_builddir)/eg/parameterization.c'; then $(CYGPATH_W) '$(top_builddir)/eg/parameterization.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/parameterization.c'; fi`
 
-pmf_test.o: ../eg/pmf_test.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pmf_test.o -MD -MP -MF $(DEPDIR)/pmf_test.Tpo -c -o pmf_test.o `test -f '../eg/pmf_test.c' || echo '$(srcdir)/'`../eg/pmf_test.c
+pmf_test.o: $(top_builddir)/eg/pmf_test.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pmf_test.o -MD -MP -MF $(DEPDIR)/pmf_test.Tpo -c -o pmf_test.o `test -f '$(top_builddir)/eg/pmf_test.c' || echo '$(srcdir)/'`$(top_builddir)/eg/pmf_test.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/pmf_test.Tpo $(DEPDIR)/pmf_test.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/pmf_test.c' object='pmf_test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/pmf_test.c' object='pmf_test.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pmf_test.o `test -f '../eg/pmf_test.c' || echo '$(srcdir)/'`../eg/pmf_test.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pmf_test.o `test -f '$(top_builddir)/eg/pmf_test.c' || echo '$(srcdir)/'`$(top_builddir)/eg/pmf_test.c
 
-pmf_test.obj: ../eg/pmf_test.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pmf_test.obj -MD -MP -MF $(DEPDIR)/pmf_test.Tpo -c -o pmf_test.obj `if test -f '../eg/pmf_test.c'; then $(CYGPATH_W) '../eg/pmf_test.c'; else $(CYGPATH_W) '$(srcdir)/../eg/pmf_test.c'; fi`
+pmf_test.obj: $(top_builddir)/eg/pmf_test.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pmf_test.obj -MD -MP -MF $(DEPDIR)/pmf_test.Tpo -c -o pmf_test.obj `if test -f '$(top_builddir)/eg/pmf_test.c'; then $(CYGPATH_W) '$(top_builddir)/eg/pmf_test.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/pmf_test.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/pmf_test.Tpo $(DEPDIR)/pmf_test.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/pmf_test.c' object='pmf_test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/pmf_test.c' object='pmf_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pmf_test.obj `if test -f '../eg/pmf_test.c'; then $(CYGPATH_W) '../eg/pmf_test.c'; else $(CYGPATH_W) '$(srcdir)/../eg/pmf_test.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pmf_test.obj `if test -f '$(top_builddir)/eg/pmf_test.c'; then $(CYGPATH_W) '$(top_builddir)/eg/pmf_test.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/pmf_test.c'; fi`
 
-simple_subsets.o: ../eg/simple_subsets.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT simple_subsets.o -MD -MP -MF $(DEPDIR)/simple_subsets.Tpo -c -o simple_subsets.o `test -f '../eg/simple_subsets.c' || echo '$(srcdir)/'`../eg/simple_subsets.c
+simple_subsets.o: $(top_builddir)/eg/simple_subsets.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT simple_subsets.o -MD -MP -MF $(DEPDIR)/simple_subsets.Tpo -c -o simple_subsets.o `test -f '$(top_builddir)/eg/simple_subsets.c' || echo '$(srcdir)/'`$(top_builddir)/eg/simple_subsets.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simple_subsets.Tpo $(DEPDIR)/simple_subsets.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/simple_subsets.c' object='simple_subsets.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/simple_subsets.c' object='simple_subsets.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o simple_subsets.o `test -f '../eg/simple_subsets.c' || echo '$(srcdir)/'`../eg/simple_subsets.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o simple_subsets.o `test -f '$(top_builddir)/eg/simple_subsets.c' || echo '$(srcdir)/'`$(top_builddir)/eg/simple_subsets.c
 
-simple_subsets.obj: ../eg/simple_subsets.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT simple_subsets.obj -MD -MP -MF $(DEPDIR)/simple_subsets.Tpo -c -o simple_subsets.obj `if test -f '../eg/simple_subsets.c'; then $(CYGPATH_W) '../eg/simple_subsets.c'; else $(CYGPATH_W) '$(srcdir)/../eg/simple_subsets.c'; fi`
+simple_subsets.obj: $(top_builddir)/eg/simple_subsets.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT simple_subsets.obj -MD -MP -MF $(DEPDIR)/simple_subsets.Tpo -c -o simple_subsets.obj `if test -f '$(top_builddir)/eg/simple_subsets.c'; then $(CYGPATH_W) '$(top_builddir)/eg/simple_subsets.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/simple_subsets.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/simple_subsets.Tpo $(DEPDIR)/simple_subsets.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/simple_subsets.c' object='simple_subsets.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/simple_subsets.c' object='simple_subsets.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o simple_subsets.obj `if test -f '../eg/simple_subsets.c'; then $(CYGPATH_W) '../eg/simple_subsets.c'; else $(CYGPATH_W) '$(srcdir)/../eg/simple_subsets.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o simple_subsets.obj `if test -f '$(top_builddir)/eg/simple_subsets.c'; then $(CYGPATH_W) '$(top_builddir)/eg/simple_subsets.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/simple_subsets.c'; fi`
 
-some_cdfs.o: ../eg/some_cdfs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT some_cdfs.o -MD -MP -MF $(DEPDIR)/some_cdfs.Tpo -c -o some_cdfs.o `test -f '../eg/some_cdfs.c' || echo '$(srcdir)/'`../eg/some_cdfs.c
+some_cdfs.o: $(top_builddir)/eg/some_cdfs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT some_cdfs.o -MD -MP -MF $(DEPDIR)/some_cdfs.Tpo -c -o some_cdfs.o `test -f '$(top_builddir)/eg/some_cdfs.c' || echo '$(srcdir)/'`$(top_builddir)/eg/some_cdfs.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/some_cdfs.Tpo $(DEPDIR)/some_cdfs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/some_cdfs.c' object='some_cdfs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/some_cdfs.c' object='some_cdfs.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o some_cdfs.o `test -f '../eg/some_cdfs.c' || echo '$(srcdir)/'`../eg/some_cdfs.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o some_cdfs.o `test -f '$(top_builddir)/eg/some_cdfs.c' || echo '$(srcdir)/'`$(top_builddir)/eg/some_cdfs.c
 
-some_cdfs.obj: ../eg/some_cdfs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT some_cdfs.obj -MD -MP -MF $(DEPDIR)/some_cdfs.Tpo -c -o some_cdfs.obj `if test -f '../eg/some_cdfs.c'; then $(CYGPATH_W) '../eg/some_cdfs.c'; else $(CYGPATH_W) '$(srcdir)/../eg/some_cdfs.c'; fi`
+some_cdfs.obj: $(top_builddir)/eg/some_cdfs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT some_cdfs.obj -MD -MP -MF $(DEPDIR)/some_cdfs.Tpo -c -o some_cdfs.obj `if test -f '$(top_builddir)/eg/some_cdfs.c'; then $(CYGPATH_W) '$(top_builddir)/eg/some_cdfs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/some_cdfs.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/some_cdfs.Tpo $(DEPDIR)/some_cdfs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/some_cdfs.c' object='some_cdfs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/some_cdfs.c' object='some_cdfs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o some_cdfs.obj `if test -f '../eg/some_cdfs.c'; then $(CYGPATH_W) '../eg/some_cdfs.c'; else $(CYGPATH_W) '$(srcdir)/../eg/some_cdfs.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o some_cdfs.obj `if test -f '$(top_builddir)/eg/some_cdfs.c'; then $(CYGPATH_W) '$(top_builddir)/eg/some_cdfs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/some_cdfs.c'; fi`
 
-stack_models.o: ../eg/stack_models.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.o -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.o `test -f '../eg/stack_models.c' || echo '$(srcdir)/'`../eg/stack_models.c
+stack_models.o: $(top_builddir)/eg/stack_models.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.o -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.o `test -f '$(top_builddir)/eg/stack_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/stack_models.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/stack_models.Tpo $(DEPDIR)/stack_models.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/stack_models.c' object='stack_models.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/stack_models.c' object='stack_models.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.o `test -f '../eg/stack_models.c' || echo '$(srcdir)/'`../eg/stack_models.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.o `test -f '$(top_builddir)/eg/stack_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/stack_models.c
 
-stack_models.obj: ../eg/stack_models.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.obj -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.obj `if test -f '../eg/stack_models.c'; then $(CYGPATH_W) '../eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/../eg/stack_models.c'; fi`
+stack_models.obj: $(top_builddir)/eg/stack_models.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.obj -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.obj `if test -f '$(top_builddir)/eg/stack_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/stack_models.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/stack_models.Tpo $(DEPDIR)/stack_models.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/stack_models.c' object='stack_models.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/stack_models.c' object='stack_models.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.obj `if test -f '../eg/stack_models.c'; then $(CYGPATH_W) '../eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/../eg/stack_models.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.obj `if test -f '$(top_builddir)/eg/stack_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/stack_models.c'; fi`
 
-test_distances.o: ../eg/test_distances.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_distances.o -MD -MP -MF $(DEPDIR)/test_distances.Tpo -c -o test_distances.o `test -f '../eg/test_distances.c' || echo '$(srcdir)/'`../eg/test_distances.c
+test_distances.o: $(top_builddir)/eg/test_distances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_distances.o -MD -MP -MF $(DEPDIR)/test_distances.Tpo -c -o test_distances.o `test -f '$(top_builddir)/eg/test_distances.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_distances.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_distances.Tpo $(DEPDIR)/test_distances.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_distances.c' object='test_distances.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_distances.c' object='test_distances.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_distances.o `test -f '../eg/test_distances.c' || echo '$(srcdir)/'`../eg/test_distances.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_distances.o `test -f '$(top_builddir)/eg/test_distances.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_distances.c
 
-test_distances.obj: ../eg/test_distances.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_distances.obj -MD -MP -MF $(DEPDIR)/test_distances.Tpo -c -o test_distances.obj `if test -f '../eg/test_distances.c'; then $(CYGPATH_W) '../eg/test_distances.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_distances.c'; fi`
+test_distances.obj: $(top_builddir)/eg/test_distances.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_distances.obj -MD -MP -MF $(DEPDIR)/test_distances.Tpo -c -o test_distances.obj `if test -f '$(top_builddir)/eg/test_distances.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_distances.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_distances.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_distances.Tpo $(DEPDIR)/test_distances.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_distances.c' object='test_distances.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_distances.c' object='test_distances.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_distances.obj `if test -f '../eg/test_distances.c'; then $(CYGPATH_W) '../eg/test_distances.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_distances.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_distances.obj `if test -f '$(top_builddir)/eg/test_distances.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_distances.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_distances.c'; fi`
 
-test_fisher.o: ../eg/test_fisher.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_fisher.o -MD -MP -MF $(DEPDIR)/test_fisher.Tpo -c -o test_fisher.o `test -f '../eg/test_fisher.c' || echo '$(srcdir)/'`../eg/test_fisher.c
+test_fisher.o: $(top_builddir)/eg/test_fisher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_fisher.o -MD -MP -MF $(DEPDIR)/test_fisher.Tpo -c -o test_fisher.o `test -f '$(top_builddir)/eg/test_fisher.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_fisher.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_fisher.Tpo $(DEPDIR)/test_fisher.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_fisher.c' object='test_fisher.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_fisher.c' object='test_fisher.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_fisher.o `test -f '../eg/test_fisher.c' || echo '$(srcdir)/'`../eg/test_fisher.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_fisher.o `test -f '$(top_builddir)/eg/test_fisher.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_fisher.c
 
-test_fisher.obj: ../eg/test_fisher.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_fisher.obj -MD -MP -MF $(DEPDIR)/test_fisher.Tpo -c -o test_fisher.obj `if test -f '../eg/test_fisher.c'; then $(CYGPATH_W) '../eg/test_fisher.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_fisher.c'; fi`
+test_fisher.obj: $(top_builddir)/eg/test_fisher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_fisher.obj -MD -MP -MF $(DEPDIR)/test_fisher.Tpo -c -o test_fisher.obj `if test -f '$(top_builddir)/eg/test_fisher.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_fisher.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_fisher.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_fisher.Tpo $(DEPDIR)/test_fisher.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_fisher.c' object='test_fisher.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_fisher.c' object='test_fisher.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_fisher.obj `if test -f '../eg/test_fisher.c'; then $(CYGPATH_W) '../eg/test_fisher.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_fisher.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_fisher.obj `if test -f '$(top_builddir)/eg/test_fisher.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_fisher.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_fisher.c'; fi`
 
-test_harmonic.o: ../eg/test_harmonic.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_harmonic.o -MD -MP -MF $(DEPDIR)/test_harmonic.Tpo -c -o test_harmonic.o `test -f '../eg/test_harmonic.c' || echo '$(srcdir)/'`../eg/test_harmonic.c
+test_harmonic.o: $(top_builddir)/eg/test_harmonic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_harmonic.o -MD -MP -MF $(DEPDIR)/test_harmonic.Tpo -c -o test_harmonic.o `test -f '$(top_builddir)/eg/test_harmonic.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_harmonic.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_harmonic.Tpo $(DEPDIR)/test_harmonic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_harmonic.c' object='test_harmonic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_harmonic.c' object='test_harmonic.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_harmonic.o `test -f '../eg/test_harmonic.c' || echo '$(srcdir)/'`../eg/test_harmonic.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_harmonic.o `test -f '$(top_builddir)/eg/test_harmonic.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_harmonic.c
 
-test_harmonic.obj: ../eg/test_harmonic.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_harmonic.obj -MD -MP -MF $(DEPDIR)/test_harmonic.Tpo -c -o test_harmonic.obj `if test -f '../eg/test_harmonic.c'; then $(CYGPATH_W) '../eg/test_harmonic.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_harmonic.c'; fi`
+test_harmonic.obj: $(top_builddir)/eg/test_harmonic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_harmonic.obj -MD -MP -MF $(DEPDIR)/test_harmonic.Tpo -c -o test_harmonic.obj `if test -f '$(top_builddir)/eg/test_harmonic.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_harmonic.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_harmonic.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_harmonic.Tpo $(DEPDIR)/test_harmonic.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_harmonic.c' object='test_harmonic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_harmonic.c' object='test_harmonic.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_harmonic.obj `if test -f '../eg/test_harmonic.c'; then $(CYGPATH_W) '../eg/test_harmonic.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_harmonic.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_harmonic.obj `if test -f '$(top_builddir)/eg/test_harmonic.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_harmonic.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_harmonic.c'; fi`
 
-test_kl_divergence.o: ../eg/test_kl_divergence.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_kl_divergence.o -MD -MP -MF $(DEPDIR)/test_kl_divergence.Tpo -c -o test_kl_divergence.o `test -f '../eg/test_kl_divergence.c' || echo '$(srcdir)/'`../eg/test_kl_divergence.c
+test_kl_divergence.o: $(top_builddir)/eg/test_kl_divergence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_kl_divergence.o -MD -MP -MF $(DEPDIR)/test_kl_divergence.Tpo -c -o test_kl_divergence.o `test -f '$(top_builddir)/eg/test_kl_divergence.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_kl_divergence.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_kl_divergence.Tpo $(DEPDIR)/test_kl_divergence.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_kl_divergence.c' object='test_kl_divergence.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_kl_divergence.c' object='test_kl_divergence.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_kl_divergence.o `test -f '../eg/test_kl_divergence.c' || echo '$(srcdir)/'`../eg/test_kl_divergence.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_kl_divergence.o `test -f '$(top_builddir)/eg/test_kl_divergence.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_kl_divergence.c
 
-test_kl_divergence.obj: ../eg/test_kl_divergence.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_kl_divergence.obj -MD -MP -MF $(DEPDIR)/test_kl_divergence.Tpo -c -o test_kl_divergence.obj `if test -f '../eg/test_kl_divergence.c'; then $(CYGPATH_W) '../eg/test_kl_divergence.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_kl_divergence.c'; fi`
+test_kl_divergence.obj: $(top_builddir)/eg/test_kl_divergence.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_kl_divergence.obj -MD -MP -MF $(DEPDIR)/test_kl_divergence.Tpo -c -o test_kl_divergence.obj `if test -f '$(top_builddir)/eg/test_kl_divergence.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_kl_divergence.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_kl_divergence.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_kl_divergence.Tpo $(DEPDIR)/test_kl_divergence.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_kl_divergence.c' object='test_kl_divergence.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_kl_divergence.c' object='test_kl_divergence.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_kl_divergence.obj `if test -f '../eg/test_kl_divergence.c'; then $(CYGPATH_W) '../eg/test_kl_divergence.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_kl_divergence.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_kl_divergence.obj `if test -f '$(top_builddir)/eg/test_kl_divergence.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_kl_divergence.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_kl_divergence.c'; fi`
 
-test_pruning.o: ../eg/test_pruning.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_pruning.o -MD -MP -MF $(DEPDIR)/test_pruning.Tpo -c -o test_pruning.o `test -f '../eg/test_pruning.c' || echo '$(srcdir)/'`../eg/test_pruning.c
+test_pruning.o: $(top_builddir)/eg/test_pruning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_pruning.o -MD -MP -MF $(DEPDIR)/test_pruning.Tpo -c -o test_pruning.o `test -f '$(top_builddir)/eg/test_pruning.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_pruning.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_pruning.Tpo $(DEPDIR)/test_pruning.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_pruning.c' object='test_pruning.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_pruning.c' object='test_pruning.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_pruning.o `test -f '../eg/test_pruning.c' || echo '$(srcdir)/'`../eg/test_pruning.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_pruning.o `test -f '$(top_builddir)/eg/test_pruning.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_pruning.c
 
-test_pruning.obj: ../eg/test_pruning.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_pruning.obj -MD -MP -MF $(DEPDIR)/test_pruning.Tpo -c -o test_pruning.obj `if test -f '../eg/test_pruning.c'; then $(CYGPATH_W) '../eg/test_pruning.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_pruning.c'; fi`
+test_pruning.obj: $(top_builddir)/eg/test_pruning.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_pruning.obj -MD -MP -MF $(DEPDIR)/test_pruning.Tpo -c -o test_pruning.obj `if test -f '$(top_builddir)/eg/test_pruning.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_pruning.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_pruning.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_pruning.Tpo $(DEPDIR)/test_pruning.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_pruning.c' object='test_pruning.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_pruning.c' object='test_pruning.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_pruning.obj `if test -f '../eg/test_pruning.c'; then $(CYGPATH_W) '../eg/test_pruning.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_pruning.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_pruning.obj `if test -f '$(top_builddir)/eg/test_pruning.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_pruning.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_pruning.c'; fi`
 
-test_ranks.o: ../eg/test_ranks.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ranks.o -MD -MP -MF $(DEPDIR)/test_ranks.Tpo -c -o test_ranks.o `test -f '../eg/test_ranks.c' || echo '$(srcdir)/'`../eg/test_ranks.c
+test_ranks.o: $(top_builddir)/eg/test_ranks.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ranks.o -MD -MP -MF $(DEPDIR)/test_ranks.Tpo -c -o test_ranks.o `test -f '$(top_builddir)/eg/test_ranks.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_ranks.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ranks.Tpo $(DEPDIR)/test_ranks.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_ranks.c' object='test_ranks.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_ranks.c' object='test_ranks.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ranks.o `test -f '../eg/test_ranks.c' || echo '$(srcdir)/'`../eg/test_ranks.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ranks.o `test -f '$(top_builddir)/eg/test_ranks.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_ranks.c
 
-test_ranks.obj: ../eg/test_ranks.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ranks.obj -MD -MP -MF $(DEPDIR)/test_ranks.Tpo -c -o test_ranks.obj `if test -f '../eg/test_ranks.c'; then $(CYGPATH_W) '../eg/test_ranks.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_ranks.c'; fi`
+test_ranks.obj: $(top_builddir)/eg/test_ranks.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_ranks.obj -MD -MP -MF $(DEPDIR)/test_ranks.Tpo -c -o test_ranks.obj `if test -f '$(top_builddir)/eg/test_ranks.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_ranks.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_ranks.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_ranks.Tpo $(DEPDIR)/test_ranks.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_ranks.c' object='test_ranks.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_ranks.c' object='test_ranks.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ranks.obj `if test -f '../eg/test_ranks.c'; then $(CYGPATH_W) '../eg/test_ranks.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_ranks.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_ranks.obj `if test -f '$(top_builddir)/eg/test_ranks.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_ranks.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_ranks.c'; fi`
 
-test_regex.o: ../eg/test_regex.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_regex.o -MD -MP -MF $(DEPDIR)/test_regex.Tpo -c -o test_regex.o `test -f '../eg/test_regex.c' || echo '$(srcdir)/'`../eg/test_regex.c
+test_regex.o: $(top_builddir)/eg/test_regex.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_regex.o -MD -MP -MF $(DEPDIR)/test_regex.Tpo -c -o test_regex.o `test -f '$(top_builddir)/eg/test_regex.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_regex.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_regex.Tpo $(DEPDIR)/test_regex.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_regex.c' object='test_regex.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_regex.c' object='test_regex.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_regex.o `test -f '../eg/test_regex.c' || echo '$(srcdir)/'`../eg/test_regex.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_regex.o `test -f '$(top_builddir)/eg/test_regex.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_regex.c
 
-test_regex.obj: ../eg/test_regex.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_regex.obj -MD -MP -MF $(DEPDIR)/test_regex.Tpo -c -o test_regex.obj `if test -f '../eg/test_regex.c'; then $(CYGPATH_W) '../eg/test_regex.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_regex.c'; fi`
+test_regex.obj: $(top_builddir)/eg/test_regex.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_regex.obj -MD -MP -MF $(DEPDIR)/test_regex.Tpo -c -o test_regex.obj `if test -f '$(top_builddir)/eg/test_regex.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_regex.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_regex.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_regex.Tpo $(DEPDIR)/test_regex.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_regex.c' object='test_regex.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_regex.c' object='test_regex.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_regex.obj `if test -f '../eg/test_regex.c'; then $(CYGPATH_W) '../eg/test_regex.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_regex.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_regex.obj `if test -f '$(top_builddir)/eg/test_regex.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_regex.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_regex.c'; fi`
 
-test_updating.o: ../eg/test_updating.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_updating.o -MD -MP -MF $(DEPDIR)/test_updating.Tpo -c -o test_updating.o `test -f '../eg/test_updating.c' || echo '$(srcdir)/'`../eg/test_updating.c
+test_updating.o: $(top_builddir)/eg/test_updating.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_updating.o -MD -MP -MF $(DEPDIR)/test_updating.Tpo -c -o test_updating.o `test -f '$(top_builddir)/eg/test_updating.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_updating.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_updating.Tpo $(DEPDIR)/test_updating.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_updating.c' object='test_updating.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_updating.c' object='test_updating.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_updating.o `test -f '../eg/test_updating.c' || echo '$(srcdir)/'`../eg/test_updating.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_updating.o `test -f '$(top_builddir)/eg/test_updating.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_updating.c
 
-test_updating.obj: ../eg/test_updating.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_updating.obj -MD -MP -MF $(DEPDIR)/test_updating.Tpo -c -o test_updating.obj `if test -f '../eg/test_updating.c'; then $(CYGPATH_W) '../eg/test_updating.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_updating.c'; fi`
+test_updating.obj: $(top_builddir)/eg/test_updating.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_updating.obj -MD -MP -MF $(DEPDIR)/test_updating.Tpo -c -o test_updating.obj `if test -f '$(top_builddir)/eg/test_updating.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_updating.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_updating.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_updating.Tpo $(DEPDIR)/test_updating.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../eg/test_updating.c' object='test_updating.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/test_updating.c' object='test_updating.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_updating.obj `if test -f '../eg/test_updating.c'; then $(CYGPATH_W) '../eg/test_updating.c'; else $(CYGPATH_W) '$(srcdir)/../eg/test_updating.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_updating.obj `if test -f '$(top_builddir)/eg/test_updating.c'; then $(CYGPATH_W) '$(top_builddir)/eg/test_updating.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/test_updating.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
+	-rm -rf $(top_builddir)/eg/.libs $(top_builddir)/eg/_libs
 	-rm -rf .libs _libs
-	-rm -rf ../eg/.libs ../eg/_libs
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -1540,6 +1620,13 @@ test_apop.log: test_apop$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_kernel_ll.log: test_kernel_ll$(EXEEXT)
+	@p='test_kernel_ll$(EXEEXT)'; \
+	b='test_kernel_ll'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 update_via_rng.log: update_via_rng$(EXEEXT)
 	@p='update_via_rng$(EXEEXT)'; \
 	b='update_via_rng'; \
@@ -1547,184 +1634,184 @@ update_via_rng.log: update_via_rng$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/apop_map_row.log: ../eg/apop_map_row$(EXEEXT)
-	@p='../eg/apop_map_row$(EXEEXT)'; \
-	b='../eg/apop_map_row'; \
+$(top_builddir)/eg/apop_map_row.log: $(top_builddir)/eg/apop_map_row$(EXEEXT)
+	@p='$(top_builddir)/eg/apop_map_row$(EXEEXT)'; \
+	b='$(top_builddir)/eg/apop_map_row'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/binning.log: ../eg/binning$(EXEEXT)
-	@p='../eg/binning$(EXEEXT)'; \
-	b='../eg/binning'; \
+$(top_builddir)/eg/binning.log: $(top_builddir)/eg/binning$(EXEEXT)
+	@p='$(top_builddir)/eg/binning$(EXEEXT)'; \
+	b='$(top_builddir)/eg/binning'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/dconstrain.log: ../eg/dconstrain$(EXEEXT)
-	@p='../eg/dconstrain$(EXEEXT)'; \
-	b='../eg/dconstrain'; \
+$(top_builddir)/eg/dconstrain.log: $(top_builddir)/eg/dconstrain$(EXEEXT)
+	@p='$(top_builddir)/eg/dconstrain$(EXEEXT)'; \
+	b='$(top_builddir)/eg/dconstrain'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/draw_to_db.log: ../eg/draw_to_db$(EXEEXT)
-	@p='../eg/draw_to_db$(EXEEXT)'; \
-	b='../eg/draw_to_db'; \
+$(top_builddir)/eg/draw_to_db.log: $(top_builddir)/eg/draw_to_db$(EXEEXT)
+	@p='$(top_builddir)/eg/draw_to_db$(EXEEXT)'; \
+	b='$(top_builddir)/eg/draw_to_db'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/db_fns.log: ../eg/db_fns$(EXEEXT)
-	@p='../eg/db_fns$(EXEEXT)'; \
-	b='../eg/db_fns'; \
+$(top_builddir)/eg/db_fns.log: $(top_builddir)/eg/db_fns$(EXEEXT)
+	@p='$(top_builddir)/eg/db_fns$(EXEEXT)'; \
+	b='$(top_builddir)/eg/db_fns'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/dot_products.log: ../eg/dot_products$(EXEEXT)
-	@p='../eg/dot_products$(EXEEXT)'; \
-	b='../eg/dot_products'; \
+$(top_builddir)/eg/dot_products.log: $(top_builddir)/eg/dot_products$(EXEEXT)
+	@p='$(top_builddir)/eg/dot_products$(EXEEXT)'; \
+	b='$(top_builddir)/eg/dot_products'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/fake_logit.log: ../eg/fake_logit$(EXEEXT)
-	@p='../eg/fake_logit$(EXEEXT)'; \
-	b='../eg/fake_logit'; \
+$(top_builddir)/eg/fake_logit.log: $(top_builddir)/eg/fake_logit$(EXEEXT)
+	@p='$(top_builddir)/eg/fake_logit$(EXEEXT)'; \
+	b='$(top_builddir)/eg/fake_logit'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/fix_params.log: ../eg/fix_params$(EXEEXT)
-	@p='../eg/fix_params$(EXEEXT)'; \
-	b='../eg/fix_params'; \
+$(top_builddir)/eg/fix_params.log: $(top_builddir)/eg/fix_params$(EXEEXT)
+	@p='$(top_builddir)/eg/fix_params$(EXEEXT)'; \
+	b='$(top_builddir)/eg/fix_params'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/hills2.log: ../eg/hills2$(EXEEXT)
-	@p='../eg/hills2$(EXEEXT)'; \
-	b='../eg/hills2'; \
+$(top_builddir)/eg/hills2.log: $(top_builddir)/eg/hills2$(EXEEXT)
+	@p='$(top_builddir)/eg/hills2$(EXEEXT)'; \
+	b='$(top_builddir)/eg/hills2'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/iv.log: ../eg/iv$(EXEEXT)
-	@p='../eg/iv$(EXEEXT)'; \
-	b='../eg/iv'; \
+$(top_builddir)/eg/iv.log: $(top_builddir)/eg/iv$(EXEEXT)
+	@p='$(top_builddir)/eg/iv$(EXEEXT)'; \
+	b='$(top_builddir)/eg/iv'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/jacobian.log: ../eg/jacobian$(EXEEXT)
-	@p='../eg/jacobian$(EXEEXT)'; \
-	b='../eg/jacobian'; \
+$(top_builddir)/eg/jacobian.log: $(top_builddir)/eg/jacobian$(EXEEXT)
+	@p='$(top_builddir)/eg/jacobian$(EXEEXT)'; \
+	b='$(top_builddir)/eg/jacobian'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/ks_tests.log: ../eg/ks_tests$(EXEEXT)
-	@p='../eg/ks_tests$(EXEEXT)'; \
-	b='../eg/ks_tests'; \
+$(top_builddir)/eg/ks_tests.log: $(top_builddir)/eg/ks_tests$(EXEEXT)
+	@p='$(top_builddir)/eg/ks_tests$(EXEEXT)'; \
+	b='$(top_builddir)/eg/ks_tests'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/normalizations.log: ../eg/normalizations$(EXEEXT)
-	@p='../eg/normalizations$(EXEEXT)'; \
-	b='../eg/normalizations'; \
+$(top_builddir)/eg/normalizations.log: $(top_builddir)/eg/normalizations$(EXEEXT)
+	@p='$(top_builddir)/eg/normalizations$(EXEEXT)'; \
+	b='$(top_builddir)/eg/normalizations'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/parameterization.log: ../eg/parameterization$(EXEEXT)
-	@p='../eg/parameterization$(EXEEXT)'; \
-	b='../eg/parameterization'; \
+$(top_builddir)/eg/parameterization.log: $(top_builddir)/eg/parameterization$(EXEEXT)
+	@p='$(top_builddir)/eg/parameterization$(EXEEXT)'; \
+	b='$(top_builddir)/eg/parameterization'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/pmf_test.log: ../eg/pmf_test$(EXEEXT)
-	@p='../eg/pmf_test$(EXEEXT)'; \
-	b='../eg/pmf_test'; \
+$(top_builddir)/eg/pmf_test.log: $(top_builddir)/eg/pmf_test$(EXEEXT)
+	@p='$(top_builddir)/eg/pmf_test$(EXEEXT)'; \
+	b='$(top_builddir)/eg/pmf_test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/simple_subsets.log: ../eg/simple_subsets$(EXEEXT)
-	@p='../eg/simple_subsets$(EXEEXT)'; \
-	b='../eg/simple_subsets'; \
+$(top_builddir)/eg/simple_subsets.log: $(top_builddir)/eg/simple_subsets$(EXEEXT)
+	@p='$(top_builddir)/eg/simple_subsets$(EXEEXT)'; \
+	b='$(top_builddir)/eg/simple_subsets'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/some_cdfs.log: ../eg/some_cdfs$(EXEEXT)
-	@p='../eg/some_cdfs$(EXEEXT)'; \
-	b='../eg/some_cdfs'; \
+$(top_builddir)/eg/some_cdfs.log: $(top_builddir)/eg/some_cdfs$(EXEEXT)
+	@p='$(top_builddir)/eg/some_cdfs$(EXEEXT)'; \
+	b='$(top_builddir)/eg/some_cdfs'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/stack_models.log: ../eg/stack_models$(EXEEXT)
-	@p='../eg/stack_models$(EXEEXT)'; \
-	b='../eg/stack_models'; \
+$(top_builddir)/eg/stack_models.log: $(top_builddir)/eg/stack_models$(EXEEXT)
+	@p='$(top_builddir)/eg/stack_models$(EXEEXT)'; \
+	b='$(top_builddir)/eg/stack_models'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_distances.log: ../eg/test_distances$(EXEEXT)
-	@p='../eg/test_distances$(EXEEXT)'; \
-	b='../eg/test_distances'; \
+$(top_builddir)/eg/test_distances.log: $(top_builddir)/eg/test_distances$(EXEEXT)
+	@p='$(top_builddir)/eg/test_distances$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_distances'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_fisher.log: ../eg/test_fisher$(EXEEXT)
-	@p='../eg/test_fisher$(EXEEXT)'; \
-	b='../eg/test_fisher'; \
+$(top_builddir)/eg/test_fisher.log: $(top_builddir)/eg/test_fisher$(EXEEXT)
+	@p='$(top_builddir)/eg/test_fisher$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_fisher'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_harmonic.log: ../eg/test_harmonic$(EXEEXT)
-	@p='../eg/test_harmonic$(EXEEXT)'; \
-	b='../eg/test_harmonic'; \
+$(top_builddir)/eg/test_harmonic.log: $(top_builddir)/eg/test_harmonic$(EXEEXT)
+	@p='$(top_builddir)/eg/test_harmonic$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_harmonic'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_kl_divergence.log: ../eg/test_kl_divergence$(EXEEXT)
-	@p='../eg/test_kl_divergence$(EXEEXT)'; \
-	b='../eg/test_kl_divergence'; \
+$(top_builddir)/eg/test_kl_divergence.log: $(top_builddir)/eg/test_kl_divergence$(EXEEXT)
+	@p='$(top_builddir)/eg/test_kl_divergence$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_kl_divergence'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_pruning.log: ../eg/test_pruning$(EXEEXT)
-	@p='../eg/test_pruning$(EXEEXT)'; \
-	b='../eg/test_pruning'; \
+$(top_builddir)/eg/test_pruning.log: $(top_builddir)/eg/test_pruning$(EXEEXT)
+	@p='$(top_builddir)/eg/test_pruning$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_pruning'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_ranks.log: ../eg/test_ranks$(EXEEXT)
-	@p='../eg/test_ranks$(EXEEXT)'; \
-	b='../eg/test_ranks'; \
+$(top_builddir)/eg/test_ranks.log: $(top_builddir)/eg/test_ranks$(EXEEXT)
+	@p='$(top_builddir)/eg/test_ranks$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_ranks'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_regex.log: ../eg/test_regex$(EXEEXT)
-	@p='../eg/test_regex$(EXEEXT)'; \
-	b='../eg/test_regex'; \
+$(top_builddir)/eg/test_regex.log: $(top_builddir)/eg/test_regex$(EXEEXT)
+	@p='$(top_builddir)/eg/test_regex$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_regex'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-../eg/test_updating.log: ../eg/test_updating$(EXEEXT)
-	@p='../eg/test_updating$(EXEEXT)'; \
-	b='../eg/test_updating'; \
+$(top_builddir)/eg/test_updating.log: $(top_builddir)/eg/test_updating$(EXEEXT)
+	@p='$(top_builddir)/eg/test_updating$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_updating'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1805,11 +1892,12 @@ mostlyclean-generic:
 	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f ../eg/$(am__dirstamp)
+	-test -z "$(top_builddir)/eg/$(am__dirstamp)" || rm -f $(top_builddir)/eg/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"

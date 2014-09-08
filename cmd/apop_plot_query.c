@@ -1,10 +1,35 @@
 /** \file 
- Command line utility to take in a query and put out a Gnuplottable file.
+ Command line utility to take in a query and produce a plot of its output via Gnuplot.
 
 Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
 
 #include "apop_internal.h"
 #include <unistd.h>
+
+
+/** This convenience function will take in a \c gsl_vector of data and put out a histogram, ready to pipe to Gnuplot.
+
+\param data A \c gsl_vector holding the data. Do not pre-sort or bin; this function does that for you via apop_data_to_bins.
+\param bin_count   The number of bins in the output histogram (if you send zero, I set this to \f$\sqrt(N)\f$, where \f$N\f$ is the length of the vector.)
+\param with The method for Gnuplot's plotting routine. Default is \c "boxes", so the gnuplot call will read <tt>plot '-' with boxes</tt>. The \c "lines" option is also popular, and you can add extra terms if desired, like <tt> "boxes linetype 3"</tt>.
+*/
+void plot_histogram(gsl_vector *data, FILE *f, size_t bin_count, char *with){
+    Apop_stopif(!data, return, 0, "Input vector is NULL.");
+    if (!with) with="impulses";
+    apop_data vector_as_data = (apop_data){.vector=data};
+    apop_data *histodata = apop_data_to_bins(&vector_as_data, .bin_count=bin_count, .close_top_bin='y');
+    apop_data_sort(histodata);
+    apop_data_free(histodata->more); //the binspec.
+
+    fprintf(f, "set key off	;\n"
+               "plot '-' with %s\n", with);
+    apop_data_print(histodata, .output_pipe=f);
+    fprintf(f, "e\n");
+
+    fflush(f);
+    apop_data_free(histodata);
+}
+
 
 char *plot_type = NULL;
 int histobins = 0;
@@ -58,27 +83,30 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 	    apop_matrix_print(m, NULL, .output_type='p', .output_pipe=f);
     } else {
         Apop_col_v(&(apop_data){.matrix=m}, 0, v);
-        apop_plot_histogram(v, histobins, .output_type='p', .output_pipe=f);
+        plot_histogram(v, f, histobins, NULL);
     }
     if (outfile) fclose(f);
 }
 
 int main(int argc, char **argv){
-    char c, *q = NULL, 
+    char c, *q = NULL,
          *d = NULL,
          *outfile = NULL;
     int sf = 0,
         no_plot = 0;
 
-    const char* msg= "%s [opts] dbname query\n\n"
+    const char* msg= "Usage: %s [opts] dbname query\n"
+"\n"
 "Runs a query, and pipes the output directly to gnuplot. Use -f to dump to stdout or a file.\n"
-"-d\tdatabase to use\t\t\t\t\tmandatory \n"
-"-q\tquery to run\t\t\t\t\tmandatory (or use -Q)\n"
-"-Q\tfile from which to read the query\t\t\n"
-"-n\tno plot: just run the query and display results to stdout\t\t\n"
-"-t\tplot type (points, bars, ...)\t\t\tdefault=\"lines\"\n"
-"-H\tplot histogram with this many bins (e.g., -H100). To let the system auto-select bin sizes, use -H0 .\n"
-"-f\tfile to dump to. If -f- then use stdout.\tdefault=pipe to Gnuplot\n";
+" -d\tdatabase to use (mandatory)\n"
+" -q\tquery to run (mandatory or use -Q)\n"
+" -Q\tfile from which to read the query\t\t\n"
+" -n\tno plot: just run the query and display results to stdout\t\t\n"
+" -t\tplot type (points, bars, ...) (default: \"lines\")\n"
+" -H\tplot histogram with this many bins (e.g., -H100) (to let the system auto-select bin sizes, use -H0)\n"
+" -f\tfile to dump to. If -f- then use stdout (default: pipe to Gnuplot)\n"
+" -h\tdisplay this help and exit\n"
+"\n";
 
 	Apop_stopif(argc<2, return 1, 0, msg, argv[0]);
 	while ((c = getopt (argc, argv, "ad:f:hH:nQ:q:st:-")) != -1)
@@ -88,7 +116,7 @@ int main(int argc, char **argv){
         } else if (c=='H'){
               histoplotting = 1;
               histobins = atoi(optarg);
-        } 
+        }
         else if (c=='h'||c=='-') {
             printf(msg, argv[0]);
 			return 0;
@@ -104,7 +132,7 @@ int main(int argc, char **argv){
         q = argv[optind+1];
     } else if (optind == argc-1)
         q = argv[optind];
-    
+
     Apop_stopif(!q, return 1, 0, "I need a query specified with -q.\n");
 
     if (!plot_type) plot_type = strdup("lines");

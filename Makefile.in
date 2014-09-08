@@ -16,7 +16,7 @@
 
 
 
-
+VPATH = @srcdir@
 am__is_gnu_make = test -n '$(MAKEFILE_LIST)' && test -n '$(MAKELEVEL)'
 am__make_running_with_option = \
   case $${target_option-} in \
@@ -80,15 +80,21 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = apop_text_to_db$(EXEEXT) apop_db_to_crosstab$(EXEEXT) \
-	apop_plot_query$(EXEEXT)
+@HAVE_LD_VERSION_SCRIPT_TRUE@am__append_1 = -Wl,--version-script=$(top_srcdir)/apophenia.map
 subdir = .
 DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
-	$(srcdir)/config.h.in $(srcdir)/apophenia.pc.in depcomp \
-	$(include_HEADERS) COPYING config.guess config.sub install-sh \
-	missing ltmain.sh
+	$(srcdir)/config.h.in $(srcdir)/apophenia.pc.in \
+	$(top_srcdir)/build-aux/depcomp $(include_HEADERS) \
+	$(noinst_HEADERS) COPYING build-aux/config.guess \
+	build-aux/config.sub build-aux/depcomp build-aux/install-sh \
+	build-aux/missing build-aux/ltmain.sh \
+	$(top_srcdir)/build-aux/config.guess \
+	$(top_srcdir)/build-aux/config.sub \
+	$(top_srcdir)/build-aux/install-sh \
+	$(top_srcdir)/build-aux/ltmain.sh \
+	$(top_srcdir)/build-aux/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -129,41 +135,48 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(includedir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
-libapophenia_la_LIBADD =
-am_libapophenia_la_OBJECTS = apop_arms.lo apop_asst.lo \
-	apop_bootstrap.lo apop_conversions.lo apop_data.lo apop_db.lo \
-	apop_fexact.lo apop_hist.lo apop_linear_algebra.lo \
-	apop_linear_constraint.lo apop_mapply.lo apop_mcmc.lo \
-	apop_missing_data.lo apop_mle.lo apop_model.lo apop_name.lo \
-	apop_output.lo apop_rake.lo apop_regression.lo \
-	apop_settings.lo apop_smoothing.lo apop_sort.lo apop_stats.lo \
-	apop_tests.lo apop_update.lo apop_vtables.lo asprintf.lo \
-	apop_dcompose.lo apop_dconstrain.lo apop_fix_params.lo \
-	apop_coordinate_transform.lo apop_mixture.lo apop_stack.lo \
-	apop_bernoulli.lo apop_beta.lo apop_dirichlet.lo \
-	apop_exponential.lo apop_gamma.lo apop_histogram.lo \
-	apop_loess.lo apop_multinomial.lo apop_multivariate_normal.lo \
-	apop_normal.lo apop_ols.lo apop_pmf.lo apop_poisson.lo \
-	apop_probit.lo apop_t.lo apop_uniform.lo apop_wishart.lo \
-	apop_yule.lo apop_zipf.lo
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" \
+	"$(DESTDIR)$(includedir)"
+LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
+am__DEPENDENCIES_1 =
+libapophenia_la_DEPENDENCIES = $(SUBLIBS) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libapophenia_la_OBJECTS = asprintf.lo
 libapophenia_la_OBJECTS = $(am_libapophenia_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-PROGRAMS = $(bin_PROGRAMS)
-am_apop_db_to_crosstab_OBJECTS = apop_db_to_crosstab.$(OBJEXT)
-apop_db_to_crosstab_OBJECTS = $(am_apop_db_to_crosstab_OBJECTS)
-apop_db_to_crosstab_DEPENDENCIES = libapophenia.la
-am_apop_plot_query_OBJECTS = apop_plot_query.$(OBJEXT)
-apop_plot_query_OBJECTS = $(am_apop_plot_query_OBJECTS)
-apop_plot_query_DEPENDENCIES = libapophenia.la
-am_apop_text_to_db_OBJECTS = apop_text_to_db.$(OBJEXT)
-apop_text_to_db_OBJECTS = $(am_apop_text_to_db_OBJECTS)
-apop_text_to_db_DEPENDENCIES = libapophenia.la
+libapophenia_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libapophenia_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
+libapopkernel_la_LIBADD =
+am_libapopkernel_la_OBJECTS = libapopkernel_la-apop_arms.lo \
+	libapopkernel_la-apop_asst.lo \
+	libapopkernel_la-apop_bootstrap.lo \
+	libapopkernel_la-apop_conversions.lo \
+	libapopkernel_la-apop_data.lo libapopkernel_la-apop_db.lo \
+	libapopkernel_la-apop_fexact.lo libapopkernel_la-apop_hist.lo \
+	libapopkernel_la-apop_linear_algebra.lo \
+	libapopkernel_la-apop_linear_constraint.lo \
+	libapopkernel_la-apop_mapply.lo libapopkernel_la-apop_mcmc.lo \
+	libapopkernel_la-apop_missing_data.lo \
+	libapopkernel_la-apop_mle.lo libapopkernel_la-apop_model.lo \
+	libapopkernel_la-apop_name.lo libapopkernel_la-apop_output.lo \
+	libapopkernel_la-apop_rake.lo \
+	libapopkernel_la-apop_regression.lo \
+	libapopkernel_la-apop_settings.lo \
+	libapopkernel_la-apop_smoothing.lo \
+	libapopkernel_la-apop_sort.lo libapopkernel_la-apop_stats.lo \
+	libapopkernel_la-apop_tests.lo libapopkernel_la-apop_update.lo \
+	libapopkernel_la-apop_vtables.lo
+libapopkernel_la_OBJECTS = $(am_libapopkernel_la_OBJECTS)
+libapopkernel_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(libapopkernel_la_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -177,7 +190,7 @@ am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
 DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -198,11 +211,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libapophenia_la_SOURCES) $(apop_db_to_crosstab_SOURCES) \
-	$(apop_plot_query_SOURCES) $(apop_text_to_db_SOURCES)
-DIST_SOURCES = $(libapophenia_la_SOURCES) \
-	$(apop_db_to_crosstab_SOURCES) $(apop_plot_query_SOURCES) \
-	$(apop_text_to_db_SOURCES)
+SOURCES = $(libapophenia_la_SOURCES) $(libapopkernel_la_SOURCES)
+DIST_SOURCES = $(libapophenia_la_SOURCES) $(libapopkernel_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -217,7 +227,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 DATA = $(pkgconfig_DATA)
-HEADERS = $(include_HEADERS)
+HEADERS = $(include_HEADERS) $(noinst_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -283,14 +293,14 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-DIST_ARCHIVES = $(distdir).tar.gz
+DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.bz2 $(distdir).tar.xz \
+	$(distdir).zip
 GZIP_ENV = --best
-DIST_TARGETS = dist-gzip
+DIST_TARGETS = dist-xz dist-bzip2 dist-gzip dist-zip
 distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-VPATH = @srcdir@
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
 AMTAR = @AMTAR@
@@ -300,7 +310,8 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CC = $(PTHREAD_CC)
+BC = @BC@
+CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
@@ -318,6 +329,9 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_CONFIG = @GSL_CONFIG@
+GSL_LIBS = @GSL_LIBS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -325,12 +339,14 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -361,6 +377,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SQLITE3 = @SQLITE3@
 SQLITE3_CFLAGS = @SQLITE3_CFLAGS@
 SQLITE3_LDFLAGS = @SQLITE3_LDFLAGS@
 SQLITE3_VERSION = @SQLITE3_VERSION@
@@ -419,52 +436,82 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CFLAGS = -g -Wall -O3 $(SQLITE_CFLAGS) $(MYSQL_CFLAGS) $(OPENMP_CFLAGS)
-AM_LDFLAGS = $(SQLITE_LDFLAGS) $(OPENMP_CFLAGS) $(MYSQL_LDFLAGS)
 ACLOCAL_AMFLAGS = -I m4
-lib_LTLIBRARIES = libapophenia.la
-libapophenia_la_SOURCES = \
-            apop_arms.c apop_asst.c apop_bootstrap.c apop_conversions.c \
-            apop_data.c apop_db.c apop_fexact.c apop_hist.c 	        \
-			apop_linear_algebra.c apop_linear_constraint.c apop_mapply.c \
-			apop_mcmc.c apop_missing_data.c apop_mle.c apop_model.c   \
-			apop_name.c apop_output.c apop_rake.c     \
-            apop_regression.c apop_settings.c apop_smoothing.c apop_sort.c \
-            apop_stats.c apop_tests.c apop_update.c	 apop_vtables.c            \
-			asprintf.c 					\
-			transform/apop_dcompose.c   \
-			transform/apop_dconstrain.c transform/apop_fix_params.c \
-			transform/apop_coordinate_transform.c 	\
-			transform/apop_mixture.c 	transform/apop_stack.c    \
-			model/apop_bernoulli.c      model/apop_beta.c			\
-			model/apop_dirichlet.c      \
-			model/apop_exponential.c    model/apop_gamma.c          \
-            model/apop_histogram.c      model/apop_loess.c          \
-			model/apop_multinomial.c    model/apop_multivariate_normal.c  \
-			model/apop_normal.c         model/apop_ols.c 		 	\
-            model/apop_pmf.c            model/apop_poisson.c        \
-			model/apop_probit.c	        model/apop_t.c				\
-			model/apop_uniform.c        model/apop_wishart.c        \
-            model/apop_yule.c 	 		model/apop_zipf.c 
+AUTOMAKE_OPTIONS = \
+	dist-xz \
+	dist-bzip2 \
+	dist-zip
 
+AM_CFLAGS = -g -Wall -O3
+LIBAPOPHENIA_LT_VERSION = 0:0:0
+SUBDIRS = transform model . cmd tests docs eg
 include_HEADERS = apop.h
+pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = apophenia.pc
-pkgconfigdir = `pkg-config --variable pc_path pkg-config | cut -f1 -d:`
-SUBDIRS = . tests
-apop_text_to_db_SOURCES = cmd/apop_text_to_db.c
-apop_db_to_crosstab_SOURCES = cmd/apop_db_to_crosstab.c
-apop_plot_query_SOURCES = cmd/apop_plot_query.c
-apop_text_to_db_LDADD = libapophenia.la
-apop_db_to_crosstab_LDADD = libapophenia.la
-apop_plot_query_LDADD = libapophenia.la
-EXTRA_DIST = docs/doxyconfig $(srcdir)/docs/*.png $(srcdir)/docs/*.gif \
-		$(srcdir)/docs/*.js 	\
-		docs/edit_group $(srcdir)/docs/*.html docs/typical.css \
-		docs/make_model_doc.awk docs/documentation.h rpm.spec \
-		eg apop_db_mysql.c apop_db_sqlite.c \
-		apop_internal.h COPYING2 apophenia.pc
+lib_LTLIBRARIES = libapophenia.la
+libapophenia_la_LD_VERSION_SCRIPT = $(am__append_1)
+SUBLIBS = \
+	libapopkernel.la \
+	transform/libapoptransform.la \
+	model/libapopmodel.la
 
-DISTCLEANFILES = apophenia.pc* apophenia-uninstalled.pc apophenia-uninstalled.sh tests/*dat* tests/printing_sample 1
+libapophenia_la_SOURCES = \
+	asprintf.c
+
+noinst_LTLIBRARIES = libapopkernel.la
+noinst_HEADERS = apop_internal.h
+libapopkernel_la_SOURCES = \
+	apop_arms.c \
+	apop_asst.c \
+	apop_bootstrap.c \
+	apop_conversions.c \
+	apop_data.c \
+	apop_db.c \
+	apop_fexact.c \
+	apop_hist.c \
+	apop_linear_algebra.c \
+	apop_linear_constraint.c \
+	apop_mapply.c \
+	apop_mcmc.c \
+	apop_missing_data.c \
+	apop_mle.c apop_model.c \
+	apop_name.c \
+	apop_output.c \
+	apop_rake.c \
+	apop_regression.c \
+	apop_settings.c \
+	apop_smoothing.c \
+	apop_sort.c \
+	apop_stats.c \
+	apop_tests.c \
+	apop_update.c	\
+	apop_vtables.c
+
+apop_db_INCLUDES = \
+	apop_db_mysql.c \
+	apop_db_sqlite.c
+
+libapopkernel_la_CFLAGS = \
+	$(PTHREAD_CFLAGS) \
+	$(OPENMP_CFLAGS) \
+	$(MYSQL_CFLAGS) \
+	$(SQLITE3_CFLAGS) \
+	$(GSL_CFLAGS)
+
+libapophenia_la_LDFLAGS = \
+	-version-info $(LIBAPOPHENIA_LT_VERSION) \
+	$(libapophenia_la_LD_VERSION_SCRIPT)
+
+libapophenia_la_LIBADD = \
+	$(SUBLIBS) \
+	$(MYSQL_LDFLAGS) \
+	$(SQLITE3_LDFLAGS) \
+	$(GSL_LIBS) \
+	$(PTHREAD_LIBS) \
+	$(LIBM)
+
+EXTRA_DIST = COPYING2 rpm.spec apophenia.pc.in apophenia.map \
+	$(apop_db_INCLUDES)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -472,7 +519,7 @@ all: config.h
 .SUFFIXES: .c .lo .o .obj
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -499,9 +546,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	$(am__cd) $(srcdir) && $(AUTOCONF)
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
 
@@ -512,7 +559,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
 	touch $@
@@ -557,69 +604,22 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
 libapophenia.la: $(libapophenia_la_OBJECTS) $(libapophenia_la_DEPENDENCIES) $(EXTRA_libapophenia_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libapophenia_la_OBJECTS) $(libapophenia_la_LIBADD) $(LIBS)
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
-	fi; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p \
-	 || test -f $$p1 \
-	  ; then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' \
-	    -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
-	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
-	    } \
-	; done
+	$(AM_V_CCLD)$(libapophenia_la_LINK) -rpath $(libdir) $(libapophenia_la_OBJECTS) $(libapophenia_la_LIBADD) $(LIBS)
 
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' \
-	`; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(bindir)" && rm -f $$files
-
-clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-
-apop_db_to_crosstab$(EXEEXT): $(apop_db_to_crosstab_OBJECTS) $(apop_db_to_crosstab_DEPENDENCIES) $(EXTRA_apop_db_to_crosstab_DEPENDENCIES) 
-	@rm -f apop_db_to_crosstab$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(apop_db_to_crosstab_OBJECTS) $(apop_db_to_crosstab_LDADD) $(LIBS)
-
-apop_plot_query$(EXEEXT): $(apop_plot_query_OBJECTS) $(apop_plot_query_DEPENDENCIES) $(EXTRA_apop_plot_query_DEPENDENCIES) 
-	@rm -f apop_plot_query$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(apop_plot_query_OBJECTS) $(apop_plot_query_LDADD) $(LIBS)
-
-apop_text_to_db$(EXEEXT): $(apop_text_to_db_OBJECTS) $(apop_text_to_db_DEPENDENCIES) $(EXTRA_apop_text_to_db_DEPENDENCIES) 
-	@rm -f apop_text_to_db$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(apop_text_to_db_OBJECTS) $(apop_text_to_db_LDADD) $(LIBS)
+libapopkernel.la: $(libapopkernel_la_OBJECTS) $(libapopkernel_la_DEPENDENCIES) $(EXTRA_libapopkernel_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libapopkernel_la_LINK)  $(libapopkernel_la_OBJECTS) $(libapopkernel_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -627,61 +627,33 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_arms.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_asst.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_bernoulli.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_beta.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_bootstrap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_conversions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_coordinate_transform.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_data.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_db.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_db_to_crosstab.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_dcompose.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_dconstrain.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_dirichlet.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_exponential.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_fexact.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_fix_params.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_gamma.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_hist.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_histogram.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_linear_algebra.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_linear_constraint.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_loess.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mapply.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mcmc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_missing_data.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mixture.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_mle.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_model.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_multinomial.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_multivariate_normal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_name.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_normal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_ols.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_output.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_plot_query.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_pmf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_poisson.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_probit.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_rake.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_regression.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_settings.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_smoothing.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_sort.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_stats.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_t.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_tests.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_text_to_db.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_uniform.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_update.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_vtables.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_wishart.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_yule.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_zipf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asprintf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_arms.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_asst.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_bootstrap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_conversions.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_data.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_db.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_fexact.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_hist.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_linear_algebra.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_linear_constraint.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_mapply.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_mcmc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_missing_data.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_mle.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_model.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_name.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_output.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_rake.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_regression.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_settings.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_smoothing.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_sort.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_stats.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_tests.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_update.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_vtables.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -704,222 +676,187 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-apop_dcompose.lo: transform/apop_dcompose.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_dcompose.lo -MD -MP -MF $(DEPDIR)/apop_dcompose.Tpo -c -o apop_dcompose.lo `test -f 'transform/apop_dcompose.c' || echo '$(srcdir)/'`transform/apop_dcompose.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_dcompose.Tpo $(DEPDIR)/apop_dcompose.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_dcompose.c' object='apop_dcompose.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_arms.lo: apop_arms.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_arms.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_arms.Tpo -c -o libapopkernel_la-apop_arms.lo `test -f 'apop_arms.c' || echo '$(srcdir)/'`apop_arms.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_arms.Tpo $(DEPDIR)/libapopkernel_la-apop_arms.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_arms.c' object='libapopkernel_la-apop_arms.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_dcompose.lo `test -f 'transform/apop_dcompose.c' || echo '$(srcdir)/'`transform/apop_dcompose.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_arms.lo `test -f 'apop_arms.c' || echo '$(srcdir)/'`apop_arms.c
 
-apop_dconstrain.lo: transform/apop_dconstrain.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_dconstrain.lo -MD -MP -MF $(DEPDIR)/apop_dconstrain.Tpo -c -o apop_dconstrain.lo `test -f 'transform/apop_dconstrain.c' || echo '$(srcdir)/'`transform/apop_dconstrain.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_dconstrain.Tpo $(DEPDIR)/apop_dconstrain.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_dconstrain.c' object='apop_dconstrain.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_asst.lo: apop_asst.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_asst.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_asst.Tpo -c -o libapopkernel_la-apop_asst.lo `test -f 'apop_asst.c' || echo '$(srcdir)/'`apop_asst.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_asst.Tpo $(DEPDIR)/libapopkernel_la-apop_asst.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_asst.c' object='libapopkernel_la-apop_asst.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_dconstrain.lo `test -f 'transform/apop_dconstrain.c' || echo '$(srcdir)/'`transform/apop_dconstrain.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_asst.lo `test -f 'apop_asst.c' || echo '$(srcdir)/'`apop_asst.c
 
-apop_fix_params.lo: transform/apop_fix_params.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_fix_params.lo -MD -MP -MF $(DEPDIR)/apop_fix_params.Tpo -c -o apop_fix_params.lo `test -f 'transform/apop_fix_params.c' || echo '$(srcdir)/'`transform/apop_fix_params.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_fix_params.Tpo $(DEPDIR)/apop_fix_params.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_fix_params.c' object='apop_fix_params.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_bootstrap.lo: apop_bootstrap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_bootstrap.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_bootstrap.Tpo -c -o libapopkernel_la-apop_bootstrap.lo `test -f 'apop_bootstrap.c' || echo '$(srcdir)/'`apop_bootstrap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_bootstrap.Tpo $(DEPDIR)/libapopkernel_la-apop_bootstrap.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_bootstrap.c' object='libapopkernel_la-apop_bootstrap.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_fix_params.lo `test -f 'transform/apop_fix_params.c' || echo '$(srcdir)/'`transform/apop_fix_params.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_bootstrap.lo `test -f 'apop_bootstrap.c' || echo '$(srcdir)/'`apop_bootstrap.c
 
-apop_coordinate_transform.lo: transform/apop_coordinate_transform.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_coordinate_transform.lo -MD -MP -MF $(DEPDIR)/apop_coordinate_transform.Tpo -c -o apop_coordinate_transform.lo `test -f 'transform/apop_coordinate_transform.c' || echo '$(srcdir)/'`transform/apop_coordinate_transform.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_coordinate_transform.Tpo $(DEPDIR)/apop_coordinate_transform.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_coordinate_transform.c' object='apop_coordinate_transform.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_conversions.lo: apop_conversions.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_conversions.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_conversions.Tpo -c -o libapopkernel_la-apop_conversions.lo `test -f 'apop_conversions.c' || echo '$(srcdir)/'`apop_conversions.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_conversions.Tpo $(DEPDIR)/libapopkernel_la-apop_conversions.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_conversions.c' object='libapopkernel_la-apop_conversions.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_coordinate_transform.lo `test -f 'transform/apop_coordinate_transform.c' || echo '$(srcdir)/'`transform/apop_coordinate_transform.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_conversions.lo `test -f 'apop_conversions.c' || echo '$(srcdir)/'`apop_conversions.c
 
-apop_mixture.lo: transform/apop_mixture.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_mixture.lo -MD -MP -MF $(DEPDIR)/apop_mixture.Tpo -c -o apop_mixture.lo `test -f 'transform/apop_mixture.c' || echo '$(srcdir)/'`transform/apop_mixture.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_mixture.Tpo $(DEPDIR)/apop_mixture.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_mixture.c' object='apop_mixture.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_data.lo: apop_data.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_data.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_data.Tpo -c -o libapopkernel_la-apop_data.lo `test -f 'apop_data.c' || echo '$(srcdir)/'`apop_data.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_data.Tpo $(DEPDIR)/libapopkernel_la-apop_data.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_data.c' object='libapopkernel_la-apop_data.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_mixture.lo `test -f 'transform/apop_mixture.c' || echo '$(srcdir)/'`transform/apop_mixture.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_data.lo `test -f 'apop_data.c' || echo '$(srcdir)/'`apop_data.c
 
-apop_stack.lo: transform/apop_stack.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_stack.lo -MD -MP -MF $(DEPDIR)/apop_stack.Tpo -c -o apop_stack.lo `test -f 'transform/apop_stack.c' || echo '$(srcdir)/'`transform/apop_stack.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_stack.Tpo $(DEPDIR)/apop_stack.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='transform/apop_stack.c' object='apop_stack.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_db.lo: apop_db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_db.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_db.Tpo -c -o libapopkernel_la-apop_db.lo `test -f 'apop_db.c' || echo '$(srcdir)/'`apop_db.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_db.Tpo $(DEPDIR)/libapopkernel_la-apop_db.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_db.c' object='libapopkernel_la-apop_db.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_stack.lo `test -f 'transform/apop_stack.c' || echo '$(srcdir)/'`transform/apop_stack.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_db.lo `test -f 'apop_db.c' || echo '$(srcdir)/'`apop_db.c
 
-apop_bernoulli.lo: model/apop_bernoulli.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_bernoulli.lo -MD -MP -MF $(DEPDIR)/apop_bernoulli.Tpo -c -o apop_bernoulli.lo `test -f 'model/apop_bernoulli.c' || echo '$(srcdir)/'`model/apop_bernoulli.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_bernoulli.Tpo $(DEPDIR)/apop_bernoulli.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_bernoulli.c' object='apop_bernoulli.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_fexact.lo: apop_fexact.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_fexact.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_fexact.Tpo -c -o libapopkernel_la-apop_fexact.lo `test -f 'apop_fexact.c' || echo '$(srcdir)/'`apop_fexact.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_fexact.Tpo $(DEPDIR)/libapopkernel_la-apop_fexact.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_fexact.c' object='libapopkernel_la-apop_fexact.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_bernoulli.lo `test -f 'model/apop_bernoulli.c' || echo '$(srcdir)/'`model/apop_bernoulli.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_fexact.lo `test -f 'apop_fexact.c' || echo '$(srcdir)/'`apop_fexact.c
 
-apop_beta.lo: model/apop_beta.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_beta.lo -MD -MP -MF $(DEPDIR)/apop_beta.Tpo -c -o apop_beta.lo `test -f 'model/apop_beta.c' || echo '$(srcdir)/'`model/apop_beta.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_beta.Tpo $(DEPDIR)/apop_beta.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_beta.c' object='apop_beta.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_hist.lo: apop_hist.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_hist.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_hist.Tpo -c -o libapopkernel_la-apop_hist.lo `test -f 'apop_hist.c' || echo '$(srcdir)/'`apop_hist.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_hist.Tpo $(DEPDIR)/libapopkernel_la-apop_hist.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_hist.c' object='libapopkernel_la-apop_hist.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_beta.lo `test -f 'model/apop_beta.c' || echo '$(srcdir)/'`model/apop_beta.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_hist.lo `test -f 'apop_hist.c' || echo '$(srcdir)/'`apop_hist.c
 
-apop_dirichlet.lo: model/apop_dirichlet.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_dirichlet.lo -MD -MP -MF $(DEPDIR)/apop_dirichlet.Tpo -c -o apop_dirichlet.lo `test -f 'model/apop_dirichlet.c' || echo '$(srcdir)/'`model/apop_dirichlet.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_dirichlet.Tpo $(DEPDIR)/apop_dirichlet.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_dirichlet.c' object='apop_dirichlet.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_linear_algebra.lo: apop_linear_algebra.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_linear_algebra.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_linear_algebra.Tpo -c -o libapopkernel_la-apop_linear_algebra.lo `test -f 'apop_linear_algebra.c' || echo '$(srcdir)/'`apop_linear_algebra.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_linear_algebra.Tpo $(DEPDIR)/libapopkernel_la-apop_linear_algebra.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_linear_algebra.c' object='libapopkernel_la-apop_linear_algebra.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_dirichlet.lo `test -f 'model/apop_dirichlet.c' || echo '$(srcdir)/'`model/apop_dirichlet.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_linear_algebra.lo `test -f 'apop_linear_algebra.c' || echo '$(srcdir)/'`apop_linear_algebra.c
 
-apop_exponential.lo: model/apop_exponential.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_exponential.lo -MD -MP -MF $(DEPDIR)/apop_exponential.Tpo -c -o apop_exponential.lo `test -f 'model/apop_exponential.c' || echo '$(srcdir)/'`model/apop_exponential.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_exponential.Tpo $(DEPDIR)/apop_exponential.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_exponential.c' object='apop_exponential.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_linear_constraint.lo: apop_linear_constraint.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_linear_constraint.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_linear_constraint.Tpo -c -o libapopkernel_la-apop_linear_constraint.lo `test -f 'apop_linear_constraint.c' || echo '$(srcdir)/'`apop_linear_constraint.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_linear_constraint.Tpo $(DEPDIR)/libapopkernel_la-apop_linear_constraint.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_linear_constraint.c' object='libapopkernel_la-apop_linear_constraint.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_exponential.lo `test -f 'model/apop_exponential.c' || echo '$(srcdir)/'`model/apop_exponential.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_linear_constraint.lo `test -f 'apop_linear_constraint.c' || echo '$(srcdir)/'`apop_linear_constraint.c
 
-apop_gamma.lo: model/apop_gamma.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_gamma.lo -MD -MP -MF $(DEPDIR)/apop_gamma.Tpo -c -o apop_gamma.lo `test -f 'model/apop_gamma.c' || echo '$(srcdir)/'`model/apop_gamma.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_gamma.Tpo $(DEPDIR)/apop_gamma.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_gamma.c' object='apop_gamma.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_mapply.lo: apop_mapply.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_mapply.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_mapply.Tpo -c -o libapopkernel_la-apop_mapply.lo `test -f 'apop_mapply.c' || echo '$(srcdir)/'`apop_mapply.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_mapply.Tpo $(DEPDIR)/libapopkernel_la-apop_mapply.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_mapply.c' object='libapopkernel_la-apop_mapply.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_gamma.lo `test -f 'model/apop_gamma.c' || echo '$(srcdir)/'`model/apop_gamma.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_mapply.lo `test -f 'apop_mapply.c' || echo '$(srcdir)/'`apop_mapply.c
 
-apop_histogram.lo: model/apop_histogram.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_histogram.lo -MD -MP -MF $(DEPDIR)/apop_histogram.Tpo -c -o apop_histogram.lo `test -f 'model/apop_histogram.c' || echo '$(srcdir)/'`model/apop_histogram.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_histogram.Tpo $(DEPDIR)/apop_histogram.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_histogram.c' object='apop_histogram.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_mcmc.lo: apop_mcmc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_mcmc.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_mcmc.Tpo -c -o libapopkernel_la-apop_mcmc.lo `test -f 'apop_mcmc.c' || echo '$(srcdir)/'`apop_mcmc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_mcmc.Tpo $(DEPDIR)/libapopkernel_la-apop_mcmc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_mcmc.c' object='libapopkernel_la-apop_mcmc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_histogram.lo `test -f 'model/apop_histogram.c' || echo '$(srcdir)/'`model/apop_histogram.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_mcmc.lo `test -f 'apop_mcmc.c' || echo '$(srcdir)/'`apop_mcmc.c
 
-apop_loess.lo: model/apop_loess.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_loess.lo -MD -MP -MF $(DEPDIR)/apop_loess.Tpo -c -o apop_loess.lo `test -f 'model/apop_loess.c' || echo '$(srcdir)/'`model/apop_loess.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_loess.Tpo $(DEPDIR)/apop_loess.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_loess.c' object='apop_loess.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_missing_data.lo: apop_missing_data.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_missing_data.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_missing_data.Tpo -c -o libapopkernel_la-apop_missing_data.lo `test -f 'apop_missing_data.c' || echo '$(srcdir)/'`apop_missing_data.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_missing_data.Tpo $(DEPDIR)/libapopkernel_la-apop_missing_data.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_missing_data.c' object='libapopkernel_la-apop_missing_data.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_loess.lo `test -f 'model/apop_loess.c' || echo '$(srcdir)/'`model/apop_loess.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_missing_data.lo `test -f 'apop_missing_data.c' || echo '$(srcdir)/'`apop_missing_data.c
 
-apop_multinomial.lo: model/apop_multinomial.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_multinomial.lo -MD -MP -MF $(DEPDIR)/apop_multinomial.Tpo -c -o apop_multinomial.lo `test -f 'model/apop_multinomial.c' || echo '$(srcdir)/'`model/apop_multinomial.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_multinomial.Tpo $(DEPDIR)/apop_multinomial.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_multinomial.c' object='apop_multinomial.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_mle.lo: apop_mle.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_mle.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_mle.Tpo -c -o libapopkernel_la-apop_mle.lo `test -f 'apop_mle.c' || echo '$(srcdir)/'`apop_mle.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_mle.Tpo $(DEPDIR)/libapopkernel_la-apop_mle.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_mle.c' object='libapopkernel_la-apop_mle.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_multinomial.lo `test -f 'model/apop_multinomial.c' || echo '$(srcdir)/'`model/apop_multinomial.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_mle.lo `test -f 'apop_mle.c' || echo '$(srcdir)/'`apop_mle.c
 
-apop_multivariate_normal.lo: model/apop_multivariate_normal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_multivariate_normal.lo -MD -MP -MF $(DEPDIR)/apop_multivariate_normal.Tpo -c -o apop_multivariate_normal.lo `test -f 'model/apop_multivariate_normal.c' || echo '$(srcdir)/'`model/apop_multivariate_normal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_multivariate_normal.Tpo $(DEPDIR)/apop_multivariate_normal.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_multivariate_normal.c' object='apop_multivariate_normal.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_model.lo: apop_model.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_model.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_model.Tpo -c -o libapopkernel_la-apop_model.lo `test -f 'apop_model.c' || echo '$(srcdir)/'`apop_model.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_model.Tpo $(DEPDIR)/libapopkernel_la-apop_model.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_model.c' object='libapopkernel_la-apop_model.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_multivariate_normal.lo `test -f 'model/apop_multivariate_normal.c' || echo '$(srcdir)/'`model/apop_multivariate_normal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_model.lo `test -f 'apop_model.c' || echo '$(srcdir)/'`apop_model.c
 
-apop_normal.lo: model/apop_normal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_normal.lo -MD -MP -MF $(DEPDIR)/apop_normal.Tpo -c -o apop_normal.lo `test -f 'model/apop_normal.c' || echo '$(srcdir)/'`model/apop_normal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_normal.Tpo $(DEPDIR)/apop_normal.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_normal.c' object='apop_normal.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_name.lo: apop_name.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_name.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_name.Tpo -c -o libapopkernel_la-apop_name.lo `test -f 'apop_name.c' || echo '$(srcdir)/'`apop_name.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_name.Tpo $(DEPDIR)/libapopkernel_la-apop_name.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_name.c' object='libapopkernel_la-apop_name.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_normal.lo `test -f 'model/apop_normal.c' || echo '$(srcdir)/'`model/apop_normal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_name.lo `test -f 'apop_name.c' || echo '$(srcdir)/'`apop_name.c
 
-apop_ols.lo: model/apop_ols.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_ols.lo -MD -MP -MF $(DEPDIR)/apop_ols.Tpo -c -o apop_ols.lo `test -f 'model/apop_ols.c' || echo '$(srcdir)/'`model/apop_ols.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_ols.Tpo $(DEPDIR)/apop_ols.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_ols.c' object='apop_ols.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_output.lo: apop_output.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_output.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_output.Tpo -c -o libapopkernel_la-apop_output.lo `test -f 'apop_output.c' || echo '$(srcdir)/'`apop_output.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_output.Tpo $(DEPDIR)/libapopkernel_la-apop_output.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_output.c' object='libapopkernel_la-apop_output.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_ols.lo `test -f 'model/apop_ols.c' || echo '$(srcdir)/'`model/apop_ols.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_output.lo `test -f 'apop_output.c' || echo '$(srcdir)/'`apop_output.c
 
-apop_pmf.lo: model/apop_pmf.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_pmf.lo -MD -MP -MF $(DEPDIR)/apop_pmf.Tpo -c -o apop_pmf.lo `test -f 'model/apop_pmf.c' || echo '$(srcdir)/'`model/apop_pmf.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_pmf.Tpo $(DEPDIR)/apop_pmf.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_pmf.c' object='apop_pmf.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_rake.lo: apop_rake.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_rake.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_rake.Tpo -c -o libapopkernel_la-apop_rake.lo `test -f 'apop_rake.c' || echo '$(srcdir)/'`apop_rake.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_rake.Tpo $(DEPDIR)/libapopkernel_la-apop_rake.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_rake.c' object='libapopkernel_la-apop_rake.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_pmf.lo `test -f 'model/apop_pmf.c' || echo '$(srcdir)/'`model/apop_pmf.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_rake.lo `test -f 'apop_rake.c' || echo '$(srcdir)/'`apop_rake.c
 
-apop_poisson.lo: model/apop_poisson.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_poisson.lo -MD -MP -MF $(DEPDIR)/apop_poisson.Tpo -c -o apop_poisson.lo `test -f 'model/apop_poisson.c' || echo '$(srcdir)/'`model/apop_poisson.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_poisson.Tpo $(DEPDIR)/apop_poisson.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_poisson.c' object='apop_poisson.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_regression.lo: apop_regression.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_regression.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_regression.Tpo -c -o libapopkernel_la-apop_regression.lo `test -f 'apop_regression.c' || echo '$(srcdir)/'`apop_regression.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_regression.Tpo $(DEPDIR)/libapopkernel_la-apop_regression.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_regression.c' object='libapopkernel_la-apop_regression.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_poisson.lo `test -f 'model/apop_poisson.c' || echo '$(srcdir)/'`model/apop_poisson.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_regression.lo `test -f 'apop_regression.c' || echo '$(srcdir)/'`apop_regression.c
 
-apop_probit.lo: model/apop_probit.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_probit.lo -MD -MP -MF $(DEPDIR)/apop_probit.Tpo -c -o apop_probit.lo `test -f 'model/apop_probit.c' || echo '$(srcdir)/'`model/apop_probit.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_probit.Tpo $(DEPDIR)/apop_probit.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_probit.c' object='apop_probit.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_settings.lo: apop_settings.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_settings.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_settings.Tpo -c -o libapopkernel_la-apop_settings.lo `test -f 'apop_settings.c' || echo '$(srcdir)/'`apop_settings.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_settings.Tpo $(DEPDIR)/libapopkernel_la-apop_settings.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_settings.c' object='libapopkernel_la-apop_settings.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_probit.lo `test -f 'model/apop_probit.c' || echo '$(srcdir)/'`model/apop_probit.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_settings.lo `test -f 'apop_settings.c' || echo '$(srcdir)/'`apop_settings.c
 
-apop_t.lo: model/apop_t.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_t.lo -MD -MP -MF $(DEPDIR)/apop_t.Tpo -c -o apop_t.lo `test -f 'model/apop_t.c' || echo '$(srcdir)/'`model/apop_t.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_t.Tpo $(DEPDIR)/apop_t.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_t.c' object='apop_t.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_smoothing.lo: apop_smoothing.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_smoothing.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_smoothing.Tpo -c -o libapopkernel_la-apop_smoothing.lo `test -f 'apop_smoothing.c' || echo '$(srcdir)/'`apop_smoothing.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_smoothing.Tpo $(DEPDIR)/libapopkernel_la-apop_smoothing.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_smoothing.c' object='libapopkernel_la-apop_smoothing.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_t.lo `test -f 'model/apop_t.c' || echo '$(srcdir)/'`model/apop_t.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_smoothing.lo `test -f 'apop_smoothing.c' || echo '$(srcdir)/'`apop_smoothing.c
 
-apop_uniform.lo: model/apop_uniform.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_uniform.lo -MD -MP -MF $(DEPDIR)/apop_uniform.Tpo -c -o apop_uniform.lo `test -f 'model/apop_uniform.c' || echo '$(srcdir)/'`model/apop_uniform.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_uniform.Tpo $(DEPDIR)/apop_uniform.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_uniform.c' object='apop_uniform.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_sort.lo: apop_sort.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_sort.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_sort.Tpo -c -o libapopkernel_la-apop_sort.lo `test -f 'apop_sort.c' || echo '$(srcdir)/'`apop_sort.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_sort.Tpo $(DEPDIR)/libapopkernel_la-apop_sort.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_sort.c' object='libapopkernel_la-apop_sort.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_uniform.lo `test -f 'model/apop_uniform.c' || echo '$(srcdir)/'`model/apop_uniform.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_sort.lo `test -f 'apop_sort.c' || echo '$(srcdir)/'`apop_sort.c
 
-apop_wishart.lo: model/apop_wishart.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_wishart.lo -MD -MP -MF $(DEPDIR)/apop_wishart.Tpo -c -o apop_wishart.lo `test -f 'model/apop_wishart.c' || echo '$(srcdir)/'`model/apop_wishart.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_wishart.Tpo $(DEPDIR)/apop_wishart.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_wishart.c' object='apop_wishart.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_stats.lo: apop_stats.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_stats.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_stats.Tpo -c -o libapopkernel_la-apop_stats.lo `test -f 'apop_stats.c' || echo '$(srcdir)/'`apop_stats.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_stats.Tpo $(DEPDIR)/libapopkernel_la-apop_stats.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_stats.c' object='libapopkernel_la-apop_stats.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_wishart.lo `test -f 'model/apop_wishart.c' || echo '$(srcdir)/'`model/apop_wishart.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_stats.lo `test -f 'apop_stats.c' || echo '$(srcdir)/'`apop_stats.c
 
-apop_yule.lo: model/apop_yule.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_yule.lo -MD -MP -MF $(DEPDIR)/apop_yule.Tpo -c -o apop_yule.lo `test -f 'model/apop_yule.c' || echo '$(srcdir)/'`model/apop_yule.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_yule.Tpo $(DEPDIR)/apop_yule.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_yule.c' object='apop_yule.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_tests.lo: apop_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_tests.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_tests.Tpo -c -o libapopkernel_la-apop_tests.lo `test -f 'apop_tests.c' || echo '$(srcdir)/'`apop_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_tests.Tpo $(DEPDIR)/libapopkernel_la-apop_tests.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_tests.c' object='libapopkernel_la-apop_tests.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_yule.lo `test -f 'model/apop_yule.c' || echo '$(srcdir)/'`model/apop_yule.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_tests.lo `test -f 'apop_tests.c' || echo '$(srcdir)/'`apop_tests.c
 
-apop_zipf.lo: model/apop_zipf.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_zipf.lo -MD -MP -MF $(DEPDIR)/apop_zipf.Tpo -c -o apop_zipf.lo `test -f 'model/apop_zipf.c' || echo '$(srcdir)/'`model/apop_zipf.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_zipf.Tpo $(DEPDIR)/apop_zipf.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='model/apop_zipf.c' object='apop_zipf.lo' libtool=yes @AMDEPBACKSLASH@
+libapopkernel_la-apop_update.lo: apop_update.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_update.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_update.Tpo -c -o libapopkernel_la-apop_update.lo `test -f 'apop_update.c' || echo '$(srcdir)/'`apop_update.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_update.Tpo $(DEPDIR)/libapopkernel_la-apop_update.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_update.c' object='libapopkernel_la-apop_update.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_zipf.lo `test -f 'model/apop_zipf.c' || echo '$(srcdir)/'`model/apop_zipf.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_update.lo `test -f 'apop_update.c' || echo '$(srcdir)/'`apop_update.c
 
-apop_db_to_crosstab.o: cmd/apop_db_to_crosstab.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_db_to_crosstab.o -MD -MP -MF $(DEPDIR)/apop_db_to_crosstab.Tpo -c -o apop_db_to_crosstab.o `test -f 'cmd/apop_db_to_crosstab.c' || echo '$(srcdir)/'`cmd/apop_db_to_crosstab.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_db_to_crosstab.Tpo $(DEPDIR)/apop_db_to_crosstab.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_db_to_crosstab.c' object='apop_db_to_crosstab.o' libtool=no @AMDEPBACKSLASH@
+libapopkernel_la-apop_vtables.lo: apop_vtables.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_vtables.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_vtables.Tpo -c -o libapopkernel_la-apop_vtables.lo `test -f 'apop_vtables.c' || echo '$(srcdir)/'`apop_vtables.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_vtables.Tpo $(DEPDIR)/libapopkernel_la-apop_vtables.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_vtables.c' object='libapopkernel_la-apop_vtables.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_db_to_crosstab.o `test -f 'cmd/apop_db_to_crosstab.c' || echo '$(srcdir)/'`cmd/apop_db_to_crosstab.c
-
-apop_db_to_crosstab.obj: cmd/apop_db_to_crosstab.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_db_to_crosstab.obj -MD -MP -MF $(DEPDIR)/apop_db_to_crosstab.Tpo -c -o apop_db_to_crosstab.obj `if test -f 'cmd/apop_db_to_crosstab.c'; then $(CYGPATH_W) 'cmd/apop_db_to_crosstab.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_db_to_crosstab.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_db_to_crosstab.Tpo $(DEPDIR)/apop_db_to_crosstab.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_db_to_crosstab.c' object='apop_db_to_crosstab.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_db_to_crosstab.obj `if test -f 'cmd/apop_db_to_crosstab.c'; then $(CYGPATH_W) 'cmd/apop_db_to_crosstab.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_db_to_crosstab.c'; fi`
-
-apop_plot_query.o: cmd/apop_plot_query.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_plot_query.o -MD -MP -MF $(DEPDIR)/apop_plot_query.Tpo -c -o apop_plot_query.o `test -f 'cmd/apop_plot_query.c' || echo '$(srcdir)/'`cmd/apop_plot_query.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_plot_query.Tpo $(DEPDIR)/apop_plot_query.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_plot_query.c' object='apop_plot_query.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_plot_query.o `test -f 'cmd/apop_plot_query.c' || echo '$(srcdir)/'`cmd/apop_plot_query.c
-
-apop_plot_query.obj: cmd/apop_plot_query.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_plot_query.obj -MD -MP -MF $(DEPDIR)/apop_plot_query.Tpo -c -o apop_plot_query.obj `if test -f 'cmd/apop_plot_query.c'; then $(CYGPATH_W) 'cmd/apop_plot_query.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_plot_query.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_plot_query.Tpo $(DEPDIR)/apop_plot_query.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_plot_query.c' object='apop_plot_query.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_plot_query.obj `if test -f 'cmd/apop_plot_query.c'; then $(CYGPATH_W) 'cmd/apop_plot_query.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_plot_query.c'; fi`
-
-apop_text_to_db.o: cmd/apop_text_to_db.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_text_to_db.o -MD -MP -MF $(DEPDIR)/apop_text_to_db.Tpo -c -o apop_text_to_db.o `test -f 'cmd/apop_text_to_db.c' || echo '$(srcdir)/'`cmd/apop_text_to_db.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_text_to_db.Tpo $(DEPDIR)/apop_text_to_db.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_text_to_db.c' object='apop_text_to_db.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_text_to_db.o `test -f 'cmd/apop_text_to_db.c' || echo '$(srcdir)/'`cmd/apop_text_to_db.c
-
-apop_text_to_db.obj: cmd/apop_text_to_db.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT apop_text_to_db.obj -MD -MP -MF $(DEPDIR)/apop_text_to_db.Tpo -c -o apop_text_to_db.obj `if test -f 'cmd/apop_text_to_db.c'; then $(CYGPATH_W) 'cmd/apop_text_to_db.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_text_to_db.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/apop_text_to_db.Tpo $(DEPDIR)/apop_text_to_db.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cmd/apop_text_to_db.c' object='apop_text_to_db.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o apop_text_to_db.obj `if test -f 'cmd/apop_text_to_db.c'; then $(CYGPATH_W) 'cmd/apop_text_to_db.c'; else $(CYGPATH_W) '$(srcdir)/cmd/apop_text_to_db.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_vtables.lo `test -f 'apop_vtables.c' || echo '$(srcdir)/'`apop_vtables.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1145,7 +1082,6 @@ distdir: $(DISTFILES)
 dist-gzip: distdir
 	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
 	$(am__post_remove_distdir)
-
 dist-bzip2: distdir
 	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2
 	$(am__post_remove_distdir)
@@ -1153,7 +1089,6 @@ dist-bzip2: distdir
 dist-lzip: distdir
 	tardir=$(distdir) && $(am__tar) | lzip -c $${LZIP_OPT--9} >$(distdir).tar.lz
 	$(am__post_remove_distdir)
-
 dist-xz: distdir
 	tardir=$(distdir) && $(am__tar) | XZ_OPT=$${XZ_OPT--e} xz -c >$(distdir).tar.xz
 	$(am__post_remove_distdir)
@@ -1165,7 +1100,6 @@ dist-tarZ: distdir
 dist-shar: distdir
 	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
 	$(am__post_remove_distdir)
-
 dist-zip: distdir
 	-rm -f $(distdir).zip
 	zip -rq $(distdir).zip $(distdir)
@@ -1261,13 +1195,10 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA) $(HEADERS) \
-		config.h
-install-binPROGRAMS: install-libLTLIBRARIES
-
+all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1296,15 +1227,14 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
-	clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -1325,14 +1255,13 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-data-local install-includeHEADERS \
-	install-pkgconfigDATA
+install-data-am: install-includeHEADERS install-pkgconfigDATA
 
 install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-libLTLIBRARIES
+install-exec-am: install-libLTLIBRARIES
 
 install-html: install-html-recursive
 
@@ -1374,60 +1303,36 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
-	uninstall-libLTLIBRARIES uninstall-pkgconfigDATA
+uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-pkgconfigDATA
 
 .MAKE: $(am__recursive_targets) all install-am install-strip
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
-	am--refresh check check-am clean clean-binPROGRAMS \
-	clean-cscope clean-generic clean-libLTLIBRARIES clean-libtool \
+	am--refresh check check-am clean clean-cscope clean-generic \
+	clean-libLTLIBRARIES clean-libtool clean-noinstLTLIBRARIES \
 	cscope cscopelist-am ctags ctags-am dist dist-all dist-bzip2 \
 	dist-gzip dist-lzip dist-shar dist-tarZ dist-xz dist-zip \
 	distcheck distclean distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
-	info-am install install-am install-binPROGRAMS install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-includeHEADERS install-info install-info-am \
-	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
-	install-pkgconfigDATA install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-includeHEADERS \
+	info-am install install-am install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-includeHEADERS \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-man install-pdf install-pdf-am install-pkgconfigDATA \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-includeHEADERS \
 	uninstall-libLTLIBRARIES uninstall-pkgconfigDATA
 
 
-%.c: %.m4.c
-	m4 -P prep_variadics.m4 $< > $@
-
-%.h: %.m4.h
-	m4 -P prep_variadics.m4 $< > $@
-
-#The Doxygen documentation, which you'll have to call yourself (via make doc).
+apop_db.c: $(apop_db_INCLUDES)
 
 doc:
-	-rm tests/apophenia/*h
-	cat model/*.c transform/*.c | awk -f docs/make_model_doc.awk > docs/model_doc.h
-	doxygen docs/doxyconfig
-	cp docs/flake.gif docs/search.gif docs/right.png docs/down.png html/
-	@sed -i -e 's|Outlineheader \([^ ]*\)\(.*\)</p>|<h2><a class="anchor" name="\1"><div class="trigger" onClick="showBranch('\''\1d'\'');swapFolder('\''\1f'\'')"><img src="right.png" border="0" id="\1f" alt="pip">\2</div></a></h2><div class="branch" id="\1d">|' \
--e 's|endofdiv</p>|</div>|' \
--e 's|ALLBUTTON|<span class="trigger" onClick="showAll();"<a>Expand all </a></span> \| <span class="trigger" onClick="closeAll();"<a>Collapse all </a></span>|'  html/index.html html/outline.html
-	@sed -i -e '/index_x/s/- x -/ /' -e '/index_a/s/- a -/ /' -e '/Here is a list of all/d' -e '/<span>[a-z]<\/span><\/a><\/li>/d' html/globals.html
-	@sed -i -e '/div class="contents"/aSee also the <a class="el" href="group__models.html">models</a> and <a class="el" href="group__settings.html">settings</a> pages.' html/globals.html
-	@sed -i 's|<td width="100%"></td>||g' html/*html
-	@sed -i -f docs/edit_group html/group__models.html 
-	cp docs/*js html/
-	sudo cp man/man3/* /usr/share/man/man3/
-
-install-data-local:
-	@echo 
-	@echo "OK. If you'd like to generate documentation via Doxygen, run make doc; to test, run make check."
-	@echo 
+	-$(MAKE) -C docs doc
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

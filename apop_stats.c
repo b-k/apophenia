@@ -17,7 +17,7 @@ These functions simply take in a GSL vector and return its mean, variance, or ku
 
 \see db_moments
 
-For \ref apop_vector_var_m<tt>(vector, mean)</tt>, <tt>mean</tt> is the mean of the
+For <tt>apop_vector_var_m(vector, mean)</tt>, <tt>mean</tt> is the mean of the
 vector. This saves the trouble of re-calculating the mean if you've
 already done so. E.g.,
 
@@ -667,11 +667,6 @@ apop_data *apop_data_correlation(const apop_data *in){
     return out;
 }
 
-static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max){
-    for (int j=min; j< max; j++)
-        apop_data_set(a_row, 0, j-min, apop_data_get(p, i, j));
-}
-
 /** Kullback-Leibler divergence.
 
   This measure of the divergence of one distribution from another
@@ -682,9 +677,7 @@ static void get_one_row(apop_data *p, apop_data *a_row, int i, int min, int max)
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
-  \param rng    A \c gsl_rng. If NULL, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
-  \param top deprecated synonym for \c from.
-  \param bottom deprecated synonym for \c to.
+  \param rng    A \c gsl_rng. If \c NULL or number of threads is greater than 1, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
 
   This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
   or \ref apop_normal.
@@ -703,21 +696,19 @@ If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c
 \li This function uses the \ref designated syntax for inputs.
  */
 #ifdef APOP_NO_VARIADIC
-double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
+double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
 #else
 apop_varad_head(double, apop_kl_divergence){
-    apop_model * apop_varad_var(top, NULL);
-    apop_model * apop_varad_var(bottom, NULL);
-    apop_model * apop_varad_var(from, (top ? top : NULL));
-    apop_model * apop_varad_var(to, (bottom ? bottom : NULL));
-    Apop_assert(from, "The first model is NULL.");
-    Apop_assert(to, "The second model is NULL.");
+    apop_model * apop_varad_var(from, NULL);
+    apop_model * apop_varad_var(to, NULL);
+    Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
+    Apop_stopif(!to, return NAN, 0, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
     gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
-    return apop_kl_divergence_base(from, to, draw_ct, rng, top, bottom);
+    return apop_kl_divergence_base(from, to, draw_ct, rng);
 }
 
- double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom){
+ double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
 #endif
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
@@ -725,36 +716,33 @@ apop_varad_head(double, apop_kl_divergence){
         apop_data *p = from->data;
         apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
         Get_vmsizes(p); //maxsize
-        apop_data *a_row = apop_data_alloc(vsize, (msize1 ? 1 : 0), msize2);
-        for (int i=0; i < (vsize ? vsize : msize1); i++){
+        OMP_for_reduce (+:div,    int i=0; i < maxsize; i++){
             double pi = p->weights ? gsl_vector_get(p->weights, i)/settings->total_weight : 1./maxsize;
             if (!pi){
                 Apop_notify(3, "0\t--\t0");
                 continue;
             } //else:
-            get_one_row(p, a_row, i, firstcol, msize2);
-            double qi = apop_p(a_row, to);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
-                                                "from-distribution doesn't (which produces infinite divergence).");
+            double qi = apop_p(Apop_r(p, i), to);
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
+            Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "The PMFs aren't synced: from-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             div += pi * log(pi/qi);
         }
-        apop_data_free(a_row);
     } else { //the version with the RNG.
         Apop_stopif(!from->dsize, return GSL_NAN, 0, "I need to make random draws from the 'from' model, "
                                                      "but its dsize (draw size)==0. Returning NaN.");
-        apop_data *a_row = apop_data_alloc(1, from->dsize);
-        for (int i=0; i < draw_ct; i++){
-            apop_draw(a_row->matrix->data, rng, from);
-            double pi = apop_p(a_row, from);
-            double qi = apop_p(a_row, to);
-            Apop_assert_c(qi, GSL_NEGINF, 1, "The PMFs aren't synced: to-distribution has a value where "
-                                                "from-distribution doesn't (which produces infinite divergence).");
+        OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
+            double draw[from->dsize];
+            apop_draw(draw, apop_rng_get_thread(), from);
+            gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
+            double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
+            double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
+            Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
+                                                "to-distribution doesn't (which produces infinite divergence).");
             if (pi) //else add zero.
                 div += pi * log(pi/qi);
         }
-        apop_data_free(a_row);
     }
     return div;
 }

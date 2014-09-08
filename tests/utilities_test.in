@@ -1,0 +1,61 @@
+#!/bin/sh
+
+APOP_DATA_DIR=@abs_top_srcdir@/tests
+APOP_CMD_DIR=@top_builddir@/cmd
+
+BC=@BC@
+SQLITE3=@SQLITE3@
+
+APOP_PLOT_QUERY=${APOP_CMD_DIR}/apop_plot_query
+APOP_TEXT_TO_DB=${APOP_CMD_DIR}/apop_text_to_db
+APOP_DB_TO_CROSSTAB=${APOP_CMD_DIR}/apop_db_to_crosstab
+
+Diff(){
+return `echo 'out=0
+    if (('"$1 - $2"')^2 < 1/1000) out=1
+    print out' | bc -l`
+}
+
+read_faith(){
+    rm -f ff.db
+    if ! $APOP_TEXT_TO_DB ${APOP_DATA_DIR}/faith.data faith ff.db ;
+    then return 1;
+    elif ! sed '1,/id/d'  ${APOP_DATA_DIR}/faith.data |  $APOP_TEXT_TO_DB -N"number,len,delay" - faith2 ff.db
+    then return 2;
+    elif Diff `$APOP_PLOT_QUERY -n ff.db "select avg(eruptions) - avg(len)
+                from faith, faith2 where id==number" | sed '/avg/d'` 0
+    then return 3;
+    else return 0;
+    fi
+}
+
+crosstab(){
+    if [ ! `$APOP_DB_TO_CROSSTAB -eo ff.db "faith group by round(eruptions), waiting" waiting 'round(eruptions)' 'count(id)'|sed -n '/70/p' | cut -f 4` \
+        -eq `$SQLITE3 ff.db "select count(*) from faith where round(eruptions)=4 and waiting=70"` ]
+        then echo crosstabbing failed.; return 1;
+    elif [ ! `$APOP_DB_TO_CROSSTAB -d'|' ff.db "faith group by round(eruptions), waiting" waiting 'round(eruptions)' 'count(id)'|sed -n '/70/p' | cut -d'|' -f 4` \
+        -eq `$SQLITE3 ff.db "select count(*) from faith where round(eruptions)=4 and waiting=70"` ]
+        then echo crosstabbing with nonstandard delimiter failed.; return 2;
+    else
+        return 0;
+    fi
+}
+
+fixed_read(){
+    $APOP_TEXT_TO_DB -ed -f "3,6" -nc ${APOP_DATA_DIR}/test_data_fixed_width td td.db
+    $APOP_TEXT_TO_DB -ea -f "3,6" -nc ${APOP_DATA_DIR}/test_data_fixed_width td td.db
+    if Diff $($SQLITE3 td.db "select col_2 from td where rowid=4") 2.71828
+        then return 1
+        else return 0
+    fi
+}
+
+( #one big subshell, so exits don't kill the parent shell.
+if [ ! `echo 123 | $BC` ];
+    then echo "Missing POSIX-standard bc; exiting without running tests."; exit 0; #not a fail.
+elif ! read_faith
+    then echo "$APOP_TEXT_TO_DB test failed with code $?."; exit 1;
+elif ! fixed_read
+    then echo "read of fixed data failed with code $?."; exit 2;
+fi
+)

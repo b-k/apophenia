@@ -24,24 +24,24 @@ The library has been growing and improving since 2005, and has been downloaded o
 \li t-tests, F-tests, et cetera
 \li Several optimization methods available for your own new models
 \li It does <em>not</em> re-implement basic matrix operations or build yet another database
-engine. Instead, it builds upon the excellent <a href="http://sources.redhat.com/gsl/">GNU
+engine. Instead, it builds upon the excellent <a href="http://www.gnu.org/software/gsl/">GNU
 Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/mariaDB is also supported.
 
 For the full list, click the <a href="globals.html">index</a> link from the header.
 
-<h5><a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
+<h5><a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
 Most users will just want to download the latest packaged version linked from the <a
-href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download
+href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
 Apophenia here</a> header.
 
 Those who would like to work on a cutting-edge copy of the source code
 can get the latest version by cutting and pasting the following onto
 the command line. If you follow this route, be sure to read the development README in the
-<tt>Apophenia</tt> directory this command will create.
+<tt>apophenia</tt> directory this command will create.
 
 \code
-git clone https://github.com/b-k/Apophenia.git
+git clone https://github.com/b-k/apophenia.git
 \endcode
 
 <!--git clone git://apophenia.git.sourceforge.net/gitroot/apophenia/apophenia
@@ -66,7 +66,7 @@ itself. <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf"><em>A Usef
 Algebraic System of Statistical Models</em></a> (PDF) discusses some of the theoretical
 structures underlying the library.
 
-There is a <a href="https://github.com/b-k/Apophenia/wiki">wiki</a> with some convenience
+There is a <a href="https://github.com/b-k/apophenia/wiki">wiki</a> with some convenience
 functions, tips, and so on.
 
 <h5>Notable features</h5> 
@@ -133,7 +133,7 @@ wrapper</a> and <a href="https://r-forge.r-project.org/projects/rapophenia/">an 
 wrapper</a> which you could expand upon.
 
 If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
-<a href="https://github.com/b-k/Apophenia">GitHub</a> project.
+<a href="https://github.com/b-k/apophenia">GitHub</a> project.
 */
 
 /** \page eg Some examples
@@ -144,12 +144,6 @@ In the documentation for the \ref apop_ols model, a program to read in data and 
 From the \ref setup page, an example of gathering data from two processes, saving the input to a database, then doing a later analysis:
 
 \include draw_to_db.c
-
-A demonstration of \ref apop_plot_line_and_scatter . You'll need a
-database from the {\em Modeling with Data} sample code, at
-http://modelingwithdata.org/appendices.html.
-
-\include scatter.c
 
 In the \ref outline section on map/apply, a new \f$t\f$-test on every row, with all operations acting on entire rows rather than individual data points:
 
@@ -182,15 +176,15 @@ To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or h
 sudo apt-get install make gcc libgsl0-dev libsqlite3-dev
 \endcode
 
-or 
+or
 
 \code
 sudo yum install make gcc gsl-devel libsqlite3x-devel
 \endcode
 
-\li <a href="https://github.com/b-k/Apophenia/archive/pkg.zip">Download Apophenia here</a>. 
+\li <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>. 
 
-\li Once you have the library downloaded, compile it using 
+\li Once you have the library downloaded, compile it using
 
 \code
 tar xvzf apop*tgz && cd apophenia-0.999
@@ -357,7 +351,6 @@ Just a few page links:
 */
 
 /** \page outline An outline of the library
-  \anchor outline
 
 ALLBUTTON
 
@@ -662,7 +655,7 @@ initialization step to add a new model or other such parts.  A new \ref apop_mod
 has to conform to some rules if it is to play well with \ref apop_estimate,
 \ref apop_draw, and so forth.  See the notes at \ref modeldetails.  Once your new
 model or function is working, please post the code or a link to the code on the <a
-href="https://github.com/b-k/Apophenia/wiki">Apophenia wiki</a>.
+href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.
 
 endofdiv
 
@@ -797,9 +790,8 @@ apop_data *d = apop_query_to_data("select obs1, obs2, obs3 from a_table");
 Apop_col_t(d, "obs1", ov);
 double obs1_sum = apop_vector_sum(ov);
 
-//Get a row using its index as a vector
-Apop_matrix_row(d->matrix, 0, v);
-double first_row_sum = apop_vector_sum(v);
+//Get row zero of the data set's matrix as a vector; get its sum
+double first_row_sum = apop_vector_sum(Apop_rv(d, 0));
 
 //Get a row or rows as a standalone one-row apop_data set
 apop_data_print(Apop_r(d, 0));
@@ -970,7 +962,7 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 
 \include t_test_by_rows.c
 
-One more toy example, demonstrating the use of \ref Apop_map and \ref apop_map_sum :
+One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_sum :
 
 \include apop_map_row.c
 
@@ -1295,7 +1287,7 @@ A few functions have proven to be useful enough to be worth breaking out into th
 
 \li The \c apop_text_to_db command line utility is a wrapper for the \ref apop_text_to_db command.
 \li The \c apop_db_to_crosstab function is a wrapper for the \ref apop_db_to_crosstab function.
-\li For fans of Gnuplot, the \c apop_plot_query function produces a plot from the database. It is especially useful for histograms.
+\li For fans of Gnuplot, the \c apop_plot_query utility produces a plot from the database. It is especially useful for histograms, whcih are binned via \ref apop_data_to_bins before plotting.
 
 endofdiv
 
@@ -1608,8 +1600,6 @@ If you are producing a statistic that you know has a common form, like a central
 \li\ref apop_test_anova_independence()
 \li\ref apop_test_fisher_exact()
 \li\ref apop_test_kolmogorov()
-\li\ref apop_plot_qq()
-\li\ref apop_plot_triangle()
 \li\ref apop_estimate_coefficient_of_determination()
 \li\ref apop_estimate_r_squared()
 \li\ref apop_estimate_parameter_tests()
@@ -1785,7 +1775,7 @@ int main(){
                                 .more = &co, .more_size=sizeof(coeff_struct)};
 \endcode
 
-The <tt>.vsize=2</tt> specified that your parameters are a vector of size two, which
+The <tt>vsize=2</tt> specified that your parameters are a vector of size two, which
 means that <tt>in->parameters->vector->data</tt> is the list of <tt>double</tt>s that you
 should send to \c banana. The \c more element of the structure is designed to hold any
 arbitrary structure; if you use it, you will also need to use the \c more_size element, as
@@ -1890,7 +1880,7 @@ pipe or file as output and send all output there until further notice:
 \code
 apop_opts.output_type = 'p';
 apop_opts.output_pipe = popen("gnuplot", "w");
-apop_plot_lattice(...);
+apop_plot_lattice(...); //see https://github.com/b-k/Apophenia/wiki/gnuplot_snippets
 fclose(apop_opts.output_pipe);
 apop_opts.output_pipe = fopen("newfile", "w");
 apop_data_print(set1);
@@ -1932,8 +1922,6 @@ make sense). As above, you can pipe directly to Gnuplot or write to a file. Plea
 consider these to be deprecated, as there is better graphics support in the works.
 
 \li\ref apop_plot_histogram()
-\li\ref apop_plot_line_and_scatter()
-\li\ref apop_plot_lattice()
 
 endofdiv
 
@@ -2347,7 +2335,7 @@ describes a single observation or data point.
 See above for some examples of getting and setting individual elements.
 
 Also, \ref apop_data_get, \ref apop_data_set, and \ref apop_data_ptr consider the vector to be the -1st column,
-so using the data set in the figure, \ref apop_data_get<tt>(sample_set, .row=0, .col=-1) == 1</tt>.
+so using the data set in the figure, <tt>apop_data_get(sample_set, .row=0, .col=-1) == 1</tt>.
 
 \par Reading in data
 
@@ -2421,7 +2409,6 @@ which will be useful to you if only because it lists some of the functions that 
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
 \image html http://apophenia.info/structs.png
-\image latex structs.png
 
 
 All of the elements of the \ref apop_data structure are laid out at middle-left. You have
@@ -2591,7 +2578,7 @@ But if your model is not from the textbook, then you have the tools to apply the
 above three-step process directly. First I'll give an overview of the three steps,
 then another working example.
 
-\li Model parameters are a statistic, and you know that  \ref apop_estimate<tt>(your_data,
+\li Model parameters are a statistic, and you know that  <tt>apop_estimate(your_data,
         your_model)</tt> will output a model with a <tt>parameters</tt> element.
 \li The distribution of a parameter is also a model, so 
 \ref apop_parameter_model will also return an \ref apop_model.

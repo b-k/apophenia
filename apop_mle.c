@@ -98,7 +98,7 @@ static double one_d(double b, void *in){
 static void apop_internal_numerical_gradient(apop_fn_with_params ll, 
                             infostruct* info, gsl_vector *out, double delta){
     double result, err;
-    gsl_vector *beta = apop_data_pack(info->model->parameters, NULL, .all_pages='y');
+    gsl_vector *beta = apop_data_pack(info->model->parameters);
     infostruct i = *info;
     i.f = &ll;
     i.gp = &(grad_params){ .beta = gsl_vector_alloc(beta->size)};
@@ -318,7 +318,7 @@ static double negshell (const gsl_vector *beta, void * in){
     apop_data_unpack(beta, i->model->parameters);
 	if (i->use_constraint && i->model->constraint)
 		penalty	= i->model->constraint(i->data, i->model);
-    if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta, .all_pages='y');
+    if (penalty) apop_data_pack(i->model->parameters, (gsl_vector*) beta);
     double f_val = f(i->data, i->model);
     out = penalty - f_val; //negative llikelihood
     Apop_stopif(gsl_isnan(out), longjmp(i->bad_eval_jump, -1),
@@ -332,13 +332,11 @@ static double negshell (const gsl_vector *beta, void * in){
 
         if(gsl_isnan(this_ll)){
             Apop_stopif(!i->model->log_likelihood && penalty > f_val, i->want_info='n',
-                            1, "Your model's p evaluates as %g, and your penalty is %g, for an "
-                               "adjusted p of %g. Please make sure that this is positive, perhaps by "
-                               "rescaling your penalty. Continuing, but will not report covariance or other "
-                               "log likelihood-based statistics.\n", f_val, penalty, f_val-penalty);
+                            1, "Model's p=%g, penalty=%g, for a negative adjusted p=%g. "
+                               "Continuing, but can not report covariance or other "
+                               "log likelihood-based statistics.", f_val, penalty, f_val-penalty);
             Apop_stopif(1, apop_data_show(i->model->parameters); i->want_info='n',
-                        1, "NaN resulted from the following value tried by the maximum likelihood system. "
-                           "Tighten your constraint? Log of a negative p?\n");
+                        1, "NaN resulted from the following value tried by the maximum likelihood system.");
         }
         i->best_ll = GSL_MAX(i->best_ll, this_ll);
     }
@@ -362,7 +360,7 @@ Finally, reverse the sign, since the GSL is trying to minimize instead of maximi
     /* In all cases, negshell gets called first, so the constraint is already
        checked and beta nudged accordingly.
     if(i->model->constraint && i->model->constraint(i->data, i->model))
-            apop_data_pack(i->model->parameters, (gsl_vector *) beta, .all_pages='y'); */
+            apop_data_pack(i->model->parameters, (gsl_vector *) beta); */
     apop_score_type ms = apop_score_vtable_get(i->model);
     if (ms) ms(i->data, g, i->model);
     else {
@@ -391,12 +389,9 @@ static int setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
     return 0;
 }
 
-void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll){
+void add_info_criteria(apop_data *d, apop_model *m, apop_model *est, double ll, int param_ct){
     //Did the sending function save last value of f()?
     if (!ll) ll = apop_log_likelihood(d, m);
-
-    Get_vmsizes(est->parameters); //tsize
-    int param_ct = tsize;
 
     if (!est->info) est->info = apop_data_alloc();
     apop_data_add_named_elmt(est->info, "log likelihood", ll);
@@ -424,7 +419,7 @@ static void auxinfo(apop_data *params, infostruct *i, int status, double ll){
     }
     if (!est->info) est->info = apop_data_alloc();
     apop_data_add_named_elmt(est->info, "status", status);
-    if (i->want_info=='y') add_info_criteria(i->data, i->model, est, ll);
+    if (i->want_info=='y') add_info_criteria(i->data, i->model, est, ll, i->beta->size);
 }
 
 static void apop_maximum_likelihood_w_d(apop_data * data, infostruct *i){
@@ -560,6 +555,9 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
     apop_mle_settings *mp = Apop_settings_get_group(est, apop_mle);
     double tol = mp->dim_cycle_tolerance;
     int betasize = info.beta->size;
+    Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
+    gsl_vector *paramv = apop_data_pack(est->parameters);
+    apop_model *full_est = NULL; //an alias
     do {
         if (mp->verbose){
             if (!(iteration++))
@@ -567,7 +565,6 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
             printf("Iteration %i:\n", iteration);
         }
         last_ll = this_ll;
-        Apop_settings_set(est, apop_mle, dim_cycle_tolerance, 0);//so sub-estimations won't use this function.
         for (int i=0; i< betasize; i++){
             gsl_vector_set(info.beta, i, GSL_NAN);
             apop_data_unpack(info.beta, est->parameters);
@@ -575,14 +572,17 @@ static void dim_cycle(apop_data *d, apop_model *est, infostruct info){
             apop_prep(d, m_onedim);
             apop_maximum_likelihood(d, m_onedim);
             gsl_vector_set(info.beta, i, m_onedim->parameters->vector->data[0]);
-            apop_model *full_est = apop_model_fix_params_get_base(m_onedim);//points to est, but filled.
+            full_est = apop_model_fix_params_get_base(m_onedim);//points to est, but filled.
             this_ll = get_ll(d, full_est);//only used on the last iteration.
             if (mp->verbose) printf("(%i):%g\t", i, this_ll), fflush(NULL);
             apop_model_free(m_onedim);
         }
         if (mp->verbose) printf("\n");
+        apop_data_pack(full_est->parameters, paramv);
+        Apop_settings_add(est, apop_mle, starting_pt, paramv->data);
     } while (fabs(this_ll - last_ll) > tol);
     Apop_settings_set(est, apop_mle, dim_cycle_tolerance, tol);
+    gsl_vector_free(paramv);
 }
 
 void get_desires(apop_model *m, infostruct *info){
@@ -658,7 +658,7 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
                        .path           = mp->path,
                        .model          = dist};
     get_desires(dist, &info);
-    info.beta = apop_data_pack(dist->parameters, NULL, .all_pages='y');
+    info.beta = apop_data_pack(dist->parameters);
     if (info.path) *info.path = apop_data_alloc();
     if (setup_starting_point(mp, info.beta)) return;
     info.model->data = data;
@@ -740,12 +740,12 @@ apop_varad_head(apop_model *, apop_estimate_restart){
         memcpy(prm0->starting_pt, prm->starting_pt, sizeof(double)*size);
     }
     else if (!strcmp(starting_pt, "np")){
-        v = apop_data_pack(copy->parameters, NULL, .all_pages='y'); 
+        v = apop_data_pack(copy->parameters); 
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
     else if (e->parameters){//"ep" or default.
-        v = apop_data_pack(e->parameters, NULL, .all_pages='y'); 
+        v = apop_data_pack(e->parameters); 
         prm->starting_pt = malloc(sizeof(double)*v->size);
         memcpy(prm->starting_pt, v->data, sizeof(double)*v->size);
     }
@@ -796,7 +796,7 @@ static double annealing_distance(void *xin, void *yin) {
 static void annealing_check_constraint(infostruct *i){
     apop_data_unpack(i->beta, i->model->parameters);
     if (i->model->constraint && i->model->constraint(i->data, i->model))
-        apop_data_pack(i->model->parameters, i->beta, .all_pages='y');
+        apop_data_pack(i->model->parameters, i->beta);
 }
 
 static void annealing_step(const gsl_rng * r, void *in, double step_size){
@@ -868,7 +868,7 @@ static void apop_annealing(infostruct *i){
                          .t_min         = mp->t_min};
     gsl_rng *r = mp->rng ? mp->rng : apop_rng_get_thread();
     //these two are done at apop_maximum_likelihood:
-    //i->beta = apop_data_pack(ep->parameters, NULL, .all_pages='y');
+    //i->beta = apop_data_pack(ep->parameters);
     //setup_starting_point(mp, i->beta);
     int betasize = i->beta->size;
     int apopstatus = -1;

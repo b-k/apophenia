@@ -8,6 +8,11 @@ https://github.com/b-k/Apophenia/commits/master
 !!Big.
 ]
 
+    August 2014
+** default for apop_data_pack is .all_pages='y' (was 'n').
+** remove apop_plot_lattice, apop_plot_triangle, apop_plot_line_and_scatter, apop_plot_qq.
+Find them at https://github.com/b-k/apophenia/wiki/gnuplot_snippets .
+
 	March 2014
 --Command-line tools print help should a user add a --help option.
 

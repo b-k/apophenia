@@ -1,8 +1,14 @@
 #include <apop.h>
 
+#ifdef Datadir
+#define DATAFILE Datadir "/" "data"
+#else
+#define DATAFILE "data"
+#endif
+
 int main(){
-    apop_table_exists("data", 'd');
-    apop_data *d = apop_text_to_data("data");
+    apop_table_exists( DATAFILE , 'd');
+    apop_data *d = apop_text_to_data( DATAFILE );
   
     //tally row zero of the data set's matrix by viewing it as a vector:
     gsl_vector *one_row = Apop_rv(d, 0);

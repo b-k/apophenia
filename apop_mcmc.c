@@ -309,7 +309,7 @@ apop_varad_head(apop_model *, apop_model_metropolis){
     bool m_is_a_copy = 0;
     m = maybe_prep(d, m, &m_is_a_copy);
     s->last_ll = GSL_NEGINF;
-    gsl_vector * drawv = apop_data_pack(m->parameters, .all_pages='y');
+    gsl_vector * drawv = apop_data_pack(m->parameters);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
                 1, "Burn-in should be a fraction of the number of periods, "
                    "not a whole number of periods. Rescaling to burnin=%g."

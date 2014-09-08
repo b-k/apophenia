@@ -200,7 +200,9 @@ apop_varad_head(apop_model *, apop_update){
 
     bool ll_is_a_copy = false;
     likelihood = maybe_prep(data, likelihood, &ll_is_a_copy); //in apop_mcmc.c
-    Get_vmsizes(likelihood->parameters) //vsize, msize1, msize2, tsize
+    gsl_vector *pack = apop_data_pack(likelihood->parameters);
+    int tsize = pack->size;
+    gsl_vector_free(pack);
     Apop_stopif(prior->dsize != tsize, 
                 return apop_model_copy(&(apop_model){.error='d'}),
                 0, "Size of a draw from the prior does not match "
@@ -228,17 +230,17 @@ apop_varad_head(apop_model *, apop_update){
 
     if (!s) s = Apop_model_add_group(prior, apop_mcmc);
 
-    double *draw = malloc(sizeof(double)* (tsize));
+    gsl_vector *draw = gsl_vector_alloc(tsize);
     apop_data *out = apop_data_alloc(s->periods, tsize);
     out->weights = gsl_vector_alloc(s->periods);
 
-    apop_draw(draw, rng, prior); //set starting point.
-    apop_data_fill_base(likelihood->parameters, draw);
+    apop_draw(draw->data, rng, prior); //set starting point.
+    apop_data_unpack(draw, likelihood->parameters);
 
     for (int i=0; i< s->periods; i++){
         newdraw:
-        apop_draw(draw, rng, prior);
-        apop_data_fill_base(likelihood->parameters, draw);
+        apop_draw(draw->data, rng, prior);
+        apop_data_unpack(draw, likelihood->parameters);
         long double p = apop_p(data, likelihood);
 
         Apop_notify(3, "p=%Lg for parameters:\t", p);
@@ -253,7 +255,7 @@ apop_varad_head(apop_model *, apop_update){
         gsl_vector_set(out->weights, i, p);
     }
     apop_model *outp = apop_estimate(out, apop_pmf);
-    free(draw);
+    gsl_vector_free(draw);
     if (ll_is_a_copy) apop_model_free(likelihood);
     return outp;
 }

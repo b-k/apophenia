@@ -26,6 +26,12 @@ because it reported an error of 1e-5 when it should have been 1e-8. There is alw
 room for better numeric precision; we all know this without reminders from the
 post-install tests.  */
 
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #define _GNU_SOURCE
 #include <apop.h>
 #include <unistd.h>
@@ -570,7 +576,7 @@ void test_inversion(gsl_rng *r){
 
 void test_summarize(){
     apop_table_exists("td", 'd');
-    apop_text_to_db("test_data", .has_row_names= 0,1, .tabname = "td");
+    apop_text_to_db( DATADIR "/" "test_data" , .has_row_names= 0,1, .tabname = "td");
     gsl_matrix *m = apop_query_to_matrix("select * from td");
     apop_data *s = apop_data_summarize(apop_matrix_to_data(m));
     gsl_matrix_free(m);
@@ -583,8 +589,8 @@ void test_summarize(){
 }
 
 void test_dot(){
-apop_data *d1   = apop_text_to_data(.text_file="test_data2",0,1); // 55 x 2
-apop_data *d2   = apop_text_to_data("test_data2"); // 55 x 2
+apop_data *d1   = apop_text_to_data(.text_file= DATADIR "/" "test_data2" ,0,1); // 55 x 2
+apop_data *d2   = apop_text_to_data( DATADIR "/" "test_data2" ); // 55 x 2
 apop_data *d3   = apop_dot(d1, d2, .form2='t');
 gsl_vector v1 = gsl_matrix_row(d1->matrix, 0).vector;
 apop_data *dv   = apop_vector_to_data(&v1); // 2 x 1
@@ -951,7 +957,7 @@ static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
 }
 
 void dummies_and_factors(){
-    apop_text_to_db("data-mixed", "genes");
+    apop_text_to_db( DATADIR "/" "data-mixed" , "genes");
     apop_data *d = apop_query_to_mixed_data("mmmt", "select aa, bb, 1, a_allele from genes");
     apop_data *dum = apop_data_to_dummies(d, 0, 't', 0);
     check_for_dummies(d, dum, 0);
@@ -983,7 +989,7 @@ void test_vector_moving_average(){
 }
 
 void test_transpose(){
-    apop_data *t = apop_text_to_data("test_data", 0, 1);
+    apop_data *t = apop_text_to_data( DATADIR "/" "test_data" , 0, 1);
     apop_data *tt = apop_data_transpose(t, .inplace='n');
     assert(apop_data_get(tt, 0, 3) == 9);
     assert(apop_data_get(tt, 1, 0) == 4);
@@ -1331,12 +1337,6 @@ void test_ols_offset(gsl_rng *r){
                           if (verbose) printf("\nPASS.  ");} 
 
 int main(int argc, char **argv){
-    char *srcdir = getenv("srcdir");
-    if (srcdir){ //if defined, this is probably via an automake rule.
-        char buf[10000]; 
-        if (strcmp(srcdir, ".") && strcmp(srcdir, getcwd(buf, 10000)))
-            apop_system("cp %s/*dat* %s/printing_sample .", srcdir, srcdir); //needed for make distcheck. No-op in many cases.
-    }
     int  slow_tests = 0;
     apop_opts.thread_count = 2;
     char c, opts[]  = "sqt:";
@@ -1349,7 +1349,7 @@ int main(int argc, char **argv){
 
     //set up some global or common variables
     gsl_rng *r = apop_rng_alloc(8); 
-    apop_data *d = apop_text_to_data("test_data2",0,1);
+    apop_data *d = apop_text_to_data( DATADIR "/" "test_data2" ,0,1);
     apop_model *an_ols_model = apop_model_copy(apop_ols);
     Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, an_ols_model);

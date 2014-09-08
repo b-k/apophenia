@@ -1,0 +1,15 @@
+	   mean		   var
+process 1: 0.259623	0.051570
+process 2: 0.497805	0.083759
+
+t test
+1st avg: 0.259623; 1st std dev: 0.227089; 1st count: 1000.
+2st avg: 0.497805; 2st std dev: 0.289412; 2nd count: 1000.
+t-statistic: -20.4642.
+  mean left - right   -0.238181
+        t statistic    -20.4642
+                 df        1998
+    p value, 1 tail 5.89207e-85
+ confidence, 1 tail           1
+    p value, 2 tail           0
+ confidence, 2 tail           1

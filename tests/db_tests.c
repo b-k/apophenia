@@ -18,6 +18,12 @@ or at the command line:
 export APOP_DB_ENGINE=mysql
 */
 
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 #include <unistd.h>
 int verbose = 1;
@@ -27,7 +33,7 @@ int verbose = 1;
 void test_data_to_db() {
   int i, j;
     if (!apop_table_exists("snps"))
-        apop_text_to_db("data-mixed", "snps");
+        apop_text_to_db( DATADIR "/" "data-mixed" , "snps");
     apop_data *d = apop_query_to_mixed_data("tvttmmmt", "select * from snps");
     apop_data_print(d, "snps2", .output_type='d');
     apop_data *d2 = apop_query_to_mixed_data("vmmmtttt", "select * from snps2");
@@ -71,11 +77,11 @@ void db_to_text(){
     apop_db_open(NULL);
     if (!apop_table_exists("d")){
         apop_data *field_params = apop_text_alloc(NULL,2,2);
-        apop_text_fill(field_params, 
+        apop_text_fill(field_params,
                 "[ab][ab]", "numeric",
                 ".*",     apop_opts.db_engine =='s' ? "character": "varchar(20)"
                 );
-        apop_text_to_db("data-mixed", "d", 0, 1, NULL, .field_params=field_params);
+        apop_text_to_db( DATADIR "/" "data-mixed" , "d", 0, 1, NULL, .field_params=field_params);
     }
     apop_data *d = apop_query_to_mixed_data ("tmttmmmt", "select * from d");
     int b_allele_col = apop_name_find(d->names, "b_allele", 't');
@@ -145,7 +151,7 @@ void test_nan_data(){
     apop_table_exists("nandata", 'd');
     apop_table_exists("fw", 'd');
     apop_table_exists("fww", 'd');
-    apop_text_to_db("test_data_nans", "nandata");
+    apop_text_to_db( DATADIR "/" "test_data_nans" , "nandata");
     strcpy(apop_opts.db_name_column, "head");
     apop_opts.nan_string = "nan";
     apop_data *d = apop_query_to_data("select * from nandata");
@@ -157,7 +163,7 @@ void test_nan_data(){
     assert(!apop_data_get(d2, .rowname="fourth", .colname="b"));
     apop_data_free(d2);
     apop_opts.nan_string = "NaN";
-    
+
     //while we're here, test querying just names & no data.
     apop_data *justnames = apop_query_to_data("select head from nandata");
     assert(justnames->names->rowct == 4);
@@ -165,12 +171,12 @@ void test_nan_data(){
     apop_data_free(justnames);
 
     //Oh, and let's test fixed-width inputs.
-    apop_text_to_db("test_data_fixed_width", .tabname="fw", .has_col_names='n', .field_ends=(int[]){3,6});
+    apop_text_to_db( DATADIR "/" "test_data_fixed_width" , .tabname="fw", .has_col_names='n', .field_ends=(int[]){3,6});
     assert(apop_query_to_float("select col_2 from fw")==3.14159);
     apop_data *t=apop_query_to_text("select col_1 from fw");
     assert(!strcmp(*t->text[0], "A#C"));
     assert(!strcmp(*t->text[1], " BC"));
-    apop_text_to_db("test_data_fixed_width", .tabname="fww", .field_names=(char*[]){"number", "text", "foat"}, .field_ends=(int[]){3,6});
+    apop_text_to_db( DATADIR "/" "test_data_fixed_width" , .tabname="fww", .field_names=(char*[]){"number", "text", "foat"}, .field_ends=(int[]){3,6});
     assert(apop_query_to_float("select number from fww where number<0")==-21);
     assert(apop_query_to_float("select foat from fww where text=' BC'")==2.71828);
     unlink("nantest");
@@ -216,7 +222,7 @@ apop_system("cp %s xxx", outfile);
     strcpy(apop_opts.output_delimiter, "\t");
     apop_vector_print(d->weights, .output_type='p', .output_pipe=f);
     fclose(f);
-    int has_diffs = apop_system("diff -b printing_sample %s", outfile);
+    int has_diffs = apop_system( "diff -b %s/printing_sample %s", DATADIR, outfile);
     assert(!has_diffs);
     //apop_system("rm %s", outfile);
     unlink(outfile);
@@ -226,7 +232,7 @@ apop_system("cp %s xxx", outfile);
 void test_crosstabbing() {
     apop_db_close(); //gotta test it somewhere
     if (!apop_table_exists("snps"))
-        apop_text_to_db("data-mixed", "snps", 0, 1);
+        apop_text_to_db( DATADIR "/" "data-mixed" , "snps", 0, 1);
     apop_table_exists("snp_ct", 'd');
     apop_query("create table snp_ct as "
                  " select a_allele, b_allele, count(*) as ct "

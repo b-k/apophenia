@@ -554,43 +554,11 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
         // Some output routines
 
 #ifdef APOP_NO_VARIADIC
- void apop_plot_line_and_scatter(apop_data *data, apop_model *est, char const * output_name, FILE *output_pipe, char output_type, char output_append) ;
-#else
- void apop_plot_line_and_scatter_base(apop_data *data, apop_model *est, char const * output_name, FILE *output_pipe, char output_type, char output_append) ;
- apop_varad_declare(void, apop_plot_line_and_scatter, apop_data *data; apop_model *est; char const * output_name; FILE *output_pipe; char output_type; char output_append);
-#define apop_plot_line_and_scatter(...) apop_varad_link(apop_plot_line_and_scatter, __VA_ARGS__)
-#endif
-
-#ifdef APOP_NO_VARIADIC
  void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
 #else
  void apop_plot_histogram_base(gsl_vector *data, size_t bin_count, char *with, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
  apop_varad_declare(void, apop_plot_histogram, gsl_vector *data; size_t bin_count; char *with; char const *output_name; FILE *output_pipe; char output_type; char output_append);
 #define apop_plot_histogram(...) apop_varad_link(apop_plot_histogram, __VA_ARGS__)
-#endif
-
-#ifdef APOP_NO_VARIADIC
- void apop_plot_lattice(const apop_data *d, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
-#else
- void apop_plot_lattice_base(const apop_data *d, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
- apop_varad_declare(void, apop_plot_lattice, const apop_data *d; char const *output_name; FILE *output_pipe; char output_type; char output_append);
-#define apop_plot_lattice(...) apop_varad_link(apop_plot_lattice, __VA_ARGS__)
-#endif
-
-#ifdef APOP_NO_VARIADIC
- void apop_plot_qq(gsl_vector *v, apop_model *m, char const *output_name, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r) ;
-#else
- void apop_plot_qq_base(gsl_vector *v, apop_model *m, char const *output_name, FILE *output_pipe, char output_type, char output_append, size_t bins, gsl_rng *r) ;
- apop_varad_declare(void, apop_plot_qq, gsl_vector *v; apop_model *m; char const *output_name; FILE *output_pipe; char output_type; char output_append; size_t bins; gsl_rng *r);
-#define apop_plot_qq(...) apop_varad_link(apop_plot_qq, __VA_ARGS__)
-#endif
-
-#ifdef APOP_NO_VARIADIC
- void apop_plot_triangle(apop_data *in, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
-#else
- void apop_plot_triangle_base(apop_data *in, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
- apop_varad_declare(void, apop_plot_triangle, apop_data *in; char const *output_name; FILE *output_pipe; char output_type; char output_append);
-#define apop_plot_triangle(...) apop_varad_link(apop_plot_triangle, __VA_ARGS__)
 #endif
 
 
@@ -764,10 +732,10 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 
 
 #ifdef APOP_NO_VARIADIC
- double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom) ;
+ double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
 #else
- double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng, apop_model *top, apop_model *bottom) ;
- apop_varad_declare(double, apop_kl_divergence, apop_model *from; apop_model *to; int draw_ct; gsl_rng *rng; apop_model *top; apop_model *bottom);
+ double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
+ apop_varad_declare(double, apop_kl_divergence, apop_model *from; apop_model *to; int draw_ct; gsl_rng *rng);
 #define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)
 #endif
 
@@ -1264,7 +1232,7 @@ gsl_vector * v = &( apop_vv_##v );
 /* Not (yet) for public use. \hideinitializer */
 #define apop_subvector(v, start, len) (                                          \
         ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
-        : &(gsl_vector){.size=(len), .stride=1, .data=(v)->data+(start)})
+        : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
 
 /* Not (yet) for public use. \hideinitializer */
 #define apop_mrow(m, row) (                                       \
@@ -1404,14 +1372,14 @@ double apop_vector_skew(const gsl_vector *in);
 
 */
 
-/** \def Apop_subm(m, srow, scol, nrow, ncol)
+/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
 Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
 
- \param m The root matrix
+ \param data_to_view The root matrix
  \param srow the first row (in the root matrix) of the top of the submatrix
  \param scol the first column (in the root matrix) of the left edge of the submatrix
- \param nrow number of rows in the submatrix
- \param ncol number of columns in the submatrix
+ \param nrows number of rows in the submatrix
+ \param ncols number of columns in the submatrix
 \hideinitializer */
 
 /** \def Apop_row_t(m, row_name, v)
@@ -1461,7 +1429,7 @@ The view expires as soon as the program leaves the current scope (like with the 
 
 /** \def Apop_rv(d, row)
 A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
-row \c row. The view is a \ref gsl_vector set.
+row \c row. The view is a \c gsl_vector set.
 
 \code
 gsl_vector *v = Apop_rv(your_data, i);
@@ -1476,7 +1444,7 @@ The view is automatically allocated, and disappears as soon as the program leave
 
 /** \def Apop_cv(d, col)
 A macro to generate a temporary one-column view of the matrix in an \ref apop_data
-set \c d, pulling out only column \c col. The view is a \ref gsl_vector set.
+set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
 
 As usual, column -1 is the vector element of the \ref apop_data set.
 
@@ -1543,9 +1511,6 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...) __attribute__ ((format 
 double apop_query_to_float(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 
 int apop_data_to_db(const apop_data *set, const char *tabname, char);
-
-double apop_db_t_test(char * tab1, char *col1, char *tab2, char *col2); //deprecated
-double apop_db_paired_t_test(char * tab1, char *col1, char *col2); //deprecated
 
 
         //////Settings groups
