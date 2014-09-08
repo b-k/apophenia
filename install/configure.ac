@@ -3,7 +3,7 @@
 m4_define([m4_apop_version], [m4_esyscmd_s(date +%Y%m%d)]) #will switch to this soon.
 
 AC_PREREQ(2.60)
-AC_INIT([apophenia], [0.999a], [fluffmail@f-m.fm])
+AC_INIT([apophenia], [0.999b], [fluffmail@f-m.fm])
 AM_SILENT_RULES([yes])
 AC_CONFIG_SRCDIR([apop_arms.c])
 AC_CONFIG_AUX_DIR([build-aux])

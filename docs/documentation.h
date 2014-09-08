@@ -790,9 +790,8 @@ apop_data *d = apop_query_to_data("select obs1, obs2, obs3 from a_table");
 Apop_col_t(d, "obs1", ov);
 double obs1_sum = apop_vector_sum(ov);
 
-//Get a row using its index as a vector
-Apop_matrix_row(d->matrix, 0, v);
-double first_row_sum = apop_vector_sum(v);
+//Get row zero of the data set's matrix as a vector; get its sum
+double first_row_sum = apop_vector_sum(Apop_rv(d, 0));
 
 //Get a row or rows as a standalone one-row apop_data set
 apop_data_print(Apop_r(d, 0));
@@ -1288,7 +1287,7 @@ A few functions have proven to be useful enough to be worth breaking out into th
 
 \li The \c apop_text_to_db command line utility is a wrapper for the \ref apop_text_to_db command.
 \li The \c apop_db_to_crosstab function is a wrapper for the \ref apop_db_to_crosstab function.
-\li For fans of Gnuplot, the \c apop_plot_query function produces a plot from the database. It is especially useful for histograms.
+\li For fans of Gnuplot, the \c apop_plot_query utility produces a plot from the database. It is especially useful for histograms, whcih are binned via \ref apop_data_to_bins before plotting.
 
 endofdiv
 
