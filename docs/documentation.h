@@ -2409,7 +2409,8 @@ relate. It is taken from this
 which will be useful to you if only because it lists some of the functions that act on
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
-\image html http://apophenia.info/structs.png
+\image html structs.png
+\image latex structs.png
 
 
 All of the elements of the \ref apop_data structure are laid out at middle-left. You have

@@ -20,7 +20,8 @@ apophenia_IMAGES = \
 
 apophenia_IMAGES_EXTRA = \
 	triangle.png \
-	model.png
+	model.png \
+	structs.png
 
 apophenia_JS = \
 	tree.js
