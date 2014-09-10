@@ -1917,12 +1917,6 @@ pclose(lesspipe);
 \li\ref apop_vector_print()
 \li\ref apop_data_show() : alias for \ref apop_data_print limited to \c stdout.
 
-The plot functions produce output for Gnuplot (so output type = \c 'd' again does not
-make sense). As above, you can pipe directly to Gnuplot or write to a file. Please
-consider these to be deprecated, as there is better graphics support in the works.
-
-\li\ref apop_plot_histogram()
-
 endofdiv
 
 Outlineheader moreasst Assorted
