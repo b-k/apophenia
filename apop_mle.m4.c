@@ -249,7 +249,8 @@ APOP_VAR_ENDHEAD
         printf("The estimated Hessian:\n");
         apop_data_show(hessian);
     }
-    apop_data *out = apop_matrix_to_data(apop_matrix_inverse(hessian->matrix));
+    apop_data *out = apop_data_alloc();
+    out->matrix = apop_matrix_inverse(hessian->matrix);
     gsl_matrix_scale(out->matrix, -1);
     if (hessian->names->row){
         apop_name_stack(out->names, hessian->names, 'r');

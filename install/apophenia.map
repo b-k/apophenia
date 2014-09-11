@@ -11,8 +11,6 @@ apop_name_copy;
 apop_name_find;
 apop_data_add_names_base;
 apop_data_free_base;
-apop_matrix_to_data;
-apop_vector_to_data;
 apop_data_alloc_base;
 variadic_apop_data_alloc;
 apop_data_calloc_base;

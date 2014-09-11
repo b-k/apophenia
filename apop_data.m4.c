@@ -108,49 +108,6 @@ APOP_VAR_ENDHEAD
     return setme;
 }
 
-/** Deprecated; please do not use. Just use a compound literal:
-
-\code
-//Given:
-gsl_vector *v;
-gsl_matrix *m;
-
-// Then this form wraps the elements into \ref apop_data structs. Note that
-// these are not pointers: they're automatically allocated and therefore
-// the extra memory use for the wrapper is cleaned up on exit from scope.
-
-apop_data *dv = &(apop_data){.vector=v};
-apop_data *dm = &(apop_data){.matrix=m};
-
-apop_data *v_dot_m = apop_dot(dv, dm);
-
-//Here is a macro to hide C's ugliness:
-#define As_data(...) (&(apop_data){__VA_ARGS__})
-
-apop_data *v_dot_m2 = apop_dot(As_data(.vector=v), As_data(.matrix=m));
-
-//The wrapped object is an automatically-allocated structure pointing to the
-//original data. If it needs to persist or be separate from the original,
-//make a copy:
-apop_data *dm_copy = apop_data_copy(As_data(.vector=v, .matrix=m));
-\endcode
-*/
-apop_data * apop_matrix_to_data(gsl_matrix *m){
-    Apop_stopif(!m, return apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
-    apop_data *setme = apop_data_alloc();
-    setme->matrix = m;
-    return setme;
-}
-
-/** Deprecated; please do not use. Just use a compound literal, as in the code sample in
-  the documentation for \ref apop_matrix_to_data. */
-apop_data * apop_vector_to_data(gsl_vector *v){
-    Apop_stopif(!v, return apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
-    apop_data *setme = apop_data_alloc();
-    setme->vector = v;
-    return setme;
-}
-
 /*For a touch of space saving, blank strings in a text grid 
 all point to the same nul string. */
 char *apop_nul_string = "";
