@@ -406,6 +406,72 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga7d33309b547d525c7325c062f4bc774f"></a><!-- doxytag: member="model_doc.h::apop_cross" ref="ga7d33309b547d525c7325c062f4bc774f" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">apop_model <a class="el" href="group__models.html#ga7d33309b547d525c7325c062f4bc774f">apop_cross</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A cross of models.</p>
+<p>For the case when you need to bundle two uncorrelated models into one larger model. For example, the prior for a multivariate normal (whose parameters are a vector of means and a covariance matrix) is a Multivariate Normal-Wishart pair. </p>
+<dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774fa47a9e46902e09fba9b17319507c11c98"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga7d33309b547d525c7325c062f4bc774fa47a9e46902e09fba9b17319507c11c98" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
+<table  cellpadding="3px">
+<tr>
+<td><table  class="memproto">
+<tr>
+<td class="altcolor">Estimation </td><td class="altcolor">M  </td></tr>
+<tr>
+<td class="altcolor">Prob. </td><td class="altcolor">M  </td></tr>
+<tr>
+<td class="altcolor">Log likelihood </td><td class="altcolor">M  </td></tr>
+<tr>
+<td class="altcolor">RNG </td><td class="altcolor">M  </td></tr>
+</table>
+</td><td><table  class="memproto">
+<tr>
+<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
+<tr>
+<td class="memitem">CDF </td><td class="memitem">D  </td></tr>
+<tr>
+<td class="memitem">Score </td><td class="memitem">D  </td></tr>
+<tr>
+<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
+</table>
+</td></tr>
+</table>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774faffd081bcb4368f169538c14bebd4020c"></a><!-- doxytag: member="Name" ref="gga7d33309b547d525c7325c062f4bc774faffd081bcb4368f169538c14bebd4020c" args="" -->Name</em>&nbsp;</td><td>
+<p><code><a class="el" href="apop__internal_8h_source.html">apop_internal.h</a></code> </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774fa2e767a027546109b44c899bab669101c"></a><!-- doxytag: member="Input format" ref="gga7d33309b547d525c7325c062f4bc774fa2e767a027546109b44c899bab669101c" args="" -->Input format</em>&nbsp;</td><td>
+<p>There are two means of handling the input format. If the settings group attached to the data set has a non-<code>NULL</code> <code>splitpage</code> element, then append the second data set as an additional page to the first data set, and name the second set with the name you listed in <code>splitpage</code>; see the example.</p>
+<p>If <code>splitpage</code> is <code>NULL</code>, then I will send the same data set to both models. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774fadcb38d478c57f0423f91f0f87a1ea029"></a><!-- doxytag: member="Parameter format" ref="gga7d33309b547d525c7325c062f4bc774fadcb38d478c57f0423f91f0f87a1ea029" args="" -->Parameter format</em>&nbsp;</td><td>
+<p>currently <code>NULL</code>; check the sub-models for their parameters. </p>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774fa6054b43b99e4a02f9b7665ede0cb2d67"></a><!-- doxytag: member="Post-estimate" ref="gga7d33309b547d525c7325c062f4bc774fa6054b43b99e4a02f9b7665ede0cb2d67" args="" -->Post-estimate</em>&nbsp;</td><td>
+<table class="doxtable">
+<tr>
+<td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
+<tr>
+<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">See parameter format.  </td></tr>
+</table>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="gga7d33309b547d525c7325c062f4bc774fac0aad2bd7945fa65ed8962b6732e706e"></a><!-- doxytag: member="Settings" ref="gga7d33309b547d525c7325c062f4bc774fac0aad2bd7945fa65ed8962b6732e706e" args="" -->Settings</em>&nbsp;</td><td>
+<p><a class="el" href="structapop__cross__settings.html">apop_cross_settings</a> </p>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="gaedd07c678027bea683f48aa8617c4b89"></a><!-- doxytag: member="model_doc.h::apop_dcomposition" ref="gaedd07c678027bea683f48aa8617c4b89" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -487,7 +553,7 @@ Functions</h2></td></tr>
 <p>The log likelihood works by using the <code>base_model</code> log likelihood, and then scaling it based on the part of the base model's density that is within the constraint. If you have an easy means of specifying what that density is, please do, as in the example. If you do not, the log likelihood will calculate it by making <code>draw_ct</code> random draws from the base model and checking whether they are in or out of the constraint. Because this default method is stochastic, there is some loss of precision, and conjugate gradient methods may get confused.</p>
 <p>Here is an example that makes a few draws and estimations from data-constrained models. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a47a9e46902e09fba9b17319507c11c98"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaa58cece77dea73979ea15d64ea11b049a47a9e46902e09fba9b17319507c11c98" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a10ab961e00a8a4104cb02b1a9ac039a7"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaa58cece77dea73979ea15d64ea11b049a10ab961e00a8a4104cb02b1a9ac039a7" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
 <tr>
 <td><table  class="memproto">
@@ -513,16 +579,16 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049affd081bcb4368f169538c14bebd4020c"></a><!-- doxytag: member="Name" ref="ggaa58cece77dea73979ea15d64ea11b049affd081bcb4368f169538c14bebd4020c" args="" -->Name</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a8340de4a3c0c8d18b863dfa74bd6a840"></a><!-- doxytag: member="Name" ref="ggaa58cece77dea73979ea15d64ea11b049a8340de4a3c0c8d18b863dfa74bd6a840" args="" -->Name</em>&nbsp;</td><td>
 <p><code>Data-constrained model</code> </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a2e767a027546109b44c899bab669101c"></a><!-- doxytag: member="Input format" ref="ggaa58cece77dea73979ea15d64ea11b049a2e767a027546109b44c899bab669101c" args="" -->Input format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a4d4c552d34250864aee09c19751ef626"></a><!-- doxytag: member="Input format" ref="ggaa58cece77dea73979ea15d64ea11b049a4d4c552d34250864aee09c19751ef626" args="" -->Input format</em>&nbsp;</td><td>
 <p>That of the base model. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049adcb38d478c57f0423f91f0f87a1ea029"></a><!-- doxytag: member="Parameter format" ref="ggaa58cece77dea73979ea15d64ea11b049adcb38d478c57f0423f91f0f87a1ea029" args="" -->Parameter format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a2f3f79a4405bb7bd324ff24d16da91fd"></a><!-- doxytag: member="Parameter format" ref="ggaa58cece77dea73979ea15d64ea11b049a2f3f79a4405bb7bd324ff24d16da91fd" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>That of the base model. In fact, the <code>parameters</code> element is a pointer to the base model <code>parameters</code>, so both are modified simultaneously. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a6054b43b99e4a02f9b7665ede0cb2d67"></a><!-- doxytag: member="Post-estimate" ref="ggaa58cece77dea73979ea15d64ea11b049a6054b43b99e4a02f9b7665ede0cb2d67" args="" -->Post-estimate</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049acc7686fb2b6e9a092552e86be416b414"></a><!-- doxytag: member="Post-estimate" ref="ggaa58cece77dea73979ea15d64ea11b049acc7686fb2b6e9a092552e86be416b414" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
@@ -530,13 +596,13 @@ Functions</h2></td></tr>
 <td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">See parameter format.  </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a38c95407fb642dcd3af88742320657b2"></a><!-- doxytag: member="RNG" ref="ggaa58cece77dea73979ea15d64ea11b049a38c95407fb642dcd3af88742320657b2" args="" -->RNG</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a6ddfb70363d00ec1b35720702499b1ea"></a><!-- doxytag: member="RNG" ref="ggaa58cece77dea73979ea15d64ea11b049a6ddfb70363d00ec1b35720702499b1ea" args="" -->RNG</em>&nbsp;</td><td>
 <p>Draw from the base model; if the draw is outside the constraint, throw it out and try again. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049ac0aad2bd7945fa65ed8962b6732e706e"></a><!-- doxytag: member="Settings" ref="ggaa58cece77dea73979ea15d64ea11b049ac0aad2bd7945fa65ed8962b6732e706e" args="" -->Settings</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a713c92a13f7f894281fe32e894d26f90"></a><!-- doxytag: member="Settings" ref="ggaa58cece77dea73979ea15d64ea11b049a713c92a13f7f894281fe32e894d26f90" args="" -->Settings</em>&nbsp;</td><td>
 <p><a class="el" href="structapop__dconstrain__settings.html">apop_dconstrain_settings</a> </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a72bd3ed0045dd63c42c66754d2f69a02"></a><!-- doxytag: member="Examples" ref="ggaa58cece77dea73979ea15d64ea11b049a72bd3ed0045dd63c42c66754d2f69a02" args="" -->Examples</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaa58cece77dea73979ea15d64ea11b049a50af85f2dee4af4aa581e354be53b642"></a><!-- doxytag: member="Examples" ref="ggaa58cece77dea73979ea15d64ea11b049a50af85f2dee4af4aa581e354be53b642" args="" -->Examples</em>&nbsp;</td><td>
 <div class="fragment"><pre class="fragment"><span class="preprocessor">#include &lt;<a class="code" href="apop_8h.html">apop.h</a>&gt;</span>
 
 <span class="preprocessor">#ifdef Testing</span>
@@ -1406,7 +1472,7 @@ Functions</h2></td></tr>
 <p>The log likelihood function for the lognormal distribution:</p>
 <p><img class="formulaInl" alt="$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$" src="form_130.png"/> <img class="formulaInl" alt="$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$" src="form_131.png"/> </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a2a66d7661b1469f4f790a7cecd41e758"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a2a66d7661b1469f4f790a7cecd41e758" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2ab7cf5e109475b5f0b2680c125389805c"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2ab7cf5e109475b5f0b2680c125389805c" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
 <tr>
 <td><table  class="memproto">
@@ -1432,16 +1498,16 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2ab50a9cab69449ac7f463fb901ed4d9f5"></a><!-- doxytag: member="Name" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2ab50a9cab69449ac7f463fb901ed4d9f5" args="" -->Name</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a03f9f90a4557f99e7b984a8995df66d9"></a><!-- doxytag: member="Name" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a03f9f90a4557f99e7b984a8995df66d9" args="" -->Name</em>&nbsp;</td><td>
 <p><code>Lognormal distribution</code> </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a34d07ea4c98e604347548d1df317a876"></a><!-- doxytag: member="Input format" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a34d07ea4c98e604347548d1df317a876" args="" -->Input format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a79fbaad5ca865f26fe5160a62a6a9c69"></a><!-- doxytag: member="Input format" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a79fbaad5ca865f26fe5160a62a6a9c69" args="" -->Input format</em>&nbsp;</td><td>
 <p>I use the all elements of the matrix and vector, without regard to their order. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a30dbfb278b2779b1961a172b1c40fd04"></a><!-- doxytag: member="Parameter format" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a30dbfb278b2779b1961a172b1c40fd04" args="" -->Parameter format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a19c5a60231405a9c0310313d204501d8"></a><!-- doxytag: member="Parameter format" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a19c5a60231405a9c0310313d204501d8" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>Zeroth vector element is the mean (after logging); first is the std dev (after logging) </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2af4a6f63148777b24fc53fda3b319be1b"></a><!-- doxytag: member="Post-estimate" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2af4a6f63148777b24fc53fda3b319be1b" args="" -->Post-estimate</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a61913e9d7d606151b839a645db92035c"></a><!-- doxytag: member="Post-estimate" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a61913e9d7d606151b839a645db92035c" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
@@ -1451,7 +1517,7 @@ Functions</h2></td></tr>
 <td style="vertical-align:top"><code>info</code></td><td style="vertical-align:top">Reports <code>log likelihood</code>.  </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2aa303657d67034088f70259a90b1d9add"></a><!-- doxytag: member="RNG" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2aa303657d67034088f70259a90b1d9add" args="" -->RNG</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga4a917e02f41e9c6a0ad5e084e3ca42d2a0714eda0c798e9a326298ffad830ae26"></a><!-- doxytag: member="RNG" ref="gga4a917e02f41e9c6a0ad5e084e3ca42d2a0714eda0c798e9a326298ffad830ae26" args="" -->RNG</em>&nbsp;</td><td>
 <p>An Apophenia wrapper for the GSL's Normal RNG, exp'ed. </p>
 </td></tr>
 </table>
@@ -2093,7 +2159,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <li>If the <code>weights</code> are present but sum to a not-finite value, the model's <code>error</code> element is set to <code>'w'</code> when the estimation is run, and a warning printed. </li>
 </ul>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea10ab961e00a8a4104cb02b1a9ac039a7"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea10ab961e00a8a4104cb02b1a9ac039a7" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea7aeb734d35ee8b048c79ff2659bb976e"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea7aeb734d35ee8b048c79ff2659bb976e" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
 <tr>
 <td><table  class="memproto">
@@ -2119,16 +2185,16 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea8340de4a3c0c8d18b863dfa74bd6a840"></a><!-- doxytag: member="Name" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea8340de4a3c0c8d18b863dfa74bd6a840" args="" -->Name</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760eab0b477b362bd36f50629b1ff1ef6fb4d"></a><!-- doxytag: member="Name" ref="ggaca8f3323c57e0223a9f3c0f991c9760eab0b477b362bd36f50629b1ff1ef6fb4d" args="" -->Name</em>&nbsp;</td><td>
 <p><code>PDF or sparse matrix</code> </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea4d4c552d34250864aee09c19751ef626"></a><!-- doxytag: member="Input format" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea4d4c552d34250864aee09c19751ef626" args="" -->Input format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea7ee333771b769abce9d0e94c644ed8e5"></a><!-- doxytag: member="Input format" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea7ee333771b769abce9d0e94c644ed8e5" args="" -->Input format</em>&nbsp;</td><td>
 <p>As above, you can input to the <code>estimate</code> routine a 2-D matrix that will be converted into this form. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea2f3f79a4405bb7bd324ff24d16da91fd"></a><!-- doxytag: member="Parameter format" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea2f3f79a4405bb7bd324ff24d16da91fd" args="" -->Parameter format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea5c0b61156e3d554ec44479c759d243c7"></a><!-- doxytag: member="Parameter format" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea5c0b61156e3d554ec44479c759d243c7" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>None. The list of observations and their weights are in the <code>data</code> set, not the <code>parameters</code>. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760eacc7686fb2b6e9a092552e86be416b414"></a><!-- doxytag: member="Post-estimate" ref="ggaca8f3323c57e0223a9f3c0f991c9760eacc7686fb2b6e9a092552e86be416b414" args="" -->Post-estimate</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760eaf9baf97e4b3faa7c692c870b3800502f"></a><!-- doxytag: member="Post-estimate" ref="ggaca8f3323c57e0223a9f3c0f991c9760eaf9baf97e4b3faa7c692c870b3800502f" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">The data you sent in is linked to (not copied).  </td></tr>
@@ -2136,7 +2202,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">Still <code>NULL</code>.  </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea6ddfb70363d00ec1b35720702499b1ea"></a><!-- doxytag: member="RNG" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea6ddfb70363d00ec1b35720702499b1ea" args="" -->RNG</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea3a6bc6fd71f9c510e35eeb12ea894c0d"></a><!-- doxytag: member="RNG" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea3a6bc6fd71f9c510e35eeb12ea894c0d" args="" -->RNG</em>&nbsp;</td><td>
 <p>Return the data in a random row of the PMF's data set. If there is a weights vector, i will use that to make draws; else all rows are equiprobable.</p>
 <ul>
 <li>If you set <code>draw_index</code> to <code>'y'</code>, e.g.,</li>
@@ -2154,7 +2220,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
   </dd>
 </dl>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ead79843e9c76865fe6b65b0b6d9457d9e"></a><!-- doxytag: member="CDF" ref="ggaca8f3323c57e0223a9f3c0f991c9760ead79843e9c76865fe6b65b0b6d9457d9e" args="" -->CDF</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760eabfb8ce60d803b99835a68751618691ef"></a><!-- doxytag: member="CDF" ref="ggaca8f3323c57e0223a9f3c0f991c9760eabfb8ce60d803b99835a68751618691ef" args="" -->CDF</em>&nbsp;</td><td>
 <p><b>Assuming the data is sorted in a meaningful manner</b>, find the total mass up to a given data point.</p>
 <p>That is, a CDF only makes sense if the data space is totally ordered. The sorting you define using <a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> defines that ordering.</p>
 <ul>
@@ -2167,7 +2233,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <li>The first time you get a CDF from from a data set with uneven weights, I will generate a vector tallying the cumulative mass. Subsequent draws will have no computational overhead. Because the vector is built using the data on the first call to this or the <code>cdf</code> method, do not rearrange or modify the data after the first call. I.e., if you choose to use <a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> or <a class="el" href="apop__sort_8c.html#acefe4dee819c090e57ac69d4d8bdcfd0">apop_data_sort</a> on your data, do it before the first draw or CDF calculation. </li>
 </ul>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760ea713c92a13f7f894281fe32e894d26f90"></a><!-- doxytag: member="Settings" ref="ggaca8f3323c57e0223a9f3c0f991c9760ea713c92a13f7f894281fe32e894d26f90" args="" -->Settings</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="ggaca8f3323c57e0223a9f3c0f991c9760eac26f35f87e872ca3d1f33f017c678e11"></a><!-- doxytag: member="Settings" ref="ggaca8f3323c57e0223a9f3c0f991c9760eac26f35f87e872ca3d1f33f017c678e11" args="" -->Settings</em>&nbsp;</td><td>
 <p><a class="el" href="structapop__pmf__settings.html">apop_pmf_settings</a> </p>
 </td></tr>
 </table>
@@ -2315,72 +2381,6 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 
 </div>
 </div>
-<a class="anchor" id="gaf4fa26b04f324b9895b7599e323203df"></a><!-- doxytag: member="model_doc.h::apop_stack" ref="gaf4fa26b04f324b9895b7599e323203df" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">apop_model <a class="el" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>A stack of models.</p>
-<p>For the case when you need to bundle two uncorrelated models into one larger model. For example, the prior for a multivariate normal (whose parameters are a vector of means and a covariance matrix) is a Multivariate Normal-Wishart pair. </p>
-<dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfab7cf5e109475b5f0b2680c125389805c"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="ggaf4fa26b04f324b9895b7599e323203dfab7cf5e109475b5f0b2680c125389805c" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
-<table  cellpadding="3px">
-<tr>
-<td><table  class="memproto">
-<tr>
-<td class="altcolor">Estimation </td><td class="altcolor">M  </td></tr>
-<tr>
-<td class="altcolor">Prob. </td><td class="altcolor">M  </td></tr>
-<tr>
-<td class="altcolor">Log likelihood </td><td class="altcolor">M  </td></tr>
-<tr>
-<td class="altcolor">RNG </td><td class="altcolor">M  </td></tr>
-</table>
-</td><td><table  class="memproto">
-<tr>
-<td class="memitem">Predict </td><td class="memitem">D  </td></tr>
-<tr>
-<td class="memitem">CDF </td><td class="memitem">D  </td></tr>
-<tr>
-<td class="memitem">Score </td><td class="memitem">D  </td></tr>
-<tr>
-<td class="memitem">Prep routine </td><td class="memitem">D  </td></tr>
-</table>
-</td></tr>
-</table>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfa03f9f90a4557f99e7b984a8995df66d9"></a><!-- doxytag: member="Name" ref="ggaf4fa26b04f324b9895b7599e323203dfa03f9f90a4557f99e7b984a8995df66d9" args="" -->Name</em>&nbsp;</td><td>
-<p><code>Only one model input; returning a copy of that model.</code> </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfa79fbaad5ca865f26fe5160a62a6a9c69"></a><!-- doxytag: member="Input format" ref="ggaf4fa26b04f324b9895b7599e323203dfa79fbaad5ca865f26fe5160a62a6a9c69" args="" -->Input format</em>&nbsp;</td><td>
-<p>There are two means of handling the input format. If the settings group attached to the data set has a non-<code>NULL</code> <code>splitpage</code> element, then append the second data set as an additional page to the first data set, and name the second set with the name you listed in <code>splitpage</code>; see the example.</p>
-<p>If <code>splitpage</code> is <code>NULL</code>, then I will send the same data set to both models. </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfa19c5a60231405a9c0310313d204501d8"></a><!-- doxytag: member="Parameter format" ref="ggaf4fa26b04f324b9895b7599e323203dfa19c5a60231405a9c0310313d204501d8" args="" -->Parameter format</em>&nbsp;</td><td>
-<p>currently <code>NULL</code>; check the sub-models for their parameters. </p>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfa61913e9d7d606151b839a645db92035c"></a><!-- doxytag: member="Post-estimate" ref="ggaf4fa26b04f324b9895b7599e323203dfa61913e9d7d606151b839a645db92035c" args="" -->Post-estimate</em>&nbsp;</td><td>
-<table class="doxtable">
-<tr>
-<td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
-<tr>
-<td style="vertical-align:top"><code>parameters</code></td><td style="vertical-align:top">See parameter format.  </td></tr>
-</table>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ggaf4fa26b04f324b9895b7599e323203dfa756953323527eb2136565e074e280217"></a><!-- doxytag: member="Settings" ref="ggaf4fa26b04f324b9895b7599e323203dfa756953323527eb2136565e074e280217" args="" -->Settings</em>&nbsp;</td><td>
-<p><a class="el" href="structapop__stack__settings.html">apop_stack_settings</a> </p>
-</td></tr>
-</table>
-</dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga45ce986bd5ea79c39877792bec39a304"></a><!-- doxytag: member="model_doc.h::apop_t_distribution" ref="ga45ce986bd5ea79c39877792bec39a304" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -2394,7 +2394,7 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 <p>The t distribution, primarily for descriptive purposes.</p>
 <p>If you want to test a hypothesis, you probably don't need this, and should instead use <a class="el" href="apop__tests_8c.html#a650d1ecf6f78c3bdb85c8fce71dfae05">apop_test</a>. See notes in <a class="el" href="group__tfchi.html">t-, chi-squared, F-, Wishart distributions</a>. </p>
 <dl><dt></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a7aeb734d35ee8b048c79ff2659bb976e"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga45ce986bd5ea79c39877792bec39a304a7aeb734d35ee8b048c79ff2659bb976e" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a2a66d7661b1469f4f790a7cecd41e758"></a><!-- doxytag: member="Methods are Default or Model-specific" ref="gga45ce986bd5ea79c39877792bec39a304a2a66d7661b1469f4f790a7cecd41e758" args="" -->Methods are Default or Model-specific</em>&nbsp;</td><td>
 <table  cellpadding="3px">
 <tr>
 <td><table  class="memproto">
@@ -2420,18 +2420,18 @@ my_pmf-&gt;<a class="code" href="structapop__model.html#a076635fcdacf54e685c4715
 </td></tr>
 </table>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304ab0b477b362bd36f50629b1ff1ef6fb4d"></a><!-- doxytag: member="Name" ref="gga45ce986bd5ea79c39877792bec39a304ab0b477b362bd36f50629b1ff1ef6fb4d" args="" -->Name</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304ab50a9cab69449ac7f463fb901ed4d9f5"></a><!-- doxytag: member="Name" ref="gga45ce986bd5ea79c39877792bec39a304ab50a9cab69449ac7f463fb901ed4d9f5" args="" -->Name</em>&nbsp;</td><td>
 <p><code>t distribution</code> </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a7ee333771b769abce9d0e94c644ed8e5"></a><!-- doxytag: member="Input format" ref="gga45ce986bd5ea79c39877792bec39a304a7ee333771b769abce9d0e94c644ed8e5" args="" -->Input format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a34d07ea4c98e604347548d1df317a876"></a><!-- doxytag: member="Input format" ref="gga45ce986bd5ea79c39877792bec39a304a34d07ea4c98e604347548d1df317a876" args="" -->Input format</em>&nbsp;</td><td>
 <p>Unordered list of scalars in the matrix and/or vector. </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a5c0b61156e3d554ec44479c759d243c7"></a><!-- doxytag: member="Parameter format" ref="gga45ce986bd5ea79c39877792bec39a304a5c0b61156e3d554ec44479c759d243c7" args="" -->Parameter format</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304a30dbfb278b2779b1961a172b1c40fd04"></a><!-- doxytag: member="Parameter format" ref="gga45ce986bd5ea79c39877792bec39a304a30dbfb278b2779b1961a172b1c40fd04" args="" -->Parameter format</em>&nbsp;</td><td>
 <p>vector-&gt;data[0] = mu<br/>
  vector-&gt;data[1] = sigma<br/>
  vector-&gt;data[2] = df </p>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304af9baf97e4b3faa7c692c870b3800502f"></a><!-- doxytag: member="Post-estimate" ref="gga45ce986bd5ea79c39877792bec39a304af9baf97e4b3faa7c692c870b3800502f" args="" -->Post-estimate</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="gga45ce986bd5ea79c39877792bec39a304af4a6f63148777b24fc53fda3b319be1b"></a><!-- doxytag: member="Post-estimate" ref="gga45ce986bd5ea79c39877792bec39a304af4a6f63148777b24fc53fda3b319be1b" args="" -->Post-estimate</em>&nbsp;</td><td>
 <table class="doxtable">
 <tr>
 <td style="vertical-align:top"><code>data</code></td><td style="vertical-align:top">Unchanged.  </td></tr>
@@ -3338,4 +3338,4 @@ gsl_rng *r = <a class="code" href="group__convenience__fns.html#gada044cf0213542
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 22 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Oct 24 2014.</div></body></html>

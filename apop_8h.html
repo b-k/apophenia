@@ -57,7 +57,7 @@ Data Structures</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structloess__struct.html">loess_struct</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__loess__settings.html">apop_loess_settings</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__arms__settings.html">apop_arms_settings</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__stack__settings.html">apop_stack_settings</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__cross__settings.html">apop_cross_settings</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__ct__settings.html">apop_ct_settings</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__dconstrain__settings.html">apop_dconstrain_settings</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__composition__settings.html">apop_composition_settings</a></td></tr>
@@ -95,7 +95,7 @@ Defines</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>apop_IV</b>&#160;&#160;&#160;<a class="el" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(in,...)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">apop_model_mixture</a>(...)&#160;&#160;&#160;apop_model_mixture_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(...)&#160;&#160;&#160;apop_model_stack_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#afbc21644ccf24f498a3b3a7e94758e58">apop_model_cross</a>(...)&#160;&#160;&#160;apop_model_cross_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af1210155d44e962846822abfef413fbb"></a><!-- doxytag: member="apop.h::apop_ANOVA" ref="af1210155d44e962846822abfef413fbb" args="" -->
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>apop_ANOVA</b>&#160;&#160;&#160;<a class="el" href="apop__tests_8c.html#a1309242dbb7f148916c71a9a70c6b64c">apop_anova</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae6aa069a742d2480040cfdaa79b2bc54"></a><!-- doxytag: member="apop.h::apop_F_test" ref="ae6aa069a742d2480040cfdaa79b2bc54" args="" -->
@@ -343,8 +343,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>apop_model_show</b> (
 <a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_model_set_parameters_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *in, double ap[])</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f10c642ac9a8c9342da4530de1a4e95"></a><!-- doxytag: member="apop.h::apop_model_mixture_base" ref="a5f10c642ac9a8c9342da4530de1a4e95" args="(apop_model **inlist)" -->
 <a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_model_mixture_base</b> (<a class="el" href="structapop__model.html">apop_model</a> **inlist)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4c5afbd3068134ca9b20997e132d132f"></a><!-- doxytag: member="apop.h::apop_model_stack_base" ref="a4c5afbd3068134ca9b20997e132d132f" args="(apop_model *mlist[])" -->
-<a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_model_stack_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *mlist[])</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af5e52d62178e8b52c9161b59d60653ca"></a><!-- doxytag: member="apop.h::apop_model_cross_base" ref="af5e52d62178e8b52c9161b59d60653ca" args="(apop_model *mlist[])" -->
+<a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_model_cross_base</b> (<a class="el" href="structapop__model.html">apop_model</a> *mlist[])</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aad65cf464db938a7fbd57de43dfe1c87"></a><!-- doxytag: member="apop.h::apop_map" ref="aad65cf464db938a7fbd57de43dfe1c87" args="(apop_data *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(apop_data *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(apop_data *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(apop_data *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(apop_data *, int), void *param, int inplace, char part, int all_pages)" -->
 <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_map</b> (<a class="el" href="structapop__data.html">apop_data</a> *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(<a class="el" href="structapop__data.html">apop_data</a> *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(<a class="el" href="structapop__data.html">apop_data</a> *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(<a class="el" href="structapop__data.html">apop_data</a> *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(<a class="el" href="structapop__data.html">apop_data</a> *, int), void *param, int inplace, char part, int all_pages)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a871b9e67a6ae243f7420e6943e28e8a0"></a><!-- doxytag: member="apop.h::apop_map_sum" ref="a871b9e67a6ae243f7420e6943e28e8a0" args="(apop_data *in, double(*fn_d)(double), double(*fn_v)(gsl_vector *), double(*fn_r)(apop_data *), double(*fn_dp)(double, void *), double(*fn_vp)(gsl_vector *, void *), double(*fn_rp)(apop_data *, void *), double(*fn_dpi)(double, void *, int), double(*fn_vpi)(gsl_vector *, void *, int), double(*fn_rpi)(apop_data *, void *, int), double(*fn_di)(double, int), double(*fn_vi)(gsl_vector *, int), double(*fn_ri)(apop_data *, int), void *param, char part, int all_pages)" -->
@@ -566,8 +566,8 @@ Variables</h2></td></tr>
 <a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_dconstrain</b></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad86a3bbaf8312a5c8aa3e1c4dcc53d0d"></a><!-- doxytag: member="apop.h::apop_mixture" ref="ad86a3bbaf8312a5c8aa3e1c4dcc53d0d" args="" -->
 <a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_mixture</b></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aedb1edfba761f1c84ef9d449d5a10fbf"></a><!-- doxytag: member="apop.h::apop_stack" ref="aedb1edfba761f1c84ef9d449d5a10fbf" args="" -->
-<a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_stack</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acd54f12eb112f8aa7502b193f32f7c6c"></a><!-- doxytag: member="apop.h::apop_cross" ref="acd54f12eb112f8aa7502b193f32f7c6c" args="" -->
+<a class="el" href="structapop__model.html">apop_model</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>apop_cross</b></td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"></div><hr/><h2>Define Documentation</h2>
@@ -1210,6 +1210,46 @@ printf(<span class="stringliteral">&quot;The correlation coefficient between row
 
 </div>
 </div>
+<a class="anchor" id="afbc21644ccf24f498a3b3a7e94758e58"></a><!-- doxytag: member="apop.h::apop_model_cross" ref="afbc21644ccf24f498a3b3a7e94758e58" args="(...)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define <a class="el" href="apop_8h.html#afbc21644ccf24f498a3b3a7e94758e58">apop_model_cross</a></td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;apop_model_cross_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Generate a model consisting of the cross product of several independent models. The output <a class="el" href="structapop__model.html">apop_model</a> is a copy of <a class="el" href="group__models.html#ga7d33309b547d525c7325c062f4bc774f">apop_cross</a>; see that model's documentation for details.</p>
+<p>Sample use:</p>
+<div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
+    <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
+    <a class="code" href="structapop__model.html">apop_model</a> *m3 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
+    <a class="code" href="structapop__model.html">apop_model</a> *two_independent_normals = <a class="code" href="apop_8h.html#afbc21644ccf24f498a3b3a7e94758e58">apop_model_cross</a>(n1, n2);
+    <a class="code" href="structapop__model.html">apop_model</a> *three_independent_normals = <a class="code" href="apop_8h.html#afbc21644ccf24f498a3b3a7e94758e58">apop_model_cross</a>(n1, n2, n3);
+
+    <span class="comment">//But you don&#39;t have to parameterize ahead of time. E.g.</span>
+    <a class="code" href="structapop__model.html">apop_model</a> *two_n = <a class="code" href="apop_8h.html#afbc21644ccf24f498a3b3a7e94758e58">apop_model_cross</a>(
+                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>),
+                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>)
+                    );
+    <a class="code" href="structapop__model.html">apop_model</a> *estimated_norms = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(indata, two_n);
+</pre></div><ul>
+<li>If you input only one model, return a copy of that model; print a warning iff <code>apop_opts.verbose &gt;= 1</code>. <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">error=='n'</td><td>First model input is <code>NULL</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+</li>
+</ul>
+
+</div>
+</div>
 <a class="anchor" id="ab664f68b5e481bec56c8ddc7f16928c0"></a><!-- doxytag: member="apop.h::apop_model_dcompose" ref="ab664f68b5e481bec56c8ddc7f16928c0" args="(...)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1302,46 +1342,6 @@ printf(<span class="stringliteral">&quot;The correlation coefficient between row
             (m1)-&gt;cdf ? (<span class="keywordtype">size_t</span>)(m1)-&gt;cdf*27*27  \
             : 27)
 </pre></div>
-</div>
-</div>
-<a class="anchor" id="ad0e4b98a3edb53646ff9b036cfb558a0"></a><!-- doxytag: member="apop.h::apop_model_stack" ref="ad0e4b98a3edb53646ff9b036cfb558a0" args="(...)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define <a class="el" href="apop_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a></td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;apop_model_stack_base((<a class="el" href="structapop__model.html">apop_model</a> *[]){__VA_ARGS__, NULL})</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Generate a model consisting of several models bound together. The output <a class="el" href="structapop__model.html">apop_model</a> is a copy of <a class="el" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>; see that model's documentation for details.</p>
-<p>Sample use:</p>
-<div class="fragment"><pre class="fragment">    <a class="code" href="structapop__model.html">apop_model</a> *m1 = <a class="code" href="group__models.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>, 0, 1);
-    <a class="code" href="structapop__model.html">apop_model</a> *m2 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
-    <a class="code" href="structapop__model.html">apop_model</a> *m3 = <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(m1);
-    <a class="code" href="structapop__model.html">apop_model</a> *two_independent_normals = <a class="code" href="apop_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(n1, n2);
-    <a class="code" href="structapop__model.html">apop_model</a> *three_independent_normals = <a class="code" href="apop_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(n1, n2, n3);
-
-    <span class="comment">//But you don&#39;t have to parameterize ahead of time. E.g.</span>
-    <a class="code" href="structapop__model.html">apop_model</a> *two_n = <a class="code" href="apop_8h.html#ad0e4b98a3edb53646ff9b036cfb558a0">apop_model_stack</a>(
-                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>),
-                    <a class="code" href="group__models.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>)
-                    );
-    <a class="code" href="structapop__model.html">apop_model</a> *estimated_norms = <a class="code" href="group__models.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(indata, two_n);
-</pre></div><ul>
-<li>If you input only one model, return a copy of that model; print a warning iff <code>apop_opts.verbose &gt;= 1</code>. <dl class="exception"><dt><b>Exceptions:</b></dt><dd>
-  <table class="exception">
-    <tr><td class="paramname">error=='n'</td><td>First model input is <code>NULL</code>. </td></tr>
-  </table>
-  </dd>
-</dl>
-</li>
-</ul>
-
 </div>
 </div>
 <a class="anchor" id="a2eeb06002aaf03d5308a179100a7567e"></a><!-- doxytag: member="apop.h::apop_mrow" ref="a2eeb06002aaf03d5308a179100a7567e" args="(m, row)" -->
@@ -6684,4 +6684,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 22 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Oct 24 2014.</div></body></html>

@@ -403,7 +403,7 @@ urchinTracker();
 <a name="l00443"></a>00443 <span class="keyword">extern</span> <a class="code" href="structapop__model.html">apop_model</a> *apop_composition;
 <a name="l00444"></a>00444 <span class="keyword">extern</span> <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="group__models.html#gaa58cece77dea73979ea15d64ea11b049">apop_dconstrain</a>;
 <a name="l00445"></a>00445 <span class="keyword">extern</span> <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="group__models.html#gaf085564a8adc67ba156c4cd1db8145e3">apop_mixture</a>;
-<a name="l00446"></a>00446 <span class="keyword">extern</span> <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="group__models.html#gaf4fa26b04f324b9895b7599e323203df">apop_stack</a>;
+<a name="l00446"></a>00446 <span class="keyword">extern</span> <a class="code" href="structapop__model.html">apop_model</a> *<a class="code" href="group__models.html#ga7d33309b547d525c7325c062f4bc774f">apop_cross</a>;
 <a name="l00447"></a>00447 
 <a name="l00450"></a><a class="code" href="apop_8h.html#abbdfc523f5b269827db8cebf28216e28">00450</a> <span class="preprocessor">#define apop_gaussian apop_normal</span>
 <a name="l00451"></a>00451 <span class="preprocessor"></span><span class="preprocessor">#define apop_OLS apop_ols</span>
@@ -438,9 +438,9 @@ urchinTracker();
 <a name="l00483"></a><a class="code" href="apop_8h.html#a40bb98b02fde8f8e4ab59a4d127b692f">00483</a> <span class="comment"></span><span class="preprocessor">#define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})</span>
 <a name="l00484"></a>00484 <span class="preprocessor"></span><a class="code" href="structapop__model.html">apop_model</a> *apop_model_mixture_base(<a class="code" href="structapop__model.html">apop_model</a> **inlist);
 <a name="l00485"></a>00485 
-<a name="l00486"></a>00486 <span class="comment">//transform/apop_model_stack.c.</span>
-<a name="l00487"></a>00487 <a class="code" href="structapop__model.html">apop_model</a> *apop_model_stack_base(<a class="code" href="structapop__model.html">apop_model</a> *mlist[]);
-<a name="l00488"></a>00488 <span class="preprocessor">#define apop_model_stack(...) apop_model_stack_base((apop_model *[]){__VA_ARGS__, NULL})</span>
+<a name="l00486"></a>00486 <span class="comment">//transform/apop_model_cross.c.</span>
+<a name="l00487"></a>00487 <a class="code" href="structapop__model.html">apop_model</a> *apop_model_cross_base(<a class="code" href="structapop__model.html">apop_model</a> *mlist[]);
+<a name="l00488"></a>00488 <span class="preprocessor">#define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})</span>
 <a name="l00489"></a>00489 <span class="preprocessor"></span>
 <a name="l00490"></a>00490     <span class="comment">//The variadic versions, with lots of options to input extra parameters to the</span>
 <a name="l00491"></a>00491     <span class="comment">//function being mapped/applied</span>
@@ -1551,11 +1551,11 @@ urchinTracker();
 <a name="l02106"></a>02106 } <a class="code" href="structapop__arms__settings.html">apop_arms_settings</a>;
 <a name="l02107"></a>02107 
 <a name="l02108"></a>02108 
-<a name="l02109"></a><a class="code" href="structapop__stack__settings.html">02109</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
-<a name="l02110"></a><a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">02110</a>     <span class="keywordtype">char</span> *<a class="code" href="structapop__stack__settings.html#a4466190d13c521f02aca7d9155b17270">splitpage</a>;    
-<a name="l02111"></a><a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">02111</a>     apop_model *<a class="code" href="structapop__stack__settings.html#a60a83f6132fcc17005fbdc4e3f577098">model1</a>; 
-<a name="l02112"></a><a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">02112</a>     apop_model *<a class="code" href="structapop__stack__settings.html#ad8ba6ecbfd0b398a361cdeb6646fa5d9">model2</a>; 
-<a name="l02113"></a>02113 } <a class="code" href="structapop__stack__settings.html">apop_stack_settings</a>;
+<a name="l02109"></a><a class="code" href="structapop__cross__settings.html">02109</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
+<a name="l02110"></a><a class="code" href="structapop__cross__settings.html#a7ea934b5ae7a974de3ae67234efad0ee">02110</a>     <span class="keywordtype">char</span> *<a class="code" href="structapop__cross__settings.html#a7ea934b5ae7a974de3ae67234efad0ee">splitpage</a>;    
+<a name="l02111"></a><a class="code" href="structapop__cross__settings.html#ac1e96e5516a44578292bcc51282d6501">02111</a>     apop_model *<a class="code" href="structapop__cross__settings.html#ac1e96e5516a44578292bcc51282d6501">model1</a>; 
+<a name="l02112"></a><a class="code" href="structapop__cross__settings.html#a67f5387ff6d30ad106909b120ba80859">02112</a>     apop_model *<a class="code" href="structapop__cross__settings.html#a67f5387ff6d30ad106909b120ba80859">model2</a>; 
+<a name="l02113"></a>02113 } <a class="code" href="structapop__cross__settings.html">apop_cross_settings</a>;
 <a name="l02114"></a>02114 
 <a name="l02115"></a><a class="code" href="structapop__ct__settings.html">02115</a> <span class="keyword">typedef</span> <span class="keyword">struct </span>{
 <a name="l02116"></a>02116     apop_data *(*base_to_transformed)(apop_data*);
@@ -1601,7 +1601,7 @@ urchinTracker();
 <a name="l02167"></a>02167 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_arms)
 <a name="l02168"></a>02168 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_mcmc)
 <a name="l02169"></a>02169 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_loess)
-<a name="l02170"></a>02170 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_stack)
+<a name="l02170"></a>02170 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_cross)
 <a name="l02171"></a>02171 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_mixture)
 <a name="l02172"></a>02172 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_dconstrain)
 <a name="l02173"></a>02173 <a class="code" href="apop_8h.html#aae80181842102bf58ba1ffe18391796b">Apop_settings_declarations</a>(apop_composition)
@@ -1623,4 +1623,4 @@ urchinTracker();
 <a name="l02189"></a>02189 <span class="preprocessor">#include &lt;gsl/gsl_integration.h&gt;</span>
 </pre></div></div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Mon Sep 22 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Fri Oct 24 2014.</div></body></html>
