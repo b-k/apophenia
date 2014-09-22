@@ -281,8 +281,6 @@ Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1b050ee3cfbb8858576bca6ae07571df"></a><!-- doxytag: member="apop.h::apop_data_add_names_base" ref="a1b050ee3cfbb8858576bca6ae07571df" args="(apop_data *d, const char type, char const **names)" -->
 void&#160;</td><td class="memItemRight" valign="bottom"><b>apop_data_add_names_base</b> (<a class="el" href="structapop__data.html">apop_data</a> *d, const char type, char const **names)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#a3e8377359d46c9bd02ea57205e7968d3">apop_data_free_base</a> (<a class="el" href="structapop__data.html">apop_data</a> *freeme)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> (gsl_matrix *m)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> (gsl_vector *v)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#ac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a> (const size_t size1, const size_t size2, const int size3)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#a0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> (const size_t size1, const size_t size2, const int size3)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="apop_8h.html#a0f2ffb5c5ba2bb240e930be08fc4fd56">apop_data_stack</a> (<a class="el" href="structapop__data.html">apop_data</a> *m1, <a class="el" href="structapop__data.html">apop_data</a> *m2, char posn, char inplace)</td></tr>
@@ -4667,46 +4665,6 @@ gsl_matrix_set_all(binspec-&gt;matrix, 10); <span class="comment">//bins of size
 
 </div>
 </div>
-<a class="anchor" id="ac0674dcc81232e37c27f612499495bd4"></a><!-- doxytag: member="apop.h::apop_matrix_to_data" ref="ac0674dcc81232e37c27f612499495bd4" args="(gsl_matrix *m)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_matrix *&#160;</td>
-          <td class="paramname"><em>m</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Deprecated; please do not use. Just use a compound literal:</p>
-<div class="fragment"><pre class="fragment"><span class="comment">//Given:</span>
-gsl_vector *v;
-gsl_matrix *m;
-
-<span class="comment">// Then this form wraps the elements into \ref apop_data structs. Note that</span>
-<span class="comment">// these are not pointers: they&#39;re automatically allocated and therefore</span>
-<span class="comment">// the extra memory use for the wrapper is cleaned up on exit from scope.</span>
-
-<a class="code" href="structapop__data.html">apop_data</a> *dv = &amp;(<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.vector=v};
-<a class="code" href="structapop__data.html">apop_data</a> *dm = &amp;(<a class="code" href="apop_8h.html#a0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=m};
-
-<a class="code" href="structapop__data.html">apop_data</a> *v_dot_m = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(dv, dm);
-
-<span class="comment">//Here is a macro to hide C&#39;s ugliness:</span>
-<span class="preprocessor">#define As_data(...) (&amp;(apop_data){__VA_ARGS__})</span>
-<span class="preprocessor"></span>
-<a class="code" href="structapop__data.html">apop_data</a> *v_dot_m2 = <a class="code" href="group__linear__algebra.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(As_data(.vector=v), As_data(.matrix=m));
-
-<span class="comment">//The wrapped object is an automatically-allocated structure pointing to the</span>
-<span class="comment">//original data. If it needs to persist or be separate from the original,</span>
-<span class="comment">//make a copy:</span>
-<a class="code" href="structapop__data.html">apop_data</a> *dm_copy = <a class="code" href="apop_8h.html#add67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(As_data(.vector=v, .matrix=m));
-</pre></div> 
-</div>
-</div>
 <a class="anchor" id="af1fc93322ffcb4e20cfc0b9af9e2aea0"></a><!-- doxytag: member="apop.h::apop_matrix_to_positive_semidefinite" ref="af1fc93322ffcb4e20cfc0b9af9e2aea0" args="(gsl_matrix *m)" -->
 <div class="memitem">
 <div class="memproto">
@@ -6632,24 +6590,6 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 
 </div>
 </div>
-<a class="anchor" id="a4a69e915d2b6c40f9c69ec1842e2d689"></a><!-- doxytag: member="apop.h::apop_vector_to_data" ref="a4a69e915d2b6c40f9c69ec1842e2d689" args="(gsl_vector *v)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structapop__data.html">apop_data</a>* <a class="el" href="apop__data_8c.html#a4a69e915d2b6c40f9c69ec1842e2d689">apop_vector_to_data</a> </td>
-          <td>(</td>
-          <td class="paramtype">gsl_vector *&#160;</td>
-          <td class="paramname"><em>v</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-<p>Deprecated; please do not use. Just use a compound literal, as in the code sample in the documentation for <a class="el" href="apop__data_8c.html#ac0674dcc81232e37c27f612499495bd4">apop_matrix_to_data</a>. </p>
-
-</div>
-</div>
 <a class="anchor" id="a6d68bacc086420a382366f9118cf5bc7"></a><!-- doxytag: member="apop.h::apop_vector_unique_elements" ref="a6d68bacc086420a382366f9118cf5bc7" args="(const gsl_vector *v)" -->
 <div class="memitem">
 <div class="memproto">
@@ -6744,4 +6684,4 @@ printf(<span class="stringliteral">&quot;Normalized into percentages:\n&quot;</s
 </div>
 </div><!-- contents -->
 <p><p>
-<div class="tiny">Autogenerated by doxygen on Sun Sep 7 2014.</div></body></html>
+<div class="tiny">Autogenerated by doxygen on Mon Sep 22 2014.</div></body></html>
