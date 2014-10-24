@@ -316,7 +316,7 @@ extern apop_model *apop_coordinate_transform;
 extern apop_model *apop_composition;
 extern apop_model *apop_dconstrain;
 extern apop_model *apop_mixture;
-extern apop_model *apop_stack;
+extern apop_model *apop_cross;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */
@@ -356,9 +356,9 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
-//transform/apop_model_stack.c.
-apop_model *apop_model_stack_base(apop_model *mlist[]);
-#define apop_model_stack(...) apop_model_stack_base((apop_model *[]){__VA_ARGS__, NULL})
+//transform/apop_model_cross.c.
+apop_model *apop_model_cross_base(apop_model *mlist[]);
+#define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
 
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
@@ -1619,7 +1619,7 @@ typedef struct {
     char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
     apop_model *model1; /**< The first model in the stack.*/
     apop_model *model2; /**< The second model.*/
-} apop_stack_settings;
+} apop_cross_settings;
 
 typedef struct {
     apop_data *(*base_to_transformed)(apop_data*);
@@ -1676,7 +1676,7 @@ Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_mcmc)
 Apop_settings_declarations(apop_loess)
-Apop_settings_declarations(apop_stack)
+Apop_settings_declarations(apop_cross)
 Apop_settings_declarations(apop_mixture)
 Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
