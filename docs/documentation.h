@@ -129,7 +129,7 @@ Community Survey.
 \li Report bugs or suggest features.
 \li Write bindings for your preferred language. For example, here are early versions of <a
 href="http://modelingwithdata.org/arch/00000173.htm"> a Julia
-wrapper</a> and <a href="https://r-forge.r-project.org/projects/rapophenia/">an R
+wrapper</a> and <a href="https://github.com/b-k/Rapophenia/">an R
 wrapper</a> which you could expand upon.
 
 If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
