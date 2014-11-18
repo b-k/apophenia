@@ -390,7 +390,7 @@ APOP_VAR_ENDHEAD
                             "The first data set has %zu columns of text and the second has %zu columns. "
                             "I can't stack that.", out->textsize[1], m2->textsize[1]);
             int basetextsize = out->textsize[0];
-            apop_text_alloc(out, basetextsize+m2->textsize[0], out->textsize[1]);
+            apop_text_alloc(out, basetextsize+m2->textsize[0], m2->textsize[1]);
             Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
@@ -403,7 +403,7 @@ APOP_VAR_ENDHEAD
                             "The first data set has %zu rows of text and the second has %zu rows. "
                             "I can't stack that.", out->textsize[0], m2->textsize[0]);
             int basetextsize = out->textsize[1];
-            apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
+            apop_text_alloc(out, m2->textsize[0], basetextsize+m2->textsize[1]);
             Apop_stopif(out->error, out->error='a'; return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
