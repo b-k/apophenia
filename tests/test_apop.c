@@ -1338,7 +1338,8 @@ void test_ols_offset(gsl_rng *r){
 int main(int argc, char **argv){
     int  slow_tests = 0;
     apop_opts.thread_count = 2;
-    char c, opts[]  = "sqt:";
+    int c;
+    char opts[]  = "sqt:";
     if (argc==1)
         printf("Sundry tests for Apophenia.\nRunning relatively faster tests.  To run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. To change thread count (default=2), use -t1, -t2, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)

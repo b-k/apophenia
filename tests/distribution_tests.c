@@ -195,7 +195,8 @@ static void got_bored(){ exit(0); }
 
 int main(int argc, char **argv){
     apop_opts.thread_count = 2;
-    char c, opts[] = "sqt:";
+    int c;
+    char opts[] = "sqt:";
     if (argc==1)
         printf("\tDistribution tests. Each dot is an optimization run, including some methods known to be inefficient.\n\tFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
