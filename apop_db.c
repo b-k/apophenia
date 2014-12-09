@@ -538,7 +538,7 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
     Get_vmsizes(set) //firstcol, msize1, maxsize
     for (size_t row=0; row < maxsize; row++){
         size_t field =1;
-        if (set->names->rowct>row){
+        if (set->names && set->names->rowct>row){
             if (!strlen(set->names->row[row])) field++; //leave NULL and cleared
             Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->names->row[row], -1, SQLITE_TRANSIENT),
                     return -1, apop_errorlevel, 
@@ -612,7 +612,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
     int	i,j; 
     char *q;
     char comma = ' ';
-    int use_row = strlen(apop_opts.db_name_column) 
+    int use_row = strlen(apop_opts.db_name_column)  && set->names
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 
@@ -630,7 +630,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 comma = ',';
             }
             if (set->vector){
-                if(!set->names->vector) 
+                if(!set->names || !set->names->vector) 
                     qxprintf(&q, "%s%c\n vector double ", q, comma);
                 else
                     qxprintf(&q, "%s%c\n %s double ", q,comma, set->names->vector);
@@ -638,14 +638,14 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
             }
             if (set->matrix)
                 for(i=0;i< set->matrix->size2; i++){
-                    if(set->names->colct <= i) 
+                    if(!set->names || set->names->colct <= i) 
                         qxprintf(&q, "%s%c\n c%i double ", q, comma,i);
                      else
                         qxprintf(&q, "%s%c\n %s  double ", q, comma, set->names->col[i]);
                     comma = ',';
                 }
             for(i=0;i< set->textsize[1]; i++){
-                if (set->names->textct <= i)
+                if (!set->names || set->names->textct <= i)
                     qxprintf(&q, "%s%c\n tc%i varchar(1000) ", q, comma,i);
                 else
                     qxprintf(&q, "%s%c\n %s  varchar(1000) ", q, comma, set->names->text[i]);
@@ -668,20 +668,20 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
                 comma = ',';
             }
             if (set->vector){
-                if (!set->names->vector) qxprintf(&q, "%s%c\n vector numeric", q, comma);
+                if (!set->names || !set->names->vector) qxprintf(&q, "%s%c\n vector numeric", q, comma);
                 else qxprintf(&q, "%s%c\n \"%s\"", q, comma, set->names->vector);
                 comma = ',';
             }
             if (set->matrix)
                 for(i=0;i< set->matrix->size2; i++){
-                    if(set->names->colct <= i) 	
+                    if(!set->names || set->names->colct <= i) 	
                         qxprintf(&q, "%s%c\n c%i numeric", q, comma,i);
                     else			
                         qxprintf(&q, "%s%c\n \"%s\" numeric", q, comma, set->names->col[i]);
                     comma = ',';
                 }
             for(i=0; i< set->textsize[1]; i++){
-                if(set->names->textct <= i) qxprintf(&q, "%s%c\n tc%i ", q, comma, i);
+                if(!set->names || set->names->textct <= i) qxprintf(&q, "%s%c\n tc%i ", q, comma, i);
                 else qxprintf(&q, "%s%c\n %s ", q, comma, set->names->text[i]);
                 comma = ',';
             }
@@ -693,7 +693,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
     }
 
     Get_vmsizes(set) //firstcol, msize2, maxsize
-    int col_ct = !!set->names->rowct + set->textsize[1] + msize2 - firstcol + !!set->weights;
+    int col_ct = (set->names ? !!set->names->rowct : 0) + set->textsize[1] + msize2 - firstcol + !!set->weights;
     Apop_stopif(!col_ct, return -1, 0, "Input data set has zero columns of data (no rownames, text, matrix, vector, or weights). I can't create a table like that, sorry.");
     if(apop_use_sqlite_prepared_statements(col_ct)){
         sqlite3_stmt *statement;

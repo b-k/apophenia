@@ -89,7 +89,8 @@ void print_out(FILE *f, char *outfile, gsl_matrix *m){
 }
 
 int main(int argc, char **argv){
-    char c, *q = NULL,
+    int c;
+    char *q = NULL,
          *d = NULL,
          *outfile = NULL;
     int sf = 0,

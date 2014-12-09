@@ -7,7 +7,8 @@ Command line utility to convert a three-column table to a crosstab.*/
 #include <unistd.h>
 
 int main(int argc, char **argv){
-    char c, verbose=0;
+    int c;
+    char verbose=0;
     char const *msg="Usage: %s [opts] dbname table_name rows columns data\n"
 "\n"
 "A command-line wrapper for the apop_db_to_crosstab function.\n"

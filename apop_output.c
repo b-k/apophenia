@@ -253,11 +253,11 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         start   = (data->vector)? -1 : 0,
         end     = (data->matrix)? data->matrix->size2 : 0,
         rowend  = (data->matrix)? data->matrix->size1 : (data->vector) ? data->vector->size : data->text ? data->textsize[0] : -1;
-    if (data->names->title && strlen(data->names->title))
+    if (data->names && data->names->title && strlen(data->names->title))
         fprintf(f, "\t%s\n\n", data->names->title);
-    if (data->names->rowct)
+    if (data->names && data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
-    if (data->names->rowct && (data->names->vector || data->names->colct || data->names->textct))
+    if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct))
         fprintf(f, "%*s  ", L+2, " ");
     if (data->vector && data->names->vector){
         fprintf(f, "%s", data->names->vector);
@@ -267,7 +267,8 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
             fprintf(f, "%c ", data->names->vector ? ' ' : '\t' );
             a_pipe(f, displaytype);
         }
-        for(i=0; i< data->names->colct; i++){
+        if (data->names) 
+          for(i=0; i< data->names->colct; i++){
             if (i < data->names->colct -1)
                 fprintf(f, "%s%s", data->names->col[i], apop_opts.output_delimiter);
             else
@@ -277,17 +278,18 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
     if (data->textsize[1] && data->names->textct){
         if ((data->vector && data->names->vector) || (data->matrix && data->names->colct))
             a_pipe(f, displaytype);
-        for(i=0; i< data->names->textct; i++){
+        if (data->names)
+          for(i=0; i< data->names->textct; i++){
             if (i < data->names->textct -1)
                 fprintf(f, "%s%s", data->names->text[i], apop_opts.output_delimiter);
             else
                 fprintf(f, "%s", data->names->text[i]);
         }
     }
-    if(data->names->vector || data->names->colct || data->names->textct)
+    if(data->names && (data->names->vector || data->names->colct || data->names->textct))
         fprintf(f, "\n");
     for(j=0; j< rowend; j++){
-        if (data->names->rowct > j)
+        if (data->names && data->names->rowct > j)
             fprintf(f, "%*s%s", L+2, data->names->row[j], apop_opts.output_delimiter);
         for(i=start; i< end; i++){
             if ((i < 0 && j < data->vector->size) || (i>= 0 && j < data->matrix->size1 && i < data->matrix->size2))
@@ -372,20 +374,11 @@ apop_varad_head(void, apop_matrix_print){
         fprintf(output_pipe, "NULL\n");
         return;
     }
-    apop_data *d = apop_data_alloc();
-    d->matrix=(gsl_matrix *) data; //cheating on the const qualifier
-    apop_data_print(d, Output_vars);
-    d->matrix=NULL;
-    apop_data_free(d);
+    apop_data_print(&(apop_data){.matrix=(gsl_matrix*)data}, Output_vars); //cheating on the const qualifier
 }
 
-/** Dump a <tt>gsl_matrix</tt> to the screen.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
-\li This function uses the \ref designated syntax for inputs.
+/** Convenience function to dump a <tt>gsl_matrix</tt> to the screen.
 \ingroup apop_print */
 void apop_matrix_show(const gsl_matrix *data){
-    apop_data *dtmp = apop_matrix_to_data((gsl_matrix*) data);
-    apop_data_print_core(dtmp,  stdout, 's');
-    dtmp->matrix = NULL;
-    apop_data_free(dtmp);
+    apop_data_print_core(&(apop_data){.matrix=(gsl_matrix*)data},  stdout, 's');
 }

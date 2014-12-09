@@ -23,7 +23,7 @@ int main(){
        First, vector-as-data dot itself.
        If one of the inputs is a vector,
        apop_dot puts the output in a vector-as-data:*/
-    apop_data *v_as_data = apop_vector_to_data(v);
+    apop_data *v_as_data = &(apop_data){.vector=v};
     apop_data *vdotv = apop_dot(v_as_data, v_as_data);
     Diff(gsl_vector_get(vdotv->vector, 0), pi_over_six);
 

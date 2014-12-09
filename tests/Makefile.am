@@ -10,6 +10,7 @@ check_PROGRAMS= \
 	update_via_rng \
 	$(top_builddir)/eg/apop_map_row \
 	$(top_builddir)/eg/binning \
+	$(top_builddir)/eg/cross_models \
 	$(top_builddir)/eg/dconstrain \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
@@ -25,7 +26,6 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/pmf_test \
 	$(top_builddir)/eg/simple_subsets \
 	$(top_builddir)/eg/some_cdfs \
-	$(top_builddir)/eg/stack_models \
 	$(top_builddir)/eg/test_distances \
 	$(top_builddir)/eg/test_fisher \
 	$(top_builddir)/eg/test_harmonic \

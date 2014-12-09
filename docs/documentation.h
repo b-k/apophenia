@@ -129,7 +129,7 @@ Community Survey.
 \li Report bugs or suggest features.
 \li Write bindings for your preferred language. For example, here are early versions of <a
 href="http://modelingwithdata.org/arch/00000173.htm"> a Julia
-wrapper</a> and <a href="https://r-forge.r-project.org/projects/rapophenia/">an R
+wrapper</a> and <a href="https://github.com/b-k/Rapophenia/">an R
 wrapper</a> which you could expand upon.
 
 If you're interested,  <a href="mailto:fluffmail@f-m.fm">write to the maintainer</a> (Ben Klemens), or join the
@@ -194,6 +194,9 @@ tar xvzf apop*tgz && cd apophenia-0.999
 If you decide not to keep the library on your system, run <tt>sudo make uninstall</tt>
 from the source directory to remove it.
 
+\li If you need to install packages in your home directory because you don't have root
+permissions, see the \ref notroot page.
+
 \li A \ref makefile will help immensely when you want to compile your program.
 
 
@@ -252,17 +255,27 @@ These lines are indeed just information, and not errors. Feel free to ignore the
 */
 
 /** \page notroot  Not root? 
-If you aren't root, then you will need to create a subdirectory in your home directory in which to install packages. The GSL and SQLite installations will go like this. The key is the <tt>--prefix</tt> addition to the <tt>./configure</tt> command.
+If you aren't root, then the common procedure for installing a library is to create a subdirectory in your home directory in which to install packages. The key is the <tt>--prefix</tt> addition to the <tt>./configure</tt> command.
 \code
-export MY_LIBS = src   #choose a directory name to be created in your home directory.
-tar xvzf pkg.tgz       #change pkg.tgz to the appropriate name
-cd package_dir         #same here.
+export MY_LIBS = myroot   #choose a directory name to be created in your home directory.
 mkdir $HOME/$MY_LIBS
+
+# From Apophenia's package directory:
 ./configure --prefix $HOME/$MY_LIBS
 make
 make install   #Now you don't have to be root.
+
+# Adjust your paths so the compiler and the OS can find the library.
+# These are environment variables, and they are usually set in the 
+# shell's startup files. I assume you are using bash here.
+
+echo "export PATH=$HOME/$MY_LIBS/include:\$PATH" >> ~/.bashrc
+echo "export CPATH=$HOME/$MY_LIBS/include:\$CPATH" >> ~/.bashrc
+echo "export LIBRARY_PATH=$HOME/$MY_LIBS:\$LIBRARY_PATH" >> ~/.bashrc
 echo "export LD_LIBRARY_PATH=$HOME/$MY_LIBS:\$LD_LIBRARY_PATH" >> ~/.bashrc
 \endcode
+
+Once you have created this local root directory, you can use it to install as many new libraries as desired, and your paths will already be set up to find them.
 */
 
 
@@ -1916,12 +1929,6 @@ pclose(lesspipe);
 \li\ref apop_matrix_print()
 \li\ref apop_vector_print()
 \li\ref apop_data_show() : alias for \ref apop_data_print limited to \c stdout.
-
-The plot functions produce output for Gnuplot (so output type = \c 'd' again does not
-make sense). As above, you can pipe directly to Gnuplot or write to a file. Please
-consider these to be deprecated, as there is better graphics support in the works.
-
-\li\ref apop_plot_histogram()
 
 endofdiv
 

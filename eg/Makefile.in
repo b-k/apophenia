@@ -250,6 +250,7 @@ EXTRA_DIST = \
 	apop_map_row.c \
 	banana.c \
 	binning.c \
+	cross_models.c \
 	db_fns.c \
 	dconstrain.c \
 	dot_products.c \
@@ -272,7 +273,6 @@ EXTRA_DIST = \
 	simple_subsets.c \
 	some_cdfs.c \
 	sql_to_html.c \
-	stack_models.c \
 	t_test_by_rows.c \
 	test_distances.c \
 	test_fisher.c \

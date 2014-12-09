@@ -99,7 +99,7 @@ am_libapoptransform_la_OBJECTS = libapoptransform_la-apop_dcompose.lo \
 	libapoptransform_la-apop_fix_params.lo \
 	libapoptransform_la-apop_coordinate_transform.lo \
 	libapoptransform_la-apop_mixture.lo \
-	libapoptransform_la-apop_stack.lo
+	libapoptransform_la-apop_cross.lo
 libapoptransform_la_OBJECTS = $(am_libapoptransform_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -312,7 +312,7 @@ libapoptransform_la_SOURCES = \
 	apop_fix_params.c \
 	apop_coordinate_transform.c \
 	apop_mixture.c \
-	apop_stack.c
+	apop_cross.c
 
 libapoptransform_la_CFLAGS = \
 	-I $(top_srcdir) \
@@ -377,11 +377,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_coordinate_transform.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_cross.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_dcompose.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_dconstrain.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_fix_params.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_mixture.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapoptransform_la-apop_stack.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -439,12 +439,12 @@ libapoptransform_la-apop_mixture.lo: apop_mixture.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapoptransform_la_CFLAGS) $(CFLAGS) -c -o libapoptransform_la-apop_mixture.lo `test -f 'apop_mixture.c' || echo '$(srcdir)/'`apop_mixture.c
 
-libapoptransform_la-apop_stack.lo: apop_stack.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapoptransform_la_CFLAGS) $(CFLAGS) -MT libapoptransform_la-apop_stack.lo -MD -MP -MF $(DEPDIR)/libapoptransform_la-apop_stack.Tpo -c -o libapoptransform_la-apop_stack.lo `test -f 'apop_stack.c' || echo '$(srcdir)/'`apop_stack.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapoptransform_la-apop_stack.Tpo $(DEPDIR)/libapoptransform_la-apop_stack.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_stack.c' object='libapoptransform_la-apop_stack.lo' libtool=yes @AMDEPBACKSLASH@
+libapoptransform_la-apop_cross.lo: apop_cross.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapoptransform_la_CFLAGS) $(CFLAGS) -MT libapoptransform_la-apop_cross.lo -MD -MP -MF $(DEPDIR)/libapoptransform_la-apop_cross.Tpo -c -o libapoptransform_la-apop_cross.lo `test -f 'apop_cross.c' || echo '$(srcdir)/'`apop_cross.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapoptransform_la-apop_cross.Tpo $(DEPDIR)/libapoptransform_la-apop_cross.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_cross.c' object='libapoptransform_la-apop_cross.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapoptransform_la_CFLAGS) $(CFLAGS) -c -o libapoptransform_la-apop_stack.lo `test -f 'apop_stack.c' || echo '$(srcdir)/'`apop_stack.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapoptransform_la_CFLAGS) $(CFLAGS) -c -o libapoptransform_la-apop_cross.lo `test -f 'apop_cross.c' || echo '$(srcdir)/'`apop_cross.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

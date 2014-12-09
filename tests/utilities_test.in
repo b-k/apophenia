@@ -44,9 +44,9 @@ crosstab(){
 fixed_read(){
     $APOP_TEXT_TO_DB -ed -f "3,6" -nc ${APOP_DATA_DIR}/test_data_fixed_width td td.db
     $APOP_TEXT_TO_DB -ea -f "3,6" -nc ${APOP_DATA_DIR}/test_data_fixed_width td td.db
-    if Diff $($SQLITE3 td.db "select col_2 from td where rowid=4") 2.71828
-        then return 1
-        else return 0
+    if $SQLITE3 td.db "select col_2 from td where rowid=4" | grep '2\.71828' > /dev/null
+        then return 0
+        else return 1
     fi
 }
 

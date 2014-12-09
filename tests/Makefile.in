@@ -83,6 +83,7 @@ check_PROGRAMS = db_tests$(EXEEXT) distribution_tests$(EXEEXT) \
 	test_kernel_ll$(EXEEXT) update_via_rng$(EXEEXT) \
 	$(top_builddir)/eg/apop_map_row$(EXEEXT) \
 	$(top_builddir)/eg/binning$(EXEEXT) \
+	$(top_builddir)/eg/cross_models$(EXEEXT) \
 	$(top_builddir)/eg/dconstrain$(EXEEXT) \
 	$(top_builddir)/eg/draw_to_db$(EXEEXT) \
 	$(top_builddir)/eg/db_fns$(EXEEXT) \
@@ -98,7 +99,6 @@ check_PROGRAMS = db_tests$(EXEEXT) distribution_tests$(EXEEXT) \
 	$(top_builddir)/eg/pmf_test$(EXEEXT) \
 	$(top_builddir)/eg/simple_subsets$(EXEEXT) \
 	$(top_builddir)/eg/some_cdfs$(EXEEXT) \
-	$(top_builddir)/eg/stack_models$(EXEEXT) \
 	$(top_builddir)/eg/test_distances$(EXEEXT) \
 	$(top_builddir)/eg/test_fisher$(EXEEXT) \
 	$(top_builddir)/eg/test_harmonic$(EXEEXT) \
@@ -134,6 +134,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 __top_builddir__eg_binning_SOURCES = $(top_builddir)/eg/binning.c
 __top_builddir__eg_binning_OBJECTS = binning.$(OBJEXT)
 __top_builddir__eg_binning_LDADD = $(LDADD)
+__top_builddir__eg_cross_models_SOURCES =  \
+	$(top_builddir)/eg/cross_models.c
+__top_builddir__eg_cross_models_OBJECTS = cross_models.$(OBJEXT)
+__top_builddir__eg_cross_models_LDADD = $(LDADD)
 __top_builddir__eg_db_fns_SOURCES = $(top_builddir)/eg/db_fns.c
 __top_builddir__eg_db_fns_OBJECTS = db_fns.$(OBJEXT)
 __top_builddir__eg_db_fns_LDADD = $(LDADD)
@@ -188,10 +192,6 @@ __top_builddir__eg_simple_subsets_LDADD = $(LDADD)
 __top_builddir__eg_some_cdfs_SOURCES = $(top_builddir)/eg/some_cdfs.c
 __top_builddir__eg_some_cdfs_OBJECTS = some_cdfs.$(OBJEXT)
 __top_builddir__eg_some_cdfs_LDADD = $(LDADD)
-__top_builddir__eg_stack_models_SOURCES =  \
-	$(top_builddir)/eg/stack_models.c
-__top_builddir__eg_stack_models_OBJECTS = stack_models.$(OBJEXT)
-__top_builddir__eg_stack_models_LDADD = $(LDADD)
 __top_builddir__eg_test_distances_SOURCES =  \
 	$(top_builddir)/eg/test_distances.c
 __top_builddir__eg_test_distances_OBJECTS = test_distances.$(OBJEXT)
@@ -287,8 +287,8 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(top_builddir)/eg/apop_map_row.c \
-	$(top_builddir)/eg/binning.c $(top_builddir)/eg/db_fns.c \
-	$(top_builddir)/eg/dconstrain.c \
+	$(top_builddir)/eg/binning.c $(top_builddir)/eg/cross_models.c \
+	$(top_builddir)/eg/db_fns.c $(top_builddir)/eg/dconstrain.c \
 	$(top_builddir)/eg/dot_products.c \
 	$(top_builddir)/eg/draw_to_db.c \
 	$(top_builddir)/eg/fake_logit.c \
@@ -300,7 +300,6 @@ SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/pmf_test.c \
 	$(top_builddir)/eg/simple_subsets.c \
 	$(top_builddir)/eg/some_cdfs.c \
-	$(top_builddir)/eg/stack_models.c \
 	$(top_builddir)/eg/test_distances.c \
 	$(top_builddir)/eg/test_fisher.c \
 	$(top_builddir)/eg/test_harmonic.c \
@@ -312,8 +311,8 @@ SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	distribution_tests.c error_test.c nist_tests.c rake_test.c \
 	sort_example.c test_apop.c test_kernel_ll.c update_via_rng.c
 DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
-	$(top_builddir)/eg/binning.c $(top_builddir)/eg/db_fns.c \
-	$(top_builddir)/eg/dconstrain.c \
+	$(top_builddir)/eg/binning.c $(top_builddir)/eg/cross_models.c \
+	$(top_builddir)/eg/db_fns.c $(top_builddir)/eg/dconstrain.c \
 	$(top_builddir)/eg/dot_products.c \
 	$(top_builddir)/eg/draw_to_db.c \
 	$(top_builddir)/eg/fake_logit.c \
@@ -325,7 +324,6 @@ DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/pmf_test.c \
 	$(top_builddir)/eg/simple_subsets.c \
 	$(top_builddir)/eg/some_cdfs.c \
-	$(top_builddir)/eg/stack_models.c \
 	$(top_builddir)/eg/test_distances.c \
 	$(top_builddir)/eg/test_fisher.c \
 	$(top_builddir)/eg/test_harmonic.c \
@@ -805,6 +803,10 @@ $(top_builddir)/eg/binning$(EXEEXT): $(__top_builddir__eg_binning_OBJECTS) $(__t
 	@rm -f $(top_builddir)/eg/binning$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_binning_OBJECTS) $(__top_builddir__eg_binning_LDADD) $(LIBS)
 
+$(top_builddir)/eg/cross_models$(EXEEXT): $(__top_builddir__eg_cross_models_OBJECTS) $(__top_builddir__eg_cross_models_DEPENDENCIES) $(EXTRA___top_builddir__eg_cross_models_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/cross_models$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_cross_models_OBJECTS) $(__top_builddir__eg_cross_models_LDADD) $(LIBS)
+
 $(top_builddir)/eg/db_fns$(EXEEXT): $(__top_builddir__eg_db_fns_OBJECTS) $(__top_builddir__eg_db_fns_DEPENDENCIES) $(EXTRA___top_builddir__eg_db_fns_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/db_fns$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_db_fns_OBJECTS) $(__top_builddir__eg_db_fns_LDADD) $(LIBS)
@@ -864,10 +866,6 @@ $(top_builddir)/eg/simple_subsets$(EXEEXT): $(__top_builddir__eg_simple_subsets_
 $(top_builddir)/eg/some_cdfs$(EXEEXT): $(__top_builddir__eg_some_cdfs_OBJECTS) $(__top_builddir__eg_some_cdfs_DEPENDENCIES) $(EXTRA___top_builddir__eg_some_cdfs_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/some_cdfs$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_some_cdfs_OBJECTS) $(__top_builddir__eg_some_cdfs_LDADD) $(LIBS)
-
-$(top_builddir)/eg/stack_models$(EXEEXT): $(__top_builddir__eg_stack_models_OBJECTS) $(__top_builddir__eg_stack_models_DEPENDENCIES) $(EXTRA___top_builddir__eg_stack_models_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
-	@rm -f $(top_builddir)/eg/stack_models$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_stack_models_OBJECTS) $(__top_builddir__eg_stack_models_LDADD) $(LIBS)
 
 $(top_builddir)/eg/test_distances$(EXEEXT): $(__top_builddir__eg_test_distances_OBJECTS) $(__top_builddir__eg_test_distances_DEPENDENCIES) $(EXTRA___top_builddir__eg_test_distances_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/test_distances$(EXEEXT)
@@ -945,6 +943,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/apop_map_row.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/binning.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cross_models.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/db_fns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/db_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dconstrain.Po@am__quote@
@@ -966,7 +965,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simple_subsets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/some_cdfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort_example.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack_models.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_apop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_distances.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_fisher.Po@am__quote@
@@ -1027,6 +1025,20 @@ binning.obj: $(top_builddir)/eg/binning.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/binning.c' object='binning.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o binning.obj `if test -f '$(top_builddir)/eg/binning.c'; then $(CYGPATH_W) '$(top_builddir)/eg/binning.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/binning.c'; fi`
+
+cross_models.o: $(top_builddir)/eg/cross_models.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cross_models.o -MD -MP -MF $(DEPDIR)/cross_models.Tpo -c -o cross_models.o `test -f '$(top_builddir)/eg/cross_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/cross_models.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cross_models.Tpo $(DEPDIR)/cross_models.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/cross_models.c' object='cross_models.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cross_models.o `test -f '$(top_builddir)/eg/cross_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/cross_models.c
+
+cross_models.obj: $(top_builddir)/eg/cross_models.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cross_models.obj -MD -MP -MF $(DEPDIR)/cross_models.Tpo -c -o cross_models.obj `if test -f '$(top_builddir)/eg/cross_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/cross_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/cross_models.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cross_models.Tpo $(DEPDIR)/cross_models.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/cross_models.c' object='cross_models.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cross_models.obj `if test -f '$(top_builddir)/eg/cross_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/cross_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/cross_models.c'; fi`
 
 db_fns.o: $(top_builddir)/eg/db_fns.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT db_fns.o -MD -MP -MF $(DEPDIR)/db_fns.Tpo -c -o db_fns.o `test -f '$(top_builddir)/eg/db_fns.c' || echo '$(srcdir)/'`$(top_builddir)/eg/db_fns.c
@@ -1237,20 +1249,6 @@ some_cdfs.obj: $(top_builddir)/eg/some_cdfs.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/some_cdfs.c' object='some_cdfs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o some_cdfs.obj `if test -f '$(top_builddir)/eg/some_cdfs.c'; then $(CYGPATH_W) '$(top_builddir)/eg/some_cdfs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/some_cdfs.c'; fi`
-
-stack_models.o: $(top_builddir)/eg/stack_models.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.o -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.o `test -f '$(top_builddir)/eg/stack_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/stack_models.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/stack_models.Tpo $(DEPDIR)/stack_models.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/stack_models.c' object='stack_models.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.o `test -f '$(top_builddir)/eg/stack_models.c' || echo '$(srcdir)/'`$(top_builddir)/eg/stack_models.c
-
-stack_models.obj: $(top_builddir)/eg/stack_models.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT stack_models.obj -MD -MP -MF $(DEPDIR)/stack_models.Tpo -c -o stack_models.obj `if test -f '$(top_builddir)/eg/stack_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/stack_models.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/stack_models.Tpo $(DEPDIR)/stack_models.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/stack_models.c' object='stack_models.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o stack_models.obj `if test -f '$(top_builddir)/eg/stack_models.c'; then $(CYGPATH_W) '$(top_builddir)/eg/stack_models.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/stack_models.c'; fi`
 
 test_distances.o: $(top_builddir)/eg/test_distances.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_distances.o -MD -MP -MF $(DEPDIR)/test_distances.Tpo -c -o test_distances.o `test -f '$(top_builddir)/eg/test_distances.c' || echo '$(srcdir)/'`$(top_builddir)/eg/test_distances.c
@@ -1648,6 +1646,13 @@ $(top_builddir)/eg/binning.log: $(top_builddir)/eg/binning$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/cross_models.log: $(top_builddir)/eg/cross_models$(EXEEXT)
+	@p='$(top_builddir)/eg/cross_models$(EXEEXT)'; \
+	b='$(top_builddir)/eg/cross_models'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/dconstrain.log: $(top_builddir)/eg/dconstrain$(EXEEXT)
 	@p='$(top_builddir)/eg/dconstrain$(EXEEXT)'; \
 	b='$(top_builddir)/eg/dconstrain'; \
@@ -1749,13 +1754,6 @@ $(top_builddir)/eg/simple_subsets.log: $(top_builddir)/eg/simple_subsets$(EXEEXT
 $(top_builddir)/eg/some_cdfs.log: $(top_builddir)/eg/some_cdfs$(EXEEXT)
 	@p='$(top_builddir)/eg/some_cdfs$(EXEEXT)'; \
 	b='$(top_builddir)/eg/some_cdfs'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/stack_models.log: $(top_builddir)/eg/stack_models$(EXEEXT)
-	@p='$(top_builddir)/eg/stack_models$(EXEEXT)'; \
-	b='$(top_builddir)/eg/stack_models'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

@@ -19,7 +19,8 @@ int *break_down(char *in){
 }
 
 int main(int argc, char **argv){
-    char c, *msg;
+    int c;
+    char *msg;
     int colnames = 'y',
         rownames = 0,
         tab_exists_check = 0;

@@ -443,7 +443,7 @@ extern char *apop_nul_string;
 typedef struct {int ct; int eof;} line_parse_t;
 
 static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *field_ends){
-    char c = fgetc(infile);
+    int c = fgetc(infile);
     int ct = 0, posn=0, thisflen=0, needfield=1;
     while(c!='\n' && c !=EOF){
         posn++;
@@ -480,17 +480,19 @@ typedef struct{
 } apop_char_info;
 
 static const size_t bs=1e5;
-static char get_next(char *buffer, size_t *ptr, FILE *infile){
+static int get_next(char *buffer, size_t *ptr, FILE *infile){
+    int r;
     if (*ptr>=bs){
         size_t len=fread(buffer, 1, bs, infile);
-        if (len < bs) buffer[len]=EOF;
+        if (len < bs) buffer[len]=(char)-1;
         *ptr=0;
     }
-    return buffer[(*ptr)++];
+    r = buffer[(*ptr)++];
+    return r == (char)-1 ? EOF : r;
 }
 
 static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char const *delimiters){
-    char c = get_next(buffer, ptr, f);
+    int c = get_next(buffer, ptr, f);
     int is_delimiter = !!strchr(delimiters, c);
     return (apop_char_info){.c=c, 
             .type = (c==' '||c=='\r' ||c=='\t' || c==0)? (is_delimiter ? 'W'  : 'w')
@@ -517,7 +519,7 @@ static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_d
         ci = parse_next_char(buffer, ptr, infile, delimiters);
         //comments are to end of line, so they're basically a newline.
         if (ci.type=='#' && !(inq||inqq)){
-            for(char c='x'; (c!='\n' && c!=EOF); )
+            for(int c='x'; (c!='\n' && c!=EOF); )
                 c = get_next(buffer, ptr, infile);
             ci.type='n';
         }
