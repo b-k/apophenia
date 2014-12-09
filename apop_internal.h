@@ -62,7 +62,7 @@ void apop_gsl_error(char const *reason, char const *file, int line, int gsl_errn
 #else
 #define OMP_critical(tag)
 #define OMP_for(...) for(__VA_ARGS__)
-#define OMP_for_reduce(...) for(__VA_ARGS__)
+#define OMP_for_reduce(red, ...) for(__VA_ARGS__)
 #endif
 
 #include "config.h"

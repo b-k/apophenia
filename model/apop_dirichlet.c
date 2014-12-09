@@ -1,5 +1,5 @@
 /* The Dirichlet distribution 
-Copyright (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
 \amodel apop_dirichlet A multivariate generalization of the \ref apop_beta "Beta distribution".
 

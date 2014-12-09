@@ -1,6 +1,6 @@
 /* The Yule distribution. A special case of the Waring.
 
-Copyright (c) 2005--2007, 2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+Copyright (c) 2005--2007, 2009, 2011 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
 \amodel apop_yule
 The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>

@@ -1,7 +1,7 @@
 
 /** \file 
 The apop_data structure joins together a gsl_matrix, apop_name, and a table of strings. */
-/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 //apop_gsl_error is in apop_linear_algebra.c
@@ -120,49 +120,6 @@ apop_varad_head(apop_data *, apop_data_calloc){
         Apop_stopif(!setme->vector, apop_return_data_error('m'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     setme->names = apop_name_alloc();
-    return setme;
-}
-
-/** Deprecated; please do not use. Just use a compound literal:
-
-\code
-//Given:
-gsl_vector *v;
-gsl_matrix *m;
-
-// Then this form wraps the elements into \ref apop_data structs. Note that
-// these are not pointers: they're automatically allocated and therefore
-// the extra memory use for the wrapper is cleaned up on exit from scope.
-
-apop_data *dv = &(apop_data){.vector=v};
-apop_data *dm = &(apop_data){.matrix=m};
-
-apop_data *v_dot_m = apop_dot(dv, dm);
-
-//Here is a macro to hide C's ugliness:
-#define As_data(...) (&(apop_data){__VA_ARGS__})
-
-apop_data *v_dot_m2 = apop_dot(As_data(.vector=v), As_data(.matrix=m));
-
-//The wrapped object is an automatically-allocated structure pointing to the
-//original data. If it needs to persist or be separate from the original,
-//make a copy:
-apop_data *dm_copy = apop_data_copy(As_data(.vector=v, .matrix=m));
-\endcode
-*/
-apop_data * apop_matrix_to_data(gsl_matrix *m){
-    Apop_stopif(!m, return apop_data_alloc(), 1, "Converting a NULL matrix to a blank apop_data structure.");
-    apop_data *setme = apop_data_alloc();
-    setme->matrix = m;
-    return setme;
-}
-
-/** Deprecated; please do not use. Just use a compound literal, as in the code sample in
-  the documentation for \ref apop_matrix_to_data. */
-apop_data * apop_vector_to_data(gsl_vector *v){
-    Apop_stopif(!v, return apop_data_alloc(), 1, "Converting a NULL vector to a blank apop_data structure.");
-    apop_data *setme = apop_data_alloc();
-    setme->vector = v;
     return setme;
 }
 
@@ -455,7 +412,7 @@ apop_varad_head(apop_data *, apop_data_stack){
                             "The first data set has %zu columns of text and the second has %zu columns. "
                             "I can't stack that.", out->textsize[1], m2->textsize[1]);
             int basetextsize = out->textsize[0];
-            apop_text_alloc(out, basetextsize+m2->textsize[0], out->textsize[1]);
+            apop_text_alloc(out, basetextsize+m2->textsize[0], m2->textsize[1]);
             Apop_stopif(out->error, return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
@@ -468,7 +425,7 @@ apop_varad_head(apop_data *, apop_data_stack){
                             "The first data set has %zu rows of text and the second has %zu rows. "
                             "I can't stack that.", out->textsize[0], m2->textsize[0]);
             int basetextsize = out->textsize[1];
-            apop_text_alloc(out, out->textsize[0], basetextsize+m2->textsize[1]);
+            apop_text_alloc(out, m2->textsize[0], basetextsize+m2->textsize[1]);
             Apop_stopif(out->error, out->error='a'; return out, 0, "Allocation error.");
             for(int i=0; i< m2->textsize[0]; i++)
                 for(int j=0; j< m2->textsize[1]; j++)
@@ -749,7 +706,7 @@ apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
     Apop_stopif(!d, return NULL, 1, "You're asking me to prune a NULL data set; returning.");
     Apop_stopif(!d->matrix, return d, 1, "You're asking me to prune a data set with NULL matrix; returning.");
-    int rm_list[d->matrix->size1];
+    int rm_list[d->names->colct];
     int keep_count = 0;
     char **name_step = colnames;
     //to throw errors for typos (and slight efficiency gains), I need an array of whether
@@ -1157,6 +1114,7 @@ for (int n=0; n < 10; n++){
 \endcode
 */
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+    Apop_stopif(!in, return -1, 0, "You asked me to write text to a NULL data set.");
     Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);

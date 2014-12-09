@@ -9,8 +9,8 @@ Provenance:
             you hope to modify the below). You can still get the `92
             version from http://netlib.org/a/dloess (a shell script
             that unpacks into everything you need). Most BK edits (c)
-            2009, licensed under the modified GPLv2; see COPYING and
-            COPYING2. Those BK edits made during time working as a gov't
+            2009, licensed under the GPLv2; see COPYING.
+            Those BK edits made during time working as a gov't
             employee are public domain.
 
     By the way, search the code for execnt: many functions will let you
@@ -61,13 +61,8 @@ columns, which is probably what you were looking for.  Try:
         \endcode
         
 \adoc    Predict 
-Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
-apop_data set named "Confidence" (i.e., 
-\code
-!strcmp(outdata->more->names->title, "Confidence") == 1.
-\endcode 
-
-This routine is in beta testing.
+Fills in the zeroth column (ignoring and overwriting any data there), and adds an additional page to the input \ref
+apop_data set named "<Confidence>" with a lower and upper CI for each point.
 
 \adoc    settings \ref apop_loess_settings */
 

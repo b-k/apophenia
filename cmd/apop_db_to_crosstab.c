@@ -1,13 +1,14 @@
 /** \file 
 Command line utility to convert a three-column table to a crosstab.*/
 
-/*Copyright (c) 2005--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2005--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <unistd.h>
 
 int main(int argc, char **argv){
-    char c, verbose=0;
+    int c;
+    char verbose=0;
     char const *msg="Usage: %s [opts] dbname table_name rows columns data\n"
 "\n"
 "A command-line wrapper for the apop_db_to_crosstab function.\n"

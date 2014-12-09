@@ -7,7 +7,7 @@ It has (more-or-less) a single public function: \ref apop_maximum_likelihood, an
 
 At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
 
-/*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 #include "apop_internal.h"
 #include <setjmp.h>
 #include <signal.h>
@@ -271,7 +271,8 @@ apop_varad_head(apop_data *, apop_model_numerical_covariance){
         printf("The estimated Hessian:\n");
         apop_data_show(hessian);
     }
-    apop_data *out = apop_matrix_to_data(apop_matrix_inverse(hessian->matrix));
+    apop_data *out = apop_data_alloc();
+    out->matrix = apop_matrix_inverse(hessian->matrix);
     gsl_matrix_scale(out->matrix, -1);
     if (hessian->names->row){
         apop_name_stack(out->names, hessian->names, 'r');

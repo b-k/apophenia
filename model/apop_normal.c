@@ -1,5 +1,5 @@
 /* The Normal and Lognormal distributions.
- Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+ Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
 \amodel apop_normal The Normal (Gaussian) distribution
 
@@ -45,8 +45,32 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
     double mu = gsl_vector_get(params->parameters->vector,0);
     double sd = gsl_vector_get(params->parameters->vector,1);
     long double ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
-    ll -= tsize*(M_LNPI+M_LN2+log(sd));
+    ll -= tsize*((M_LNPI+M_LN2)/2+log(sd));
 	return ll;
+}
+
+void get_mu_var(apop_data *data, double *mu_out, double *var_out){
+    Get_vmsizes(data)
+    double mmean=0, mvar=0, vmean=0, vvar=0;
+    if (vsize){
+        vmean = apop_mean(data->vector);
+        vvar = apop_var(data->vector);
+    }
+    if (msize1) {
+        if (!vsize) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+        else        mmean = apop_matrix_mean(data->matrix);	
+    }
+    *mu_out = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
+    *var_out = 0;
+    if      (!vsize && !msize1) *var_out = 0;
+    else if (vsize && !msize1)  *var_out = vvar;
+    else if (!vsize && msize1)  *var_out = mvar;
+    else {
+        long double vv=0;
+        for (int i=-1; i< msize2; i++)
+            vv += gsl_pow_2(apop_data_get(data, i) - *mu_out);
+        *var_out = vv/tsize;
+    }
 }
 
 /*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
@@ -55,15 +79,9 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
 static void normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, );
     apop_prep(data, est);
-    Get_vmsizes(data)
-    double mmean=0, mvar=0, vmean=0, vvar=0;
-    if (vsize){
-        vmean = apop_mean(data->vector);
-        vvar = apop_var(data->vector);
-    }
-    if (msize1) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
-    double mean = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
-    double var = mvar *(msize1*msize2/(tsize+0.0)) + vvar *(vsize/(tsize+0.0));
+    Get_vmsizes(data); //tsize
+    double mean, var;
+    get_mu_var(data, &mean, &var);
     est->parameters->vector->data[0] = mean;
     est->parameters->vector->data[1] = sqrt(var);
 	apop_name_add(est->parameters->names, "μ", 'r');
@@ -162,7 +180,7 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
     long double ll = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu);
       ll /= (2*gsl_pow_2(sd));
       ll -= apop_map_sum(d, log);
-      ll -= tsize*(M_LNPI+M_LN2+log(sd));
+      ll -= tsize*((M_LNPI+M_LN2)/2+log(sd));
 	return ll;
 }
 
@@ -174,22 +192,18 @@ static void lognormal_estimate(apop_data * data, apop_model *est){
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1
 
-    double mmean=0, mvar=0, vmean=0, vvar=0;
     if (vsize){
         apop_vector_log(cp->vector);
-        vmean = apop_mean(cp->vector);
-        vvar = apop_var(cp->vector);
     }
     if (msize2){
         for (int i=0; i< msize2; i++)
             apop_vector_log(Apop_cv(cp, i));
-        apop_matrix_mean_and_var(cp->matrix, &mmean, &mvar);	
     }
+    double mean, var;
+    get_mu_var(cp, &mean, &var);
     apop_data_free(cp);
-    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
-    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     est->parameters->vector->data[0] = mean;
-    est->parameters->vector->data[1] = sqrt(var);
+    est->parameters->vector->data[1] = var < 0 ? 0 : sqrt(var); // -ε sometimes happens
 
     apop_name_add(est->parameters->names, "μ", 'r');
     apop_name_add(est->parameters->names, "σ", 'r');

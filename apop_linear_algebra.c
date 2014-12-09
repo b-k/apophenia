@@ -4,7 +4,7 @@ such as take determinants or do singular value decompositions.  Includes
 many convenience functions that don't actually do math but add/delete
 columns, check bounds, et cetera.
 */ 
-/* Copyright (c) 2006--2007, 2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2012 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 /** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
 
@@ -83,7 +83,7 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 \ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
-    gsl_matrix *out;
+    gsl_matrix *out = NULL;
     apop_det_and_inv(in, &out, 0, 1);
     return out;
 }

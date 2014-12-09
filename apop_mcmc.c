@@ -1,7 +1,7 @@
 
 /** \file 
   Markov Chain Monte Carlo. */ 
-/* Copyright (c) 2014 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2014 by Ben Klemens. Licensed under the GNU GPL v2; see COPYING. */
 
 #include "apop_internal.h"
 #include <stdbool.h>
@@ -258,7 +258,7 @@ gibbs_chunks='a', all parameters are drawn as a set, and accepted/rejected as a 
 variances are adapted at an identical rate. If you set \c gibbs_chunks='i',
 then each scalar parameter is assigned its own proposal distribution, which is adapted
 at its own pace. With \c gibbs_chunks='b' (the default), then each of the vector, matrix,
-and weights of your model's parameters are drawn/accepted/adapted as a group (and so
+and weights of your model's parameters are drawn/accepted/adapted as a block (and so
 on to additional chunks if your model has <tt>->more</tt> pages). This works well for
 complex models which naturally break down into subsets of parameters.
 
@@ -271,9 +271,9 @@ you can expect chunks to repeat from step to step. If you want a draw after cycl
 
 \param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
 
-\li If the likelihood model no parameters, I will allocate them. That means you can use
+\li If the likelihood model has \c NULL parameters, I will allocate them. That means you can use
 one of the stock models that ship with Apophenia. If I need to run the model's prep
-routine to get the size of the parameters, then I'll make a copy of the likelihood
+routine to get the size of the parameters, then I will make a copy of the likelihood
 model, run prep, and then allocate parameters for that copy of a model.
 
 \li On exit, the \c parameters element of your likelihood model has the last accepted parameter proposal.

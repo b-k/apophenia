@@ -1,6 +1,6 @@
 
 /** \file apop_mapply.c vector/matrix map/apply.  */
-/* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+/* Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
  
    This file is a tour de force of the if statement. There are several possibilities:
 

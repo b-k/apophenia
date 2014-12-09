@@ -578,7 +578,7 @@ void test_summarize(){
     apop_table_exists("td", 'd');
     apop_text_to_db( DATADIR "/" "test_data" , .has_row_names= 0,1, .tabname = "td");
     gsl_matrix *m = apop_query_to_matrix("select * from td");
-    apop_data *s = apop_data_summarize(apop_matrix_to_data(m));
+    apop_data *s = apop_data_summarize(&(apop_data){.matrix=m});
     gsl_matrix_free(m);
     double t = gsl_matrix_get(s->matrix, 1,0);
     assert (t ==3);
@@ -593,7 +593,7 @@ apop_data *d1   = apop_text_to_data(.text_file= DATADIR "/" "test_data2" ,0,1); 
 apop_data *d2   = apop_text_to_data( DATADIR "/" "test_data2" ); // 55 x 2
 apop_data *d3   = apop_dot(d1, d2, .form2='t');
 gsl_vector v1 = gsl_matrix_row(d1->matrix, 0).vector;
-apop_data *dv   = apop_vector_to_data(&v1); // 2 x 1
+apop_data *dv   = &(apop_data){.vector=&v1}; // 2 x 1
 apop_data *d7   = apop_dot(dv, dv);
     assert(apop_data_get(d7, 0, -1) == apop_data_get(d3, 0,0));
 apop_data *d8   = apop_dot(d1, dv);
@@ -609,7 +609,6 @@ apop_data *d9   = apop_dot(dv, d1, .form2='t');
     assert(d11->error == 'd');
     apop_opts.verbose = verbosity;
     apop_data_free(d1); apop_data_free(d2); apop_data_free(d3); 
-    dv->vector=NULL; apop_data_free(dv); 
     apop_data_free(d7); apop_data_free(d8);
     apop_data_free(d9); apop_data_free(d10); apop_data_free(d11);
 }
@@ -1115,7 +1114,7 @@ void test_default_rng(gsl_rng *r) {
     ncut->draw = NULL; //forced to use the default.
     for(size_t i=0; i < 2e5; i ++)
         apop_draw(o->data+i, r, ncut);
-    apop_model *back_out = apop_estimate(apop_vector_to_data(o), apop_normal);
+    apop_model *back_out = apop_estimate(&(apop_data){.vector=o}, apop_normal);
     Diff(back_out->parameters->vector->data[0] , 1.1 , tol2);
     Diff(back_out->parameters->vector->data[1] , 1.23 , tol2);
     gsl_vector_free(o);
@@ -1193,7 +1192,7 @@ void test_arms(gsl_rng *r){
     ncut->draw = NULL; //testing the default.
     for(size_t i=0; i < 3e5; i ++)
         apop_draw(o->data+i, r, ncut);
-    apop_data *ov = apop_vector_to_data(o);
+    apop_data *ov = &(apop_data){.vector=o};
     apop_model *back_out = apop_estimate(ov, apop_normal);
     Diff(back_out->parameters->vector->data[0] , 1.1, 1e-2)
     Diff(back_out->parameters->vector->data[1] , 1.23, 1e-2)
@@ -1204,9 +1203,9 @@ void test_arms(gsl_rng *r){
     bcut->draw = NULL; //testing the default.
     for(size_t i=0; i < 3e5; i ++)
         apop_draw((o->data)+i, r, bcut);
-    ov = apop_vector_to_data(o);
+    ov = &(apop_data){.vector=o};
     apop_model *back_outb = apop_estimate(ov, apop_beta);
-    apop_data_free(ov);
+    gsl_vector_free(o);
     Diff(back_outb->parameters->vector->data[0] , 0.4, 1e-2)
     Diff(back_outb->parameters->vector->data[1] , 0.43, 1e-2)
     apop_opts.verbose --;
@@ -1339,7 +1338,8 @@ void test_ols_offset(gsl_rng *r){
 int main(int argc, char **argv){
     int  slow_tests = 0;
     apop_opts.thread_count = 2;
-    char c, opts[]  = "sqt:";
+    int c;
+    char opts[]  = "sqt:";
     if (argc==1)
         printf("Sundry tests for Apophenia.\nRunning relatively faster tests.  To run slower tests (primarily simulated annealing), use -s.\nFor quieter output, use -q. To change thread count (default=2), use -t1, -t2, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)

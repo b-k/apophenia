@@ -8,9 +8,11 @@ AUTOMAKE_OPTIONS = \
 AM_CFLAGS = -g -Wall -O3
 
 ## Library versioning (C:R:A == current:revision:age)
-LIBAPOPHENIA_LT_VERSION = 0:0:0
+## 0.999b 0:0:0
+## 0.999c 1:0:0
+LIBAPOPHENIA_LT_VERSION = 1:0:0
 
-SUBDIRS = transform model . cmd tests docs eg
+SUBDIRS = transform model . cmd eg tests docs
 
 
 include_HEADERS = apop.h
@@ -90,7 +92,6 @@ libapophenia_la_LIBADD = \
 	$(LIBM)
 
 EXTRA_DIST = \
-	COPYING2 \
 	rpm.spec \
 	apophenia.pc.in \
 	apophenia.map

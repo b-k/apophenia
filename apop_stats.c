@@ -1,6 +1,6 @@
 
 /** \file apop_stats.c	Basic moments and some distributions. */
-/* Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <gsl/gsl_rng.h>
@@ -659,12 +659,118 @@ apop_data *apop_data_covariance(const apop_data *in){
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
+    if (!out) return NULL;
     for(size_t i=0; i< in->matrix->size2; i++){
         double std_dev = sqrt(apop_vector_var(Apop_cv(in, i), in->weights));
         gsl_vector_scale(Apop_cv(out, i), 1.0/std_dev);
         gsl_vector_scale(Apop_rv(out, i), 1.0/std_dev);
     }
     return out;
+}
+
+
+/** Given a vector representing a probability distribution of observations, calculate the entropy, \f$\sum_i -\ln(v_i)v_i\f$.
+
+\li The input vector need not be normalized to sum to one. You may input a vector giving frequencies.
+
+\li The entropy of a data set depends only on the frequency with which elements are
+observed, not the value of the elements themselves. The \ref apop_data_pmf_compress
+function will reduce an input \ref apop_data set to one weighted line per observation, and
+the weights would determine the entropy:
+
+\code
+apop_data *data = apop_text_to_data("indata");
+apop_data_pmf_compress(data);
+data_entropy = apop_vector_entropy(d->weights);
+\endcode
+
+\li The entropy is calculated using natural logs. To convert to base 2, divide by \f$\ln(2)\f$; see the example.
+
+\li The entropy of an empty data set (\c NULL or a total weight of zero) is zero. Print a warning when given \c NULL
+    input and <tt>apop_opts.verbose >=1</tt>.
+
+\li If the input vector has negative elements, return \c NaN; print a warning when <tt>apop_opts.verbose >= 0</tt>.
+
+Sample code:
+\include entropy_vector.c
+*/
+long double apop_vector_entropy(gsl_vector *in){
+    Apop_stopif(!in, return 0, 1, "Entropy of a NULL vector ≡ 0");
+    Apop_stopif(!in->size, return 0, 1, "Entropy of a zero-length vector ≡ 0");//can't happen.
+
+    //User may or may not have normalized in, so scale everything by the sum.
+    long double sum = apop_vector_sum(in);
+    Apop_stopif(sum<0, return NAN, 0, "Vector sums to a negative value (%Lg). Returning NaN.\n", sum);
+    if (!sum) return 0;
+
+    long double out=0;
+    for (int i=0; i< in->size; i++){
+        double val = gsl_vector_get(in, i)/sum;
+        Apop_stopif(val<0, return NAN, 0, "negative value (%g) in vector position %i. Returning NaN.\n", val, i);
+        if (!val) continue;
+        out -= logl(val)*val;
+    }
+    return out;
+}
+
+static long double norment(apop_model *m){
+    double sigma_sq = gsl_pow_2(apop_data_get(m->parameters, 1));
+    return (log(2*M_PI*sigma_sq) +1)/2.;
+}
+
+double get_ll(apop_data *d, void *m){ return apop_log_likelihood(d, m); }
+
+
+/** Calculate the entropy of a model: \f$\int -\ln(p(x))p(x)dx\f$, which is the expected
+  value of \f$-\ln(p(x))\f$.
+
+The default method is to make draws using the input model's \c draw method (or the MCMC or ARMS default methods), then
+evaluate the log likelihood at that point using the models \c log_likelihood method.
+
+There are a number of routines for specific models, inlcuding the \ref apop_normal and \ref apop_pmf models.
+
+\li  If you have a data set, see \ref apop_vector_entropy.
+
+\li The entropy is calculated using natural logs. If you prefer base-2 logs, just divide by \f$\ln(2)\f$: <tt>apop_model_entropy(my_model)/log(2)</tt>.
+
+\param in A parameterized \ref apop_model. That is, you have already used \ref apop_estimate or \ref apop_model_set_parameters to estimate/set the model parameters.
+\param draws If using the default method of making random draws, how many random draws to make (default=1,000)
+\param r If using the default method of making random draws, the RNG to use. (default: use \ref apop_rng_get_thread)
+
+Sample code:
+\include entropy_model.c
+*/
+#ifdef APOP_NO_VARIADIC
+long double apop_model_entropy(apop_model *in, int draws){
+#else
+apop_varad_head(long double, apop_model_entropy){
+    apop_model * apop_varad_var(in, NULL);
+    Apop_stopif(!in, return NAN, 0, "NULL input model. Returning NaN.");
+    int apop_varad_var(draws, 1000);
+    return apop_model_entropy_base(in, draws);
+}
+
+ long double apop_model_entropy_base(apop_model *in, int draws){
+#endif
+    static int setup=0; if (!(setup++)){
+        apop_entropy_vtable_add(norment, apop_normal);
+    }
+    apop_entropy_type e_fn = apop_entropy_vtable_get(in);
+    if (e_fn) return e_fn(in);
+
+    apop_data *d = apop_model_draws(in, draws);
+    apop_data *lls = apop_map(d, .fn_rp=get_ll, .param=in);
+
+    long double out = -apop_vector_mean(lls->vector);
+    apop_data_free(d);
+    apop_data_free(lls);
+    return out;
+}
+
+double a_div(gsl_vector *in){
+    double pi = gsl_vector_get(in, 0);
+    double qi = gsl_vector_get(in, 0);
+    return pi ? pi * log(pi/qi):0;
 }
 
 /** Kullback-Leibler divergence.
@@ -731,18 +837,21 @@ apop_varad_head(double, apop_kl_divergence){
     } else { //the version with the RNG.
         Apop_stopif(!from->dsize, return GSL_NAN, 0, "I need to make random draws from the 'from' model, "
                                                      "but its dsize (draw size)==0. Returning NaN.");
+        apop_data *draw_list = apop_data_alloc(draw_ct, 2);
         OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
             double draw[from->dsize];
             apop_draw(draw, apop_rng_get_thread(), from);
             gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
             double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
             double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);
+            apop_data_set(draw_list, i, 0, pi);
+            apop_data_set(draw_list, i, 1, qi);
             Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
             Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
                                                 "to-distribution doesn't (which produces infinite divergence).");
-            if (pi) //else add zero.
-                div += pi * log(pi/qi);
         }
+        apop_matrix_normalize(draw_list->matrix, 'v', 'p');
+        div = apop_map_sum(draw_list, .fn_v=a_div);
     }
     return div;
 }

@@ -2,7 +2,7 @@
   adaptive rejection metropolis sampling */
 
 /** (C) Wally Gilks; see documentation below for details.
-  Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 
@@ -241,7 +241,7 @@ void invert(double prob, arms_state *env, POINT *p){
   assert(isfinite(q->y));
 
   /* guard against imprecision yielding point outside interval */
-  if ((p->x < xl) || (p->x > xr)) exit(1);
+  Apop_stopif( ((p->x < xl) || (p->x > xr)), return,-5, "imprecision yields point outside interval");
 }
 
 int test(arms_state *env, POINT *p, apop_arms_settings *params, gsl_rng *r){
@@ -364,7 +364,8 @@ int update(arms_state *env, POINT *p, apop_arms_settings *params){
     q->pl = p->pl;
     m->pr->pl = m;
     q->pl->pr = q;
-  } else exit(10);// this should be impossible 
+  } else
+    Apop_stopif(1, return 1,-5, "unexpected event"); // this should be impossible
 
   /* now adjust position of q within interval if too close to an endpoint */
   ql = q->pl->pl ? q->pl->pl : q->pl;
@@ -503,8 +504,8 @@ int meet (POINT *q, arms_state *env, apop_arms_settings *params){
 double area(POINT *q){
 /* To integrate piece of exponentiated envelope to left of POINT q */ 
 
-  if(q->pl == NULL) // this is leftmost point in envelope 
-      exit(1);
+  if(q->pl == NULL) // this is leftmost point in envelope
+      Apop_stopif(1, return GSL_NAN,-5, "leftmost point in envelope");
   if(q->pl->x == q->x) // interval is zero length
       return 0.;
   if (fabs(q->y - q->pl->y) < YEPS) // integrate straight line piece

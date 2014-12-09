@@ -1,7 +1,7 @@
 /** \file 
  A command line script to read a text file into a database.
 
-Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <unistd.h>
@@ -19,7 +19,8 @@ int *break_down(char *in){
 }
 
 int main(int argc, char **argv){
-    char c, *msg;
+    int c;
+    char *msg;
     int colnames = 'y',
         rownames = 0,
         tab_exists_check = 0;

@@ -1,6 +1,6 @@
 /** \file apop_smoothing.c	A few smoothing-type functions, like moving averages. */
 
-/* Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 

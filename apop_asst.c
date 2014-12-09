@@ -1,6 +1,6 @@
 
 /** \file apop_asst.c  The odds and ends bin. 
-Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <gsl/gsl_math.h>
@@ -81,7 +81,7 @@ apop_varad_head(char *, apop_text_paste){
  char * apop_text_paste_base(apop_data const *strings, char *between, char *before, char *after, char *between_cols, apop_fn_riip prune, void *prune_parameter){
 #endif
     char *prior_line=NULL, *oneline=NULL, *out = before ? strdup(before) : NULL;
-    for (int i=0; i< strings->textsize[0]; i++){
+    for (int i=0; i< ((!strings || !strings->textsize)? 0 : *strings->textsize); i++){
         free(oneline); oneline = NULL;
         for (int j=0; j< strings->textsize[1]; j++){
             if (prune && !prune((apop_data*)strings, i, j, prune_parameter)) continue;

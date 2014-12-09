@@ -1,6 +1,6 @@
 
 /** \file  */
-/* Copyright (c) 2005--2014 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2014 by Ben Klemens.  Licensed under the GPLv2; see COPYING. */
 
 /* Here are the headers for all of apophenia's functions, typedefs, static variables and
 macros. All of these begin with the apop_ (or Apop_ or APOP_) prefix.
@@ -216,8 +216,6 @@ freed location, and you can later safely test conditions like <tt>if (data) ...<
 #define apop_data_free(freeme) (apop_data_free_base(freeme) ? 0 : ((freeme)= NULL))
 
 char        apop_data_free_base(apop_data *freeme);
-apop_data * apop_matrix_to_data(gsl_matrix *m); //deprecated
-apop_data * apop_vector_to_data(gsl_vector *v); //deprecated
 #ifdef APOP_NO_VARIADIC
  apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3) ;
 #else
@@ -445,7 +443,7 @@ extern apop_model *apop_coordinate_transform;
 extern apop_model *apop_composition;
 extern apop_model *apop_dconstrain;
 extern apop_model *apop_mixture;
-extern apop_model *apop_stack;
+extern apop_model *apop_cross;
 
 /** Alias for the \ref apop_normal distribution, qv.
 \hideinitializer */
@@ -485,9 +483,9 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
-//transform/apop_model_stack.c.
-apop_model *apop_model_stack_base(apop_model *mlist[]);
-#define apop_model_stack(...) apop_model_stack_base((apop_model *[]){__VA_ARGS__, NULL})
+//transform/apop_model_cross.c.
+apop_model *apop_model_cross_base(apop_model *mlist[]);
+#define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
 
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
@@ -658,6 +656,7 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
+long double apop_vector_entropy(gsl_vector *in);
 long double apop_matrix_sum(const gsl_matrix *m);
 double apop_matrix_mean(const gsl_matrix *data);
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
@@ -730,6 +729,14 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 #define apop_data_to_dummies(...) apop_varad_link(apop_data_to_dummies, __VA_ARGS__)
 #endif
 
+
+#ifdef APOP_NO_VARIADIC
+ long double apop_model_entropy(apop_model *in, int draws) ;
+#else
+ long double apop_model_entropy_base(apop_model *in, int draws) ;
+ apop_varad_declare(long double, apop_model_entropy, apop_model *in; int draws);
+#define apop_model_entropy(...) apop_varad_link(apop_model_entropy, __VA_ARGS__)
+#endif
 
 #ifdef APOP_NO_VARIADIC
  double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
@@ -868,6 +875,17 @@ void apop_update_type_check(apop_update_type in);
 #define apop_update_vtable_add(fn, ...) apop_update_type_check(fn), apop_vtable_add("apop_update", fn, apop_update_hash(__VA_ARGS__))
 #define apop_update_vtable_get(...) apop_vtable_get("apop_update", apop_update_hash(__VA_ARGS__))
 #define apop_update_vtable_drop(...) apop_vtable_drop("apop_update", apop_update_hash(__VA_ARGS__))
+
+typedef long double (*apop_entropy_type)(apop_model *model);
+#define apop_entropy_hash(m1) ((size_t)(m1)->log_likelihood + 33 * (size_t)((m1)->p) + 27*(size_t)((m1)->draw))
+#ifdef Declare_type_checking_fns
+void apop_entropy_type_check(apop_entropy_type in){ };
+#else
+void apop_entropy_type_check(apop_entropy_type in);
+#endif
+#define apop_entropy_vtable_add(fn, ...) apop_entropy_type_check(fn), apop_vtable_add("apop_entropy", fn, apop_entropy_hash(__VA_ARGS__))
+#define apop_entropy_vtable_get(...) apop_vtable_get("apop_entropy", apop_entropy_hash(__VA_ARGS__))
+#define apop_entropy_vtable_drop(...) apop_vtable_drop("apop_entropy", apop_entropy_hash(__VA_ARGS__))
 
 typedef void (*apop_score_type)(apop_data *d, gsl_vector *gradient, apop_model *params);
 #define apop_score_hash(m1) ((size_t)((m1)->log_likelihood ? (m1)->log_likelihood : (m1)->p))
@@ -2112,7 +2130,7 @@ typedef struct {
     char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
     apop_model *model1; /**< The first model in the stack.*/
     apop_model *model2; /**< The second model.*/
-} apop_stack_settings;
+} apop_cross_settings;
 
 typedef struct {
     apop_data *(*base_to_transformed)(apop_data*);
@@ -2169,7 +2187,7 @@ Apop_settings_declarations(apop_cdf)
 Apop_settings_declarations(apop_arms)
 Apop_settings_declarations(apop_mcmc)
 Apop_settings_declarations(apop_loess)
-Apop_settings_declarations(apop_stack)
+Apop_settings_declarations(apop_cross)
 Apop_settings_declarations(apop_mixture)
 Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)

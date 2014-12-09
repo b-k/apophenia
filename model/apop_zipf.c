@@ -1,6 +1,6 @@
 /* The Zipf distribution.
 
-Copyright (c) 2005--2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+Copyright (c) 2005--2009, 2011 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
 \amodel apop_zipf
 Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 

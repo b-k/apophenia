@@ -1,7 +1,7 @@
 /** \file apop_db_sqlite.c
 This file is included directly into \ref apop_db.c.
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
  */
 #include <sqlite3.h>
 #include <string.h>
