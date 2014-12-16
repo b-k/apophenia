@@ -1,8 +1,17 @@
-The Debian [1] package for the  Apophenia Statistical C Library
+The Debian [1] package for the Apophenia Statistical C Library
 is currently maintained by the Debian Science Team [2,3]:
 the git repository for the apophenia Debian package is at Alioth [4].
+
+To install the Apophenia standard suite on Debian based systems:
+	apt-get update
+	apt-get install apophenia-bin apophenia-doc
+
+For a complete and up-to-date list of Apophenia related packages,
+you may search at the distribution webpage dedicated to Packages [5,6].
 
 [1] https://www.debian.org/
 [2] https://wiki.debian.org/DebianScience
 [3] https://qa.debian.org/developer.php?login=debian-science-maintainers@lists.alioth.debian.org
 [4] http://anonscm.debian.org/cgit/debian-science/packages/apophenia.git/
+[5] https://packages.debian.org/search?keywords=apophenia
+[6] http://packages.ubuntu.com/search?keywords=apophenia
