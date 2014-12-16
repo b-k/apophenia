@@ -8,7 +8,9 @@ AUTOMAKE_OPTIONS = \
 AM_CFLAGS = -g -Wall -O3
 
 ## Library versioning (C:R:A == current:revision:age)
-LIBAPOPHENIA_LT_VERSION = 0:0:0
+## 0.999b 0:0:0
+## 0.999c 1:0:0
+LIBAPOPHENIA_LT_VERSION = 1:0:0
 
 SUBDIRS = transform model . cmd tests docs eg
 
