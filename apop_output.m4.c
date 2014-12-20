@@ -251,11 +251,11 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         L   = get_max_strlen(data->names->row, data->names->rowct);
     if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct))
         fprintf(f, "%*s  ", L+2, " ");
-    if (data->vector && data->names->vector){
+    if (data->vector && data->names && data->names->vector){
         fprintf(f, "%s", data->names->vector);
     }
     if (data->matrix){
-        if (data->vector && data->names->colct){
+        if (data->vector && data->names && data->names->colct){
             fprintf(f, "%c ", data->names->vector ? ' ' : '\t' );
             a_pipe(f, displaytype);
         }
@@ -267,8 +267,8 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
                 fprintf(f, "%s", data->names->col[i]);
         }
     }
-    if (data->textsize[1] && data->names->textct){
-        if ((data->vector && data->names->vector) || (data->matrix && data->names->colct))
+    if (data->textsize[1] && data->names && data->names->textct){
+        if ((data->vector && data->names && data->names->vector) || (data->matrix && data->names->colct))
             a_pipe(f, displaytype);
         if (data->names)
           for(i=0; i< data->names->textct; i++){

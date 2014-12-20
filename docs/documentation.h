@@ -1300,7 +1300,6 @@ A few functions have proven to be useful enough to be worth breaking out into th
 
 \li The \c apop_text_to_db command line utility is a wrapper for the \ref apop_text_to_db command.
 \li The \c apop_db_to_crosstab function is a wrapper for the \ref apop_db_to_crosstab function.
-\li For fans of Gnuplot, the \c apop_plot_query utility produces a plot from the database. It is especially useful for histograms, whcih are binned via \ref apop_data_to_bins before plotting.
 
 endofdiv
 
