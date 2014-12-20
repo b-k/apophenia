@@ -1,4 +1,4 @@
-LIBAPOPHENIA_0.0.0 {
+LIBAPOPHENIA_1.0.0 {
 global:
 apop_opts;
 apop_name_alloc;
