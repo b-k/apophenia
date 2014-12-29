@@ -684,7 +684,7 @@ apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     find each element of the list, using that "" as a stopper, and then call apop_data_rm_columns.*/
     Apop_stopif(!d, return NULL, 1, "You're asking me to prune a NULL data set; returning.");
     Apop_stopif(!d->matrix, return d, 1, "You're asking me to prune a data set with NULL matrix; returning.");
-    int rm_list[d->matrix->size1];
+    int rm_list[d->names->colct];
     int keep_count = 0;
     char **name_step = colnames;
     //to throw errors for typos (and slight efficiency gains), I need an array of whether
