@@ -1071,6 +1071,7 @@ for (int n=0; n < 10; n++){
 \endcode
 */
 int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+    Apop_stopif(!in, return -1, 0, "You asked me to write text to a NULL data set.");
     Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
                                fmt,             row, col,                  in->textsize[0], in->textsize[1]);
