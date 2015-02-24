@@ -49,21 +49,39 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
 	return ll;
 }
 
-/*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
- A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
- \adoc estimated_info Reports the log likelihood.*/
-static void normal_estimate(apop_data * data, apop_model *est){
-    Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
+void get_mu_var(apop_data *data, double *mu_out, double *var_out){
     Get_vmsizes(data)
     double mmean=0, mvar=0, vmean=0, vvar=0;
     if (vsize){
         vmean = apop_mean(data->vector);
         vvar = apop_var(data->vector);
     }
-    if (msize1) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
-    double mean = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
-    double var = mvar *(msize1*msize2/(tsize+0.0)) + vvar *(vsize/(tsize+0.0));
+    if (msize1) {
+        if (!vsize) apop_matrix_mean_and_var(data->matrix, &mmean, &mvar);	
+        else        mmean = apop_matrix_mean(data->matrix);	
+    }
+    *mu_out = mmean *(msize1*msize2/(tsize+0.0)) + vmean *(vsize/(tsize+0.0));
+    *var_out = 0;
+    if      (!vsize && !msize1) *var_out = 0;
+    else if (vsize && !msize1)  *var_out = vvar;
+    else if (!vsize && msize1)  *var_out = mvar;
+    else {
+        long double vv=0;
+        for (int i=-1; i< msize2; i++)
+            vv += gsl_pow_2(apop_data_get(data, i) - *mu_out);
+        *var_out = vv/tsize;
+    }
+}
+
+/*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
+ A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
+ \adoc estimated_info Reports the log likelihood.*/
+static void normal_estimate(apop_data * data, apop_model *est){
+    Nullcheck_mpd(data, est, );
+    apop_prep(data, est);
+    Get_vmsizes(data); //tsize
+    double mean, var;
+    get_mu_var(data, &mean, &var);
     est->parameters->vector->data[0] = mean;
     est->parameters->vector->data[1] = sqrt(var);
 	apop_name_add(est->parameters->names, "μ", 'r');
@@ -174,22 +192,18 @@ static void lognormal_estimate(apop_data * data, apop_model *est){
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1
 
-    double mmean=0, mvar=0, vmean=0, vvar=0;
     if (vsize){
         apop_vector_log(cp->vector);
-        vmean = apop_mean(cp->vector);
-        vvar = apop_var(cp->vector);
     }
     if (msize2){
         for (int i=0; i< msize2; i++)
             apop_vector_log(Apop_cv(cp, i));
-        apop_matrix_mean_and_var(cp->matrix, &mmean, &mvar);	
     }
+    double mean, var;
+    get_mu_var(cp, &mean, &var);
     apop_data_free(cp);
-    double mean = mmean *(msize1*msize2/tsize) + vmean *(vsize/tsize);
-    double var = mvar *(msize1*msize2/tsize) + vvar *(vsize/tsize);
     est->parameters->vector->data[0] = mean;
-    est->parameters->vector->data[1] = sqrt(var);
+    est->parameters->vector->data[1] = var < 0 ? 0 : sqrt(var); // -ε sometimes happens
 
     apop_name_add(est->parameters->names, "μ", 'r');
     apop_name_add(est->parameters->names, "σ", 'r');
