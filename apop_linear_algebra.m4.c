@@ -82,7 +82,7 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 \ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
-    gsl_matrix *out;
+    gsl_matrix *out = NULL;
     apop_det_and_inv(in, &out, 0, 1);
     return out;
 }
