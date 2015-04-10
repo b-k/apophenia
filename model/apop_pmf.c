@@ -125,7 +125,7 @@ then I will return the row number of the draw, not the data in that row.
 vector tallying the cumulative mass. Subsequent draws will have no computational
 overhead. Because the  vector is built using the data on the first call to this or
 the \c cdf method, do not rearrange or modify the data after the first call. I.e.,
-if you choose to use \ref apop_data_sort or \ref apop_data_sort on your data,
+if you choose to use \ref apop_data_sort or \ref apop_data_pmf_compress on your data,
 do it before the first draw or CDF calculation.
 
 \exception m->error='f' There is zero or NaN density in the CMF. I set the model's \c error element to \c 'f' and set <tt>out=NAN</tt>.
