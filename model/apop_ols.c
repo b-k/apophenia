@@ -1,5 +1,5 @@
 /* OLS models. Much of the real work is done in apop_regression.c.
-Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
 \amodel apop_wls The Weighed Least Squares model
 This is a (deprecated) synonym for \ref apop_ols, qv.  If you use the \ref apop_ols

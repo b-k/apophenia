@@ -1,5 +1,5 @@
 /** \file apop_model.c	 sets up the estimate structure which outputs from the various regressions and MLEs.*/
-/* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2011 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #define Declare_type_checking_fns
 #include "apop_internal.h"

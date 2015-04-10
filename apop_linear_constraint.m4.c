@@ -1,7 +1,7 @@
 /** \file apop_linear_constraint.c 
   \c apop_linear_constraint finds a point that meets a set of linear constraints. This takes a lot of machinery, so it gets its own file.
 
-Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2007, 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 */
 #include "apop_internal.h"
 

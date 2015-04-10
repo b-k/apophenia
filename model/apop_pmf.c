@@ -1,5 +1,5 @@
 /* Probability mass functions 
-Copyright (c) 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2011 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
 \amodel apop_pmf A probability mass function is commonly known as a histogram, or still more commonly,
 a bar chart. It indicates that at a given coordinate, there is a given mass.

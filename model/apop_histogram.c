@@ -1,7 +1,7 @@
 /* Histograms via the GSL histogram.
 This implements a one-d histogram representing an empirical distribution. It is primarily a wrapper for the GSL's comparable functions in the standard \c apop_model form, for easy comparison with other models.
 
-Copyright (c) 2007, 2010, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 */
 
 #include "apop_internal.h"

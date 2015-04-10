@@ -1,6 +1,6 @@
 /** \file apop_db.c	An easy front end to SQLite. Includes a few nice
 features like a variance, skew, and kurtosis aggregator for SQL. */
-/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 

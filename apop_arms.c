@@ -2,7 +2,7 @@
   adaptive rejection metropolis sampling */
 
 /** (C) Wally Gilks; see documentation below for details.
-  Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+  Adaptations for Apophenia (c) 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 

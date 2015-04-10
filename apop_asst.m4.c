@@ -1,5 +1,5 @@
 /** \file apop_asst.c  The odds and ends bin. 
-Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <gsl/gsl_math.h>

@@ -10,7 +10,7 @@ else
 
 echo "Don't forget: Apophenia always depends on the GNU Scientific Library and SQLite3 (_and_ their -dev or -devel packages) to build and run."
 mkdir -p $workdir/m4
-cp -r cmd docs eg install/{acinclude.m4,apophenia.pc.in,configure.ac,Makefile.am,COPYING,COPYING2,Readme-pkg,rpm.spec,apophenia.map} model tests transform README ChangeLog $workdir
+cp -r cmd docs eg install/{acinclude.m4,apophenia.pc.in,configure.ac,Makefile.am,COPYING,Readme-pkg,rpm.spec,apophenia.map} model tests transform README ChangeLog $workdir
 
 #Debian maintainers didn't want this in the makefile.
 cp *.c $workdir && rm $workdir/*.m4.c

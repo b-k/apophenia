@@ -9,8 +9,8 @@ Provenance:
             you hope to modify the below). You can still get the `92
             version from http://netlib.org/a/dloess (a shell script
             that unpacks into everything you need). Most BK edits (c)
-            2009, licensed under the modified GPLv2; see COPYING and
-            COPYING2. Those BK edits made during time working as a gov't
+            2009, licensed under the GPLv2; see COPYING.
+            Those BK edits made during time working as a gov't
             employee are public domain.
 
     By the way, search the code for execnt: many functions will let you

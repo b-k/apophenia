@@ -1,6 +1,6 @@
 /** \file 
   Some printing and output interface functions. */
-/* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007, 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 //The reader will find a few function headers for this file in asst.h
 #include "apop_internal.h"

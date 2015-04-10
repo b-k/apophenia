@@ -1,5 +1,5 @@
 /** \file apop_conversions.c	The various functions to convert from one format to another. */
-/* Copyright (c) 2006--2010, 2012 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2010, 2012 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 #include "apop_internal.h"
 #include <gsl/gsl_math.h> //GSL_NAN
 #include <assert.h>

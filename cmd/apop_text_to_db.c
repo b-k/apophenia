@@ -1,7 +1,7 @@
 /** \file 
  A command line script to read a text file into a database.
 
-Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <unistd.h>

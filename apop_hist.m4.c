@@ -1,7 +1,7 @@
 /** \file apop_hist.c */
 /* Functions that work with PMFs and histograms.
 
-Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  
+Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
  (Except psmirnov2x, Copyright R Project, but also licensed under the GPL.)
 */
 

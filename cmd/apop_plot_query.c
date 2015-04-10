@@ -1,7 +1,7 @@
 /** \file 
  Command line utility to take in a query and produce a plot of its output via Gnuplot.
 
-Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 #include <unistd.h>

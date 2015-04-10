@@ -1,5 +1,5 @@
 /* apop_multivariate_normal.c  The multivariate Normal distribution.
- Copyright (c) 2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.
+ Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
 \amodel apop_multivariate_normal This is the multivariate generalization of the Normal distribution.
 

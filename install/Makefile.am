@@ -92,7 +92,6 @@ libapophenia_la_LIBADD = \
 	$(LIBM)
 
 EXTRA_DIST = \
-	COPYING2 \
 	rpm.spec \
 	apophenia.pc.in \
 	apophenia.map

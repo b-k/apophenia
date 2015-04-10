@@ -1,6 +1,6 @@
 /** \file 
 The apop_data structure joins together a gsl_matrix, apop_name, and a table of strings. */
-/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 //apop_gsl_error is in apop_linear_algebra.c

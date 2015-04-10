@@ -1,5 +1,5 @@
 /* The Bernoulli distribution as an \ref apop_model.
-Copyright (c) 2007--2009 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2007--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 /* \amodel apop_bernoulli The Bernoulli model: A single random draw with probability \f$p\f$.
 

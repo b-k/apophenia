@@ -3,7 +3,7 @@
 
 /* There's only one public function here. Its header is in likelihoods.h
  
-Copyright (c) 2007, 2009, 2011 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+Copyright (c) 2007, 2009, 2011 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include "apop_internal.h"
 static apop_model *fixed_param_model;

@@ -1,7 +1,7 @@
 /** \file apop_db_mysql.c
 This file is included directly into \ref apop_db.c. It is read only if APOP_USE_MYSQL is defined.*/
 
-/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
 #include <my_global.h>
 #include <my_sys.h>

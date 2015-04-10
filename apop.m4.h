@@ -1,5 +1,5 @@
 /** \file  */
-/* Copyright (c) 2005--2014 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. */
+/* Copyright (c) 2005--2014 by Ben Klemens.  Licensed under the GPLv2; see COPYING. */
 
 /* Here are the headers for all of apophenia's functions, typedefs, static variables and
 macros. All of these begin with the apop_ (or Apop_ or APOP_) prefix.

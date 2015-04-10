@@ -1,6 +1,6 @@
 /** \file 
   Markov Chain Monte Carlo. */ 
-/* Copyright (c) 2014 by Ben Klemens. Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/* Copyright (c) 2014 by Ben Klemens. Licensed under the GNU GPL v2; see COPYING. */
 
 #include "apop_internal.h"
 #include <stdbool.h>

@@ -6,7 +6,7 @@ It has (more-or-less) a single public function: \ref apop_maximum_likelihood, an
 
 At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
 
-/*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2.  */
+/*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 #include "apop_internal.h"
 #include <setjmp.h>
 #include <signal.h>

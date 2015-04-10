@@ -1,5 +1,5 @@
 /* The binomial distribution as an \c apop_model.
-Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the modified GNU GPL v2; see COPYING and COPYING2. 
+Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
  \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 This differs from the \ref apop_multinomial only in the input data format.
