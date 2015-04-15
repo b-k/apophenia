@@ -61,13 +61,8 @@ columns, which is probably what you were looking for.  Try:
         \endcode
         
 \adoc    Predict 
-Fills in the zeroth column (ignoring and overwriting any data there), and at the data's <tt>->more</tt> pointer, adds an \ref
-apop_data set named "Confidence" (i.e., 
-\code
-!strcmp(outdata->more->names->title, "Confidence") == 1.
-\endcode 
-
-This routine is in beta testing.
+Fills in the zeroth column (ignoring and overwriting any data there), and adds an additional page to the input \ref
+apop_data set named "<Confidence>" with a lower and upper CI for each point.
 
 \adoc    settings \ref apop_loess_settings */
 

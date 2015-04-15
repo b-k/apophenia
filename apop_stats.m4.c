@@ -609,6 +609,7 @@ apop_data *apop_data_covariance(const apop_data *in){
 \ingroup matrix_moments */
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
+    if (!out) return NULL;
     for(size_t i=0; i< in->matrix->size2; i++){
         double std_dev = sqrt(apop_vector_var(Apop_cv(in, i), in->weights));
         gsl_vector_scale(Apop_cv(out, i), 1.0/std_dev);

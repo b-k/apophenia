@@ -1,4 +1,4 @@
-version=0.999
+version=0.999b
 workdir=apophenia-$version
 
 echo This configure script uses Autotools to generate a build directory, $workdir.

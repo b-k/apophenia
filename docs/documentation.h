@@ -2641,6 +2641,13 @@ in the statistical literature.  For discussion of the theoretical structures, se
 href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf"><em>A Useful Algebraic System
 of Statistical Models</em></a> (PDF).
 
+This page is about writing new models from scratch, beginning with basic models and on
+up to models with aribitrary internal settings, specific methods of Bayesian updating
+using your model as a prior or likelihood, and so on. I assume you have already read
+the section on using models in the outline page and have tried a few things with the
+canned models that come with Apophenia, so you already know how a user handles basic
+estimation, adding a settings group, and so on.
+
 This page includes:
 
 \li \ref write_likelihoods, giving a quick overview of how to write a new model from scratch.
@@ -2780,7 +2787,7 @@ Continuing the above example:
 
 \code
 Apop_settings_init (ysg, 
-      Apop_assert(in.size1, "I need you to give me a value for size1. Stopping.");
+      Apop_stopif(in.size1, return NULL, 0, "I need you to give me a value for size1.");
       Apop_varad_set(size2, 10);
       Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
       Apop_varad_set(refs, malloc(sizeof(int)));
@@ -2819,7 +2826,7 @@ populate it and attach it to any model.
 \section vtables Registering new methods in vtables
 
 For any given function (e.g., entropy, the dlog likelihood, Bayesian updating), there is
-probably a special case for well-known models like the Normal distribution. Rather than
+probably a special case for well-known models like the Normal distribution. Rather than adding
 any procedure that could have a special-case calculation to the \c apop_model struct,
 functions may maintain a registry of models and associated special-case procedures.
 
@@ -2845,7 +2852,7 @@ e.g. <tt>apop_update_vtable_drop(apop_beta, apop_binomial)</tt>. You can guarant
 
 This overview will not go into detail about setting up a new vtable. Briefly:
 
-\li See the existing setups in vtables.h. 
+\li See the existing setups in <tt>vtables.h</tt>. 
 \li Cut/paste one and do a search and replace to change the name to match your desired use.
 \li Set the typedef to describe the functions that get added to the vtable.
 \li Rewrite the hash function to check the part of the inputs that interest you. For
@@ -2900,7 +2907,7 @@ the input data. This is what you want for regression methods, where there is one
 \li The first page, named \c &lt;info&gt; is typically a list of scalars. Nothing is guaranteed, but the elements may include:
 
 \li AIC: <a href="https://en.wikipedia.org/wiki/Akaike's_Information_Criterion">Aikake Information Criterion</a>
-\li AIC_c: AIC with a finite sample correction. "<b>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</b>" [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
+\li AIC_c: AIC with a finite sample correction. "<em>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</em>" [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
 \li BIC: <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a>
 \li R squared
 \li R squared adj
@@ -2939,11 +2946,11 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \subsection psubsection p, log_likelihood
 
 \li Function headers look like  <tt>long double your_p_or_ll(apop_data *d, apop_model *params)</tt>.
-\li The inputs are an \ref apop_data set and an \ref apop_model, which should include a filled <tt>->parameters</tt> element.
-\li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. if the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are.
+\li The inputs are an \ref apop_data set and an \ref apop_model, which should include the elements needed to fully estimate the probability/likelihood (probably a filled <tt>->parameters</tt> element, possibly a settings group added by the user).
+\li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. If the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are missing.
 \li Return \c NaN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
 \li If observations are assumed to be iid, you can probably use \ref apop_map_sum to write the core of the log likelihood function.
-\li If your model includes both \ log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
+\li If your model includes both \c log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
 
 \subsection prepsubsection prep
 

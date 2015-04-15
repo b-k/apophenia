@@ -401,8 +401,9 @@ the example below). The vector element of the table lists the column numbers to 
 substituted (the dependent var is zero; first independent col is one), and then one
 column for each item to substitute.
 
-\li If the vector of your apop_data set is \c NULL, then I will use the row names to find
-the columns to substitute. This is generally more robust and/or convenient.
+\li If the vector of the instrument \ref apop_data set is \c NULL, then I will use
+the column names to find the columns to substitute. This is generally more robust
+and/or convenient.
 
 \li If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
 

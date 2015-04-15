@@ -12,7 +12,7 @@ AM_CFLAGS = -g -Wall -O3
 ## 0.999c 1:0:0
 LIBAPOPHENIA_LT_VERSION = 1:0:0
 
-SUBDIRS = transform model . cmd tests docs eg
+SUBDIRS = transform model . cmd eg tests docs
 
 
 include_HEADERS = apop.h
