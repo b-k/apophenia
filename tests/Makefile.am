@@ -15,6 +15,7 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
 	$(top_builddir)/eg/dot_products \
+	$(top_builddir)/eg/entropy_vector \
 	$(top_builddir)/eg/fake_logit \
 	$(top_builddir)/eg/fix_params \
 	$(top_builddir)/eg/hills2 \

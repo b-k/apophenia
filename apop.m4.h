@@ -416,6 +416,7 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
+long double apop_vector_entropy(gsl_vector *in);
 long double apop_matrix_sum(const gsl_matrix *m);
 double apop_matrix_mean(const gsl_matrix *data);
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);

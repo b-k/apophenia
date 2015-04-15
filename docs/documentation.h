@@ -999,6 +999,7 @@ Outlineheader  matrixmathtwo  Basic Math
 \li\ref apop_vector_distance : find the distance between two vectors via various metrics
 \li\ref apop_vector_normalize : scale/shift a matrix to have mean zero, sum to one, et cetera
 \li\ref apop_matrix_normalize : apply \ref apop_vector_normalize to every column or row of a matrix
+\li\ref apop_vector_entropy: calculate the entropy of a vector of frequencies or probabilities
 
     See also:
 

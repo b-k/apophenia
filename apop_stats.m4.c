@@ -618,6 +618,53 @@ apop_data *apop_data_correlation(const apop_data *in){
     return out;
 }
 
+
+/** Given a vector representing a probability distribution of observations, calculate the entropy, \f$\sum_i -\ln(v_i)v_i\f$.
+
+\li The input vector need not be normalized to sum to one. You may input a vector giving frequencies.
+
+\li The entropy of a data set depends only on the frequency with which elements are
+observed, not the value of the elements themselves. The \ref apop_data_pmf_compress
+function will reduce an input \ref apop_data set to one weighted line per observation, and
+the weights would determine the entropy:
+
+\code
+apop_data *data = apop_text_to_data("indata");
+apop_data_pmf_compress(data);
+data_entropy = apop_vector_entropy(d->weights);
+\endcode
+
+\li The entropy is calculated using natural logs. To convert to base 2, divide by \f$\ln(2)\f$; see the example.
+
+\li The entropy of an empty data set (\c NULL or a total weight of zero) is zero. Print a warning when given \c NULL
+    input and <tt>apop_opts.verbose >=1</tt>.
+
+\li If the input vector has negative elements, return \c NaN; print a warning when <tt>apop_opts.verbose >= 0</tt>.
+
+Sample code:
+\include entropy_vector.c
+*/
+long double apop_vector_entropy(gsl_vector *in){
+    Apop_stopif(!in, return 0, 1, "Entropy of a NULL vector ≡ 0");
+    Apop_stopif(!in->size, return 0, 1, "Entropy of a zero-length vector ≡ 0");//can't happen.
+
+    //User may or may not have normalized in, so scale everything by the sum.
+    long double sum = apop_vector_sum(in);
+    Apop_stopif(sum<0, return NAN, 0, "Vector sums to a negative value (%Lg). Returning NaN.\n", sum);
+    if (!sum) return 0;
+
+    long double out=0;
+    for (int i=0; i< in->size; i++){
+        double val = gsl_vector_get(in, i)/sum;
+        Apop_stopif(val<0, return NAN, 0, "negative value (%g) in vector position %i. Returning NaN.\n", val, i);
+        if (!val) continue;
+        out -= logl(val)*val;
+    }
+    return out;
+}
+
+
+
 /** Kullback-Leibler divergence.
 
   This measure of the divergence of one distribution from another

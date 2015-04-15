@@ -155,6 +155,7 @@ variadic_apop_vector_normalize;
 apop_matrix_normalize;
 apop_data_covariance;
 apop_data_correlation;
+apop_vector_entropy;
 apop_matrix_sum;
 apop_matrix_mean;
 apop_matrix_mean_and_var;

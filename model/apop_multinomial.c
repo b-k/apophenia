@@ -10,7 +10,7 @@ and a draw returns a scalar).
 
 \adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$p_1\f$. Thus, \f$p_0\f$
         isn't written down; see \ref apop_multinomial for further discussion.
-        If you input $v[1]>1$ and <tt>apop_opts.verbose >=1</tt>, the log likelihood
+        If you input \f$v[1]>1\f$ and <tt>apop_opts.verbose >=1</tt>, the log likelihood
         function will throw a warning.
 
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
