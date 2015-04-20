@@ -180,6 +180,8 @@ apop_data_get_factor_names_base;
 variadic_apop_data_get_factor_names;
 apop_data_to_dummies_base;
 variadic_apop_data_to_dummies;
+apop_model_entropy_base;
+variadic_apop_model_entropy;
 apop_kl_divergence_base;
 variadic_apop_kl_divergence;
 apop_estimate_coefficient_of_determination;

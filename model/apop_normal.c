@@ -45,7 +45,7 @@ static long double normal_log_likelihood(apop_data *d, apop_model *params){
     double mu = gsl_vector_get(params->parameters->vector,0);
     double sd = gsl_vector_get(params->parameters->vector,1);
     long double ll  = -apop_map_sum(d, .fn_dp = apply_me2, .param = &mu)/(2*gsl_pow_2(sd));
-    ll -= tsize*(M_LNPI+M_LN2+log(sd));
+    ll -= tsize*((M_LNPI+M_LN2)/2+log(sd));
 	return ll;
 }
 
@@ -180,7 +180,7 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
     long double ll = -apop_map_sum(d, .fn_dp=lnx_minus_mu_squared, .param=&mu);
       ll /= (2*gsl_pow_2(sd));
       ll -= apop_map_sum(d, log);
-      ll -= tsize*(M_LNPI+M_LN2+log(sd));
+      ll -= tsize*((M_LNPI+M_LN2)/2+log(sd));
 	return ll;
 }
 

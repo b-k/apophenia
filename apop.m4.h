@@ -448,6 +448,7 @@ Apop_var_declare( apop_data * apop_data_get_factor_names(apop_data *data, int co
 
 Apop_var_declare( apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove) )
 
+Apop_var_declare( long double apop_model_entropy(apop_model *in, int draws) )
 Apop_var_declare( double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) )
 
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
@@ -538,6 +539,10 @@ typedef apop_model *(*apop_update_type)(apop_data *, apop_model* , apop_model*);
                                  : 33*27*19 \
            ) * 37)
 make_vtab_fns(apop_update)
+
+typedef long double (*apop_entropy_type)(apop_model *model);
+#define apop_entropy_hash(m1) ((size_t)(m1)->log_likelihood + 33 * (size_t)((m1)->p) + 27*(size_t)((m1)->draw))
+make_vtab_fns(apop_entropy)
 
 typedef void (*apop_score_type)(apop_data *d, gsl_vector *gradient, apop_model *params);
 #define apop_score_hash(m1) ((size_t)((m1)->log_likelihood ? (m1)->log_likelihood : (m1)->p))
