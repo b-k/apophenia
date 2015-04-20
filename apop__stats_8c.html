@@ -380,9 +380,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>vfabs</b> (double *x)
 <span class="preprocessor"></span>
 
 <span class="comment">/* The entropy function, like some other functions (including apop_update) has a lookup</span>
-<span class="comment"> table for known models like the Normal distribution. If the input model has \c log_likelihood, \c p, and \c draw functions that are the ones found in \ref apop_nomrmal, then use a known calculation to report entropy; else report based on random draws from the model.</span>
+<span class="comment"> table for known models like the Normal distribution. If the input model has</span>
+<span class="comment"> \c log_likelihood, \c p, and \c draw functions that are the ones found in \ref</span>
+<span class="comment"> apop_nomrmal, then use a known calculation to report entropy; else report based on</span>
+<span class="comment"> random draws from the model.</span>
 <span class="comment"></span>
-<span class="comment">If we make a copy of the \ref apop_normal model and replace the log likelihood with a new function that produces identical values, the lookup table will not find the modified model, and the calculation via random draws will be done. Of course, the final entropy as calculated using both methods should differ only by a small amount.</span>
+<span class="comment">If we make a copy of the \ref apop_normal model and replace the log likelihood with</span>
+<span class="comment">a new function that produces identical values, the lookup table will not find the</span>
+<span class="comment">modified model, and the calculation via random draws will be done. Of course, the</span>
+<span class="comment">final entropy as calculated using both methods should differ only by a small amount.</span>
 <span class="comment">*/</span>
 <span class="keywordtype">long</span> <span class="keywordtype">double</span> mask(<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *m){
     <span class="keywordflow">return</span> <a class="code" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>-&gt;log_likelihood(d, m);
