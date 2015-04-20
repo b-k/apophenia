@@ -257,6 +257,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         fprintf(f, "\t%s\n\n", data->names->title);
     if (data->names && data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
+<<<<<<< HEAD
     if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct)){
         if (*apop_opts.db_name_column=='\0' || 
                 !strcmp(apop_opts.db_name_column, "row_names"))
@@ -264,6 +265,11 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         else { fprintf(f, "%s", apop_opts.db_name_column); a_pipe(f, displaytype); }
     }
     if (data->vector && data->names && data->names->vector){
+=======
+    if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct))
+        fprintf(f, "%*s  ", L+2, " ");
+    if (data->vector && data->names->vector){
+>>>>>>> 9b0e3908f8229b1058fef3e5bff7d3224b96e27e
         fprintf(f, "%s", data->names->vector);
     }
     if (data->matrix){
