@@ -62,6 +62,13 @@ AC_CHECK_FUNCS([floor memset pow regcomp sqrt strcasecmp asprintf])
 AC_PATH_PROGS([BC],[bc],[/usr/bin/bc])
 AC_PATH_PROGS([SQLITE3],[sqlite3],[/usr/bin/sqlite3])
 
+# Run only the basic tests unless asked to run the full suite.
+AC_MSG_CHECKING([whether to run extended tests])
+AC_ARG_ENABLE([extended-tests],
+      [AS_HELP_STRING([--enable-extended-tests], [run numeric torture tests (may be slow)])],
+                  [enable_extended_tests="yes"], [enable_extended_tests="no"])
+AC_MSG_RESULT([$enable_extended_tests])
+AM_CONDITIONAL([EXTENDED_TESTS], [test "X$enable_extended_tests" != "Xno"])
 
 AC_CONFIG_FILES([
 	apophenia.pc

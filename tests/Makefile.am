@@ -1,41 +1,47 @@
-check_PROGRAMS= \
-	db_tests \
-	distribution_tests \
-	error_test \
-	nist_tests \
+
+if EXTENDED_TESTS
+EXTRA_TESTS = distribution_tests \
 	rake_test \
-	sort_example \
-	test_apop \
 	test_kernel_ll \
 	update_via_rng \
-	$(top_builddir)/eg/apop_map_row \
-	$(top_builddir)/eg/binning \
 	$(top_builddir)/eg/cross_models \
 	$(top_builddir)/eg/dconstrain \
+	$(top_builddir)/eg/entropy_model \
+	$(top_builddir)/eg/fix_params \
+	$(top_builddir)/eg/hills2 \
+	$(top_builddir)/eg/jacobian \
+	$(top_builddir)/eg/pmf_test \
+	$(top_builddir)/eg/some_cdfs \
+	$(top_builddir)/eg/test_kl_divergence \
+	$(top_builddir)/eg/test_ranks \
+	$(top_builddir)/eg/test_updating 
+else
+	EXTRA_TESTS =
+endif
+
+check_PROGRAMS= \
+	db_tests \
+	error_test \
+	nist_tests \
+	sort_example \
+	test_apop \
+	$(top_builddir)/eg/apop_map_row \
+	$(top_builddir)/eg/binning \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
 	$(top_builddir)/eg/dot_products \
-	$(top_builddir)/eg/entropy_model \
 	$(top_builddir)/eg/entropy_vector \
 	$(top_builddir)/eg/fake_logit \
-	$(top_builddir)/eg/fix_params \
-	$(top_builddir)/eg/hills2 \
 	$(top_builddir)/eg/iv \
-	$(top_builddir)/eg/jacobian \
 	$(top_builddir)/eg/ks_tests \
 	$(top_builddir)/eg/normalizations \
 	$(top_builddir)/eg/parameterization \
-	$(top_builddir)/eg/pmf_test \
 	$(top_builddir)/eg/simple_subsets \
-	$(top_builddir)/eg/some_cdfs \
 	$(top_builddir)/eg/test_distances \
 	$(top_builddir)/eg/test_fisher \
 	$(top_builddir)/eg/test_harmonic \
-	$(top_builddir)/eg/test_kl_divergence \
 	$(top_builddir)/eg/test_pruning \
-	$(top_builddir)/eg/test_ranks \
-	$(top_builddir)/eg/test_regex \
-	$(top_builddir)/eg/test_updating
+	$(top_builddir)/eg/test_regex $(EXTRA_TESTS)
 
 TESTS = \
 	utilities_test \
