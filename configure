@@ -635,6 +635,8 @@ ac_includes_default="\
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+EXTENDED_TESTS_FALSE
+EXTENDED_TESTS_TRUE
 SQLITE3
 BC
 POW_LIB
@@ -795,6 +797,7 @@ with_gsl_exec_prefix
 enable_gsltest
 with_mysql
 with_sqlite3
+enable_extended_tests
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1443,6 +1446,7 @@ Optional Features:
                           when possible)
   --disable-openmp        do not use OpenMP
   --disable-gsltest       Do not try to compile and run a test GSL program
+  --enable-extended-tests run numeric torture tests (may be slow)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -15050,6 +15054,26 @@ done
 test -n "$SQLITE3" || SQLITE3="/usr/bin/sqlite3"
 
 
+# Run only the basic tests unless asked to run the full suite.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to run extended tests" >&5
+$as_echo_n "checking whether to run extended tests... " >&6; }
+# Check whether --enable-extended-tests was given.
+if test "${enable_extended_tests+set}" = set; then :
+  enableval=$enable_extended_tests; enable_extended_tests="yes"
+else
+  enable_extended_tests="no"
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_extended_tests" >&5
+$as_echo "$enable_extended_tests" >&6; }
+ if test "X$enable_extended_tests" != "Xno"; then
+  EXTENDED_TESTS_TRUE=
+  EXTENDED_TESTS_FALSE='#'
+else
+  EXTENDED_TESTS_TRUE='#'
+  EXTENDED_TESTS_FALSE=
+fi
+
 
 ac_config_files="$ac_config_files apophenia.pc Makefile transform/Makefile model/Makefile cmd/Makefile tests/Makefile docs/doxygen.conf docs/Makefile eg/Makefile"
 
@@ -15199,6 +15223,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${EXTENDED_TESTS_TRUE}" && test -z "${EXTENDED_TESTS_FALSE}"; then
+  as_fn_error $? "conditional \"EXTENDED_TESTS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

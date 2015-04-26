@@ -1,6 +1,5 @@
 #include <apop.h>
 
-
 int main(){
     //Set up an apop_data set with only one number.
     //Most of these functions will only look at the first data point encountered.

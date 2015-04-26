@@ -87,38 +87,25 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = db_tests$(EXEEXT) distribution_tests$(EXEEXT) \
-	error_test$(EXEEXT) nist_tests$(EXEEXT) rake_test$(EXEEXT) \
-	sort_example$(EXEEXT) test_apop$(EXEEXT) \
-	test_kernel_ll$(EXEEXT) update_via_rng$(EXEEXT) \
+check_PROGRAMS = db_tests$(EXEEXT) error_test$(EXEEXT) \
+	nist_tests$(EXEEXT) sort_example$(EXEEXT) test_apop$(EXEEXT) \
 	$(top_builddir)/eg/apop_map_row$(EXEEXT) \
 	$(top_builddir)/eg/binning$(EXEEXT) \
-	$(top_builddir)/eg/cross_models$(EXEEXT) \
-	$(top_builddir)/eg/dconstrain$(EXEEXT) \
 	$(top_builddir)/eg/draw_to_db$(EXEEXT) \
 	$(top_builddir)/eg/db_fns$(EXEEXT) \
 	$(top_builddir)/eg/dot_products$(EXEEXT) \
-	$(top_builddir)/eg/entropy_model$(EXEEXT) \
 	$(top_builddir)/eg/entropy_vector$(EXEEXT) \
 	$(top_builddir)/eg/fake_logit$(EXEEXT) \
-	$(top_builddir)/eg/fix_params$(EXEEXT) \
-	$(top_builddir)/eg/hills2$(EXEEXT) \
 	$(top_builddir)/eg/iv$(EXEEXT) \
-	$(top_builddir)/eg/jacobian$(EXEEXT) \
 	$(top_builddir)/eg/ks_tests$(EXEEXT) \
 	$(top_builddir)/eg/normalizations$(EXEEXT) \
 	$(top_builddir)/eg/parameterization$(EXEEXT) \
-	$(top_builddir)/eg/pmf_test$(EXEEXT) \
 	$(top_builddir)/eg/simple_subsets$(EXEEXT) \
-	$(top_builddir)/eg/some_cdfs$(EXEEXT) \
 	$(top_builddir)/eg/test_distances$(EXEEXT) \
 	$(top_builddir)/eg/test_fisher$(EXEEXT) \
 	$(top_builddir)/eg/test_harmonic$(EXEEXT) \
-	$(top_builddir)/eg/test_kl_divergence$(EXEEXT) \
 	$(top_builddir)/eg/test_pruning$(EXEEXT) \
-	$(top_builddir)/eg/test_ranks$(EXEEXT) \
-	$(top_builddir)/eg/test_regex$(EXEEXT) \
-	$(top_builddir)/eg/test_updating$(EXEEXT)
+	$(top_builddir)/eg/test_regex$(EXEEXT) $(am__EXEEXT_1)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -132,6 +119,23 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = utilities_test
 CONFIG_CLEAN_VPATH_FILES =
+@EXTENDED_TESTS_TRUE@am__EXEEXT_1 = distribution_tests$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	lognormal_test$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	rake_test$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	test_kernel_ll$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	update_via_rng$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/cross_models$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/dconstrain$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/entropy_model$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/fix_params$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/hills2$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/jacobian$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/ml_imputation$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/pmf_test$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/some_cdfs$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_kl_divergence$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_ranks$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_updating$(EXEEXT)
 __top_builddir__eg_apop_map_row_SOURCES =  \
 	$(top_builddir)/eg/apop_map_row.c
 __top_builddir__eg_apop_map_row_OBJECTS = apop_map_row.$(OBJEXT)
@@ -191,6 +195,10 @@ __top_builddir__eg_jacobian_LDADD = $(LDADD)
 __top_builddir__eg_ks_tests_SOURCES = $(top_builddir)/eg/ks_tests.c
 __top_builddir__eg_ks_tests_OBJECTS = ks_tests.$(OBJEXT)
 __top_builddir__eg_ks_tests_LDADD = $(LDADD)
+__top_builddir__eg_ml_imputation_SOURCES =  \
+	$(top_builddir)/eg/ml_imputation.c
+__top_builddir__eg_ml_imputation_OBJECTS = ml_imputation.$(OBJEXT)
+__top_builddir__eg_ml_imputation_LDADD = $(LDADD)
 __top_builddir__eg_normalizations_SOURCES =  \
 	$(top_builddir)/eg/normalizations.c
 __top_builddir__eg_normalizations_OBJECTS = normalizations.$(OBJEXT)
@@ -252,6 +260,9 @@ distribution_tests_LDADD = $(LDADD)
 error_test_SOURCES = error_test.c
 error_test_OBJECTS = error_test.$(OBJEXT)
 error_test_LDADD = $(LDADD)
+lognormal_test_SOURCES = lognormal_test.c
+lognormal_test_OBJECTS = lognormal_test.$(OBJEXT)
+lognormal_test_LDADD = $(LDADD)
 nist_tests_SOURCES = nist_tests.c
 nist_tests_OBJECTS = nist_tests.$(OBJEXT)
 nist_tests_LDADD = $(LDADD)
@@ -315,6 +326,7 @@ SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
 	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jacobian.c \
 	$(top_builddir)/eg/ks_tests.c \
+	$(top_builddir)/eg/ml_imputation.c \
 	$(top_builddir)/eg/normalizations.c \
 	$(top_builddir)/eg/parameterization.c \
 	$(top_builddir)/eg/pmf_test.c \
@@ -328,8 +340,9 @@ SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/test_ranks.c \
 	$(top_builddir)/eg/test_regex.c \
 	$(top_builddir)/eg/test_updating.c db_tests.c \
-	distribution_tests.c error_test.c nist_tests.c rake_test.c \
-	sort_example.c test_apop.c test_kernel_ll.c update_via_rng.c
+	distribution_tests.c error_test.c lognormal_test.c \
+	nist_tests.c rake_test.c sort_example.c test_apop.c \
+	test_kernel_ll.c update_via_rng.c
 DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/binning.c $(top_builddir)/eg/cross_models.c \
 	$(top_builddir)/eg/db_fns.c $(top_builddir)/eg/dconstrain.c \
@@ -341,6 +354,7 @@ DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
 	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jacobian.c \
 	$(top_builddir)/eg/ks_tests.c \
+	$(top_builddir)/eg/ml_imputation.c \
 	$(top_builddir)/eg/normalizations.c \
 	$(top_builddir)/eg/parameterization.c \
 	$(top_builddir)/eg/pmf_test.c \
@@ -354,8 +368,9 @@ DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/test_ranks.c \
 	$(top_builddir)/eg/test_regex.c \
 	$(top_builddir)/eg/test_updating.c db_tests.c \
-	distribution_tests.c error_test.c nist_tests.c rake_test.c \
-	sort_example.c test_apop.c test_kernel_ll.c update_via_rng.c
+	distribution_tests.c error_test.c lognormal_test.c \
+	nist_tests.c rake_test.c sort_example.c test_apop.c \
+	test_kernel_ll.c update_via_rng.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -724,6 +739,24 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+@EXTENDED_TESTS_TRUE@EXTRA_TESTS = distribution_tests \
+@EXTENDED_TESTS_TRUE@	lognormal_test \
+@EXTENDED_TESTS_TRUE@	rake_test \
+@EXTENDED_TESTS_TRUE@	test_kernel_ll \
+@EXTENDED_TESTS_TRUE@	update_via_rng \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/cross_models \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/dconstrain \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/entropy_model \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/fix_params \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/hills2 \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/jacobian \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/ml_imputation \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/pmf_test \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/some_cdfs \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_kl_divergence \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_ranks \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/test_updating 
+
 TESTS = \
 	utilities_test \
 	$(check_PROGRAMS)
@@ -880,6 +913,10 @@ $(top_builddir)/eg/ks_tests$(EXEEXT): $(__top_builddir__eg_ks_tests_OBJECTS) $(_
 	@rm -f $(top_builddir)/eg/ks_tests$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_ks_tests_OBJECTS) $(__top_builddir__eg_ks_tests_LDADD) $(LIBS)
 
+$(top_builddir)/eg/ml_imputation$(EXEEXT): $(__top_builddir__eg_ml_imputation_OBJECTS) $(__top_builddir__eg_ml_imputation_DEPENDENCIES) $(EXTRA___top_builddir__eg_ml_imputation_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/ml_imputation$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_ml_imputation_OBJECTS) $(__top_builddir__eg_ml_imputation_LDADD) $(LIBS)
+
 $(top_builddir)/eg/normalizations$(EXEEXT): $(__top_builddir__eg_normalizations_OBJECTS) $(__top_builddir__eg_normalizations_DEPENDENCIES) $(EXTRA___top_builddir__eg_normalizations_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/normalizations$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_normalizations_OBJECTS) $(__top_builddir__eg_normalizations_LDADD) $(LIBS)
@@ -944,6 +981,10 @@ error_test$(EXEEXT): $(error_test_OBJECTS) $(error_test_DEPENDENCIES) $(EXTRA_er
 	@rm -f error_test$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(error_test_OBJECTS) $(error_test_LDADD) $(LIBS)
 
+lognormal_test$(EXEEXT): $(lognormal_test_OBJECTS) $(lognormal_test_DEPENDENCIES) $(EXTRA_lognormal_test_DEPENDENCIES) 
+	@rm -f lognormal_test$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(lognormal_test_OBJECTS) $(lognormal_test_LDADD) $(LIBS)
+
 nist_tests$(EXEEXT): $(nist_tests_OBJECTS) $(nist_tests_DEPENDENCIES) $(EXTRA_nist_tests_DEPENDENCIES) 
 	@rm -f nist_tests$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(nist_tests_OBJECTS) $(nist_tests_LDADD) $(LIBS)
@@ -992,6 +1033,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iv.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jacobian.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ks_tests.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lognormal_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ml_imputation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nist_tests.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/normalizations.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parameterization.Po@am__quote@
@@ -1242,6 +1285,20 @@ ks_tests.obj: $(top_builddir)/eg/ks_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/ks_tests.c' object='ks_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ks_tests.obj `if test -f '$(top_builddir)/eg/ks_tests.c'; then $(CYGPATH_W) '$(top_builddir)/eg/ks_tests.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/ks_tests.c'; fi`
+
+ml_imputation.o: $(top_builddir)/eg/ml_imputation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ml_imputation.o -MD -MP -MF $(DEPDIR)/ml_imputation.Tpo -c -o ml_imputation.o `test -f '$(top_builddir)/eg/ml_imputation.c' || echo '$(srcdir)/'`$(top_builddir)/eg/ml_imputation.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/ml_imputation.Tpo $(DEPDIR)/ml_imputation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/ml_imputation.c' object='ml_imputation.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ml_imputation.o `test -f '$(top_builddir)/eg/ml_imputation.c' || echo '$(srcdir)/'`$(top_builddir)/eg/ml_imputation.c
+
+ml_imputation.obj: $(top_builddir)/eg/ml_imputation.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ml_imputation.obj -MD -MP -MF $(DEPDIR)/ml_imputation.Tpo -c -o ml_imputation.obj `if test -f '$(top_builddir)/eg/ml_imputation.c'; then $(CYGPATH_W) '$(top_builddir)/eg/ml_imputation.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/ml_imputation.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/ml_imputation.Tpo $(DEPDIR)/ml_imputation.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/ml_imputation.c' object='ml_imputation.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ml_imputation.obj `if test -f '$(top_builddir)/eg/ml_imputation.c'; then $(CYGPATH_W) '$(top_builddir)/eg/ml_imputation.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/ml_imputation.c'; fi`
 
 normalizations.o: $(top_builddir)/eg/normalizations.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT normalizations.o -MD -MP -MF $(DEPDIR)/normalizations.Tpo -c -o normalizations.o `test -f '$(top_builddir)/eg/normalizations.c' || echo '$(srcdir)/'`$(top_builddir)/eg/normalizations.c
@@ -1639,13 +1696,6 @@ db_tests.log: db_tests$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-distribution_tests.log: distribution_tests$(EXEEXT)
-	@p='distribution_tests$(EXEEXT)'; \
-	b='distribution_tests'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 error_test.log: error_test$(EXEEXT)
 	@p='error_test$(EXEEXT)'; \
 	b='error_test'; \
@@ -1656,13 +1706,6 @@ error_test.log: error_test$(EXEEXT)
 nist_tests.log: nist_tests$(EXEEXT)
 	@p='nist_tests$(EXEEXT)'; \
 	b='nist_tests'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-rake_test.log: rake_test$(EXEEXT)
-	@p='rake_test$(EXEEXT)'; \
-	b='rake_test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1681,20 +1724,6 @@ test_apop.log: test_apop$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_kernel_ll.log: test_kernel_ll$(EXEEXT)
-	@p='test_kernel_ll$(EXEEXT)'; \
-	b='test_kernel_ll'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-update_via_rng.log: update_via_rng$(EXEEXT)
-	@p='update_via_rng$(EXEEXT)'; \
-	b='update_via_rng'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/apop_map_row.log: $(top_builddir)/eg/apop_map_row$(EXEEXT)
 	@p='$(top_builddir)/eg/apop_map_row$(EXEEXT)'; \
 	b='$(top_builddir)/eg/apop_map_row'; \
@@ -1705,20 +1734,6 @@ $(top_builddir)/eg/apop_map_row.log: $(top_builddir)/eg/apop_map_row$(EXEEXT)
 $(top_builddir)/eg/binning.log: $(top_builddir)/eg/binning$(EXEEXT)
 	@p='$(top_builddir)/eg/binning$(EXEEXT)'; \
 	b='$(top_builddir)/eg/binning'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/cross_models.log: $(top_builddir)/eg/cross_models$(EXEEXT)
-	@p='$(top_builddir)/eg/cross_models$(EXEEXT)'; \
-	b='$(top_builddir)/eg/cross_models'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/dconstrain.log: $(top_builddir)/eg/dconstrain$(EXEEXT)
-	@p='$(top_builddir)/eg/dconstrain$(EXEEXT)'; \
-	b='$(top_builddir)/eg/dconstrain'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1744,13 +1759,6 @@ $(top_builddir)/eg/dot_products.log: $(top_builddir)/eg/dot_products$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/entropy_model.log: $(top_builddir)/eg/entropy_model$(EXEEXT)
-	@p='$(top_builddir)/eg/entropy_model$(EXEEXT)'; \
-	b='$(top_builddir)/eg/entropy_model'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/entropy_vector.log: $(top_builddir)/eg/entropy_vector$(EXEEXT)
 	@p='$(top_builddir)/eg/entropy_vector$(EXEEXT)'; \
 	b='$(top_builddir)/eg/entropy_vector'; \
@@ -1765,30 +1773,9 @@ $(top_builddir)/eg/fake_logit.log: $(top_builddir)/eg/fake_logit$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/fix_params.log: $(top_builddir)/eg/fix_params$(EXEEXT)
-	@p='$(top_builddir)/eg/fix_params$(EXEEXT)'; \
-	b='$(top_builddir)/eg/fix_params'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/hills2.log: $(top_builddir)/eg/hills2$(EXEEXT)
-	@p='$(top_builddir)/eg/hills2$(EXEEXT)'; \
-	b='$(top_builddir)/eg/hills2'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/iv.log: $(top_builddir)/eg/iv$(EXEEXT)
 	@p='$(top_builddir)/eg/iv$(EXEEXT)'; \
 	b='$(top_builddir)/eg/iv'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/jacobian.log: $(top_builddir)/eg/jacobian$(EXEEXT)
-	@p='$(top_builddir)/eg/jacobian$(EXEEXT)'; \
-	b='$(top_builddir)/eg/jacobian'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1814,23 +1801,9 @@ $(top_builddir)/eg/parameterization.log: $(top_builddir)/eg/parameterization$(EX
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/pmf_test.log: $(top_builddir)/eg/pmf_test$(EXEEXT)
-	@p='$(top_builddir)/eg/pmf_test$(EXEEXT)'; \
-	b='$(top_builddir)/eg/pmf_test'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/simple_subsets.log: $(top_builddir)/eg/simple_subsets$(EXEEXT)
 	@p='$(top_builddir)/eg/simple_subsets$(EXEEXT)'; \
 	b='$(top_builddir)/eg/simple_subsets'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/some_cdfs.log: $(top_builddir)/eg/some_cdfs$(EXEEXT)
-	@p='$(top_builddir)/eg/some_cdfs$(EXEEXT)'; \
-	b='$(top_builddir)/eg/some_cdfs'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1856,13 +1829,6 @@ $(top_builddir)/eg/test_harmonic.log: $(top_builddir)/eg/test_harmonic$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/test_kl_divergence.log: $(top_builddir)/eg/test_kl_divergence$(EXEEXT)
-	@p='$(top_builddir)/eg/test_kl_divergence$(EXEEXT)'; \
-	b='$(top_builddir)/eg/test_kl_divergence'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/test_pruning.log: $(top_builddir)/eg/test_pruning$(EXEEXT)
 	@p='$(top_builddir)/eg/test_pruning$(EXEEXT)'; \
 	b='$(top_builddir)/eg/test_pruning'; \
@@ -1870,16 +1836,121 @@ $(top_builddir)/eg/test_pruning.log: $(top_builddir)/eg/test_pruning$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/test_ranks.log: $(top_builddir)/eg/test_ranks$(EXEEXT)
-	@p='$(top_builddir)/eg/test_ranks$(EXEEXT)'; \
-	b='$(top_builddir)/eg/test_ranks'; \
+$(top_builddir)/eg/test_regex.log: $(top_builddir)/eg/test_regex$(EXEEXT)
+	@p='$(top_builddir)/eg/test_regex$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_regex'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/test_regex.log: $(top_builddir)/eg/test_regex$(EXEEXT)
-	@p='$(top_builddir)/eg/test_regex$(EXEEXT)'; \
-	b='$(top_builddir)/eg/test_regex'; \
+distribution_tests.log: distribution_tests$(EXEEXT)
+	@p='distribution_tests$(EXEEXT)'; \
+	b='distribution_tests'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+lognormal_test.log: lognormal_test$(EXEEXT)
+	@p='lognormal_test$(EXEEXT)'; \
+	b='lognormal_test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+rake_test.log: rake_test$(EXEEXT)
+	@p='rake_test$(EXEEXT)'; \
+	b='rake_test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_kernel_ll.log: test_kernel_ll$(EXEEXT)
+	@p='test_kernel_ll$(EXEEXT)'; \
+	b='test_kernel_ll'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+update_via_rng.log: update_via_rng$(EXEEXT)
+	@p='update_via_rng$(EXEEXT)'; \
+	b='update_via_rng'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/cross_models.log: $(top_builddir)/eg/cross_models$(EXEEXT)
+	@p='$(top_builddir)/eg/cross_models$(EXEEXT)'; \
+	b='$(top_builddir)/eg/cross_models'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/dconstrain.log: $(top_builddir)/eg/dconstrain$(EXEEXT)
+	@p='$(top_builddir)/eg/dconstrain$(EXEEXT)'; \
+	b='$(top_builddir)/eg/dconstrain'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/entropy_model.log: $(top_builddir)/eg/entropy_model$(EXEEXT)
+	@p='$(top_builddir)/eg/entropy_model$(EXEEXT)'; \
+	b='$(top_builddir)/eg/entropy_model'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/fix_params.log: $(top_builddir)/eg/fix_params$(EXEEXT)
+	@p='$(top_builddir)/eg/fix_params$(EXEEXT)'; \
+	b='$(top_builddir)/eg/fix_params'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/hills2.log: $(top_builddir)/eg/hills2$(EXEEXT)
+	@p='$(top_builddir)/eg/hills2$(EXEEXT)'; \
+	b='$(top_builddir)/eg/hills2'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/jacobian.log: $(top_builddir)/eg/jacobian$(EXEEXT)
+	@p='$(top_builddir)/eg/jacobian$(EXEEXT)'; \
+	b='$(top_builddir)/eg/jacobian'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/ml_imputation.log: $(top_builddir)/eg/ml_imputation$(EXEEXT)
+	@p='$(top_builddir)/eg/ml_imputation$(EXEEXT)'; \
+	b='$(top_builddir)/eg/ml_imputation'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/pmf_test.log: $(top_builddir)/eg/pmf_test$(EXEEXT)
+	@p='$(top_builddir)/eg/pmf_test$(EXEEXT)'; \
+	b='$(top_builddir)/eg/pmf_test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/some_cdfs.log: $(top_builddir)/eg/some_cdfs$(EXEEXT)
+	@p='$(top_builddir)/eg/some_cdfs$(EXEEXT)'; \
+	b='$(top_builddir)/eg/some_cdfs'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/test_kl_divergence.log: $(top_builddir)/eg/test_kl_divergence$(EXEEXT)
+	@p='$(top_builddir)/eg/test_kl_divergence$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_kl_divergence'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/test_ranks.log: $(top_builddir)/eg/test_ranks$(EXEEXT)
+	@p='$(top_builddir)/eg/test_ranks$(EXEEXT)'; \
+	b='$(top_builddir)/eg/test_ranks'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -2066,6 +2137,7 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+@EXTENDED_TESTS_FALSE@	EXTRA_TESTS =
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
