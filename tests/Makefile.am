@@ -1,6 +1,7 @@
 
 if EXTENDED_TESTS
 EXTRA_TESTS = distribution_tests \
+	lognormal_test \
 	rake_test \
 	test_kernel_ll \
 	update_via_rng \
@@ -10,6 +11,7 @@ EXTRA_TESTS = distribution_tests \
 	$(top_builddir)/eg/fix_params \
 	$(top_builddir)/eg/hills2 \
 	$(top_builddir)/eg/jacobian \
+	$(top_builddir)/eg/ml_imputation \
 	$(top_builddir)/eg/pmf_test \
 	$(top_builddir)/eg/some_cdfs \
 	$(top_builddir)/eg/test_kl_divergence \

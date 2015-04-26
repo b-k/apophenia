@@ -109,47 +109,6 @@ static void log_and_exp(gsl_rng *r){
     apop_data_free(d5);
 }
 
-static void compare_mvn_estimates(apop_model *L, apop_model *R, double tolerance){
-    gsl_vector_sub(L->parameters->vector, R->parameters->vector);
-    gsl_matrix_sub(L->parameters->matrix, R->parameters->matrix);
-    assert(fabs(apop_sum(L->parameters->vector)) + fabs (apop_matrix_sum(L->parameters->matrix)) < tolerance);
-}
-
-void test_ml_imputation(gsl_rng *r){
-    size_t len = 4e4;
-    int i,j;
-    apop_data *fillme = apop_data_alloc(len, 3);
-    apop_model *mvn = apop_model_copy(apop_multivariate_normal);
-    mvn->parameters = apop_data_alloc(3, 3, 3);
-    for(i=0; i < 3; i ++)
-        for(j=-1; j < 3; j ++)
-            apop_data_set(mvn->parameters, i, j, gsl_rng_uniform(r));
-    //now make your random garbage symmetric
-    for(i=0; i < 3; i ++)
-        for(j=i+1; j < 3; j ++)
-            apop_data_set(mvn->parameters, j, i, apop_data_get(mvn->parameters, i, j));
-    apop_matrix_to_positive_semidefinite(mvn->parameters->matrix);
-    apop_model_draws(mvn, .draws=fillme);
-    //apop_data_show(mvn->parameters);
-    apop_model *est = apop_estimate(fillme, apop_multivariate_normal);
-    //apop_data_show(est->parameters);
-    compare_mvn_estimates(est, mvn, 1e-1);
-
-    double pct_to_delete = 0.01;
-    int max_to_delete = 7, ctr = 0;
-    for(i=0; i < len && ctr < max_to_delete; i ++)
-        for(j=0; j < 3; j ++)
-            if (gsl_rng_uniform(r) < pct_to_delete){
-                apop_data_set(fillme, i, j, GSL_NAN);
-                ctr++;
-            }
-    apop_ml_imputation(fillme, mvn); 
-    apop_model *est2 = apop_estimate(fillme, apop_multivariate_normal);
-    //apop_data_show(est2->parameters);
-    compare_mvn_estimates(est2, mvn, 1e-1);
-    apop_data_free(fillme);
-}
-
 void test_percentiles(){
     gsl_vector *v = gsl_vector_alloc(307);
     for (size_t i=0; i< 307; i++)
@@ -830,40 +789,6 @@ int test_jack(gsl_rng *r){
     return (error < 1e-2);//still not very accurate.
 }
 
-void test_lognormal(gsl_rng *r){
-    apop_model *source = apop_model_copy(apop_normal);
-    apop_model_clear(NULL, source);
-    double mu = gsl_ran_flat(r, -1, 1);
-    double sigma = gsl_ran_flat(r, .01, 1);
-    int n = gsl_ran_flat(r,1,8e5);
-    apop_data *data = apop_data_alloc(0,1,n);
-    gsl_vector_set(source->parameters->vector, 0, mu);
-    gsl_vector_set(source->parameters->vector, 1, sigma);
-    for (int j=0; j< n; j++){
-        double *k   = gsl_matrix_ptr(data->matrix, 0, j);
-        apop_draw(k, r, source);
-        *k = exp(*k);
-    }
-    apop_model_free(source);
-    apop_model *out = apop_estimate(data, apop_lognormal);
-    double muhat = apop_data_get(out->parameters, 0,-1);
-    double sigmahat = apop_data_get(out->parameters, 1,-1);
-    //if (verbose) printf("mu: %g, muhat: %g, var: %g, varhat: %g\n", mu, muhat,  sigma,sigmahat);
-    Diff(mu, muhat, 1e-2);
-    Diff(sigma, sigmahat, 1e-2);
-    apop_model_free(out);
-
-    apop_model *for_mle= apop_model_copy(apop_lognormal);
-    for_mle->estimate=NULL;
-    apop_model *out2 = apop_estimate(data, for_mle);
-    apop_model_free(for_mle);
-    muhat = apop_data_get(out2->parameters, 0,-1);
-    sigmahat = apop_data_get(out2->parameters, 1,-1);
-    Diff(mu, muhat, 1e-2);
-    Diff(sigma, sigmahat, 1e-2);
-    apop_model_free(out2);
-    apop_data_free(data);
-}
 
 void test_multivariate_normal(){
     int len = 5e5;
@@ -1364,7 +1289,6 @@ int main(int argc, char **argv){
     do_test("split and stack test", test_split_and_stack(r));
     do_test("test probit and logit", test_probit_and_logit(r));
     do_test("test probit and logit again", test_probit_and_logit(r));
-    do_test("test ML imputation", test_ml_imputation(r));
     do_test("test data compressing", test_pmf_compress(r));
     do_test("weighted regression", test_weighted_regression(d,e));
     do_test("offset OLS", test_ols_offset(r));
@@ -1382,7 +1306,6 @@ int main(int argc, char **argv){
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
     do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
     do_test("OLS test", test_OLS(r));
-    do_test("test lognormal estimations", test_lognormal(r));
     do_test("test jackknife covariance", test_jack(r));
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
