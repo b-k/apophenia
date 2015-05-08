@@ -7,9 +7,10 @@ s/<h2>Enumerations/<h2>Models/
     s/.*>(Overview|Name|Input_format|Estimate_results|Predict|RNG|CDF|Exampe|Settings)_x[0-9].*x_//
 }
 s/<b>Enumerator: <\/b>//
+s|<tr><th colspan="2">Enumerator</th></tr>||
 s/<td class="memname">enum <a class="el"/<td class="memname">apop_model <a class="el"/
 s/_x[0-9]*x_//g
-s/model_specific/Methods are Default or Model-specific/g
+s/model_specific/Methods are (D)efault<br> or (M)odel-specific/g
 s/[eE]stimate_results/Post-estimate/g
 s/[iI]nput_format/Input format/g
 s/[pP]arameter_format/Parameter format/g

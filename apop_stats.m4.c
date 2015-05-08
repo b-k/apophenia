@@ -431,7 +431,6 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
-\todo We should probably let this summarize rows as well. 
 \ingroup    output */
 apop_data * apop_data_summarize(apop_data *indata){
     Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
