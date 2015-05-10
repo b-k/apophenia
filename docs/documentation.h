@@ -214,6 +214,8 @@ The sample program here is intended to show how one would integrate Apophenia in
 
 \subpage notroot
 
+\subpage makefile
+
 \subpage windows
 
 */
@@ -364,19 +366,8 @@ new functions that behave like this) see the \ref optionaldetails page.
 /** \defgroup command_line "Command line programs" */
 
 
-/** \page admin The admin page
 
-Just a few page links:
-\li <a href=todo.html>The to-do list</a>
-\li <a href=bug.html>The known bug list</a>
-\li <a href="modules.html">The documentation page list</a>
-*/
-
-/** \page outline An outline of the library
-
-ALLBUTTON
-
-Outlineheader preliminaries Getting started
+/** \page preliminaries Getting started
 
 If you are entirely new to Apophenia, \ref gentle "have a look at the Gentle Introduction here".
 
@@ -385,23 +376,122 @@ As well as the information in this outline, there is a separate page covering th
 
 For another concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
 
+\subpage gentle
+
+\subpage setup
+
+\subpage eg
+
+\section mwd The book version
+
+Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.
+
+If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia. 
+
+As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
+Here is a BibTeX-formatted entry giving the relevant information:
+
+\code 
+@book{klemens:modeling,
+    title = "Modeling with Data: Tools and Techniques for Statistical Computing",
+    author="Ben Klemens",
+    year=2008,
+    publisher="Princeton University Press"
+}
+\endcode
+
+The rationale for the \ref apop_model struct, based on an algebraic system of models, is detailed in a <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf">U.S. Census Bureau research report</a>.
+
+\section status What is the status of the code?
+
+[This section last updated 3 August 2014.]
+
+Apophenia was first posted to SourceForge in February 2005, which means that we've had
+several years to develop and test the code in real-world applications. 
+
+The test suite, including the sample code and solution set for <em>Modeling with Data</em>,
+is about 5,500 lines over 135 files. gprof reports that it covers over 90% of the
+7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is
+that the well-worn parts, in this case functions like \ref apop_data_get and \ref
+apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
+out-of-the-way functions (maybe the score for the Beta distribution) will always be worth a bit
+of caution. Close to all of the code has been used in production, so all of it was at
+least initially tested against real-world data.
+
+It is currently at version 0.999, which is intended to indicate that it is substantially
+complete. Of course, a library for scientific computing, or even for that small subset
+that is statistics, will never cover all needs and all methods. But as it stands
+Apophenia's framework, based on the \ref apop_data and \ref apop_model, is basically
+internally consistent, has enough tools that you can get common work done quickly,
+and is reasonably fleshed out with a good number of models out of the box.
+
+The \ref apop_data structure is set, and there are enough functions there that you could
+use it as a subpackage by itself (especially in tandem with the database functions)
+for nontrivial dealings with data.
+
+The \ref apop_model structure is much more ambitious---Apophenia is really intended
+to be a novel system for developing models---and its internals can still be improved.
+The promise underlying the structure is that you can provide just one item, such as
+an RNG or a likelihood function, and the structure will do all of the work to fill in
+computationally-intensive methods for everything else; see \ref settingswriting for
+the details. Some directions aren't quite there yet (such as RNG -> most other things),
+the PMF model needs an internal index for faster lookups, and so on.  Readers are invited
+to contribute better methods (such as an alternate means of estimating mixture models),
+or filling in more of existing models (write a dlog likelihood function for a model
+that does not currently have one), or submit new standard models not yet included.
 
 
-Outlineheader c Some notes on C and Apophenia's use of C utilities.
+\section ext How do I write extensions?
+
+It's not a package, so you don't need an API---write your code and <tt>include</tt>
+it like any other C code. The system is written to not require a registration or
+initialization step to add a new model or other such parts.  A new \ref apop_model
+has to conform to some rules if it is to play well with \ref apop_estimate,
+\ref apop_draw, and so forth.  See the notes at \ref modeldetails.  Once your new
+model or function is working, please post the code or a link to the code on the <a
+href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.
+
+\subpage c
+
+\section links Further references
+
+For your convenience, here are links to some other libraries you are probably using.
+
+\li <a href="http://www.gnu.org/software/libc/manual/html_node/index.html">The standard C library</a>
+\li <a href="http://www.gnu.org/software/gsl/manual/html_node/index.html">The
+GSL documentation</a>, and <a href="http://www.gnu.org/software/gsl/manual/html_node/Function-Index.html">its index</a>
+\li <a href="http://sqlite.org/lang.html">SQL understood by SQLite</a>
+
+
+*/
+
+/** \page outline An outline of the library
+
+\subpage dataoverview
+
+\subpage dbs
+
+\subpage modelsec
+
+\subpage testpage
+
+\subpage Histosec
+
+\subpage maxipage
+
+\subpage moreasst
+
+*/
+
+/** \page c C, SQL and coding utilities
  
-Outlineheader learning  Learning C
+\section learning  Learning C
 
 <a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages. More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;c2coff=1&amp;q=c+tutorial">in abundance</a>.  Some people find pointers to be especially difficult; fortunately, there's a <a href="http://www.youtube.com/watch?v=6pmWojisM_E">claymation cartoon</a> which clarifies everything.
 
 Coding often relies on gathering together many libraries; there is a section at the bottom of this outline linking to references for some libraries upon which Apophenia builds.
 
-endofdiv
-
-Outlineheader usagenotes  Usage notes
-
-Here are some notes about the technical details of using the Apophenia library in your development environment.
-
-<b> Header aggregation </b>
+\section Header aggregation
 
 There is only one header. Put
 \code
@@ -409,7 +499,7 @@ There is only one header. Put
 \endcode
 at the top of your file, and you're done. Everything declared in that file starts with \c apop_ (or \c Apop_).
 
-<b>Linking</b>
+\section Linking
 
 You will need to link to the Apophenia library, which involves adding the <tt>-lapophenia</tt> flag to your compiler. Apophenia depends on SQLite3 and the GNU Scientific Library (which depends on a BLAS), so you will probably need something like:
 
@@ -419,18 +509,18 @@ gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g -Wall -O3
 
 Your best bet is to encapsulate this mess in a \ref makefile "Makefile". Even if you are using an IDE and its command-line management tools, see the Makefile page for notes on useful flags.
 
-<b>Debugging</b>
+\section Debugging
 The end of <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a>
 of <em>Modeling with Data</em> offers some GDB macros which can make dealing with
 Apophenia from the GDB command line much more pleasant. As per the next section, it
 also helps to set <tt>apop_opts.stop_on_warning='v'</tt> or <tt>'w'</tt> when running
 under the debugger.
 
-<b>Standards compliance</b>
+\subsection Standards compliance
 
 To the best of our abilities, Apophenia complies to the C standard (ISO/IEC 9899:2011).
 
-<b> Easier calling syntax</b>
+\section Easier calling syntax
 
 Many functions allow optional named arguments to functions. For
 example:
@@ -441,12 +531,9 @@ apop_vector_distance(v1, .metric='M'); //assumes v2=0, uses Manhattan metric.
 
 See the \ref designated page for details of this syntax.
 
-endofdiv
+\subpage designated
 
-
-endofdiv
-
-Outlineheader debugging  Errors, logging, debugging and stopping
+\section debugging  Errors, logging, debugging and stopping
 
 <h5>The \c error element</h5> 
 
@@ -472,7 +559,7 @@ if (cp->error == 'c') {printf("Circular link in the data set; failing.\n"); retu
 \endcode
 
 
-<h5>Verbosity level and logging</h5> 
+\section Verbosity level and logging
 
 The global variable <tt>apop_opts.verbose</tt> determines how many notifications and warnings get printed by Apophenia's warning mechanism:
 
@@ -501,7 +588,7 @@ query sent to the database engine iff <tt>apop_opts.verbose >=2</tt> (which is u
 when building complex queries). The diagnostics attempt to follow
 the same verbosity scale as the warning messages.
 
-<h5>Stopping</h5> 
+\section Stopping
 
 Warnings and errors never halt processing. It is up to the calling function to decide
 whether to stop.
@@ -519,9 +606,66 @@ if the warning message would be filtered out by your verbosity level, continue.<
 
 See the documentation for individual functions for details on how each reports errors to the caller and the level at which warnings are posted.
 
-endofdiv
+\section Legi Legible output
 
-Outlineheader About SQL, the syntax for querying databases
+The output routines handle four sinks for your output. There is a global variable that
+you can use for small projects where all data will go to the same place.
+
+\code 
+apop_opts.output_type = 's'; //Stdout
+apop_opts.output_type = 'f'; //named file
+apop_opts.output_type = 'p'; //a pipe or already-opened file
+apop_opts.output_type = 'd'; //the database
+\endcode
+
+You can also set the output type, the name of the output file or table, and other options
+via arguments to individual calls to output functions. See \ref apop_prep_output for the list of options.
+
+
+C makes minimal distinction between pipes and files, so you can set a
+pipe or file as output and send all output there until further notice:
+
+\code
+apop_opts.output_type = 'p';
+apop_opts.output_pipe = popen("gnuplot", "w");
+apop_plot_lattice(...); //see https://github.com/b-k/Apophenia/wiki/gnuplot_snippets
+fclose(apop_opts.output_pipe);
+apop_opts.output_pipe = fopen("newfile", "w");
+apop_data_print(set1);
+fprintf(apop_opts.output_pipe, "\nNow set 2:\n");
+apop_data_print(set2);
+\endcode
+
+Continuing the example, you can always override the global data with
+a specific request:
+\code
+apop_vector_print(v, "vectorfile"); //put vectors in a separate file
+apop_matrix_print(m, "matrix_table", .output_type = 'd'); //write to the db
+apop_matrix_print(m, .output_pipe = stdout);  //now show the same matrix on screen
+\endcode
+
+I will first look to the input file name, then the input pipe, then the
+global \c output_pipe, in that order, to determine to where I should
+write.  Some combinations (like output type = \c 'd' and only a pipe) don't
+make sense, and I'll try to warn you about those. 
+
+What if you have too much output and would like to use a pager, like \c less or \c more?
+In C and POSIX terminology, you're asking to pipe your output to a paging program. Here is
+the form:
+\code
+FILE *lesspipe = popen("less", "w");
+assert(lesspipe);
+apop_data_print(your_data_set, .output_pipe=lesspipe);
+pclose(lesspipe);
+\endcode
+\c popen will search your usual program path for \c less, so you don't have to give a full path.
+
+\li\ref apop_data_print()  
+\li\ref apop_matrix_print()
+\li\ref apop_vector_print()
+\li\ref apop_data_show() : alias for \ref apop_data_print limited to \c stdout.
+
+\section sqlsec About SQL, the syntax for querying databases
 
 For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite.  For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>.  Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.
 
@@ -548,9 +692,9 @@ apop_text_to_db indata stab db_for_sqlite.db
 \endcode
 
 Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
-endofdiv
 
-Outlineheader threads Threading
+
+\section threads Threading
 
 Apophenia uses OpenMP for threading. You generally do not need to know how OpenMP works
 to use Apophenia, and many points of work will thread without your doing anything.
@@ -603,87 +747,10 @@ code to implement your improvement and submit a pull request on Github.]
 See <a href="http://modelingwithdata.org/arch/00000175.htm">this tutorial on C
 threading</a> if you would like to know more, or are unsure about whether your functions
 are thread-safe or not.
-
-endofdiv
-
-Outlineheader mwd The book version
-
-Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.
-
-If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia. 
-
-As with many computer programs, the preferred manner of citing Apophenia is to cite its related book.
-Here is a BibTeX-formatted entry giving the relevant information:
-
-\code 
-@book{klemens:modeling,
-    title = "Modeling with Data: Tools and Techniques for Statistical Computing",
-    author="Ben Klemens",
-    year=2008,
-    publisher="Princeton University Press"
-}
-\endcode
-
-The rationale for the \ref apop_model struct, based on an algebraic system of models, is detailed in a <a href="http://www.census.gov/srd/papers/pdf/rrs2014-06.pdf">U.S. Census Bureau research report</a>.
-
-endofdiv
-
-Outlineheader status What is the status of the code?
-
-[This section last updated 3 August 2014.]
-
-Apophenia was first posted to SourceForge in February 2005, which means that we've had
-several years to develop and test the code in real-world applications. 
-
-The test suite, including the sample code and solution set for <em>Modeling with Data</em>,
-is about 5,500 lines over 135 files. gprof reports that it covers over 90% of the
-7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is
-that the well-worn parts, in this case functions like \ref apop_data_get and \ref
-apop_normal's <tt>log_likelihood</tt>, are likely to be entirely reliable, while the
-out-of-the-way functions (maybe the score for the Beta distribution) are worth a bit
-of caution. Close to all of the code has been used in production, so all of it was at
-least initially tested against real-world data.
-
-It is currently at version 0.999, which is intended to indicate that it is substantially
-complete. Of course, a library for scientific computing, or even for that small subset
-that is statistics, will never cover all needs and all methods. But as it stands
-Apophenia's framework, based on the \ref apop_data and \ref apop_model, is basically
-internally consistent, has enough tools that you can get common work done quickly,
-and is reasonably fleshed out with a good number of models out of the box.
-
-The \ref apop_data structure is set, and there are enough functions there that you could
-use it as a subpackage by itself (especially in tandem with the database functions)
-for nontrivial dealings with data.
-
-The \ref apop_model structure is much more ambitious---Apophenia is really intended
-to be a novel system for developing models---and its internals can still be improved.
-The promise underlying the structure is that you can provide just one item, such as
-an RNG or a likelihood function, and the structure will do all of the work to fill in
-computationally-intensive methods for everything else; see \ref settingswriting for
-the details. Some directions aren't quite there yet (such as RNG -> most other things),
-the PMF model needs an internal index for faster lookups, and so on.  Readers are invited
-to contribute better methods (such as an alternate means of estimating mixture models),
-or filling in more of existing models (write a dlog likelihood function for a model
-that does not currently have one), or submit new standard models not yet included.
+*/
 
 
-endofdiv
-
-Outlineheader ext How do I write extensions?
-
-It's not a package, so you don't need an API---write your code and <tt>include</tt>
-it like any other C code. The system is written to not require a registration or
-initialization step to add a new model or other such parts.  A new \ref apop_model
-has to conform to some rules if it is to play well with \ref apop_estimate,
-\ref apop_draw, and so forth.  See the notes at \ref modeldetails.  Once your new
-model or function is working, please post the code or a link to the code on the <a
-href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.
-
-endofdiv
-
-endofdiv
-
-Outlineheader dataoverview Data sets
+/** \page dataoverview Data sets
 
 The \ref apop_data structure represents a data set.  It joins together a \c gsl_vector, a \c gsl_matrix, an \ref apop_name, and a table of strings. It tries to be lightweight, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
@@ -1257,12 +1324,9 @@ apop_data_to_factors(d2);
 \li\ref apop_data_get_factor_names()
 \li\ref apop_text_unique_elements()
 \li\ref apop_vector_unique_elements()
+*/
 
-endofdiv
-
-endofdiv
-
-Outlineheader dbs Databases
+/** \page dbs Databases
 
 These are convenience functions to handle interaction with SQLite or mySQL/mariaDB. They open one and only one database, and handle most of the interaction therewith for you.
 
@@ -1286,8 +1350,7 @@ with SQLite, Apophenia opens an in-memory database handle. It is a sensible work
 use the faster in-memory database as the primary, and then attach an on-disk database
 to read in data and write final output tables.
 
-
-<b>Extracting data from the database</b>
+\section edftd Extracting data from the database
 
 \li\ref apop_db_to_crosstab(): take three columns in the database (row, column, value) and produce a table of values.
 \li\ref apop_query_to_data()
@@ -1296,26 +1359,26 @@ to read in data and write final output tables.
 \li\ref apop_query_to_text()
 \li\ref apop_query_to_vector()
 
-<b>Writing data to the database</b>
+\section wdttd Writing data to the database
 
-See the print functions below. E.g.
+See the print functions at \ref Legi. E.g.
 
 \code
 apop_data_print(yourdata, .output_type='d', .output_name="dbtab");
 \endcode
 
-Outlineheader cmdline Command-line utilities
+\section cmdline Command-line utilities
 
 A few functions have proven to be useful enough to be worth breaking out into their own programs, for use in scripts or other data analysis from the command line:
 
 \li The \c apop_text_to_db command line utility is a wrapper for the \ref apop_text_to_db command.
 \li The \c apop_db_to_crosstab function is a wrapper for the \ref apop_db_to_crosstab function.
 
-endofdiv
+\subpage db_moments
+*/
 
-endofdiv
 
-Outlineheader Modesec Models
+/** \page modelsec Models
 
 This segment discusses the use of existing \ref apop_model objects.
 If you need to write a new model, see \ref modeldetails.
@@ -1593,15 +1656,10 @@ For just using a model, that's all of what you need to know. For details on writ
 \li\ref Apop_settings_set
 \li\ref Apop_settings_get  get a single element from a settings group.
 \li\ref Apop_settings_get_group get the whole settings group.
-
-endofdiv
-
-endofdiv
-
-endofdiv
+*/
 
 
-Outlineheader Test Tests & diagnostics
+/** \page testpage Tests & diagnostics
 
 Just about any hypothesis test consists of a few common steps:
 
@@ -1626,14 +1684,10 @@ If you are producing a statistic that you know has a common form, like a central
 \li\ref apop_estimate_r_squared()
 \li\ref apop_estimate_parameter_tests()
 
-See also the example at the end of \ref gentle.
-
-Outlineheader Mont Monte Carlo methods
+See also the example at the end of \ref gentle, and these Monte Carlo methods:
 
 \li\ref apop_bootstrap_cov()
 \li\ref apop_jackknife_cov()
-
-endofdiv
 
 To give another example of testing, here is a function that used to be a part of Apophenia, but seemed a bit out of place. Here it is as a sample:
 
@@ -1671,10 +1725,9 @@ Given the correct assumptions, this is \f$\sim \chi^2_m\f$, where \f$m\f$ is the
 \code
 double p_value = apop_test(stat, "chi squared", beta->size);
 \endcode
+*/
 
-endofdiv
-
-Outlineheader Histosec Empirical distributions and PMFs (probability mass functions)
+/** \page Histosec Empirical distributions and PMFs (probability mass functions)
 
 The \ref apop_pmf model wraps a \ref apop_data set so it can be read as an empirical
 model, with a likelihoood function (equal to the associated weight for observed
@@ -1739,10 +1792,9 @@ Or, use \ref apop_vector_moving_average for a simpler smoothing method.
 \li\ref apop_vector_moving_average() : smooth a vector (e.g., your_pmf->data->weights) via moving average.
 \li\ref apop_histograms_test_goodness_of_fit() : goodness-of-fit via \f$\chi^2\f$ statistic
 \li\ref apop_test_kolmogorov() : goodness-of-fit via Kolmogorov-Smirnov statistic
+*/
 
-endofdiv
-
-Outlineheader Maxi Maximum likelihood methods
+/** \page maxipage Maximum likelihood methods
 
 This section includes some notes on the maximum likelihood routine. As in the section
 on writing models above, if a model has a \c p or \c log_likelihood method but no \c
@@ -1877,71 +1929,10 @@ Outlineheader Miss Missing data
 
 \li\ref apop_data_listwise_delete()
 \li\ref apop_ml_impute()
-
-endofdiv
-
-Outlineheader Legi Legible output
-
-The output routines handle four sinks for your output. There is a global variable that
-you can use for small projects where all data will go to the same place.
-
-\code 
-apop_opts.output_type = 's'; //Stdout
-apop_opts.output_type = 'f'; //named file
-apop_opts.output_type = 'p'; //a pipe or already-opened file
-apop_opts.output_type = 'd'; //the database
-\endcode
-
-You can also set the output type, the name of the output file or table, and other options
-via arguments to individual calls to output functions. See \ref apop_prep_output for the list of options.
+*/
 
 
-C makes minimal distinction between pipes and files, so you can set a
-pipe or file as output and send all output there until further notice:
-
-\code
-apop_opts.output_type = 'p';
-apop_opts.output_pipe = popen("gnuplot", "w");
-apop_plot_lattice(...); //see https://github.com/b-k/Apophenia/wiki/gnuplot_snippets
-fclose(apop_opts.output_pipe);
-apop_opts.output_pipe = fopen("newfile", "w");
-apop_data_print(set1);
-fprintf(apop_opts.output_pipe, "\nNow set 2:\n");
-apop_data_print(set2);
-\endcode
-
-Continuing the example, you can always override the global data with
-a specific request:
-\code
-apop_vector_print(v, "vectorfile"); //put vectors in a separate file
-apop_matrix_print(m, "matrix_table", .output_type = 'd'); //write to the db
-apop_matrix_print(m, .output_pipe = stdout);  //now show the same matrix on screen
-\endcode
-
-I will first look to the input file name, then the input pipe, then the
-global \c output_pipe, in that order, to determine to where I should
-write.  Some combinations (like output type = \c 'd' and only a pipe) don't
-make sense, and I'll try to warn you about those. 
-
-What if you have too much output and would like to use a pager, like \c less or \c more?
-In C and POSIX terminology, you're asking to pipe your output to a paging program. Here is
-the form:
-\code
-FILE *lesspipe = popen("less", "w");
-assert(lesspipe);
-apop_data_print(your_data_set, .output_pipe=lesspipe);
-pclose(lesspipe);
-\endcode
-\c popen will search your usual program path for \c less, so you don't have to give a full path.
-
-\li\ref apop_data_print()  
-\li\ref apop_matrix_print()
-\li\ref apop_vector_print()
-\li\ref apop_data_show() : alias for \ref apop_data_print limited to \c stdout.
-
-endofdiv
-
-Outlineheader moreasst Assorted
+/** \page moreasst Assorted
 
 A few more descriptive methods:
 
@@ -1966,17 +1957,6 @@ Math utilities:
 \li\ref apop_multivariate_gamma()
 \li\ref apop_multivariate_lngamma()
 \li\ref apop_rng_alloc()
-
-endofdiv
-
-Outlineheader links Further references
-
-For your convenience, here are links to some other libraries you are probably using.
-
-\li <a href="http://www.gnu.org/software/libc/manual/html_node/index.html">The standard C library</a>
-\li <a href="http://www.gnu.org/software/gsl/manual/html_node/index.html">The
-GSL documentation</a>, and <a href="http://www.gnu.org/software/gsl/manual/html_node/Function-Index.html">its index</a>
-\li <a href="http://sqlite.org/lang.html">SQL understood by SQLite</a>
 
 */
 
