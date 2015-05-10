@@ -78,6 +78,13 @@ Even more advanced features like Loess smoothing (\ref apop_loess) and the Fishe
 Test (\ref apop_test_fisher_exact) are not especially Apophenia-specific. But here are
 some things that are noteworthy.
 
+\li It's a C library! You can build applications using Apophenia for the data-processing
+back-end of your program, and not worry about the overhead associated with scripting
+languages. For example, it is currently used in production for certain aspects of
+processing for the U.S. Census Bureau's American Community Survey. And the numeric
+routines in your favorite scripting language typically have a back-end in plain C;
+perhaps Apophenia can facilitate writing your next one.
+
 \li The text file parser is flexible and effective. Such data files are typically
 called `CSV files', meaning <em>comma-separated values</em>, but the delimiter can be
 anything (or even some mix of things), and there is no requirement that text have
@@ -115,10 +122,6 @@ or which you can use as a prior for another round of Bayesian updating. Outside 
 Bayesian updating, the \ref apop_model_metropolis function is good for approximating
 other complex models.
 
-\li Of course, it's a C library, meaning that you can build applications using Apophenia
-for the data-processing back-end of your program. For example, it is currently used
-in production for certain aspects of processing for the U.S. Census Bureau's American
-Community Survey.
 
 
 <h5>Contribute!</h5> 
@@ -209,6 +212,10 @@ The sample program here is intended to show how one would integrate Apophenia in
 
 \include draw_to_db.c
 
+\subpage notroot
+
+\subpage windows
+
 */
 
 /** \page windows The Windows page
@@ -252,6 +259,8 @@ Info: resolving _gsl_rng_taus by linking to __imp__gsl_rng_taus (auto-import)
 These lines are indeed just information, and not errors. Feel free to ignore them.
 
 [Thanks to Andrew Felton and Derrick Higgins for their Cygwin debugging efforts.]
+
+\subpage mingw
 */
 
 /** \page notroot  Not root? 
