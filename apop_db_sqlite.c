@@ -56,6 +56,7 @@ Here is some more realistic sample code:
 \include normalizations.c
 */
 
+/** \cond doxy_ignore */
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
     double avg;     /* avg of terms */
@@ -64,6 +65,7 @@ struct StdDevCtx {
     double avg4;    /* avg of the fourth-power of terms */
     int cnt;        /* Number of terms counted */
 };
+/** \endcond */
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
     if (argc<1) return;
@@ -215,11 +217,13 @@ static int apop_sqlite_db_open(char const *filename){
     return 0;
 }
 
+/** \cond doxy_ignore */
 typedef struct {    //for the apop_query_to_... functions.
     int       firstcall, namecol;
     size_t    currentrow;
     apop_data *outdata;
 } callback_t;
+/** \endcond */
 
 //This is the callback for apop_query_to_text.
 static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
@@ -263,12 +267,14 @@ apop_data * apop_sqlite_query_to_text(char *query){
     return qinfo.outdata;
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     apop_data  *d;
     int        intypes[5];//names, vectors, mcols, textcols, weights.
     int        current, thisrow, error_thrown;
     const char *instring;
 } apop_qt;
+/** \endcond */
 
 static void count_types(apop_qt *in, const char *intypes){
     int i = 0;

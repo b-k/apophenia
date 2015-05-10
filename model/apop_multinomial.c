@@ -167,8 +167,9 @@ double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 
 /* \amodel apop_multinomial The \f$n\f$--option generalization of the \ref apop_binomial "Binomial distribution".
 
-\adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
-/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
+\adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).
+
+\adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void multinomial_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
     Get_vmsizes(data); //vsize, msize1

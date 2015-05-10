@@ -91,10 +91,12 @@ int apop_db_open(char const *filename){
         return apop_sqlite_db_open(filename);
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     char const *name;
     int isthere;
 } tab_exists_t;
+/** \endcond */
 
 static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
     tab_exists_t *te = in;

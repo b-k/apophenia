@@ -20,6 +20,7 @@ typedef long double (*apop_fn_with_params) (apop_data *, apop_model *);
 typedef	void (*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void (*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
+/** \cond doxy_ignore */
 typedef struct {
 	gsl_vector	*beta;
 	int		    dimension;
@@ -37,6 +38,7 @@ typedef struct {
     jmp_buf     bad_eval_jump;
     apop_data** path;
 }   infostruct;
+/** \endcond */ //End of Doxygen ignore.
 
 static apop_model * find_roots (infostruct p); //see end of file.
 
@@ -145,10 +147,12 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     apop_model *base_model;
     int *current_index;
 } apop_model_for_infomatrix_struct;
+/** \endcond */
 
 static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static threadlocal gsl_vector *v = NULL;

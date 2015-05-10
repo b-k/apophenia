@@ -418,6 +418,7 @@ static int prep_text_reading(char const *text_file, FILE **infile){
 }
 
 /////New text file reading
+/** \cond doxy_ignore */
 extern char *apop_nul_string;
 
 #define Textrealloc(str, len) (str) =         \
@@ -426,6 +427,7 @@ extern char *apop_nul_string;
                 : (((len) > 0) ? malloc(len) : apop_nul_string);
 
 typedef struct {int ct; int eof;} line_parse_t;
+/** \endcond */
 
 static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *field_ends){
     int c = fgetc(infile);
@@ -460,9 +462,11 @@ static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *f
     return (line_parse_t) {.ct=ct, .eof= (c == EOF)};
 }
 
+/** \cond doxy_ignore */
 typedef struct{
     char c, type;
 } apop_char_info;
+/** \endcond */
 
 static const size_t bs=1e5;
 static int get_next(char *buffer, size_t *ptr, FILE *infile){

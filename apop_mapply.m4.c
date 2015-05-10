@@ -210,6 +210,7 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     void *fn;
     gsl_matrix  *m;
@@ -219,6 +220,7 @@ typedef struct {
     char rc;
     void *param;
 } threadpass;
+/** \endcond */
 
 /* Mapply_core splits the database into an array of threadpass structs, then one of the following
   ...loop functions gets called, which does the actual for loop to step through the rows/columns/elements.  */

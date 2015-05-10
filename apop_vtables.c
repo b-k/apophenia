@@ -11,6 +11,7 @@
 #define unlock 
 #endif
 
+/** \cond doxy_ignore */
 typedef struct {
     size_t hash;
     void *fn;
@@ -28,6 +29,7 @@ typedef struct {
 
 apop_vtable_s *vtable_list;
 int ignore_me;
+/** \endcond */ //End of Doxygen ignore.
 
 //The Dan J Bernstein string hashing algorithm.
 static unsigned long apop_settings_hash(char const *str){

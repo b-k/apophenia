@@ -359,6 +359,8 @@ from \ref apop_rng_get_thread.
 
 \li For exhaustive details on implementation of the above (should you wish to write
 new functions that behave like this) see the \ref optionaldetails page.
+
+\subpage optionaldetails
 */
 
 /** \defgroup global_vars The global variables */
@@ -381,6 +383,11 @@ For another concrete example of folding Apophenia into a project, have a look at
 \subpage setup
 
 \subpage eg
+
+\subpage refstatusext
+*/
+
+/** \page refstatusext References, status, and extensions
 
 \section mwd The book version
 
@@ -429,8 +436,8 @@ The \ref apop_data structure is set, and there are enough functions there that y
 use it as a subpackage by itself (especially in tandem with the database functions)
 for nontrivial dealings with data.
 
-The \ref apop_model structure is much more ambitious---Apophenia is really intended
-to be a novel system for developing models---and its internals can still be improved.
+The \ref apop_model structure is much more ambitious---Apophenia is intended
+to be a novel system for developing models.
 The promise underlying the structure is that you can provide just one item, such as
 an RNG or a likelihood function, and the structure will do all of the work to fill in
 computationally-intensive methods for everything else; see \ref settingswriting for
@@ -844,9 +851,9 @@ If you have any columns of text, then you will need to read in via the database:
 do any database-appropriate cleaning of the input data, then use \ref
 apop_query_to_data() or \ref apop_query_to_mixed_data() to pull the data to an \ref apop_data set.
 
-endofdiv
+\subpage text_format
 
-Outlineheader datalloc Alloc/free
+\section datalloc Alloc/free
 
 \li\ref apop_data_alloc()
 \li\ref apop_data_calloc()
@@ -865,9 +872,8 @@ Outlineheader datalloc Alloc/free
 \li <tt>void gsl_vector_free (gsl_vector * v)</tt>
 \li <tt>gsl_vector_memcpy (gsl_vector * dest, const gsl_vector * src)</tt>
 
-endofdiv
 
-Outlineheader gslviews 	Using views
+\section gslviews 	Using views
 
 There are several macros for the common task of viewing a single row or column of a \ref
 apop_data set.
@@ -955,9 +961,8 @@ apop_data_show(outdata);
 This is a general rule about how variables declared in blocks will behave, but because the
 macros obscure the variable declarations, it is especially worth watching out for here.
 
-endofdiv
 
-Outlineheader setgetsec Set/get
+\section setgetsec Set/get
 
 The set/get functions can act on both names or indices. Sample usages:
 
@@ -987,9 +992,8 @@ double AIC = apop_data_get(your_model->info, .rowname="AIC");
 \li <tt>gsl_matrix_set_row (gsl_matrix * m, size_t i, const gsl_vector * v)</tt>
 \li <tt>gsl_matrix_set_col (gsl_matrix * m, size_t j, const gsl_vector * v)</tt>
 
-endofdiv
 
-Outlineheader mapplysec   Map/apply
+\section mapplysec   Map/apply
 
 \anchor outline_mapply
 These functions allow you to send each element of a vector or matrix to a function, either producing a new matrix (map) or transforming the original (apply).  The \c ..._sum functions return the sum of the mapped output.
@@ -1065,9 +1069,9 @@ One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_s
 \li\ref apop_vector_map()
 \li\ref apop_vector_map_sum()
 
-endofdiv
 
-Outlineheader  matrixmathtwo  Basic Math
+
+\section  matrixmathtwo  Basic Math
 
 \li\ref apop_vector_exp : exponentiate every element of a vector
 \li\ref apop_vector_log : take the log of every element of a vector
@@ -1092,9 +1096,8 @@ Outlineheader  matrixmathtwo  Basic Math
 \li <tt>gsl_vector_scale (gsl_vector * a, const double x)</tt>
 \li <tt>gsl_vector_add_constant (gsl_vector * a, const double x)</tt>
 
-endofdiv
             
-Outlineheader  matrixmath  Matrix math
+\section  matrixmath  Matrix math
 
 \li\ref apop_dot(): matrix \f$\cdot\f$ matrix, matrix \f$\cdot\f$ vector, or vector \f$\cdot\f$ matrix
 \li\ref apop_matrix_determinant
@@ -1103,9 +1106,8 @@ Outlineheader  matrixmath  Matrix math
 
 See the GSL documentation for voluminous further options.
 
-endofdiv
 
-Outlineheader  sumstats  Summary stats
+\section  sumstats  Summary stats
 
 \li\ref apop_data_summarize ()
 \li\ref apop_vector_moving_average()
@@ -1126,9 +1128,8 @@ Outlineheader  sumstats  Summary stats
 \li <tt>gsl_vector_min_index (const gsl_vector * v)</tt>
 \li <tt>gsl_vector_minmax_index (const gsl_vector * v, size_t * imin, size_t * imax)</tt>
 
-endofdiv
 
-Outlineheader  moments  Moments
+\section  moments  Moments
 
 For most of these, you can add a weights vector for weighted mean/var/cov/..., such as
 <tt>apop_vector_mean(d->vector, .weights=d->weights)</tt>
@@ -1153,9 +1154,8 @@ For most of these, you can add a weights vector for weighted mean/var/cov/..., s
 \li\ref apop_vector_var()
 \li\ref apop_vector_var_m ()
 
-endofdiv
 
-Outlineheader convsec   Conversion among types
+\section convsec   Conversion among types
 
 There are no functions provided to convert from \ref apop_data to the constituent
 elements, because you don't need a function.
@@ -1202,9 +1202,8 @@ apop_data *dm_copy = apop_data_copy(As_data(.vector=v, .matrix=m));
 \li\ref apop_text_to_db() : delimited text file\f$\to\f$ database
 \li\ref apop_vector_to_matrix()
 
-endofdiv
 
-Outlineheader names   Name handling
+\section names   Name handling
 
 If you generate your data set from the database via \ref apop_query_to_data (or
 \ref apop_query_to_text or \ref apop_query_to_mixed_data) then column names appear
@@ -1246,9 +1245,8 @@ char *vname = d->names->vector;
 \li\ref apop_name_find() : find the row/col number for a given name.
 \li\ref apop_name_print() : print the \ref apop_name struct, for diagnostic purposes.
 
-endofdiv
 
-Outlineheader textsec   Text data
+\section textsec   Text data
 
 The \ref apop_data set includes a grid of strings, <tt>text</tt>, for holding text data. 
 
@@ -1291,9 +1289,8 @@ functions.
 \li\ref apop_regex() : friendlier front-end for POSIX-standard regular expression searching and pulling matches into a \ref apop_data set.
 \li\ref apop_text_paste(): produce a single string from a grid of text
 
-endofdiv
 
-Outlineheader fact   Generating factors
+\section fact   Generating factors
 
 \em Factor is jargon for a numbered category. Number-crunching programs prefer integers over text, so we need a function to produce a one-to-one mapping from text categories into numeric factors. 
 
@@ -1383,7 +1380,6 @@ A few functions have proven to be useful enough to be worth breaking out into th
 This segment discusses the use of existing \ref apop_model objects.
 If you need to write a new model, see \ref modeldetails.
 
-Outlineheader introtomodels Introduction
 
 Begin with the most common use:
 the \c estimate function will estimate the parameters of your model. Just prep the data, select a model, and produce an estimate:
@@ -1402,7 +1398,7 @@ The <tt>apop_probit</tt> model that ships with Apophenia is unparameterized:
 <tt>the_estimate</tt>, has the same form as <tt>apop_probit</tt>, but
 <tt>the_estimate->parameters</tt> has a meaningful value.
 
-Outlineheader covandstuff More estimation output
+\subsection covandstuff More estimation output
 
 A call to \ref apop_estimate produces more than just the estimated parameters. Most will
 produce any of a covariance matrix, some hypothesis tests, a list of expected values, log
@@ -1441,8 +1437,8 @@ page. This is mostly for regression-type models. Retrieve via:
 apop_data *predict = apop_data_get_page(your_model->info, "<Predicted>");
 \endcode
 
-endofdiv
 
+\subsection mmr Post-estimation uses
 But we expect much more from a model than just estimating parameters from data.  
 
 Continuing the above example where we got an estimated Probit model named \c the_estimate, we can interrogate the estimate in various familiar ways. In each of the following examples, the model object holds enough information that the generic function being called can do its work:
@@ -1480,7 +1476,7 @@ apop_model *re_est = apop_estimate(data, the_estimate);
 
 See below for more details on using settings groups.
 
-Outlineheader modelparameterization  Parameterizing or initializing a model
+\section modelparameterization  Parameterizing or initializing a model
 
 The models that ship with Apophenia have the requisite procedures for estimation,
 making draws, and so on, but have <tt>parameters==NULL</tt> and <tt>settings==NULL</tt>. The
@@ -1508,7 +1504,6 @@ parameterization, 20 draws are made and written to a file named draws-[modelname
 
 \include ../eg/parameterization.c
 
-endofdiv
 
 Where to from here? See the \ref models page for 
 a list of basic functions that make use of them,
@@ -1519,10 +1514,8 @@ along with a list of the canned models, including popular favorites like
 
 If you need to write a new model, see \ref modeldetails.
 
-endofdiv
 
-
-Outlineheader mathmethods Model methods
+\section mathmethods Model methods
 
 \li\ref apop_estimate() : estimate the parameters of the model with data.
 \li\ref apop_predict() : the expected value function.
@@ -1538,9 +1531,8 @@ Outlineheader mathmethods Model methods
 \li\ref apop_model_clear(), apop_prep() : remove the parameters from a parameterized model. Used infrequently.
 \li\ref apop_model_draws() : many random draws from an estimated model.
 
-endofdiv
 
-Outlineheader Update Filtering & updating
+\section Update Filtering & updating
 
 The model structure makes it
 easy to generate new models that are variants of prior models. Bayesian updating,
@@ -1576,9 +1568,8 @@ models of arbitrary detail.
 \li\ref apop_model_stack() : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has an <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
 \li\ref apop_model_dcompose() : use the output of one model as a data set for another
 
-endofdiv
 
-Outlineheader modelsettings Settings groups
+\section modelsettings Settings groups
 
 [For info on specific settings groups and their contents and use, see the \ref settings page.]
 
@@ -1883,7 +1874,7 @@ apop_model *out = apop_estimate(your_data, your_model);
 apop_data_show(Apop_settings_get(out, apop_mle, path));
 \endcode
 
-Outlineheader constr Setting Constraints
+\section constr Setting Constraints
 
 The problem is that the parameters of a function must not take on certain values, either because the function is undefined for those values or because parameters with certain values would not fit the real-world problem.
 
@@ -1915,17 +1906,15 @@ static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_mod
 
 \li\ref apop_linear_constraint()
 
-endofdiv
+\section mlfns Useful functions
 
 \li\ref apop_estimate_restart(): Restarting an MLE with different settings can improve results.
 \li\ref apop_maximum_likelihood(): Rarely used. If a model has no \c estimate element, just call \ref apop_estimate to run an MLE.
 \li\ref apop_model_numerical_covariance()
 \li\ref apop_numerical_gradient()
 
-endofdiv
 
-
-Outlineheader Miss Missing data
+\subsection  Miss Functions for missing data
 
 \li\ref apop_data_listwise_delete()
 \li\ref apop_ml_impute()

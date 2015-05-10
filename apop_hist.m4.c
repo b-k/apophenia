@@ -10,7 +10,7 @@ Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; 
 #include <gsl/gsl_sort_vector.h>
 #include <stdbool.h>
 
-/** \defgroup histograms The GSL's histograms and Apophenia's PMFs. */
+/** \defgroup histograms The GSL's histograms and Apophenia's PMFs */
 
 /** Make random draws from an \ref apop_model, and bin them using a binspec in the style
  of \ref apop_data_to_bins. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.

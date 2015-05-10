@@ -37,12 +37,14 @@ mnode[i][j].margin_ptrs = a list of all of the rows in the data set with the giv
 mnode[i][j].margin_ptrs[k] = the kth item for the value.
   */
 
+/** \cond doxy_ignore */
 typedef struct {
     double val;
     bool *margin_ptrs, *fit_ptrs;
 } mnode_t;
 
 typedef void(*index_apply_f)(mnode_t * const * const, int, void*);
+/** \endcond */
 
 static int find_val(double findme, mnode_t *nodecol){
     for (int i=0; nodecol[i].val <= findme || gsl_isnan(findme); i++)
@@ -157,6 +159,7 @@ void index_get_element_list(mnode_t *const * index, bool *d, size_t len, bool is
 
 ////End index.c
 
+/** \cond doxy_ignore */
 typedef struct {
     const apop_data *indata; 
     apop_data *fit; 
@@ -167,6 +170,7 @@ typedef struct {
     size_t ct, al;
     double *maxdev;
 } rake_t;
+/** \endcond */
 
 static void rakeinfo_grow(rake_t *r){
     r->al = (r->al+1)*2;

@@ -32,9 +32,10 @@ doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
 	doxygen doxygen.conf
 	cp $(apophenia_IMAGES) $(apophenia_JS) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html
-	sed -i -f edit_globals.sed html/globals.html
 	sed -i -f edit_group.sed html/group__models.html
 	sed -i -f edit_width.sed html/*.html
+	. adjust
+	sed -i -f edit_globals.sed html/globals.html
 
 doc-clean:
 	-rm -rf html latex man

@@ -38,9 +38,11 @@ static void beta_estimate(apop_data * data,  apop_model *est){
     //apop_numerical_covariance_matrix(apop_beta, est, data);
 }
 
+/** \cond doxy_ignore */
 typedef struct{
     double alpha, beta; 
 } ab_type;
+/** \endcond */ //End of Doxygen ignore.
 
 static double betamap(double x, void *abin) {
     ab_type *ab = abin; 

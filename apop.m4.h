@@ -8,7 +8,11 @@ There used to be a series of sub-headers, but they never provided any serious
 benefit. Please use your text editor's word-search feature to find any elements you
 may be looking for. About a third of the file is comments and doxygen documentation,
 so syntax highlighting that distinguishes code from comments will also help to make
-this more navigable.
+this more navigable.*/
+
+/** \defgroup all_public Functions, structs, and types defined in apop.h
+\addtogroup all_public
+@{
 
 */
 #pragma once
@@ -1692,6 +1696,8 @@ Apop_settings_declarations(apop_kernel_density)
 #ifdef	__cplusplus
 }
 #endif
+
+/** @} */ //End doxygen's all_public grouping
 
 //Part of the intent of a convenience header like this is that you
 //don't have to remember what else you're including. So here are 

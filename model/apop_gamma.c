@@ -26,7 +26,9 @@ static long double gamma_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
 }
 
+/** \cond doxy_ignore */
 typedef struct {double a, b, ln_ga_plus_a_ln_b;} abstruct;
+/** \endcond */ //End of Doxygen ignore.
 
 static double apply_for_gamma(double x, void *abin) { 
     abstruct *ab = abin;

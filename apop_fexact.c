@@ -1889,6 +1889,7 @@ static int *apop_data_to_int_array(apop_data *intab){
 For example: 
 
 \include test_fisher.c
+\ingroup asst_tests
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
     double  prt, pre,
