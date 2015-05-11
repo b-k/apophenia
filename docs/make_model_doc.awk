@@ -132,7 +132,7 @@ function onedot(name, isdefault){
     print "</tr>"
 }
 
-END {print "/** \\file */ /**\\defgroup models */"
+END {print "/** \\file */ "
     model_no=0
     for (m in models){
         model_no++
@@ -142,7 +142,7 @@ END {print "/** \\file */ /**\\defgroup models */"
             print items[m ":intro"]
         else
             print "!!! Without an intro, " m " won't print\n" >> "/dev/stderr"
-        print " \\hideinitializer \\ingroup models */"
+        print " \\hideinitializer */"
         print "enum " m " {"
 
 #apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1, 

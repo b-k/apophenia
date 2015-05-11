@@ -10,8 +10,6 @@ Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; 
 #include <gsl/gsl_sort_vector.h>
 #include <stdbool.h>
 
-/** \defgroup histograms The GSL's histograms and Apophenia's PMFs */
-
 /** Make random draws from an \ref apop_model, and bin them using a binspec in the style
  of \ref apop_data_to_bins. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.
 
@@ -27,8 +25,6 @@ The output is normalized to integrate to one.
 \return An \ref apop_pmf model.
 
 \li This function uses the \ref designated syntax for inputs.
-
-\ingroup histograms
 */
 APOP_VAR_HEAD apop_model *apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng){
     apop_model* apop_varad_var(model, NULL);
@@ -62,8 +58,6 @@ of \c GSL_POSINF, indicating that it is impossible for the \c observed data to h
 been drawn from the \c expected distribution.
 
 \li If an observation row has weight zero, I skip it. if <tt>apop_opts.verbose >=1 </tt> I will show a warning.
-
-  \ingroup histograms
 */
 apop_data *apop_histograms_test_goodness_of_fit(apop_model *observed, apop_model *expected){
     int df = observed->data->weights->size;
@@ -244,8 +238,6 @@ Here is an example, which tests whether a set of draws from a Normal(0, 1) match
 sequence of Normal distributions with increasing mean.
 
 \include ks_tests.c
-
-\ingroup histograms
 */
 apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     Apop_stopif(m1->cdf != apop_pmf->cdf, apop_return_data_error('m'), 

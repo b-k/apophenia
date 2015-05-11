@@ -61,5 +61,4 @@ Build an \ref apop_coordinate_transform model, qv.
 \li Uses the \ref apop_ct_settings group. This macro takes elements of that struct as inputs.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup model_transformations
 */

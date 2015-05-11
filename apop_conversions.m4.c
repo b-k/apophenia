@@ -20,9 +20,6 @@ void xprintf(char **q, char *format, ...){
     free(r);
 }
 
-/** \defgroup conversions Conversion functions
-The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
-
 /** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
@@ -34,7 +31,6 @@ for those allocated using <tt>double *</tt>. (default = auto-guess)
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 
-\ingroup conversions
 \li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
@@ -59,7 +55,6 @@ APOP_VAR_ENDHEAD
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 \li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
@@ -115,8 +110,6 @@ apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col
 
 \exception out->error='n' Name not found error.
 \exception out->error='q' Query returned an empty table (which might mean that it just failed).
-
-\ingroup db
 */
 apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
     gsl_matrix *out=NULL;
@@ -185,7 +178,6 @@ insert into your_table values ('r1', 'c1', 4);
 \li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own numbering system, <tt>t0</tt>, <tt>t1</tt>, ..., which is a little more robust than continuing the column count from the matrix.
 
 \li I handle only the matrix and text. 
- \ingroup db
  */
 void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
@@ -291,7 +283,6 @@ apop_data *apop_data_rank_expand (apop_data *in){
 
 Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
 or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]
-\ingroup conversions
 */
 
 
@@ -304,7 +295,6 @@ or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \re
 
   \param in    the input data
   \return       a structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL.
-\ingroup convenience_fns
   */
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
@@ -323,7 +313,6 @@ gsl_matrix *a_copy = apop_matrix_copy(original);
 
 \param in  the input data
 \return    a structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
-\ingroup convenience_fns
   */
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
@@ -594,7 +583,7 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
 <b>example:</b> See \ref apop_ols.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions	*/
+*/
 APOP_VAR_HEAD apop_data * apop_text_to_data(char const*text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters){
     char const *apop_varad_var(text_file, "-")
     int apop_varad_var(has_row_names, 'n')
@@ -683,7 +672,6 @@ same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 fill has a \c more element, then I will continue into subsequent pages.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
     const gsl_vector * apop_varad_var(in, NULL);
@@ -754,7 +742,6 @@ same thing when you both pack and unpack. Default: <tt>'n'</tt>.
  \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
 \exception NULL If you give me a vector as input, and its size is not correct, returns \c NULL.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
  */
 APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
     const apop_data * apop_varad_var(in, NULL);
@@ -1126,7 +1113,6 @@ apop_query("commit;");
 \return Returns the number of rows on success, -1 on error.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 APOP_VAR_HEAD int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters, char if_table_exists){
     char const *apop_varad_var(text_file, "-")

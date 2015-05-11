@@ -103,5 +103,4 @@ Build an \c apop_dconstrain model, q.v., which applies a data constraint to the 
 \li Uses the \ref apop_dconstrain_settings group. This macro takes elements of that struct as inputs.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup model_transformations
 */

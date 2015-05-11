@@ -363,11 +363,6 @@ new functions that behave like this) see the \ref optionaldetails page.
 \subpage optionaldetails
 */
 
-/** \defgroup global_vars The global variables */
-/** \defgroup mle Maximum likelihood estimation */
-/** \defgroup command_line "Command line programs" */
-
-
 
 /** \page preliminaries Getting started
 

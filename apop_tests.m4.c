@@ -32,7 +32,6 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 
 If \c apop_opts.verbose is >=1, then display some information to stdout, like the mean/var/count for both vectors and the t statistic.
 
-\ingroup ttest
 \param {a, b} two columns of data
 \return an \ref apop_data set with the following elements:
     mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
@@ -67,7 +66,6 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
 
 If \c apop_opts.verbose is >=2, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
 
-\ingroup ttest
 \param {a, b} two columns of data
 \return an \ref apop_data set with the following elements:
     mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
@@ -204,8 +202,7 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
 
  \param d The input data, which is a crosstab of various elements. They don't have to sum to one.
  \see apop_test_fisher_exact
- \ingroup asst_tests
- */
+*/
 apop_data * apop_test_anova_independence(apop_data *d){
     Apop_stopif(!d || !d->matrix, return NULL, 0, "You sent me data with no matrix element. Returning NULL.");
     double total = 0;

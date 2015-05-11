@@ -72,8 +72,6 @@ don't need to bother).
 
 \return 0: everything OK<br>
         1: database did not open.
-
-\ingroup db
 */
 int apop_db_open(char const *filename){
     if (!apop_opts.db_engine) get_db_type();
@@ -121,7 +119,6 @@ Recreating a table which already exists can cause errors, so it is good practice
 \li If <tt>apop_opts.stop_on_warn='n'</tt>, returns -1 on errors.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup db
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){
     char const *apop_varad_var(name, NULL)
@@ -188,7 +185,7 @@ APOP_VAR_END_HEAD
     return 0;
 }
 
-/** \defgroup queries Queries
+/** \page queries Queries
  
 These functions query the database, and most return a value for use on the C-side.
 
@@ -201,9 +198,7 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 \endcode
 
 \li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
-
-  \{
-  */
+*/
 
 /** Send a query to the database that returns no data.
 
@@ -491,8 +486,6 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
     return out;
 }
 
-/** \} end query group. */
-
 /* Convenience function for extending a string. 
  asprintf(%q, "%s and stuff", q);
  gives you a memory leak. This takes care of that.
@@ -591,8 +584,6 @@ apop_query("commit;");
 \param tabname	     The name of the db table to be created
 \param output_append See \ref apop_prep_output.
 \return 0=OK, -1=error
-\ingroup apop_data
-\ingroup conversions
 */
 int apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
     Apop_stopif(!set, return -1, 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);

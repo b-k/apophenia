@@ -20,7 +20,7 @@ The above two points mean that you probably don't need to call this function dir
 \param model    The model whose output elements will be modified.
 \return A pointer to the same model, should you need it.
 \exception outmodel->error=='d' dimension error.
-\ingroup models  */
+*/
 apop_model * apop_model_clear(apop_data * data, apop_model *model){
     Get_vmsizes(data)
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.
@@ -53,8 +53,7 @@ before calling this function.
 \li If \c free_me is \c NULL, this does nothing.
 
 \param free_me A pointer to the model to be freed.
-
-\ingroup models */
+*/
 void apop_model_free (apop_model * free_me){
     if (!free_me) return;
     apop_data_free(free_me->parameters);
@@ -118,7 +117,7 @@ void print_method(apop_model *in, FILE* ap){
 
 \li Print methods are intended for human consumption and are subject to change.
 
-\ingroup output */
+*/
 void apop_model_print (apop_model * print_me, FILE *ap){
     if (!ap) ap = stdout;
     apop_model_print_type mpf = apop_model_print_vtable_get(print_me);
@@ -147,7 +146,6 @@ void apop_model_show (apop_model * print_me){
 \exception out->error=='a' Allocation error. In extreme cases, where there aren't even a few hundred bytes available, I will return \c NULL.
 \exception out->error=='s' Error copying settings groups.
 \exception out->error=='p' Error copying parameters or info page; the given \ref apop_data struct may be \c NULL or may have its own <tt>->error</tt> element.
-\ingroup models
 */
 apop_model * apop_model_copy(apop_model *in){
     Apop_stopif(!in, return NULL, 1, "Copying a NULL input; returning NULL.");
@@ -190,7 +188,6 @@ If you have a situation where these options are out, you'll have to do something
 \return A copy of the input model, with parameters set.
 \exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vsize or .msize1 and .msize2 first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
 \hideinitializer   
-\ingroup models
 \li This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
 */
 apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]){
@@ -217,8 +214,6 @@ method may assume that \c apop_prep has already been called.
 \param d    The data
 \param m    The model
 \return     A pointer to an output model, which typically matches the input model but has its \c parameters element filled in.
-
-\ingroup models
 */
 apop_model *apop_estimate(apop_data *d, apop_model *m){
     apop_model *out = apop_model_copy(m);
@@ -232,8 +227,6 @@ apop_model *apop_estimate(apop_data *d, apop_model *m){
 
 \param d The data
 \param m The parametrized model, which must have either a \c log_likelihood or a \c p method.
-
-\ingroup models
 */
 double apop_p(apop_data *d, apop_model *m){
     Nullcheck_m(m, GSL_NAN);
@@ -249,8 +242,6 @@ double apop_p(apop_data *d, apop_model *m){
 
 \param d    The data
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
-
-\ingroup models
 */
 double apop_log_likelihood(apop_data *d, apop_model *m){
     Nullcheck_m(m, GSL_NAN); //Nullcheck_p(m); //Too many models don't use the params.
@@ -283,8 +274,6 @@ On output, the a \c gsl_vector input to the function must be filled with the gra
 (or <tt>NaN</tt>s on errors). If the model parameters have a more complex shape
 than a simple vector, then the vector must be in \c apop_data_pack order; use \c
 apop_data_unpack to reformat to the preferred shape.
-
-\ingroup models
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
@@ -348,7 +337,6 @@ the last resort is a large numbr of random draws of the model, summarized into a
 typedef apop_model* (*apop_parameter_model_type)(apop_data *, apop_model *);
 #define apop_parameter_model_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)
 \endcode
-\ingroup models
 */ 
 apop_model *apop_parameter_model(apop_data *d, apop_model *m){
     apop_pm_settings *settings = apop_settings_get_group(m, apop_pm);
@@ -407,7 +395,6 @@ int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params);//
 \li This makes a single draw of the given size. See \ref apop_model_draws to fill a matrix with draws.
 
 \return Zero on success; nozero on failure. <tt>out[0]</tt> is probably \c NAN on failure.
-\ingroup models
 */
 int apop_draw(double *out, gsl_rng *r, apop_model *m){
     if (!r) r = apop_rng_get_thread();
@@ -435,9 +422,7 @@ int apop_draw(double *out, gsl_rng *r, apop_model *m){
 
 /** The default prep is to simply call \ref apop_model_clear. If the
  function has a prep method, then that gets called instead.
-
-\ingroup models
- */
+*/
 void apop_prep(apop_data *d, apop_model *m){
     if (m->prep) m->prep(d, m);
     else         apop_model_clear(d, m);
@@ -473,7 +458,6 @@ This segment of the framework is in beta---subject to revision of the details.
 typedef apop_data * (*apop_predict_type)(apop_data *d, apop_model *params);
 #define apop_predict_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p)*33 + (m1).estimate ? (size_t)(m1).estimate: 27)
 \endcode
-\ingroup models
 */
 apop_data *apop_predict(apop_data *d, apop_model *m){
     apop_data *prediction = NULL;
@@ -513,9 +497,7 @@ double cdf_value = apop_cdf(your_data_point, your_model);
 Here are many examples using common, mostly symmetric distributions.
 
 \include some_cdfs.c
-
-\ingroup models
-  */
+*/
 double apop_cdf(apop_data *d, apop_model *m){
     if (m->cdf) return m->cdf(d, m);
     apop_cdf_settings *cs = Apop_settings_get_group(m, apop_cdf);

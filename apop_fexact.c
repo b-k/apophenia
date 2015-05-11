@@ -1865,7 +1865,6 @@ static double gammds(double *y, double *p, int *ifault) {
 /** Convert from an \ref apop_data set to a table of integers.
 
 Not too necessary, but I needed it for the Fisher exact test.
-\ingroup conversions
 */
 static int *apop_data_to_int_array(apop_data *intab){
   int rowct = intab->matrix->size1,
@@ -1889,7 +1888,6 @@ static int *apop_data_to_int_array(apop_data *intab){
 For example: 
 
 \include test_fisher.c
-\ingroup asst_tests
 */
 apop_data *apop_test_fisher_exact(apop_data *intab){
     double  prt, pre,

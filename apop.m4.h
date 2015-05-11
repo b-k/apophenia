@@ -10,7 +10,7 @@ may be looking for. About a third of the file is comments and doxygen documentat
 so syntax highlighting that distinguishes code from comments will also help to make
 this more navigable.*/
 
-/** \defgroup all_public Functions, structs, and types defined in apop.h
+/** \defgroup all_public Public functions, structs, and types
 \addtogroup all_public
 @{
 
@@ -1673,8 +1673,6 @@ typedef struct {
 #define apop_model_coordinate_transform(...) Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__)
 #define apop_model_dcompose(...) Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__)
 #define apop_model_dconstrain(...) Apop_model_copy_set(apop_dconstrain, apop_dconstrain, __VA_ARGS__)
-
-/** \defgroup settings Settings*/
 
 //Doxygen drops whatever is after these declarations, so I put them last.
 Apop_settings_declarations(apop_ct)

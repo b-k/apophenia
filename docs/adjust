@@ -8,7 +8,20 @@ sed -i "/nav_h.png/ d" html/navtree.css
 #PDF: a 170pp document shouldn't be typeset in sans serif
 sed -i "/familydefault.*sfdefault/ d" latex/refman.tex
 
+#No footer
+sed -i "/fancyfoot/ d" latex/refman.tex
+
 sed -i -f edit_group.sed latex/group__models.tex
+
+#Want search box in header
+sed -i -e '/position: *absolute/d' html/search/search.css
+sed -i -e 's/display: *block/display: inline/' html/search/search.css
+#sed -i -e '/z-index/d' html/search/search.css
+#magnifying glass is hard-coded, and span="left" covers left and  middle of search box
+sed -i -e '/mag_sel.png/,+3d' html/*html
+
+#100% of the search results are doubled. Can't work out why.
+sed -i -e 's/\],\[[^]]\+\]/]/' html/search/*js
 
 #Use GNU sed to make modifications to the LaTeX version before producing a PDF
 

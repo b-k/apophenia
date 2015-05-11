@@ -10,7 +10,7 @@
     Apop_stopif(!v->size, return GSL_NAN, 0, "data vector has size 0. Returning NaN.\n");   \
     Apop_stopif(weights && weights->size != v->size, return GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, weights->size);
 
-/** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
+/** \page vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
 
 These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
 
@@ -32,7 +32,6 @@ printf("Your vector has mean %g and variance %g\n", mean, var);
 */
 
 /** Returns the sum of the data in the given vector.
-\ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
     Apop_stopif(!in, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
@@ -44,28 +43,23 @@ long double apop_vector_sum(const gsl_vector *in){
 
 /** \def apop_sum(in)
   An alias for \ref apop_vector_sum. Returns the sum of the data in the given vector.
-\ingroup convenience_fns
 */
 
 /**  \def apop_vector_mean(in)
  
  Returns the mean of the data in the given vector.
-\ingroup vector_moments
 */
 
 /**  \def apop_mean(in)
   An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
-\ingroup vector_moments
 */
 
 /** \def apop_var(in)
   An alias for \ref apop_vector_var.
 Returns the variance of the data in the given vector.
-\ingroup vector_moments
 */
 
 /** Returns an unbiased estimate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
-\ingroup vector_moments
 */
 double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
@@ -74,7 +68,6 @@ double apop_vector_skew(const gsl_vector *in){
 vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.
 
   \li This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
-\ingroup vector_moments
 */
 double apop_vector_kurtosis(const gsl_vector *in){
     size_t n = in->size;
@@ -111,7 +104,6 @@ sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
-\ingroup vector_moments
 */
 APOP_VAR_HEAD double apop_vector_skew_pop(gsl_vector const *v, gsl_vector const *weights){
     gsl_vector const * apop_varad_var(v, NULL);
@@ -140,7 +132,6 @@ APOP_VAR_ENDHEAD
  
 \li Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup vector_moments
 */
 APOP_VAR_HEAD double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights){
     gsl_vector const * apop_varad_var(v, NULL);
@@ -164,14 +155,12 @@ APOP_VAR_ENDHEAD
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
-\ingroup vector_moments
 */
 double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
 /** Returns the correlation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
-\ingroup vector_moments
 */
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
 	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb)); }
@@ -203,7 +192,6 @@ where \f$i\f$ iterates over dimensions.
 \include test_distances.c
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
 */
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
     static threadlocal gsl_vector *zero = NULL;
@@ -361,7 +349,7 @@ void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char n
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
 
   \param m	the matrix to be summed. 
-\ingroup convenience_fns*/
+*/
 long double apop_matrix_sum(const gsl_matrix *m){
     Apop_stopif(!m, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
     long double	sum	= 0;
@@ -376,7 +364,7 @@ long double apop_matrix_sum(const gsl_matrix *m){
 Calculated with an eye toward avoiding overflow errors.
 
 \param data	the matrix to be averaged. If \c NULL, return zero.
-\ingroup convenience_fns*/
+*/
 double apop_matrix_mean(const gsl_matrix *data){
     if (!data) return 0;
     double  avg     = 0;
@@ -402,7 +390,6 @@ double apop_matrix_mean(const gsl_matrix *data){
 \param	var	where to put the variance to be calculated.
 
 \li If \c NULL, return (zero, NaN).
-\ingroup convenience_fns
 */
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
     if (!data) {*mean=0; *var=GSL_NAN; return;}
@@ -431,7 +418,7 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
-\ingroup    output */
+*/
 apop_data * apop_data_summarize(apop_data *indata){
     Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
     Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
@@ -581,7 +568,7 @@ APOP_VAR_ENDHEAD
 
 \return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
 \exception out->error='a'  Allocation error.
-\ingroup matrix_moments */
+*/
 apop_data *apop_data_covariance(const apop_data *in){
     Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
     Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
@@ -605,7 +592,7 @@ apop_data *apop_data_covariance(const apop_data *in){
 
 \return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
 \exception out->error='a'  Allocation error.
-\ingroup matrix_moments */
+*/
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
     if (!out) return NULL;
@@ -792,7 +779,7 @@ APOP_VAR_ENDHEAD
 }
 
 
-/** \defgroup tfchi t-, chi-squared, F-, Wishart distributions
+/** \page tfchi t-, chi-squared, F-, Wishart distributions
 
 Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
 Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 

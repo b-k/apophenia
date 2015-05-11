@@ -5,17 +5,6 @@ columns, check bounds, et cetera.
 */ 
 /* Copyright (c) 2006--2007, 2012 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
-/** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
-
-This page describes some standard bits of linear algebra that Apophenia facilitates.
-
-See also the printing functions, \ref apop_print, and the
-\ref convenience_fns "Convenience functions".
-*/
-
-/** \defgroup convenience_fns 	Things to make life easier with the GSL
- */
-
 #include "apop_internal.h"
 
 void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errno){
@@ -46,8 +35,6 @@ Calculate the determinant of a matrix, its inverse, or both, via LU decompositio
 
 \return If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.  If <tt>calc_inv!=0</tt>, 
 then \c *out is pointed to the matrix inverse. In case of difficulty, I will set <tt>*out=NULL</tt> and return \c NaN.
-
-\ingroup linear_algebra
 */
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
@@ -79,7 +66,6 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 
 \param in The matrix to be inverted.
 \return Its inverse.
-\ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
     gsl_matrix *out = NULL;
@@ -94,7 +80,6 @@ See also \ref apop_matrix_inverse ,  or \ref apop_det_and_inv to do both at once
 
 \param in The matrix to be determined.
 \return     The determinant.
-\ingroup linear_algebra
 */
 double apop_matrix_determinant(const gsl_matrix *in) {
     return apop_det_and_inv(in, NULL, 1, 0);
@@ -113,7 +98,7 @@ The singular value decomposition will return this many of the eigenvectors with 
 \return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 \exception out->error=='a'  Allocation error.
-\ingroup linear_algebra */
+*/
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) {
     gsl_matrix * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NULL, 1, "NULL data input");
@@ -152,8 +137,7 @@ APOP_VAR_ENDHEAD
 /** Take the log (base ten) of every element in a vector.
 
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_log10(gsl_vector *v){
     if (!v) return;
     for (size_t i=0; i< v->size; i++){
@@ -165,8 +149,7 @@ void apop_vector_log10(gsl_vector *v){
 /** Take the natural log of every element in a vector.
 
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_log(gsl_vector *v){
     if (!v) return;
     for (size_t i=0; i< v->size; i++){
@@ -178,8 +161,7 @@ void apop_vector_log(gsl_vector *v){
 /** Replace every vector element \f$v_i\f$ with exp(\f$v_i\f$).
 
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_exp(gsl_vector *v){
     if (!v) return;
     for (size_t i=0; i< v->size; i++){
@@ -196,7 +178,6 @@ void apop_vector_exp(gsl_vector *v){
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
 */
 APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
     gsl_vector * apop_varad_var(v1, NULL);
@@ -239,8 +220,6 @@ APOP_VAR_ENDHEAD
 \param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
 \param  inplace If 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
 \return     the stacked data, either in a new matrix or a pointer to \c m1.
-
-\ingroup convenience_fns
 
 For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix. The original matrices are unchanged.
 \code
@@ -358,8 +337,7 @@ Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether al
  
 \li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=1</tt>.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
- */
+*/
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
     Apop_stopif(!in, return 1, 1, "You sent in a NULL vector; returning 1.");
@@ -438,9 +416,7 @@ to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot
 
 Sample code:
 \include dot_products.c
-
-\ingroup linear_algebra
-  */
+*/
 APOP_VAR_HEAD apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
     const apop_data * apop_varad_var(d1, NULL)
     const apop_data * apop_varad_var(d2, NULL)

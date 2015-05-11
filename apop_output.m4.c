@@ -4,25 +4,6 @@
 
 //The reader will find a few function headers for this file in asst.h
 #include "apop_internal.h"
-
-/** \defgroup output		Printing to the screen or a text file
-
-Most functions print only to the screen, but the 
-\ref apop_print "matrix and vector printing functions" will let you print to a text file as
-well. The presumption is that statistic estimates are for your own
-consumption, while you are printing a matrix for import into another program.
-
-*/
-/** \defgroup apop_print 	Assorted printing functions		
-
-The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \c .output_type.
-The <tt>apop_*_show</tt> functions print only to screen, and are basically
-just a convenience shell to the corresponding <tt>apop_*_print</tt>
-function.
-
-\ingroup output
-*/
  
 #define Output_vars output_name, output_pipe, output_type, output_append
 
@@ -96,8 +77,6 @@ This takes a lot of machinery. I write every last element to a text array, then 
 So, I produce an \ref apop_data set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use \ref apop_print to dump your data to a text file, and view the text file, or print subsets.
 
 For more machine-readable printing, see \ref apop_data_print.
-
-\ingroup output
 */
 void apop_data_show(const apop_data *in){
     if (!in) {printf("NULL\n"); return;}
@@ -204,7 +183,7 @@ You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the defaul
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+*/
 APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
     gsl_vector *apop_varad_var(data, NULL);
     Dispatch_output
@@ -218,7 +197,7 @@ APOP_VAR_ENDHEAD
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+*/
 void apop_vector_show(const gsl_vector *data){
 	print_core_v(data, apop_opts.output_delimiter, NULL, stdout, 's', 0); 
 }
@@ -320,7 +299,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+*/
 APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     const apop_data * apop_varad_var(data, NULL);
     Dispatch_output
@@ -345,7 +324,7 @@ APOP_VAR_ENDHEAD
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+*/
 APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
     const gsl_matrix *apop_varad_var(data, NULL);
     Dispatch_output
@@ -360,7 +339,7 @@ APOP_VAR_ENDHEAD
 }
 
 /** Convenience function to dump a <tt>gsl_matrix</tt> to the screen.
-\ingroup apop_print */
+*/
 void apop_matrix_show(const gsl_matrix *data){
     apop_data_print_core(&(apop_data){.matrix=(gsl_matrix*)data},  stdout, 's');
 }

@@ -1,13 +1,6 @@
 /** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.*/
 /* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
-/** \defgroup regression  OLS/GLS: The linear projection methods */
-/** \defgroup ttest  T-tests: comparing two vectors */
-/** \defgroup asst_tests  Various means of hypothesis testing.
-
- See also the goodness of fit tests in \ref histograms.
- */
-
 #include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
 
@@ -494,8 +487,6 @@ number of columns in the main data set's matrix (i.e. the first page; i.e. the s
 parameters if this is the \c parameters output from a model estimation). 
 \li If your data (first page again) has a \c weights vector, I will find weighted SSE,
 SST, and SSR (and calculate the \f$R^2\f$s using those values).
-
-\ingroup regression
   */
 apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
@@ -529,5 +520,4 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
 /**  \def apop_estimate_r_squared(in) 
  A synonym for \ref apop_estimate_coefficient_of_determination, q.v. 
  \hideinitializer
- \ingroup regression
  */

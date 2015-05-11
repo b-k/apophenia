@@ -126,8 +126,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll,
  \endcode
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup linear_algebra
- */
+*/
 APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);
     apop_model * apop_varad_var(model, NULL);
@@ -625,7 +624,7 @@ else
 \endcode
 
 \li During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time.
- \ingroup mle */
+*/
 void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
@@ -693,7 +692,6 @@ there is no memory leak in the above loop.
     is returned.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup mle
 */ 
 APOP_VAR_HEAD apop_model * apop_estimate_restart (apop_model *e, apop_model *copy, char * starting_pt, double boundary){
     apop_model * apop_varad_var(e, NULL);
@@ -751,8 +749,6 @@ Simulated annealing is a controlled random walk.  As with the other methods, the
 The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
 
 Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
-
-\ingroup mle
 */
 
 static double annealing_energy(void *in) {

@@ -7,7 +7,6 @@
 
 /** Allocates a name structure
 \return	An allocated, empty name structure.  In the very unlikely event that \c malloc fails, return \c NULL.
-\ingroup names
 */
 apop_name * apop_name_alloc(void){
     apop_name * init_me = malloc(sizeof(apop_name));
@@ -26,7 +25,6 @@ apop_name * apop_name_alloc(void){
 'h': add a title (or a header. 't' is taken).<br>
 'v': add (or overwrite) the vector name<br>
 \return 	Returns the number of rows/cols/depvars after you have added the new one. But if \c add_me is \c NULL, return -1.
-\ingroup names
 */
 int apop_name_add(apop_name * n, char const *add_me, char type){
     if (!add_me)
@@ -68,7 +66,6 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 
 /** Prints the given list of names to STDOUT. Useful for debugging, and not much else.
 \param n  The \ref apop_name structure
-\ingroup names
 */
 void apop_name_print(apop_name * n){
     if (!n) {
@@ -101,7 +98,7 @@ void apop_name_print(apop_name * n){
 }
 	
 /** Erases an \ref apop_name structure.
-\ingroup names 	*/
+*/
 void  apop_name_free(apop_name * free_me){
     if (!free_me) return; //only needed if users are doing tricky things like newdata = (apop_data){.matrix=...};
 	for (size_t i=0; i < free_me->colct; i++)  free(free_me->col[i]);
@@ -122,7 +119,7 @@ Notice that if the first list is empty, then this is a copy function. If the sec
 \param  nadd      The second set of names, which will be appended after the first. (no default, if \c NULL, a no-op)
 \param type1     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then ignore \c typeadd and just overwrite the target vector name with the source name. (default = 'r')
 \param typeadd     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name. (default = type1)
-\ingroup names */
+*/
 APOP_VAR_HEAD void  apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
     apop_name * apop_varad_var(nadd, NULL); 
     if (!nadd) return;
@@ -156,7 +153,7 @@ apop_name *out  = apop_name_copy(in);
  
     \param in    the input names
     \return       a structure that this function will allocate and fill
-\ingroup names */
+*/
 apop_name * apop_name_copy(apop_name *in){
     apop_name *out = apop_name_alloc();
     apop_name_stack(out, in, 'v');
@@ -175,8 +172,7 @@ The function uses case-insensitive search (POSIX's \c strcasecmp).
 \param name     the name you seek; see above.
 \param type     \c 'c', \c 'r', or \c 't'. Default is \c 'c'.
 \return         The position of \c findme. If \c 'c', then this may be -1, meaning the vector name. If not found, returns -2.  On error, e.g. <tt>name==NULL</tt>, returns -2.
-
-\ingroup names */
+*/
 int apop_name_find(const apop_name *n, const char *name, const char type){
     Apop_stopif(!name, return -2, 0, "You asked me to search for NULL.");
     char **list;

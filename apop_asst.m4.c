@@ -228,8 +228,6 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
 
 \return         Count of matches found. 0 == no match. \c substrings may be allocated and filled if needed.
-\ingroup names
-
 
 \li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
 \li If <tt>strings==NULL</tt>, I return 0---no match---and if \c substrings is provided, set it to \c NULL.

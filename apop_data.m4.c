@@ -28,7 +28,6 @@ The \c weights vector is set to \c NULL. If you need it, allocate it via
                 But if even this much fails, your computer may be on fire and you should go put it out. 
 
  \li This function uses the \ref designated syntax for inputs.
- \ingroup data_struct
 */
 APOP_VAR_HEAD apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3){
     const size_t apop_varad_var(size1, 0);
@@ -73,7 +72,6 @@ APOP_VAR_ENDHEAD
 \return    The \ref apop_data structure, allocated and zeroed out.
 \exception out->error=='m' malloc error; probably out of memory.
 \see apop_data_alloc 
-\ingroup data_struct
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3){
@@ -196,9 +194,7 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 
 \exception out.error='d'  Dimension error; couldn't copy.
 \exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
-
- \ingroup data_struct
-  */
+*/
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
@@ -261,8 +257,6 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
  
   \param in    the input data
   \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
-
- \ingroup data_struct
 
 \exception out.error='a'  Allocation error.
 \exception out.error='c'  Cyclic link: <tt>D->more == D</tt> (may be later in the chain, e.g., <tt>D->more->more = D->more</tt>) You'll have only a partial copy.
@@ -336,7 +330,6 @@ output at all.
 \li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup data_struct
 */
 APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace){
     apop_data * apop_varad_var(m1, NULL)
@@ -606,8 +599,7 @@ allocation:
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
-\ingroup names
- */
+*/
 static void apop_name_rm_columns(apop_name *n, int *drop){
     apop_name *newname = apop_name_alloc();
     size_t initial_colct = n->colct;
@@ -634,8 +626,7 @@ The returned data structure looks like it was modified in place, but the data ma
 output. A reminder: <tt>calloc(in->size2 , sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
- \ingroup data_struct
- */
+*/
 void apop_data_rm_columns(apop_data *d, int *drop){
     gsl_matrix *freeme = d->matrix;
     d->matrix = apop_matrix_rm_columns(d->matrix, drop);
@@ -710,8 +701,7 @@ apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     return d;
 }
 
-/** \defgroup data_set_get Set/get/point to the data element at the given point
-  \{
+/** \page data_set_get Set/get/point to the data element at the given point
 First, some examples:
 
 \code
@@ -931,7 +921,6 @@ APOP_VAR_ENDHEAD
     Unset_gsl_handler
     return error_for_set;
 }
-/** \} //End data_set_get group */
 
 /** Now that you've used \ref Apop_r to pull a row from an \ref apop_data set,
   this function lets you write that row to another position in the same data set or a
