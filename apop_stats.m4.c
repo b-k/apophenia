@@ -10,27 +10,6 @@
     Apop_stopif(!v->size, return GSL_NAN, 0, "data vector has size 0. Returning NaN.\n");   \
     Apop_stopif(weights && weights->size != v->size, return GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, weights->size);
 
-/** \page vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
-
-These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
-
-\see db_moments
-
-For <tt>apop_vector_var_m(vector, mean)</tt>, <tt>mean</tt> is the mean of the
-vector. This saves the trouble of re-calculating the mean if you've
-already done so. E.g.,
-
-\code
-gsl_vector *v;
-double mean, var;
-
-//Allocate v and fill it with data here.
-mean = apop_vector_mean(v);
-var  = apop_vector_var_m(v, mean);
-printf("Your vector has mean %g and variance %g\n", mean, var);
-\endcode
-*/
-
 /** Returns the sum of the data in the given vector.
 */
 long double apop_vector_sum(const gsl_vector *in){
@@ -155,6 +134,7 @@ APOP_VAR_ENDHEAD
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
+\see apop_vector_var
 */
 double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
@@ -504,6 +484,7 @@ system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
 
 \li This function uses the \ref designated syntax for inputs.
+\see apop_vector_var_m If you already have the vector's mean, use this.
 */
 APOP_VAR_HEAD double apop_vector_var(gsl_vector const *v, gsl_vector const *weights){
     gsl_vector const * apop_varad_var(v, NULL);
@@ -777,42 +758,6 @@ APOP_VAR_ENDHEAD
     }
     return div;
 }
-
-
-/** \page tfchi t-, chi-squared, F-, Wishart distributions
-
-Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
-Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 
-
-In that world, those three distributions are actually parameter free. The data is assumed to be normalized to be based on a mean zero, variance one process, you get the degrees of freedom from the size of the data, and the distribution is fixed.
-
-For modeling purposes, more could be done. For example, the t-distribution is a favorite proxy for Normal-like situations where there are fat tails relative to the Normal (i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing your data---one could easily rewrite the theorems underlying the t-distribution without the normalizations.
-
-In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, which has some optimal value given the data. 
-Thus, there are two modes of use for these distributions: 
-
-\li Parameterized, testing style: the degrees of freedom are determined
-from the data, and all necessary normalizations are assumed. Thus, this code---
-
-\code
-apop_data *t_for_testing = apop_estimate(data, apop_t)
-\endcode
-
----will return exactly the type of \f$t\f$-distribution one would use for testing. 
-
-\li By removing the \c estimate method---
-\code
-apop_model *spare_t = apop_model_copy(apop_t);
-spare_t->estimate = NULL;
-apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
-\endcode
----I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
-to find the best-fitting model for descriptive purposes.
-
-\c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
-
-For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
-*/
 
 /** The multivariate generalization of the Gamma distribution.
 \f[

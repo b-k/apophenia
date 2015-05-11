@@ -306,19 +306,6 @@ static gsl_vector*mapply_core(apop_data *d, gsl_matrix *m, gsl_vector *vin, void
     return vout;
 }
 
-/** \page mapply Map or apply a function to a vector or matrix
-
-These functions will pull each element of a vector or matrix, or each row of a matrix, and apply a function to the given element. See the data->map/apply section of the \ref outline_mapply "outline" for many examples. 
-
-There are two types, which were developed at different times. The \ref apop_map and \ref apop_map_sum functions use variadic function inputs to cover a lot of different types of process depending on the inputs. Other functions with types in their names, like \ref apop_matrix_map and \ref apop_vector_apply, may be easier to use in some cases. With one exception, they use the same guts, so use whichever type is convenient.
-
-Here are a few technical details of usage:
-
-\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation.
-
-\li Apart from \ref apop_map_sum (which does minimal internal allocation), the \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
-\{ */
-
 /** Map a function onto every row of a matrix.  The function that you input takes in a gsl_vector and returns a \c double. \c apop_matrix_map will produce a vector view of each row, and send each row to your function. It will output a \c gsl_vector holding your function's output for each row.
 
 

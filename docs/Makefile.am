@@ -29,7 +29,10 @@ model_doc.h: $(apophenia_CSOURCES)
 	cat $^ | awk -f make_model_doc.awk > $@
 
 doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
+	cp ../apop.h abkup
+	sed -i 's/__attribute.*;/;/' ../apop.h
 	doxygen doxygen.conf
+	cp abkup ../apop.h
 	cp $(apophenia_IMAGES) $(apophenia_JS) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html
 	sed -i -f edit_group.sed html/group__models.html

@@ -16,7 +16,6 @@ sed -i -f edit_group.sed latex/group__models.tex
 #Want search box in header
 sed -i -e '/position: *absolute/d' html/search/search.css
 sed -i -e 's/display: *block/display: inline/' html/search/search.css
-#sed -i -e '/z-index/d' html/search/search.css
 #magnifying glass is hard-coded, and span="left" covers left and  middle of search box
 sed -i -e '/mag_sel.png/,+3d' html/*html
 

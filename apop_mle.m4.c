@@ -742,15 +742,6 @@ APOP_VAR_ENDHEAD
 
 // Simulated Annealing.
 
-/** \page simanneal Notes on simulated annealing
-
-Simulated annealing is a controlled random walk.  As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is {\em less} likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is basically not dependent on the function: if you give it a 4,000 step program, that is basically how many steps it will take.  If you know your function is globally convex (as are most standard probability functions), then this method is overkill.
-
-The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
-
-Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
-*/
-
 static double annealing_energy(void *in) {
     infostruct *i = in;
     return negshell(i->beta, i);

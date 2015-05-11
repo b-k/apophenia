@@ -185,21 +185,6 @@ APOP_VAR_END_HEAD
     return 0;
 }
 
-/** \page queries Queries
- 
-These functions query the database, and most return a value for use on the C-side.
-
-In all cases, your query may be in <tt>printf</tt> form. For example:
-\code
-char tabname[] = "demographics";
-char colname[] = "heights";
-int min_height = 175;
-apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
-\endcode
-
-\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
-*/
-
 /** Send a query to the database that returns no data.
 
 \li As with the \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query("create table %s(id, name, age);", tablename)</tt>.
@@ -306,6 +291,8 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 \li If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
 
 \li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_data("select age from %s where id=%i;", tablename, id_number)</tt>.
+
+\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
 
 \return If no rows are returned, \c NULL; else an \ref apop_data set with the data in place. Most data will be in the \c matrix element of the output. Column names are appropriately placed. If <tt>apop_opts.db_name_column</tt> matches one of the fields in your query's output, then that column will be used for row names (and therefore will not appear in the \c matrix).
 

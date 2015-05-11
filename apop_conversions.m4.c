@@ -279,13 +279,6 @@ apop_data *apop_data_rank_expand (apop_data *in){
     return out;
 }
 
-/** \page dbtomatrix Converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
-
-Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
-or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]
-*/
-
-
 /** Copy one  <tt>gsl_vector</tt> to another. That is, all data is duplicated.
  Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
 

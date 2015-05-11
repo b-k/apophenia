@@ -1,7 +1,7 @@
 /* Apophenia's narrative documentation
 Copyright (c) 2005--2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
-/**  \mainpage  Apophenia--the intro
+/**  \mainpage Welcome
 
 Apophenia is an open statistical library for working with data sets and statistical
 models. It provides functions on the same level as those of the typical stats package
@@ -959,14 +959,58 @@ macros obscure the variable declarations, it is especially worth watching out fo
 
 \section setgetsec Set/get
 
-The set/get functions can act on both names or indices. Sample usages:
-
+First, some examples:
 
 \code
-double twothree = apop_data_get(data, 2, 3); //just indices
-apop_data_set(data, .rowname="A row", .colname="this column", .val=13);
+apop_data *d = apop_data_alloc(10, 10, 10);
+apop_name_add(d->names, "Zeroth row", 'r');
+apop_name_add(d->names, "Zeroth col", 'c');
+
+//set cell at row=8 col=0 to value=27
+apop_data_set(d, 8, 0, .val=27);
+assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
+double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
+*x = 270;
+assert(apop_data_get(d, 0, 7) == 270);
+
+
+//apop_data set holding a scalar:
+apop_data *s = apop_data_alloc(1);
+apop_data_set(s, .val=12);
+assert(apop_data_get(s) == 12);
+
+//apop_data set holding a vector:
+apop_data *v = apop_data_alloc(12);
+for (int i=0; i< 12; i++) apop_data_set(s, i, .val=i*10);
+assert(apop_data_get(s,3) == 30);
+
+//This is a common form from pulling from a list of named scalars, 
+//produced via \ref apop_data_add_named_elmt
 double AIC = apop_data_get(your_model->info, .rowname="AIC");
 \endcode
+
+A call like <tt> apop_data_set(in, row, col, data)</tt> is much like the GSL's
+ <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>,
+but with some differences:
+
+\li The \ref apop_data set has names, so we can get/set elements using those names.
+\li The versions that take a column/row name use  \ref apop_name_find
+for the search; see notes there on the name matching rules.
+\li The \ref apop_data set has both matrix and vector elements.
+\li For those that take a column number, column -1 is the vector element. 
+\li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return column -1.
+\li If you give me both a .row and a .rowname, I go with the name; similarly for .col and
+.colname.
+\li You can give me the name of a page, e.g.
+\code
+double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="<Info>");
+\endcode
+
+\li The column (like all defaults) is zero unless stated otherwise, so <tt>apop_data_get(dataset, 1)</tt> gets item (1, 0) from the matrix element of \c dataset. As a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit: <tt>apop_data_get(dataset, 1, -1)</tt>.
+
+The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
+
+\li These functions use the \ref designated syntax for inputs.
 
 \li\ref apop_data_get()
 \li\ref apop_data_set()
@@ -993,10 +1037,11 @@ double AIC = apop_data_get(your_model->info, .rowname="AIC");
 \anchor outline_mapply
 These functions allow you to send each element of a vector or matrix to a function, either producing a new matrix (map) or transforming the original (apply).  The \c ..._sum functions return the sum of the mapped output.
 
-There is an older and a newer set of functions. The older versions, which act on
-<tt>gsl_matrix</tt>es or <tt>gsl_vector</tt>s have more verbose names; the newer
-versions, which take in an \ref apop_data set, use the \ref designated syntax to add
-a few options and a more brief syntax.
+There are two types, which were developed at different times. The \ref apop_map and
+\ref apop_map_sum functions use variadic function inputs to cover a lot of different
+types of process depending on the inputs. Other functions with types in their names,
+like \ref apop_matrix_map and \ref apop_vector_apply, may be easier to use in some
+cases. With one exception, they use the same guts, so use whichever type is convenient.
 
 You can do many things quickly with these functions.
 
@@ -1053,6 +1098,11 @@ Notice how the older \ref apop_vector_apply uses file-global variables to pass i
 One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_sum :
 
 \include apop_map_row.c
+
+
+\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation.
+
+\li The \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
 
 \li\ref apop_map()
 \li\ref apop_map_sum()
@@ -1324,7 +1374,16 @@ These are convenience functions to handle interaction with SQLite or mySQL/maria
 
 You will probably first use \ref apop_text_to_db to pull data into the database, then \ref apop_query to clean the data in the database, and finally \ref apop_query_to_data to pull some subset of the data out for analysis.
 
-See the \ref db_moments page for not-SQL-standard math functions that you can
+\li In all cases, your query may be in <tt>printf</tt> form. For example:
+\code
+char tabname[] = "demographics";
+char colname[] = "heights";
+int min_height = 175;
+apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
+\endcode
+
+
+See the \ref db_moments section below for not-SQL-standard math functions that you can
 use when sending queries from Apophenia, such as \c pow, \c stddev, or \c sqrt.
 
 \li \ref apop_text_to_db : Read a text file on disk into the database. Most data analysis projects start with a call to this.
@@ -1366,7 +1425,51 @@ A few functions have proven to be useful enough to be worth breaking out into th
 \li The \c apop_text_to_db command line utility is a wrapper for the \ref apop_text_to_db command.
 \li The \c apop_db_to_crosstab function is a wrapper for the \ref apop_db_to_crosstab function.
 
-\subpage db_moments
+\section db_moments Database moments (plus pow()!)
+
+SQLite lets users define new functions for use in queries, and Apophenia uses this facility to define a few common functions.
+
+\li <tt>select ran() from table</tt> will produce a new random number between zero and one for every row of the input table, using \c gsl_rng_uniform. 
+
+\li The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators,
+but statisticians are usually interested in higher moments as well---at least the
+variance. Therefore, SQL queries using the Apophenia library may include any of these moments:
+
+\code
+select count(x), stddev(x), avg(x), var(x), variance(x), skew(x), kurt(x), kurtosis(x),
+std(x), stddev_samp(x), stddev_pop(x), var_samp(x), var_pop(x)
+from table
+group by whatever
+\endcode
+
+<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation.  The plethora of variants are for mySQL compatibility.
+
+\li The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
+
+\li Also provided: wrapper functions for standard math library
+functions---<tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, <tt>log(x)</tt>,
+and trig functions. They call the standard math library function of the same name
+to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$,
+\f$\arcsin(x)\f$, et cetera.
+
+\li The <tt>ran()</tt> function calls <tt>gsl_rng_uniform</tt> to produce a uniform
+draw between zero and one. It keeps its own <tt>gsl_rng</tt>, which is intialized on
+first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented,
+so the next function to use it will get a different seed).
+
+\code
+select sqrt(x), pow(x,0.5), exp(x), log(x), 
+    sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
+from table
+\endcode
+
+Here is a test script using many of the above.
+
+\include db_fns.c
+
+Here is some more realistic sample code:
+
+\include normalizations.c
 */
 
 
@@ -1900,6 +2003,15 @@ static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_mod
 \endcode
 
 \li\ref apop_linear_constraint()
+
+\section simanneal Notes on simulated annealing
+
+Simulated annealing is a controlled random walk.  As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is {\em less} likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is basically not dependent on the function: if you give it a 4,000 step program, that is basically how many steps it will take.  If you know your function is globally convex (as are most standard probability functions), then this method is overkill.
+
+The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
+
+Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
+
 
 \section mlfns Useful functions
 
