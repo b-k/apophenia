@@ -36,6 +36,7 @@ apop_query("begin;");
 apop_data_print(your_data, .output_name="dbtab", .output_type='d');
 apop_query("commit;");
 \endcode
+\ingroup all_public
 */
 int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append : 'w';
@@ -183,6 +184,7 @@ You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the defaul
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
+\ingroup all_public
 */
 APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
     gsl_vector *apop_varad_var(data, NULL);
@@ -299,6 +301,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
+\ingroup all_public
 */
 APOP_VAR_HEAD void apop_data_print(const apop_data *data, Output_declares){
     const apop_data * apop_varad_var(data, NULL);
@@ -324,6 +327,7 @@ APOP_VAR_ENDHEAD
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also the legible output section of the \ref outline for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
+\ingroup all_public
 */
 APOP_VAR_HEAD void apop_matrix_print(const gsl_matrix *data, Output_declares){
     const gsl_matrix *apop_varad_var(data, NULL);

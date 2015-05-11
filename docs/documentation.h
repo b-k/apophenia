@@ -85,6 +85,20 @@ processing for the U.S. Census Bureau's American Community Survey. And the numer
 routines in your favorite scripting language typically have a back-end in plain C;
 perhaps Apophenia can facilitate writing your next one.
 
+\li As well as the \ref apop_data structure, Apophenia is built around a model object,
+the \ref apop_model. This allows for consistent treatment of distributions, regressions,
+simulations, machine learning models, and who knows what other sorts of models you can
+dream up. By transforming and combining existing models, it is easy to build complex
+models from simple sub-models.
+
+\li For example, the \ref apop_update function does Bayesian updating on any two
+well-formed models. If they are on the table of conjugates, that is correctly
+handled, and if they are not, an appropriate variant of MCMC produces an empirical
+distribution. The output is yet another model, from which you can make random draws,
+or which you can use as a prior for another round of Bayesian updating. Outside of
+Bayesian updating, the \ref apop_model_metropolis function is good for approximating
+other complex models.
+
 \li The text file parser is flexible and effective. Such data files are typically
 called `CSV files', meaning <em>comma-separated values</em>, but the delimiter can be
 anything (or even some mix of things), and there is no requirement that text have
@@ -107,20 +121,6 @@ apop_mle, .dim_cycle_tolerance=eps)</tt>.
 
 \li The Iterative Proportional Fitting algorithm, \ref apop_rake, is best-in-breed,
 designed to handle large, sparse matrices.
-
-\li As well as the \ref apop_data structure, Apophenia is built around a model object,
-the \ref apop_model. This allows for consistent treatment of distributions, regressions,
-simulations, machine learning models, and who knows what other sorts of models you can
-dream up. By transforming and combining existing models, it is easy to build complex
-models from simple sub-models.
-
-\li For example, the \ref apop_update function does Bayesian updating on any two
-well-formed models. If they are on the table of conjugates, that is correctly
-handled, and if they are not, an appropriate variant of MCMC produces an empirical
-distribution. The output is yet another model, from which you can make random draws,
-or which you can use as a prior for another round of Bayesian updating. Outside of
-Bayesian updating, the \ref apop_model_metropolis function is good for approximating
-other complex models.
 
 
 
@@ -957,7 +957,7 @@ This is a general rule about how variables declared in blocks will behave, but b
 macros obscure the variable declarations, it is especially worth watching out for here.
 
 
-\section setgetsec Set/get
+\section data_set_get Set/get
 
 First, some examples:
 
@@ -1032,7 +1032,7 @@ The \c _ptr functions return a pointer to the given cell. Those functions follow
 \li <tt>gsl_matrix_set_col (gsl_matrix * m, size_t j, const gsl_vector * v)</tt>
 
 
-\section mapplysec   Map/apply
+\section mapply   Map/apply
 
 \anchor outline_mapply
 These functions allow you to send each element of a vector or matrix to a function, either producing a new matrix (map) or transforming the original (apply).  The \c ..._sum functions return the sum of the mapped output.
@@ -1496,7 +1496,7 @@ The <tt>apop_probit</tt> model that ships with Apophenia is unparameterized:
 <tt>the_estimate</tt>, has the same form as <tt>apop_probit</tt>, but
 <tt>the_estimate->parameters</tt> has a meaningful value.
 
-\subsection covandstuff More estimation output
+\section covandstuff More estimation output
 
 A call to \ref apop_estimate produces more than just the estimated parameters. Most will
 produce any of a covariance matrix, some hypothesis tests, a list of expected values, log
@@ -1536,7 +1536,7 @@ apop_data *predict = apop_data_get_page(your_model->info, "<Predicted>");
 \endcode
 
 
-\subsection mmr Post-estimation uses
+\section mmr Post-estimation uses
 But we expect much more from a model than just estimating parameters from data.  
 
 Continuing the above example where we got an estimated Probit model named \c the_estimate, we can interrogate the estimate in various familiar ways. In each of the following examples, the model object holds enough information that the generic function being called can do its work:

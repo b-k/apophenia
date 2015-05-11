@@ -9,6 +9,7 @@ sed -i "/nav_h.png/ d" html/navtree.css
 sed -i "/familydefault.*sfdefault/ d" latex/refman.tex
 
 #No footer
+sed -i "/fancyhead/ d" latex/refman.tex
 sed -i "/fancyfoot/ d" latex/refman.tex
 
 sed -i -f edit_group.sed latex/group__models.tex

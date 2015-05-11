@@ -30,7 +30,7 @@ model_doc.h: $(apophenia_CSOURCES)
 
 doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
 	cp ../apop.h abkup
-	sed -i 's/__attribute.*;/;/' ../apop.h
+	sed -i -e 's/__attribute.*;/;/' -e "s/extern //" ../apop.h
 	doxygen doxygen.conf
 	cp abkup ../apop.h
 	cp $(apophenia_IMAGES) $(apophenia_JS) html/
@@ -38,7 +38,6 @@ doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
 	sed -i -f edit_group.sed html/group__models.html
 	sed -i -f edit_width.sed html/*.html
 	. adjust
-	sed -i -f edit_globals.sed html/globals.html
 
 doc-clean:
 	-rm -rf html latex man

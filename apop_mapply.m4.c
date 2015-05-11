@@ -107,6 +107,7 @@ or matrix parts).
 \li If you set <tt>apop_opts.thread_count</tt> to a value greater than one, I will split the data set into as many chunks as you specify, and process them simultaneously. You need to watch out for the usual hang-ups about multithreaded programming, but if your data is iid, and each row's processing is independent of the others, you should have no problems. Bear in mind that generating threads takes some small overhead, so simple cases like adding a few hundred numbers will actually be slower when threading.
 
 \exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
+\ingroup all_public
 */
 APOP_VAR_HEAD apop_data* apop_map(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp,  apop_fn_dpi *fn_dpi, apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di,  apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, int inplace, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
@@ -448,6 +449,7 @@ double apop_matrix_map_sum(const gsl_matrix *in, double (*fn)(gsl_vector*)){
 \li I don't copy the input data to send to your input function. Therefore, if your function modifies its inputs as a side-effect, your data set will be modified as this function runs.
 
 \li The sum of zero elements is zero, so that is what is returned if the input \ref apop_data set is \c NULL. If <tt>apop_opts.verbose >= 2</tt> I print a warning.
+\ingroup all_public
 */
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages){ 
     apop_data * apop_varad_var(in, NULL)
