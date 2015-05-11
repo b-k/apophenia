@@ -31,7 +31,9 @@ model_doc.h: $(apophenia_CSOURCES)
 doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
 	cp ../apop.h abkup
 	sed -i -e 's/__attribute.*;/;/' -e "s/extern //" ../apop.h
+	if [ ! -e structs.png ] ; then dot -Tpng <structs.dot >structs.png; fi;
 	doxygen doxygen.conf
+	cp structs.png html
 	cp abkup ../apop.h
 	cp $(apophenia_IMAGES) $(apophenia_JS) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html

@@ -27,7 +27,7 @@ The library has been growing and improving since 2005, and has been downloaded o
 engine. Instead, it builds upon the excellent <a href="http://www.gnu.org/software/gsl/">GNU
 Scientific</a> and <a href="http://www.sqlite.org/">SQLite</a> libraries. MySQL/mariaDB is also supported.
 
-For the full list, click the <a href="globals.html">index</a> link from the header.
+For the full list, click the <a href="group__all__public.html">index</a> link from the header.
 
 <h5><a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
@@ -356,11 +356,6 @@ apop_text_to_db_base("infile.txt", "intable", 0, 1, NULL);
 
 \li If one of the optional elements is an RNG and you do not provide one, I use one
 from \ref apop_rng_get_thread.
-
-\li For exhaustive details on implementation of the above (should you wish to write
-new functions that behave like this) see the \ref optionaldetails page.
-
-\subpage optionaldetails
 */
 
 
@@ -2107,7 +2102,7 @@ more information, such as the ld(1) and ld.so(8) manual pages.
 */
 
 
-/** \page optionaldetails Implementation of optional arguments 
+/* optionaldetails Implementation of optional arguments  [this section ignored by doxygen]
 Optional and named arguments are among the most commonly commented-on features of Apophenia, so this page goes into full detail about the implementation. 
 
 To use these features, see the all-you-really-need summary at the \ref designated
@@ -2501,7 +2496,7 @@ which will be useful to you if only because it lists some of the functions that 
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
 \image html http://apophenia.info/structs.png
-
+\image latex ../structs.png width=18cm
 
 All of the elements of the \ref apop_data structure are laid out at middle-left. You have
 already met the vector, matrix, and weights, which are all a \c gsl_vector or \c gsl_matrix.

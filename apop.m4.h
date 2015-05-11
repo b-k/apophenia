@@ -20,6 +20,7 @@ this more navigable.*/
 extern "C" {
 #endif
 
+/** \cond doxy_ignore */
 #ifndef _GNU_SOURCE
 #define  _GNU_SOURCE //for asprintf
 #endif
@@ -35,8 +36,10 @@ extern "C" {
 
 /* A means of providing more script-like means of sending arguments to a function.
 
-These macros are intended as internal.  See the documentation if you're interested in
-using this mechanism in out-of-Apophenia work.
+These macros are intended as internal. Grep docs/documentation.h for optionaldetails
+to find notes on how these are used (Doxygen doesn't use that page), if you are
+interested in using this mechanism in out-of-Apophenia work.
+
 */
 
 #define apop_varad_head(type, name) type variadic_##name(variadic_type_##name varad_in)
@@ -50,13 +53,13 @@ using this mechanism in out-of-Apophenia work.
 #define apop_varad_var(name, value) name = varad_in.name ? varad_in.name : (value);
 #define apop_varad_link(name,...) variadic_##name((variadic_type_##name) {__VA_ARGS__})
 
+/** \endcond */ //End of Doxygen ignore.
 
 
             //////The types
 
 
 /** This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operations on \ref apop_data sets will take care of the names for you.
-\ingroup names
 */
 typedef struct{
     char *title;
@@ -136,8 +139,7 @@ struct apop_model{
     char error;
 };
 
-/** The global options.
-  \ingroup global_vars */
+/** The global options. */
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
     char stop_on_warning; /**< See outline page on error handling. */
@@ -190,8 +192,6 @@ apop_data_add_names_base(mydata, 'c', colnames);
 If you forget the \c NULL marker, this has good odds of segfaulting. You may prefer to use a \c for loop that inserts each name in turn using \ref apop_name_add.
 
 \see \ref apop_name_add, although \ref apop_data_add_names will be more useful in most cases. 
-
- \ingroup data_struct 
 */
 #define apop_data_add_names(dataset, type, ...) apop_data_add_names_base((dataset), (type), (char const*[]) {__VA_ARGS__, NULL}) 
 
@@ -206,9 +206,7 @@ If you don't want to free data sets down the chain, set <tt>more=NULL</tt> befor
 \li This is actually a macro (that calls \ref apop_data_free_base to do the real work). It
 sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
 freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
-
- \ingroup data_struct
-  */
+*/
 #define apop_data_free(freeme) (apop_data_free_base(freeme) ? 0 : ((freeme)= NULL))
 
 char        apop_data_free_base(apop_data *freeme);
@@ -639,6 +637,7 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 /* The Apop_stopif macro is currently favored, but there's a long history of prior
    error-handling setups. Consider all of the Assert... macros below to be deprecated.
 */
+/** \cond doxy_ignore */
 #define Apop_assert_c(test, returnval, level, ...) \
     Apop_stopif(!(test), return returnval, level, __VA_ARGS__)
 
@@ -646,8 +645,8 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
 
 //For things that return void. Transitional and deprecated at birth.
 #define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)
-#define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
+/** \endcond */ //End of Doxygen ignore.
 
 //Missing data
 Apop_var_declare( apop_data * apop_data_listwise_delete(apop_data *d, char inplace) )
@@ -702,9 +701,11 @@ void apop_vector_log(gsl_vector *v);
 void apop_vector_log10(gsl_vector *v);
 void apop_vector_exp(gsl_vector *v);
 
+/** \cond doxy_ignore */
 /** Deprecated. Use \ref Apop_subm.  \hideinitializer */
 #define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix((m), (srow), (scol), (nrows),(ncols)).matrix;\
 gsl_matrix * o = &( apop_mm_##o );
+#define Apop_submatrix APOP_SUBMATRIX
 
 /** \def Deprecated. Use \ref Apop_rv.  \hideinitializer */
 #define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)
@@ -721,6 +722,7 @@ gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );
 
 /** Deprecated. Use \ref Apop_cs.  \hideinitializer */ 
 #define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len);
+/** \endcond */ //End of Doxygen ignore.
 
 #define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
@@ -821,26 +823,28 @@ gsl_vector * v = &( apop_vv_##v );
 
 #define APOP_COL Apop_col
 #define apop_col Apop_col
-#define APOP_COLS Apop_cols
-#define apop_cols Apop_cols
 #define APOP_COL_T Apop_col_t
 #define apop_col_t Apop_col_t
 #define APOP_COL_TV Apop_col_tv
 #define apop_col_tv Apop_col_tv
-#define APOP_COL_V Apop_col_v
-#define apop_col_v Apop_col_v
 
 #define APOP_ROW Apop_row
 #define apop_row Apop_row
-#define Apop_data_row Apop_row   #deprecated
+/** \cond doxy_ignore */
+#define APOP_COLS Apop_cols
+#define apop_cols Apop_cols
+#define APOP_COL_V Apop_col_v
+#define apop_col_v Apop_col_v
+#define APOP_ROW_V Apop_row_v
+#define apop_row_v Apop_row_v
 #define APOP_ROWS Apop_rows
 #define apop_rows Apop_rows
+#define Apop_data_row Apop_row   #deprecated
+/** \endcond */
 #define APOP_ROW_T Apop_row_t
 #define apop_row_t Apop_row_t
 #define APOP_ROW_TV Apop_row_tv
 #define apop_row_tv Apop_row_tv
-#define APOP_ROW_V Apop_row_v
-#define apop_row_v Apop_row_v
 
 /** View a single row of a \c gsl_matrix as a \c gsl_vector. This 
  is a convenience macro wrapping \c gsl_matrix_row. 
@@ -882,7 +886,6 @@ printf("The correlation coefficient between columns two "
 #define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-#define Apop_submatrix APOP_SUBMATRIX
 #define APOP_MATRIX_ROW Apop_matrix_row 
 #define apop_matrix_row Apop_matrix_row 
 #define APOP_MATRIX_COL Apop_matrix_col 
@@ -1047,15 +1050,15 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
   \code 
   if (!apop_settings_get_group(m, "apop_ols")) ...
   \endcode
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
 /** Removes a settings group from a model's list. 
  
   If the so-named group is not found, do nothing.
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
 
 /** Add a settings group. The first two arguments (the model you are
@@ -1068,22 +1071,22 @@ the previous version is removed. Use \ref Apop_settings_get to check whether a g
 of the given type is already attached to a model, and \ref Apop_settings_set to modify
 an existing group.
 
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_settings_add_group.
 
  \return A pointer to the newly-prepped model.
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define apop_model_copy_set(model, type, ...)  \
     apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define Apop_settings_get(model, type, setting)  \
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
@@ -1091,8 +1094,8 @@ an existing group.
 
 \li If <tt>model==NULL</tt>, fails silently. 
 \li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
-\hideinitializer \ingroup settings
- */
+\hideinitializer
+*/
 #define Apop_settings_set(model, type, setting, data)   \
     do {                                                \
         if (!(model)) continue; /* silent fail. */      \
@@ -1203,8 +1206,7 @@ Apop_settings_copy (ysg,
         //Part II: the details of extant settings groups.
 
 
-/** The settings for maximum likelihood estimation (including simulated annealing).
-\ingroup settings */
+/** The settings for maximum likelihood estimation (including simulated annealing). */
 typedef struct{
     double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
                                   If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
@@ -1264,8 +1266,7 @@ apop_data_free(mypath);
 */
 } apop_mle_settings;
 
-/** Settings for least-squares type models 
-\ingroup settings */
+/** Settings for least-squares type models */
 typedef struct {
     int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
@@ -1296,7 +1297,6 @@ typedef struct {
 
   \li Tests may depend on covariance, so <tt>.covariance='n', .tests='y'</tt> may be 
   treated as <tt>.covariance='y', .tests='y'</tt>.
-\ingroup settings
 */
 typedef struct {
     //init/copy/free are in apop_mle.c
@@ -1307,8 +1307,7 @@ typedef struct {
     char info;/*< If 'y', add an info table with elements such as log likelihood or AIC. Default 'n'. */
 } apop_parts_wanted_settings;
 
-/** Some CDFs use random draws; some use closed-form models. 
-  \ingroup settings */
+/** Some CDFs use random draws; some use closed-form models.  */
 typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
@@ -1318,8 +1317,7 @@ typedef struct {
 } apop_cdf_settings;
 
 
-/** Settings for getting parameter models (i.e. the distribution of parameter estimates)
-  \ingroup settings */
+/** Settings for getting parameter models (i.e. the distribution of parameter estimates) */
 typedef struct {
     apop_model *base;
     int index;
@@ -1338,9 +1336,7 @@ typedef struct {
 } apop_pmf_settings;
 
 
-/** Settings for the \ref apop_kernel_density model. 
-
-  \ingroup settings */
+/** Settings for the \ref apop_kernel_density model. */
 typedef struct{
     apop_data *base_data; /**< The data that will be smoothed by the KDE. */
     apop_model *base_pmf; /**< I actually need the data in a \ref apop_pmf. You can give
@@ -1393,9 +1389,7 @@ typedef struct apop_mcmc_proposal_s {
                                        has a total for the aggregate across all chunks. */
 } apop_mcmc_proposal_s;
 
-/** Method settings for a model to be put through Bayesian updating. 
-\ingroup settings 
- */
+/** Method settings for a model to be put through Bayesian updating. */
 typedef struct apop_mcmc_settings {
     apop_data *data;
     long int periods; /**< For how many steps should the MCMC chain run? */
@@ -1489,98 +1483,98 @@ settings init function will copy your preferences into the working struct.
 
 The documentation for the elements is cut/pasted/modified from Cleveland,
 Grosse, and Shyu.
-
-<tt>.data</tt>: Mandatory. Your input data set.
-
-	<tt>.lo_s.model.span</tt>:	smoothing parameter. Default is 0.75.
-
-	<tt>.lo_s.model.degree</tt>: overall degree of locally-fitted polynomial. 1 is
-			locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
-
-	<tt>.lo_s.normalize</tt>:	Should numeric predictors
-			be normalized?	If 'y' - the default - the standard normalization
-			is used. If 'n', no normalization is carried out.
-
-	\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
-			specifies those variables that should be
-			conditionally-parametric. The argument should be a logical
-			vector of length p, specified in the order of the predictor
-			group ordered in x.  Default is a vector of 0's of length p.
-
-	\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
-			numeric predictors, this argument specifies those numeric
-			predictors whose squares should be dropped from the set of
-			fitting variables. The method of specification is the same as
-			for parametric.  Default is a vector of 0's of length p.
-
-	\c .lo_s.model.family: the assumed distribution of the errors. The values are
-	        <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
-            If the second value is specified, a robust fitting procedure is used.
-
-	\c lo_s.control.surface:	determines whether the fitted surface is computed
-            <tt>"directly"</tt> at all points  or whether an <tt>"interpolation"</tt>
-            method is used. The default, interpolation, is what most users should use
-			unless special circumstances warrant.
-
-    \c lo_s.control.statistics:	determines whether the statistical quantities are 
-        computed <tt>"exactly"</tt> or approximately, where <tt>"approximate"</tt>
-        is the default. The former should only be used for testing the approximation in
-        statistical development and is not meant for routine usage because computation
-        time can be horrendous.
-
-        \c lo_s.control.cell: if interpolation is used to compute the surface,
-        this argument specifies the maximum cell size of the k-d tree. Suppose k =
-        floor(n*cell*span) where n is the number of observations.  Then a cell is
-        further divided if the number of observations within it is greater than or
-        equal to k. default=0.2
-
-	\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
-        When lo_s.control.surface is <tt>"approximate"</tt>, determines
-        the computational method used to compute the trace of the hat
-        matrix, which is used in the computation of the statistical
-        quantities.  If "exact", an exact computation is done; normally
-        this goes quite fast on the fastest machines until n, the number
-        of observations is 1000 or more, but for very slow machines,
-        things can slow down at n = 300.  If "wait.to.decide" is selected,
-        then a default is chosen in loess();  the default is "exact" for
-        n < 500 and "approximate" otherwise.  If surface is "exact", an
-        exact computation is always done for the trace. Set trace_hat to
-        "approximate" for large dataset will substantially reduce the
-        computation time.
-
-	\c lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
-        of the robust fitting method.  Default is 0 for
-        lo_s.model.family = gaussian; 4 for family=symmetric.
-
-        That's all you can set. Here are some output parameters:
-
-	\c fitted_values:	fitted values of the local regression model
-
-	\c fitted_residuals:	residuals of the local regression fit
-
-       \c  enp:		equivalent number of parameters.
-
-       \c  s:		estimate of the scale of the residuals.
-
-       \c  one_delta:	a statistical parameter used in the computation of standard errors.
-
-       \c  two_delta:	a statistical parameter used in the computation of standard errors.
-
-       \c  pseudovalues:	adjusted values of the response when robust estimation is used.
-
-	\c trace_hat:	trace of the operator hat matrix.
-
-       \c  diagonal:	diagonal of the operator hat matrix.
-
-       \c  robust:		robustness weights for robust fitting.
-
-       \c  divisor:	normalization divisor for numeric predictors.
-
-    \ingroup settings
 */
 typedef struct {
     apop_data *data;
-    struct  loess_struct lo_s;
+    struct  loess_struct lo_s; /**< 
+
+<tt>.data</tt>: Mandatory. Your input data set.
+
+<tt>.lo_s.model.span</tt>:	smoothing parameter. Default is 0.75.
+
+<tt>.lo_s.model.degree</tt>: overall degree of locally-fitted polynomial. 1 is
+		locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
+
+<tt>.lo_s.normalize</tt>:	Should numeric predictors
+		be normalized?	If 'y' - the default - the standard normalization
+		is used. If 'n', no normalization is carried out.
+
+\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
+		specifies those variables that should be
+		conditionally-parametric. The argument should be a logical
+		vector of length p, specified in the order of the predictor
+		group ordered in x.  Default is a vector of 0's of length p.
+
+\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
+		numeric predictors, this argument specifies those numeric
+		predictors whose squares should be dropped from the set of
+		fitting variables. The method of specification is the same as
+		for parametric.  Default is a vector of 0's of length p.
+
+\c .lo_s.model.family: the assumed distribution of the errors. The values are
+        <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
+        If the second value is specified, a robust fitting procedure is used.
+
+\c lo_s.control.surface:	determines whether the fitted surface is computed
+        <tt>"directly"</tt> at all points  or whether an <tt>"interpolation"</tt>
+        method is used. The default, interpolation, is what most users should use
+		unless special circumstances warrant.
+
+\c lo_s.control.statistics:	determines whether the statistical quantities are 
+    computed <tt>"exactly"</tt> or approximately, where <tt>"approximate"</tt>
+    is the default. The former should only be used for testing the approximation in
+    statistical development and is not meant for routine usage because computation
+    time can be horrendous.
+
+    \c lo_s.control.cell: if interpolation is used to compute the surface,
+    this argument specifies the maximum cell size of the k-d tree. Suppose k =
+    floor(n*cell*span) where n is the number of observations.  Then a cell is
+    further divided if the number of observations within it is greater than or
+    equal to k. default=0.2
+
+\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
+    When lo_s.control.surface is <tt>"approximate"</tt>, determines
+    the computational method used to compute the trace of the hat
+    matrix, which is used in the computation of the statistical
+    quantities.  If "exact", an exact computation is done; normally
+    this goes quite fast on the fastest machines until n, the number
+    of observations is 1000 or more, but for very slow machines,
+    things can slow down at n = 300.  If "wait.to.decide" is selected,
+    then a default is chosen in loess();  the default is "exact" for
+    n < 500 and "approximate" otherwise.  If surface is "exact", an
+    exact computation is always done for the trace. Set trace_hat to
+    "approximate" for large dataset will substantially reduce the
+    computation time.
+
+\c lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
+    of the robust fitting method.  Default is 0 for
+    lo_s.model.family = gaussian; 4 for family=symmetric.
+
+    That's all you can set. Here are some output parameters:
+
+\c fitted_values:	fitted values of the local regression model
+
+\c fitted_residuals:	residuals of the local regression fit
+
+   \c  enp:		equivalent number of parameters.
+
+   \c  s:		estimate of the scale of the residuals.
+
+   \c  one_delta:	a statistical parameter used in the computation of standard errors.
+
+   \c  two_delta:	a statistical parameter used in the computation of standard errors.
+
+   \c  pseudovalues:	adjusted values of the response when robust estimation is used.
+
+\c trace_hat:	trace of the operator hat matrix.
+
+   \c  diagonal:	diagonal of the operator hat matrix.
+
+   \c  robust:		robustness weights for robust fitting.
+
+   \c  divisor:	normalization divisor for numeric predictors.
+*/
+
     int     want_predict_ci; /**< If 'y' (the default), calculate the
                                 confidence bands for predicted values */
     double  ci_level; /**< If running a prediction, the level at which
@@ -1639,7 +1633,7 @@ typedef struct {
 } apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
 
 /** For use with the \ref apop_dconstrain model. See its documentation for an example. 
-\hideinitializer \ingroup settings */
+\hideinitializer */
 typedef struct {
     apop_model *base_model; /**< The model, before constraint. */
     double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
@@ -1658,7 +1652,7 @@ typedef struct {
 /** For mixture distributions, typically set up using \ref apop_model_mixture. See
 \ref apop_mixture for discussion. Please consider all elements but \c model_list and \c
 weights as private and subject to change. See the examples for use of these elements.  
-\hideinitializer \ingroup settings */
+\hideinitializer */
 typedef struct {
     gsl_vector *weights;     /**< The likelihood of a draw from each component. */
     apop_model **model_list; /**< A \c NULL-terminated list of component models. */
