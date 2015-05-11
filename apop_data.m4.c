@@ -303,32 +303,34 @@ apop_data *apop_data_copy(const apop_data *in){
 
 /** Put the first data set either on top of or to the left of the second data set.
 
-The fn returns a new data set, meaning that at the end of this function,
-until you apop_data_free() the original data sets, you will be taking up
-twice as much memory. Plan accordingly. 
-
- For the opposite operation, see \ref apop_data_split.
+For the opposite operation, see \ref apop_data_split.
 
 \param  m1      the upper/rightmost data set (default = \c NULL)
 \param  m2      the second data set (default = \c NULL)
 \param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
-if 'c', stack columns of m1's matrix to left of m2's<br>
-(default = 'r')
-\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
+    if 'c', stack columns of m1's matrix to left of m2's<br>
+    (default = 'r')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those functions. Otherwise, allocate a new \ref apop_data set, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
 
+\li The function returns a new data set, meaning that until you apop_data_free()
+    the original data sets, you will be taking up twice as much memory. Plan accordingly.
 \li If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
-\li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the other [number of columns must match]; if 'c', one set of text is set next to the other [number of rows must match].
+    both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c
+    'y', where you'll get the original \c m1 pointer back)
+\li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the
+    other [number of columns must match]; if 'c', one set of text is set next to the other
+    [number of rows must match].
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
-vectors stacked accordingly. If stacking columns by columns, the output
-vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
-output at all.  
+    vectors stacked accordingly. If stacking columns by columns, the output
+    vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
+    output at all.  
 \li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
-\li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
+\li Names are a copy of the names for \c m1, with the names for \c m2 appended to the
+    row or column list, as appropriate.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data *apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace){

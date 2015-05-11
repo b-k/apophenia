@@ -318,9 +318,13 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 
 ///////////////The text processing section
 
-/** \page text_format Notes on input text file formatting
+/** \page text_format Input text file formatting
 
-Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters. Fixed-width input is also OK; see below.
+This section describes the assumptions made by \ref apop_text_to_db and \ref apop_text_to_data.
+
+Each row of the file will be converted to one record in the database or one row in the
+matrix. Values on one row are separated by delimiters. Fixed-width input is also OK;
+see below.
 
 By default, the delimiters are set to "|,\t", meaning that a pipe, comma, or tab
 will delimit separate entries.  To change the default, please use an argument to

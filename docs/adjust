@@ -22,8 +22,15 @@ sed -i -e's/\(TabularC}\){2}/\1{3}/' latex/group__models.tex
 #Unclutter the ToC by using section*=omit from ToC
 sed -i -e 's/subsection{Detailed Description}/subsection*{Detailed Description}/' -e 's/subsection{Field Documentation}/subsection*{Field Documentation}/' latex/*tex
 
+#Bare references to subpages
+#sed -i -e's|^\\hyperlink.*hypertarget.*subsection.*label{[^}]*}$||' latex/*tex
+sed -i -e's|^\\hyperlink{[^}]*}{[^}]*}$||' latex/*tex
+
 #code looks too small to me. Go one step bigger.
 sed -i -e 's/scriptsize/footnotesize/' latex/doxygen.sty
+
+#paragraphs have a lot of space after the header; tighten
+sed -i -e'/DoxyParagraph/,+15 s|\(end{list}\)|\1\\vspace{-10pt}|' latex/doxygen.sty
 
 #offset description labels by a few cm
 sed -i '$a\

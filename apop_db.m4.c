@@ -116,7 +116,7 @@ Recreating a table which already exists can cause errors, so it is good practice
 
 \li In the SQLite engine, this function considers table views to be tables.
 
-\li If <tt>apop_opts.stop_on_warn='n'</tt>, returns -1 on errors.
+\li If <tt>apop_opts.stop_on_warning='n'</tt>, returns -1 on errors.
 
 \li This function uses the \ref designated syntax for inputs.
 */

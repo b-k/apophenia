@@ -393,15 +393,16 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 
 /** Put summary information about the columns of a table (mean, std dev, variance, min, median, max) in a table.
 
-\param indata The table to be summarized. An \ref apop_data structure.
-\return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic. May have a <tt>weights</tt> element.
+\param indata The table to be summarized. An \ref apop_data structure. May have a <tt>weights</tt> element.
+\return     An \ref apop_data structure with one row for each column in the original
+            table, and a column for each summary statistic.
 \exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
 */
 apop_data * apop_data_summarize(apop_data *indata){
-    Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
-    Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
+    Apop_stopif(!indata, return NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
+    Apop_stopif(!indata->matrix, return NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
     apop_data *out = apop_data_alloc(indata->matrix->size2, 6);
     double mean, var;
     char rowname[10000]; //crashes on more than 10^9995 columns.

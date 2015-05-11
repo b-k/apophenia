@@ -79,7 +79,7 @@ void distract_doxygen_arms(){/*Doxygen gets thrown by the settings macros. This 
 This is a function to make random draws from any univariate distribution (more or less).
 
 The author, Wally Gilks, explains on 
-http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html, that
+http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html , that
 ``ARS works by constructing an envelope function of the log of the target density, which is then used in rejection sampling (see, for example,  Ripley, 1987). Whenever a point is rejected by ARS, the envelope is updated to correspond more closely to the true log density, thereby reducing the chance of rejecting subsequent points. Fewer ARS rejection steps implies fewer point-evaluations of the log density.''
 
 \li It accepts only functions with univariate inputs. I.e., it will put a single value in the vector part of a \ref apop_data set, and then evaluate the log likelihood at that point.
