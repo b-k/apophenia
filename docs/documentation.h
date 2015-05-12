@@ -146,14 +146,17 @@ tools looks like. If you'd like more context or explanation, please click throug
 the page from which the example was taken.
 
 \par Two data streams
+
 The sample program here is intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set.  Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program.  This program will compile cleanly with the sample \ref makefile.
 
 \include draw_to_db.c
 
 \par Run a regression
+
 The documentation for the \ref apop_ols model provides a program to read in data and run a regression.
 
 \par ftestpar A sequence of t-tests
+
 In \ref mapply "The secton on map/apply", a new \f$t\f$-test on every row, with all
 operations acting on entire rows rather than individual data points:
 
@@ -163,10 +166,12 @@ In the documentation for \ref apop_query_to_text, a program to list all the tabl
 \include ls_tables.c
 
 \par Marginal distribution
+
 A demonstration of fixing parameters to create a marginal distribution, via \ref apop_model_fix_params
 \include fix_params.c
 
 \par Several uses of the \ref apop_dot function
+
 \include dot_products.c
 */
 
@@ -1503,7 +1508,24 @@ The <tt>apop_probit</tt> model that ships with Apophenia is unparameterized:
 <tt>the_estimate</tt>, has the same form as <tt>apop_probit</tt>, but
 <tt>the_estimate->parameters</tt> has a meaningful value.
 
-\section covandstuff More estimation output
+Apophenia ships with many well-known models for your immediate use, including
+probability distributions, such as the \ref apop_normal, \ref apop_poisson, or \ref apop_beta models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit. For example, given that the data is Normally distributed, find the mean and variance: \ref apop_estimate(\c your_data, \ref apop_normal).
+
+There are also linear models like \ref apop_ols, \ref apop_probit, and \ref apop_logit. As in the example, they are on equal footing with the distributions, so nothing keeps you from making random draws from an estimated linear model.
+
+\li If you send a data set with the \c weights vector filled, \ref apop_ols estimates Weighted OLS.
+
+\li If the dependent variable has more than two categories, the \ref apop_probit and \ref apop_logit models estimate a multinomial logit or probit.
+
+\li There are separate \ref apop_normal and \ref apop_multivariate_normal functions
+because the parameter formats are slightly different: the univariate Normal keeps both
+\f$\mu\f$ and \f$\sigma\f$ in the vector element of the parameters; the multivariate version uses the
+vector for the vector of means and the matrix for the \f$\Sigma\f$ matrix. The univariate is so
+heavily used that it merits a special-case model.
+
+Simulation models seem to not fit this form, but you will see below that if you can write an objective function for the \c p method of the model, you can use the above tools. Notably, you can estimate parameters via maximum likelihood and then give confidence intervals around those parameters.
+
+\par More estimation output
 
 A call to \ref apop_estimate produces more than just the estimated parameters. Most will
 produce any of a covariance matrix, some hypothesis tests, a list of expected values, log
@@ -1543,7 +1565,8 @@ apop_data *predict = apop_data_get_page(your_model->info, "<Predicted>");
 \endcode
 
 
-\section mmr Post-estimation uses
+\par Post-estimation uses
+
 But we expect much more from a model than just estimating parameters from data.  
 
 Continuing the above example where we got an estimated Probit model named \c the_estimate, we can interrogate the estimate in various familiar ways. In each of the following examples, the model object holds enough information that the generic function being called can do its work:
@@ -1556,63 +1579,32 @@ double density_under =  apop_cdf(expected_value, the_estimate);
 apop_data *draws = apop_model_draws(the_estimate, .count=1000);
 \endcode
 
-Apophenia ships with many well-known models for your immediate use, including
-probability distributions, such as the \ref apop_normal, \ref apop_poisson, or \ref apop_beta models. The data is assumed to have been drawn from a given distribution and the question is only what distributional parameters best fit; e.g., assume the data is Normally distributed and find the mean and variance: \ref apop_estimate(\c your_data, \ref apop_normal).
+\par Additional settings
 
-There are also linear models like \ref apop_ols, \ref apop_probit, and \ref apop_logit. As in the example, they are on equal footing with the distributions, so nothing keeps you from making random draws from an estimated linear model.
-
-\li If you send a data set with the \c weights vector filled, \ref apop_ols estimates Weighted OLS.
-
-\li If the dependent variable has more than categories, The \ref apop_probit and \ref apop_logit models estimate a multinomial logit or probit.
-
-\li There are separate \ref apop_normal and \ref apop_multivariate_normal functions because the parameter formats are slightly different: the univariate Normal keeps both μ and σ in the vector element of the parameters; the multivariate version uses the vector for the vector of means and the matrix for the Σ matrix. The univariate is so heavily used that it merits a special-case model.
-
-
-Simulation models seem to not fit this form, but you will see below that if you can write an objective function for the \c p method of the model, you can use the above tools. Notably, you can estimate parameters via maximum likelihood and then give confidence intervals around those parameters.
-
-But some models have to break uniformity, like how a histogram has a list of bins that makes no sense for a Normal distribution. These are held in <em>settings groups</em>, which you will occasionally need to tweak to modify how a model is handled or estimated. The most common example would be for maximum likelihood, eg.
+But some models have to break uniformity, like how a histogram has a list of bins that
+makes no sense for a Normal distribution. Modifiable characteristics of the model
+that are not treated as parameters are held in <em>settings groups</em>, which you
+will occasionally need to tweak to modify how a model is handled or estimated. The
+most common example would be for maximum likelihood, eg.
 
 \code
 //Probit uses MLE. Redo the estimation using Newton's Method
 Apop_settings_add_group(the_estimate, apop_mle, .verbose='y', 
-                        .tolerance=1e-4, .method=APOP_RF_NEWTON);
+                        .tolerance=1e-4, .method="Newton");
 apop_model *re_est = apop_estimate(data, the_estimate);
 \endcode
 
 See below for more details on using settings groups.
 
-\subsection dataones Data format for regression-type models
-First, this page will give a little rationale, which you are welcome to skip, and then will present the set of rules.
+To clarify the distinction between parameters and settings, note that parameters are
+estimated from the data, often via a maximum likelihood search. In an ML search,
+the method of search, the number of bins in a histogram, or the number of steps in a
+simulation would be held fixed as the search iterates over possible parameters (and
+if they do change, then that is a meta-model that could be encapsulated into another
+\ref apop_model). As a consequence, parameters are always numeric, while settings may
+be any type.
 
-Most standard regression-type estimations require or generally expect
-a constant column. That is, the 0th column of your data is a constant (one), so the first parameter
-\f$\beta_1\f$ is slightly special in corresponding to a constant rather than a variable.
-
-However, there are some estimations that do not use the constant column.
-
-\em "Why not implicitly assume the ones column?"
-Some stats packages implicitly assume a constant column, which the user never sees. This violates the principle of transparency
-upon which Apophenia is based, and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters \f$\beta\f$, 
-if the model asserts that the product \f$X\beta\f$ has meaning, then you should be able to calculate that product. With a ones column, a dot product is one line \c apop_dot(x, your_est->parameters, 0, 0)); without a ones column, the problem is left as an unpleasant exercise for the reader.
-
-  \subsection datashunt Shunting columns around.
-
-Each regression-type estimation has one dependent variable and several independent. In the end, we want the dependent variable to be in the vector element. However, continuing the \em "lassies faire" tradition, doing major surgery on the data, such as removing a column and moving in all subsequent columns, is more invasive than an estimation should be.
-
-\subsection datarules The rules
-So those are the two main considerations in prepping data. Here are the rules, intended to balance those considerations:
-
-\subsubsection datamatic The automatic case
-There is one clever trick we can use to resolve both the need for a ones column and for having the dependent column in the vector: given a data set with no vector element and the dependent variable in the first column of the matrix, we can copy the dependent variable into the vector and then replace the first column of the matrix with ones. The result
-fits all of the above expectations.
-
-You as a user merely have to send in a \c apop_data set with no vector and a dependent column in the first column.
-
-\subsubsection dataprepped The already-prepped case
-If your data has a vector element, then the prep routines won't try to force something to be there. That is, they won't move anything, and won't turn anything into a constant column. If you don't want to use a constant column, or your data has already been prepped by an estimation, then this is what you want.
-
-You as a user just have to send in a \c apop_data set with a filled vector element.
-
+\subpage dataones
 
 \section modelparameterization  Parameterizing or initializing a model
 
@@ -1662,7 +1654,6 @@ If you need to write a new model, see \ref modeldetails.
 \li\ref apop_log_likelihood : the log of \ref apop_p
 \li\ref apop_score : the derivative of \ref apop_log_likelihood
 \li\ref apop_model_print : write to screen, file, or database
-
 \li\ref apop_model_copy : duplicate a model
 \li\ref apop_model_set_parameters : Models ship with no parameters set. Use this to convert a Normal(μ, σ) with unknown μ and σ into a Normal(0, 1), for example.
 \li\ref apop_model_free
@@ -1787,20 +1778,76 @@ For just using a model, that's all of what you need to know. For details on writ
 \li\ref Apop_settings_get_group get the whole settings group.
 */
 
+/** \page dataones Data format for regression-type models
+
+Regression-type estimations typically require a constant column. That is, the 0th
+column of the data is a constant (one), so the first parameter \f$\beta_1\f$ is
+slightly special in corresponding to a constant rather than a variable.
+
+However, there are some estimations that do not use the constant column.
+
+Some stats packages implicitly assume a constant column, which the user never
+sees. This violates the principle of transparency upon which Apophenia is based,
+and is generally annoying.  Given a data matrix \f$X\f$ with the estimated parameters
+\f$\beta\f$, if the model asserts that the product \f$X\beta\f$ has meaning, then you
+should be able to calculate that product. With a ones column, a dot product is one line:
+<tt>apop_dot(x, your_est->parameters)</tt>; without a ones column, one would basically
+have to construct one (\c gsl_matrix_set_all, \c apop_data_stack).
+
+Each regression-type estimation has one dependent variable and several independent. In
+the end, we want the dependent variable to be in the vector element. Removing
+a column from a <tt>gsl_matrix</tt> and adjusting all subsequent columns is relatively
+difficult, because (like most structs built around very efficient processing) the
+struct depends on an equal spacing in memory between each element.
+
+\par The automatic case
+
+There is one clever trick we can use to resolve both the need for a ones column and
+for having the dependent column in the vector: given a data set with no vector element
+and the dependent variable in the first column of the matrix, we can copy the dependent
+variable into the vector and then replace the first column of the matrix with ones. The
+result fits all of the above expectations.
+
+You as a user merely have to send in a \c apop_data set with \c NULL vector and a dependent
+column in the first column. If the data is coming from the database, then the query
+is natural:
+
+\code
+apop_data *regression_data = apop_query_to_data("select depvar, indyvar1, indvar2, indvar3 from dataset");
+apop_model_print(apop_estimate(regression_data, apop_ols), NULL);
+\endcode
+
+\par The already-prepped case
+
+If your data has a vector element, then the prep routines won't change anything.
+If you don't want to use a constant column, or your data has already been prepped by
+an estimation, then this is what you want.
+
+\code
+apop_data *regression_data = apop_query_to_mixed_data("vmmm", "select depvar, indyvar1, indvar2, indvar3 from dataset");
+apop_model_print(apop_estimate(regression_data, apop_logit), NULL);
+\endcode
+*/
+
 
 /** \page testpage Tests & diagnostics
 
-Just about any hypothesis test consists of a few common steps:
+Apophenia provides a few functions for doing the more common hypothesis tests, and
+enough tools associated with the \ref apop_model struct that confidence-interval type
+tests can be constructed for any arbitrary distribution.
 
-\li  specify a statistic
-\li  State the statistic's hypothesized distribution
-\li  Find the odds that the statistic would lie within some given range, like <em>greater than zero</em> or <em>near 1.1</em>.
+If you are producing a statistic that you know has a common form, like a central limit
+theorem tells you that your statistic is Normally distributed, then the convenience
+function \ref apop_test will do the final lookup step of checking where your statistic
+lies on your chosen distribution.
 
-If the statistic is from a common form, like the parameters from an OLS regression, then the commonly-associated \f$t\f$ test is probably included as part of the estimation output, typically as a row in the \c info element of the \ref apop_data set.
+In especially common cases, like the parameters from an OLS regression,
+the commonly-associated \f$t\f$ test is included as part of the estimation
+output, typically as a row in the \c info element of the output \ref apop_model.
 
-Some tests, like ANOVA, produce a statistic using a specialized procedure, so Apophenia includes some functions, like \ref apop_test_anova_independence and \ref apop_test_kolmogorov, to produce the statistic and look up its significance level.
-
-If you are producing a statistic that you know has a common form, like a central limit theorem tells you that your statistic is Normally distributed, then the convenience function \ref apop_test will do the final lookup step of checking where your statistic lies on your chosen distribution.
+Some tests, like ANOVA, produce a statistic using a specialized procedure, so
+Apophenia includes some functions, like \ref apop_test_anova_independence and \ref
+apop_test_kolmogorov, to produce the statistic and look up its significance level.
 
 \li\ref apop_test
 \li\ref apop_paired_t_test
@@ -1813,34 +1860,38 @@ If you are producing a statistic that you know has a common form, like a central
 \li\ref apop_estimate_r_squared
 \li\ref apop_estimate_parameter_tests
 
-See also the example at the end of \ref gentle, and these Monte Carlo methods:
+These are all situations where the statistic in question is known to have a textbook
+distribution. \ref gentle_testing gives discussion and an example for the case where
+the distribution of the statistic must be derived via Monte Carlo methods.
+
+See also these Monte Carlo methods:
 
 \li\ref apop_bootstrap_cov
 \li\ref apop_jackknife_cov
 
-To give another example of testing, here is a function that used to be a part of Apophenia, but seemed a bit out of place. Here it is as a sample:
-
+To give another example of testing, here is a function that used to be a part of
+Apophenia, but seemed a bit out of place. Here it is as a sample:
 
 \code
-// Input: any old vector. Output: 1 - the p-value for a chi-squared
+// Input: any vector. Output: 1 - the p-value for a chi-squared
 // test to answer the question, "with what confidence can I reject the
 // hypothesis that the variance of my data is zero?"
 
 double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
     Apop_stopif(!in, return NAN, 0, "input vector is NULL. Doing nothing.");
-    double 		sum=0;
+    double sum=0;
     gsl_vector	*normed = apop_vector_normalize((gsl_vector *)in, .normalization_type='s');
     gsl_vector_mul(normed, normed);
     for(size_t i=0;i< normed->size; 
-            sum +=gsl_vector_get(normed,i++));
+        sum +=gsl_vector_get(normed,i++));
     gsl_vector_free(normed);
     return gsl_cdf_chisq_P(sum, in->size); 
 }
 \endcode
 
-    Or, consider the Rao statistic, 
-    \f${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)\f$
-    where \f$L\f$ is your model's likelihood function and \f$I\f$ its information matrix. In code:
+Or, consider the Rao statistic, 
+\f${\partial\over \partial\beta}\log L(\beta)'I^{-1}(\beta){\partial\over \partial\beta}\log L(\beta)\f$
+where \f$L\f$ is your model's likelihood function and \f$I\f$ its information matrix. In code:
 
 \code
 apop_data * infoinv = apop_model_numerical_covariance(data, your_model);
@@ -1888,7 +1939,7 @@ Most models have a \c parameters \ref apop_data set that is filled when you call
 apop_estimate. For a PMF model, the \c parameters are \c NULL, and the \c data itself
 is used for calculation. Therefore, modifying the data post-estimation can break some
 internal settings set during estimation. If you modify the data, throw away any existing
-PMFs (\c apop_model_free) and re-estimate a new one.
+PMFs (via \ref apop_model_free) and re-estimate a new one.
 
 
 Using \ref apop_data_pmf_compress puts the data into one bin for each unique value in
@@ -1896,10 +1947,12 @@ the data set.
 You may instead want bins of fixed with, in the style of a histogram, which you can get via 
 \ref apop_data_to_bins. It requires a bin specification. If you send a \c NULL binspec,
 then the offset is zero and the bin size is big enough to ensure that there are
-\f$\sqrt(N)\f$ bins from minimum to maximum. There are other preferred formulæ for
+\f$\sqrt{N}\f$ bins from minimum to maximum. There are other preferred formulæ for
 bin widths that minimize MSE, which might be added as a future extension.  The binspec
 will be added as a page to the data set, named <tt>"<binspec>"</tt>. See the \ref
 apop_data_to_bins documentation on how to write a custom bin spec.
+
+\section histocompare Comparing histograms
 
 There are a few ways of testing the claim that one distribution equals another, typically an empirical PMF versus a smooth theoretical distribution. In both cases, you will need two distributions based on the same binspec. 
 
@@ -2649,7 +2702,7 @@ printf("ΔAIC_c=%g\n", apop_data_get(est->info, .rowname="AIC_c")
                        - apop_data_get(est2->info, .rowname="AIC_c"));
 \endcode
 
-\par Testing
+\section gentle_testing Testing
 
 Here is the model for all hypothesis testing within Apophenia:
 

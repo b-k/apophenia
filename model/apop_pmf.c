@@ -50,10 +50,10 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 equally probable.
 \li If the \c weights are present but sum to a not-finite value, the model's \c error element is set to \c 'w' when the estimation is run, and a warning printed.
 
-\adoc    Input_format     As above, you can input to the \c estimate
+\adoc Input_format     As above, you can input to the \c estimate
                       routine a 2-D matrix that will be converted into this form.     
-\adoc    Parameter_format  None. The list of observations and their weights are in the \c data set, not the \c parameters.
-\adoc    Settings   \ref apop_pmf_settings
+\adoc Parameter_format  None. The list of observations and their weights are in the \c data set, not the \c parameters.
+\adoc Settings   \ref apop_pmf_settings
 */
 
 #include "apop_internal.h"

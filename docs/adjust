@@ -26,6 +26,10 @@ sed -i -e 's/subsection{Detailed Description}/subsection*{Detailed Description}/
 #sed -i -e's|^\\hyperlink.*hypertarget.*subsection.*label{[^}]*}$||' latex/*tex
 sed -i -e's|^\\hyperlink{[^}]*}{[^}]*}$||' latex/*tex
 
+#the hyperlink insertion into sample code sometimes creates needless newlines with a
+#six-space indent.
+sed -i '$!N;s/\n      \(\\hyperlink\)/\1/;P;D' latex/*tex
+
 #code looks too small to me. Go one step bigger.
 sed -i -e 's/scriptsize/footnotesize/' latex/doxygen.sty
 
