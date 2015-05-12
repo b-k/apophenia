@@ -18,7 +18,6 @@ EXTRA_DIST = \
 	kernel.c \
 	ks_tests.c \
 	ls_tables.c \
-	normalizations.c \
 	ols2.c \
 	ols.c \
 	parameterization.c \

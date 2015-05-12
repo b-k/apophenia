@@ -327,9 +327,9 @@ matrix. Values on one row are separated by delimiters. Fixed-width input is also
 see below.
 
 By default, the delimiters are set to "|,\t", meaning that a pipe, comma, or tab
-will delimit separate entries.  To change the default, please use an argument to
+will delimit separate entries.  To change the default, use an argument to
 \ref apop_text_to_db or \ref apop_text_to_data like <tt>.delimiters=" \t"</tt> or
-<tt>.delimiters="|"</tt>. \c apop_opts.input_delimiters is deprecated.
+<tt>.delimiters="|"</tt>.
 
 The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. 
 If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
@@ -345,7 +345,10 @@ E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
 
 \li Blank lines (empty or consisting only of white space) are also ignored.
 
-\li If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
+\li If you are reading into the <tt>gsl_matrix</tt> element of an \ref apop_data set,
+all text fields are taken as zeros. You will be warned of such substitutions unless
+you set \code apop_opts.verbose==0\endcode beforehand. For mixed text/numeric data,
+try using \ref apop_text_to_db and then \ref apop_query_to_mixed_data.
 
 \li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
 like this, the user typically means that there is a missing value and the system should
@@ -365,6 +368,7 @@ If you have missing data delimiters, you will need to set \ref apop_opts_type
 \code
 //Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
 apop_opts.nan_string = "NaN";
+//Popular alternatives:
 apop_opts.nan_string = "Missing";
 apop_opts.nan_string = ".";
 
@@ -373,13 +377,15 @@ apop_opts.nan_string = NULL;
 \endcode
 
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
-\ref apop_query_to_data will convert both your nan_string string and \c NULL to an \c NaN value.
+\ref apop_query_to_data will convert both your \c nan_string string and \c NULL to an \c NaN value.
 
 \li The system uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
-I use some tricks to get SQLite to accept these values, but they work.
 
-\li If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
+\li If there are row names and column names, then the input will not be perfectly square:
+there should be no first entry in the sequence of column names like <tt>row names</tt>. That is,
+for a 100x100 data set with row and column names, there are 100 names in the top row,
+and 101 entries in each subsequent row (name plus 100 data points).
 
 \li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
 is eqivalent to <tt>1,2,3,4,5," six ",7</tt>.

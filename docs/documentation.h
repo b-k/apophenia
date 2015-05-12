@@ -1399,11 +1399,11 @@ apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_hei
 See the \ref db_moments section below for not-SQL-standard math functions that you can
 use when sending queries from Apophenia, such as \c pow, \c stddev, or \c sqrt.
 
-\li \ref apop_text_to_db : Read a text file on disk into the database. Most data analysis projects start with a call to this.
+\li \ref apop_text_to_db : Read a text file on disk into the database. Data analysis projects often start with a call to this.
 \li \ref apop_data_print : If you include the argument <tt>.output_type='d'</tt>, this prints your \ref apop_data set to the database.
 \li \ref apop_query : Manipulate the database, return nothing (e.g., insert rows or create table).
 \li \ref apop_db_open : Optional, for when you want to use a database on disk.
-\li \ref apop_db_close : If you used \ref apop_db_open, you will need to use this too.
+\li \ref apop_db_close : A useful (and in some cases, optional) companion to \ref apop_db_open.
 \li \ref apop_table_exists : Check to make sure you aren't reinventing or destroying data. Also, a clean way to drop a table.
 
 \li Apophenia reserves the right to insert temp tables into the opened database. They will all have names beginning with "apop_", so the reader is advised to not use tables with such names, and is free to ignore or delete any such tables that turn up.
@@ -1455,20 +1455,15 @@ from table
 group by whatever
 \endcode
 
-<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation.  The plethora of variants are for mySQL compatibility.
+<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation.  The plethora of variants are for mySQL compatibility. Kurtosis is the fourth central moment by itself, not adjusted by subtracting three or dividing by variance squared.
 
-\li The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
+\li The  var/skew/kurtosis functions calculate sample moments. If you want the population moment of the variance/skew, multiply the result by (n-1)/n . The equation for the unbiased sample kurtosis as calculated in <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M of <em>Modeling with Data</em></a> is not quite as simple.
 
 \li Also provided: wrapper functions for standard math library
 functions---<tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, <tt>log(x)</tt>,
 and trig functions. They call the standard math library function of the same name
 to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$,
-\f$\arcsin(x)\f$, et cetera.
-
-\li The <tt>ran()</tt> function calls <tt>gsl_rng_uniform</tt> to produce a uniform
-draw between zero and one. It keeps its own <tt>gsl_rng</tt>, which is intialized on
-first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented,
-so the next function to use it will get a different seed).
+\f$\arcsin(x)\f$, et cetera. For example:
 
 \code
 select sqrt(x), pow(x,0.5), exp(x), log(x), 
@@ -1476,13 +1471,14 @@ select sqrt(x), pow(x,0.5), exp(x), log(x),
 from table
 \endcode
 
+\li The <tt>ran()</tt> function calls <tt>gsl_rng_uniform</tt> to produce a uniform
+draw between zero and one. It keeps its own <tt>gsl_rng</tt>, which is intialized on
+first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented,
+so the next function to use it will get a different seed).
+
 Here is a test script using many of the above.
 
 \include db_fns.c
-
-Here is some more realistic sample code:
-
-\include normalizations.c
 */
 
 
@@ -1491,9 +1487,7 @@ Here is some more realistic sample code:
 This segment discusses the use of existing \ref apop_model objects.
 If you need to write a new model, see \ref modeldetails.
 
-
-Begin with the most common use:
-the \c estimate function will estimate the parameters of your model. Just prep the data, select a model, and produce an estimate:
+The \c estimate function will estimate the parameters of your model. Just prep the data, select a model, and produce an estimate:
 
 \code
     apop_data *data = apop_query_to_data("select outcome, in1, in2, in3 from dataset");
@@ -1515,11 +1509,11 @@ A call to \ref apop_estimate produces more than just the estimated parameters. M
 produce any of a covariance matrix, some hypothesis tests, a list of expected values, log
 likelihood, AIC, AIC_c, BIC, et cetera.
 
-First, note that if you don't want all that, 
-adding to your model an \ref apop_parts_wanted_settings group with its default values (see below on settings groups) signals to
-the model that you want only the parameters and to not waste CPU time on covariances,
-expected values, et cetera. See the \ref apop_parts_wanted_settings documentation for examples and
-further refinements.
+If you don't want all that, adding to your model an \ref apop_parts_wanted_settings
+group with its default values (see below on settings groups) signals to the model
+that you want only the parameters and to not waste (possibly significant) CPU time
+on covariances, expected values, et cetera. See the \ref apop_parts_wanted_settings
+documentation for examples and further refinements.
 
 \li The actual parameter estimates are in an \ref apop_data set at \c your_model->parameters.
 
