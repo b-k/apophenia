@@ -41,6 +41,7 @@ static apop_data *get_category_table(apop_data *d){
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
+    if (m->data && m->parameters) return; //already prepped; re-prep is a no-op.
     apop_data *factor_list = get_category_table(d);
     apop_score_vtable_add(probit_dlog_likelihood, apop_probit);
     //apop_score_vtable_add(logit_dlog_likelihood, apop_logit);

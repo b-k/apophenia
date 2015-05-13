@@ -15,7 +15,6 @@ int main(){
     apop_model *mvN = apop_estimate(d, apop_multivariate_normal);
     print_draws(mvN);
 
-
     //fixed parameter list:
     apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
     print_draws(std_normal);
@@ -31,7 +30,6 @@ int main(){
                                 1,  0, 1, 0,
                                 1,  0, 0, 1);
     print_draws(std_multinormal);
-
 
     //estimate a KDE using the defaults:
     apop_model *k = apop_estimate(d, apop_kernel_density);

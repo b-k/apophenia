@@ -285,6 +285,7 @@ static long double pmf_cmf(apop_data *d, apop_model *m){
 static void pmf_print(apop_model *est, FILE *out){ apop_data_print(est->data, .output_pipe=out); }
 
 static void pmf_prep(apop_data * data, apop_model *model){
+    if (model->data) return; //already prepped, and reprep is a no-op.
     apop_model_print_vtable_add(pmf_print, apop_pmf);
     Get_vmsizes(data) //msize2, firstcol
     int width = msize2 ? msize2 : -firstcol;//use the vector only if there's no matrix.

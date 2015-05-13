@@ -30,6 +30,8 @@ sed -i -e's|^\\hyperlink{[^}]*}{[^}]*}$||' latex/*tex
 #six-space indent.
 sed -i '$!N;s/\n      \(\\hyperlink\)/\1/;P;D' latex/*tex
 
+sed -i -e 's/μ/\\f$\\mu\\f$/' -e's/σ/\\f$\\sigma\\f$/' -e's/Σ/\\f$\\Sigma\\f$/'   latex/*tex
+
 #code looks too small to me. Go one step bigger.
 sed -i -e 's/scriptsize/footnotesize/' latex/doxygen.sty
 
@@ -38,7 +40,7 @@ sed -i -e'/DoxyParagraph/,+15 s|\(end{list}\)|\1\\vspace{-10pt}|' latex/doxygen.
 
 #offset description labels by a few cm
 sed -i '$a\
-\\renewcommand{\\descriptionlabel}[1]{\\hspace{-2.5cm}\\emph{#1}}' latex/doxygen.sty
+\\renewcommand{\\descriptionlabel}[1]{\\hspace{-1.5cm}\\emph{#1}}' latex/doxygen.sty
 
 
 

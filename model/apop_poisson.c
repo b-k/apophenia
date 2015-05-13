@@ -41,7 +41,6 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     double mean = data_mean(data);
 	apop_data_set(est->parameters, .val=mean);
     apop_data_add_names(est->parameters, 'r', "λ");

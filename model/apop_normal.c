@@ -78,7 +78,6 @@ void get_mu_var(apop_data *data, double *mu_out, double *var_out){
  \adoc estimated_info Reports the log likelihood.*/
 static void normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     Get_vmsizes(data); //tsize
     double mean, var;
     get_mu_var(data, &mean, &var);
@@ -187,7 +186,6 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void lognormal_estimate(apop_data * data, apop_model *est){
     apop_data *cp = apop_data_copy(data);
-    apop_prep(data, est);
     Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return, 
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1

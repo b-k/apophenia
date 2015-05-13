@@ -73,20 +73,6 @@ static void setup_normal_proposals(apop_mcmc_proposal_s *s, int tsize, apop_mcmc
     s->adapt_fn = settings->base_adapt_fn;
 }
 
-apop_model *maybe_prep(apop_data *d, apop_model *m, bool *is_a_copy){
-    if (!m->parameters){
-        if ( m->vsize  >= 0 &&     // A hackish indication that
-             m->msize1 >= 0 &&     // there is still prep to do.
-             m->msize2 >= 0 && m->prep){
-                *is_a_copy = true;
-                m = apop_model_copy(m);
-                apop_prep(d, m);
-        }
-        m->parameters = apop_data_alloc(m->vsize, m->msize1, m->msize2);
-    }
-    return m;
-}
-
 static void set_block_count_and_block_starts(apop_data *in, 
                                   apop_mcmc_settings *s, size_t total_len){
     if (s->gibbs_chunks =='a') {
@@ -298,8 +284,7 @@ APOP_VAR_END_HEAD
     apop_mcmc_settings *s = apop_settings_get_group(m, apop_mcmc);
     if (!s)
         s = Apop_model_add_group(m, apop_mcmc);
-    bool m_is_a_copy = 0;
-    m = maybe_prep(d, m, &m_is_a_copy);
+    apop_prep(d, m); //typically a no-op
     s->last_ll = GSL_NEGINF;
     gsl_vector * drawv = apop_data_pack(m->parameters);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
@@ -341,7 +326,6 @@ APOP_VAR_END_HEAD
     apop_settings_copy_group(outp, m, "apop_mcmc");
 
     gsl_vector_free(drawv);
-    if (m_is_a_copy) apop_model_free(m);
     }
     return outp;
 }

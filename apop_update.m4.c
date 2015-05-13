@@ -190,8 +190,8 @@ APOP_VAR_END_HEAD
 
     apop_mcmc_settings *s = apop_settings_get_group(prior, apop_mcmc);
 
-    bool ll_is_a_copy = false;
-    likelihood = maybe_prep(data, likelihood, &ll_is_a_copy); //in apop_mcmc.c
+    apop_prep(NULL, prior); //probably a no-op
+    apop_prep(data, likelihood); //probably a no-op
     gsl_vector *pack = apop_data_pack(likelihood->parameters);
     int tsize = pack->size;
     gsl_vector_free(pack);
@@ -214,7 +214,6 @@ APOP_VAR_END_HEAD
         p->data = data;
         if (s) apop_settings_copy_group(p, prior, "apop_mcmc");
         apop_model *out = apop_model_metropolis(data, rng, p); 
-        if (ll_is_a_copy) apop_model_free(likelihood);
         return out;
     }
 
@@ -248,6 +247,5 @@ APOP_VAR_END_HEAD
     }
     apop_model *outp = apop_estimate(out, apop_pmf);
     gsl_vector_free(draw);
-    if (ll_is_a_copy) apop_model_free(likelihood);
     return outp;
 }

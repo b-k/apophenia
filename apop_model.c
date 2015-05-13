@@ -33,11 +33,13 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
     vsize  = model->vsize  == -1 ? width : model->vsize;
     msize1 = model->msize1 == -1 ? width : model->msize1 ;
     msize2 = model->msize2 == -1 ? width : model->msize2 ;
-    if (!model->parameters) model->parameters = apop_data_alloc(vsize, msize1, msize2);
+    if (!model->parameters && (vsize || msize1*msize2)) 
+        model->parameters = apop_data_alloc(vsize, msize1, msize2);
     if (!model->info) model->info = apop_data_alloc();
-    free(model->info->names->title);
+    if (model->info->names->title && !strlen(model->info->names->title))
+        free(model->info->names->title);
     Asprintf(&model->info->names->title, "<Info>");
-    model->data = data;
+    if (!model->data) model->data = data;
 	return model;
 }
 

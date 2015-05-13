@@ -18,7 +18,6 @@ static long double beta_log_likelihood(apop_data *d, apop_model *p);
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void beta_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     Get_vmsizes(data) //vsize, msize1,...
     double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
     if (vsize){

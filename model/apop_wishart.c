@@ -111,6 +111,7 @@ static long double wishart_constraint(apop_data *d, apop_model *m){
 }
 
 static void wishart_prep(apop_data *d, apop_model *m){
+    if (m->parameters) return;//already prepped
      m->parameters = apop_data_alloc(1,sqrt(d->matrix->size2),sqrt(d->matrix->size2));
 }
 

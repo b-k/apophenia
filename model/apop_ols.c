@@ -116,6 +116,7 @@ static void ols_prep(apop_data *d, apop_model *m){
     apop_parameter_model_vtable_add(ols_param_models, apop_ols);
     apop_predict_vtable_add(ols_predict, apop_ols);
     apop_model_print_vtable_add(ols_print, apop_ols);
+    if (m->data && m->info) return; //already prepped; re-prep must be a no-op
     Apop_stopif(!d || (!d->vector && !d->matrix), m->error='d'; return, 0, "No data for regression.");
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.

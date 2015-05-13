@@ -16,7 +16,8 @@ EXTRA_TESTS = distribution_tests \
 	$(top_builddir)/eg/some_cdfs \
 	$(top_builddir)/eg/test_kl_divergence \
 	$(top_builddir)/eg/test_ranks \
-	$(top_builddir)/eg/test_updating 
+	$(top_builddir)/eg/test_updating \
+	$(top_builddir)/eg/transform
 else
 	EXTRA_TESTS =
 endif
