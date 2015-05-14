@@ -269,7 +269,12 @@ APOP_VAR_ENDHEAD
 
 static void tracepath(const gsl_vector *beta, double value, apop_data **path){
     size_t msize1 = (*path && (*path)->matrix) ? (*path)->matrix->size1: 0;
-    if (!*path) *path = apop_data_alloc();
+    if (!*path) {
+        *path = apop_data_alloc();
+        (*path)->names->title = strdup("Path of ML search");
+        apop_name_add((*path)->names, "f(x)", 'v');
+        apop_name_add((*path)->names, "x", 'm');
+    }
     (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
     gsl_vector_memcpy(Apop_rv(*path, msize1), beta);
 
@@ -641,7 +646,6 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
                        .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters);
-    if (info.path) *info.path = apop_data_alloc();
     if (setup_starting_point(mp, info.beta)) return;
     info.model->data = data;
     if (mp->dim_cycle_tolerance)            dim_cycle(data, dist, info);
