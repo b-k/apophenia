@@ -334,9 +334,9 @@ will delimit separate entries.  To change the default, use an argument to
 The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. 
 If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
 
-\li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, \c ', or \c ".
+\li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, or \c ".
 
-\li If a field contains several such special characters, surround it by \c 's or \c "s. The surrounding marks are stripped and the text read verbatim.
+\li If a field contains several such special characters, surround it by \c "s. The surrounding marks are stripped and the text read verbatim.
 
 \li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
 E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
@@ -480,7 +480,6 @@ static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char c
                     :is_delimiter    ? 'd'
                     :(c == '\n')     ? 'n'
                     :(c == '"')      ? '"'
-                    :(c == '\'')     ? '\''
                     :(c == '\\')     ? '\\'
                     :(c == EOF)      ? 'E'
                     :(c == '#')      ? '#'
@@ -492,29 +491,28 @@ static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char c
 //returns the count of elements. Negate the count if we're at EOF.
 //fn must already be allocated via apop_data_alloc() [no args].
 static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_data *fn, int const *field_ends, char const *delimiters){
-    int ct=0, thisflen=0, inq=0, inqq=0, infield=0, mlen=5,
+    int ct=0, thisflen=0, inqq=0, infield=0, mlen=5,
             lastwhite=0, lastnonwhite=0; 
     if (field_ends) return parse_a_fixed_line(infile, fn, field_ends);
     apop_char_info ci;
     do {
         ci = parse_next_char(buffer, ptr, infile, delimiters);
         //comments are to end of line, so they're basically a newline.
-        if (ci.type=='#' && !(inq||inqq)){
+        if (ci.type=='#' && !inqq){
             for(int c='x'; (c!='\n' && c!=EOF); )
                 c = get_next(buffer, ptr, infile);
             ci.type='n';
         }
 
-        //The escape-type cases: \\ and '' and "".
+        //The escape-type cases: \\ and "".
         //If one applies, set the type to regular
         if (ci.type=='\\'){
             ci=parse_next_char(buffer, ptr, infile, delimiters);
             if (ci.type!='E')
                 ci.type='r';
         }
-        if (((inq && ci.type !='\'') ||(inqq && ci.type !='"')) && ci.type !='E')
+        if ((inqq && ci.type !='"') && ci.type !='E')
             ci.type='r';
-        if (ci.type=='\'') inq = !inq;
         else if (ci.type=='"') inqq = !inqq;
 
         if (ci.type=='W' && lastwhite==1) 
