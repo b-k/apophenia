@@ -141,6 +141,15 @@ double apop_vector_var_m(const gsl_vector *in, const double mean){
 
 /** Returns the correlation coefficient of two vectors. It's just
 \f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
+
+An example
+\code 
+gsl_matrix *m = [fill matrix here];
+Apop_matrix_row(m, 2, rowtwo);
+Apop_matrix_row(m, 3, rowthree);
+printf("The correlation coefficient between rows two "
+       "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
+\endcode 
 */
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
 	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb)); }

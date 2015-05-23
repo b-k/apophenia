@@ -806,7 +806,7 @@ apop_data *count_vector = apop_data_falloc((5), 0, 1, 2, 3, 4);
 
 If you forget the parens, you will get an obscure error during compilation.
 
-\li This is a pretty simple macro wrapping \ref apop_data_fill and \ref apop_data_alloc,
+\li This is a simple macro wrapping \ref apop_data_fill and \ref apop_data_alloc,
 because they appear together so often.  The second example expands to:
 \code
 apop_data *count_vector = apop_data_fill(apop_data_alloc(5), 0, 1, 2, 3, 4);

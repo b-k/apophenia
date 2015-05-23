@@ -78,7 +78,7 @@ If you are viewing the HTML documentation, here is a diagram showing a sample da
 
 Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 
-See also the Data Sets section of the outline page (also in the header links) for further notes on getting and manipulating the elements of an \ref apop_data set.
+See also \ref dataoverview for further notes on getting and manipulating the elements of an \ref apop_data set.
 */
 typedef struct apop_data{
     gsl_vector  *vector;
@@ -142,7 +142,7 @@ struct apop_model{
 /** The global options. */
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
-    char stop_on_warning; /**< See outline page on error handling. */
+    char stop_on_warning; /**< See \ref debugging . */
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
@@ -189,7 +189,7 @@ call the base function:
 char **[] colnames = {"age", "sex", "height", NULL};
 apop_data_add_names_base(mydata, 'c', colnames);
 \endcode
-If you forget the \c NULL marker, this has good odds of segfaulting. You may prefer to use a \c for loop that inserts each name in turn using \ref apop_name_add.
+But if you forget the \c NULL marker, this has good odds of segfaulting. You may prefer to use a \c for loop that inserts each name in turn using \ref apop_name_add.
 
 \see \ref apop_name_add, although \ref apop_data_add_names will be more useful in most cases. 
 */
@@ -198,11 +198,9 @@ If you forget the \c NULL marker, this has good odds of segfaulting. You may pre
 
 /** Free an \ref apop_data structure.
  
-As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
-
-If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
+\li As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
+\li If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
 If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
-
 \li This is actually a macro (that calls \ref apop_data_free_base to do the real work). It
 sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
 freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
@@ -320,8 +318,7 @@ extern apop_model *apop_dconstrain;
 extern apop_model *apop_mixture;
 extern apop_model *apop_cross;
 
-/** Alias for the \ref apop_normal distribution, qv.
-\hideinitializer */
+/** Alias for the \ref apop_normal distribution, qv. */
 #define apop_gaussian apop_normal
 #define apop_OLS apop_ols
 #define apop_PMF apop_pmf
@@ -358,7 +355,7 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
-//transform/apop_model_cross.c.
+//transform/apop_cross.c.
 apop_model *apop_model_cross_base(apop_model *mlist[]);
 #define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
 
@@ -492,6 +489,7 @@ apop_model * apop_model_fix_params_get_base(apop_model *model_in);
 
 
             //////vtables
+/** \cond doxy_ignore */
 
 /*
 This declares the vtable macros for each procedure that uses the mechanism.
@@ -567,6 +565,7 @@ typedef void (*apop_model_print_type)(apop_model *params, FILE *out);
             : 27)
 make_vtab_fns(apop_model_print)
 
+/** \endcond */ //End of Doxygen ignore.
 
 
 
@@ -702,25 +701,25 @@ void apop_vector_log10(gsl_vector *v);
 void apop_vector_exp(gsl_vector *v);
 
 /** \cond doxy_ignore */
-/** Deprecated. Use \ref Apop_subm.  \hideinitializer */
+/** Deprecated. Use \ref Apop_subm. */
 #define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix((m), (srow), (scol), (nrows),(ncols)).matrix;\
 gsl_matrix * o = &( apop_mm_##o );
 #define Apop_submatrix APOP_SUBMATRIX
 
-/** \def Deprecated. Use \ref Apop_rv.  \hideinitializer */
+/** \def Deprecated. Use \ref Apop_rv. */
 #define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)
 
-/** Deprecated. Use \ref Apop_cv. \hideinitializer */
+/** Deprecated. Use \ref Apop_cv. */
 #define Apop_col_v(m, col, v) gsl_vector apop_vv_##v = ((col) == -1) ? (gsl_vector){} : gsl_matrix_column((m)->matrix, (col)).vector;\
 gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );
 
-/** Deprecated. Use \ref Apop_rs.  \hideinitializer */ 
+/** Deprecated. Use \ref Apop_rs.  */ 
 #define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)
 
-/** Deprecated. Use \ref Apop_r.  \hideinitializer */ 
+/** Deprecated. Use \ref Apop_r.  */ 
 #define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)
 
-/** Deprecated. Use \ref Apop_cs.  \hideinitializer */ 
+/** Deprecated. Use \ref Apop_cs.  */ 
 #define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len);
 /** \endcond */ //End of Doxygen ignore.
 
@@ -762,17 +761,19 @@ gsl_vector * v = &( apop_vv_##v );
              .stride=(data_to_view)->matrix->tda, .data=gsl_matrix_ptr((data_to_view)->matrix, 0, (col))} \
         )
 
-/* Not (yet) for public use. \hideinitializer */
+/** \cond doxy_ignore */
+/* Not (yet) for public use. */
 #define apop_subvector(v, start, len) (                                          \
         ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
         : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
 
-/* Not (yet) for public use. \hideinitializer */
+/* Not (yet) for public use. */
 #define apop_mrow(m, row) (                                       \
         ((m) == NULL || (m)->size1 <= (row) || (row) < 0) ? NULL    \
         : &(gsl_matrix){.size1=1, .size2=(m)->size2, \
              .tda=(m)->tda, .data=gsl_matrix_ptr((m), (row), 0)} \
         )
+/** \endcond */
 
 #define Apop_rs(d, rownum, len)(                                                      \
         (!(d) || (rownum) < 0) ? NULL                                       \
@@ -821,6 +822,7 @@ gsl_vector * v = &( apop_vv_##v );
 #define Apop_r(d, rownum) Apop_rs(d, rownum, 1)
 #define Apop_c(d, col) Apop_cs(d, col, 1)
 
+/** \cond doxy_ignore */
 #define APOP_COL Apop_col
 #define apop_col Apop_col
 #define APOP_COL_T Apop_col_t
@@ -830,7 +832,6 @@ gsl_vector * v = &( apop_vv_##v );
 
 #define APOP_ROW Apop_row
 #define apop_row Apop_row
-/** \cond doxy_ignore */
 #define APOP_COLS Apop_cols
 #define apop_cols Apop_cols
 #define APOP_COL_V Apop_col_v
@@ -840,11 +841,11 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_ROWS Apop_rows
 #define apop_rows Apop_rows
 #define Apop_data_row Apop_row   #deprecated
-/** \endcond */
 #define APOP_ROW_T Apop_row_t
 #define apop_row_t Apop_row_t
 #define APOP_ROW_TV Apop_row_tv
 #define apop_row_tv Apop_row_tv
+/** \endcond */
 
 /** View a single row of a \c gsl_matrix as a \c gsl_vector. This 
  is a convenience macro wrapping \c gsl_matrix_row. 
@@ -853,14 +854,8 @@ gsl_vector * v = &( apop_vv_##v );
 \param row The number of the desired row. 
 \param v The name of the vector view that will be created.
 
-An: example
-\code 
-gsl_matrix *m = [fill matrix here];
-Apop_matrix_row(m, 2, rowtwo);
-Apop_matrix_row(m, 3, rowthree);
-printf("The correlation coefficient between rows two "
-       "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
-\endcode 
+See \ref apop_vector_correlation for an example of use.
+
 \see Apop_rs, Apop_r, Apop_row_v, Apop_row_tv, Apop_row_t
 */
 #define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
@@ -914,37 +909,37 @@ Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et a
  \param scol the first column (in the root matrix) of the left edge of the submatrix
  \param nrows number of rows in the submatrix
  \param ncols number of columns in the submatrix
-\hideinitializer */
+*/
 
 /** \def Apop_row_t(m, row_name, v)
  After this call, \c v will hold a view of an \ref apop_data set consisting only of the <tt>row</tt>th row of the \ref apop_data set \c m.
  Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find.
 \see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_matrix_row
-\hideinitializer */
+*/
 
 /** \def Apop_col_t(m, col_name, v)
  After this call, \c v will hold a view of an \ref apop_data set consisting only of  vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
  Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find.
 \see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_matrix_col
-\hideinitializer */
+*/
 
 /** \def Apop_row_tv(m, row_name, v)
  After this call, \c v will hold a vector view of the <tt>row</tt>th row of the \ref apop_data set \c m.
  Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find.
 \see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
+*/
 
 /** \def Apop_col_tv(m, col_name, v)
  After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
  Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find.
 \see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
+*/
 
 /** \def Apop_cs(d, col, len)
 A macro to generate a temporary view of \ref apop_data set \c d, beginning at column \c col and having length \c len. 
 It expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
 \see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
+*/
 
 /** \def Apop_c(d, col)
 A macro to generate a temporary one-column view of \ref apop_data set \c d, pulling out only
@@ -952,14 +947,14 @@ column \c col.
 After this call, \c outd will be a pointer to this temporary
 view, that you can use as you would any \ref apop_data set.
 \see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
+*/
 
 /** \def Apop_rs(d, row, len)
 A macro to generate a temporary view of \ref apop_data set \c d, beginning at row \c row
 and having length \c len. 
 The view expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
 \see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
+*/
 
 /** \def Apop_rv(d, row)
 A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
@@ -974,7 +969,7 @@ for (int i=0; i< your_data->matrix->size1; i++)
 
 The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
 \see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
+*/
 
 /** \def Apop_cv(d, col)
 A macro to generate a temporary one-column view of the matrix in an \ref apop_data
@@ -993,7 +988,7 @@ The view is automatically allocated, and disappears as soon as the program leave
 scope in which it is declared.
 
 \see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
+*/
 
 /** \def Apop_r(d, row)
 A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
@@ -1007,11 +1002,12 @@ for (int i=0; i< your_data->matrix->size1; i++)
 
 The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
 \see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
+*/
 
 /** \def apop_mean(v)
  Returns the mean of the elements of the vector \c v.
-\hideinitializer */
+\param v A \ref gsl_vector.
+*/
 
 
 
@@ -1050,14 +1046,12 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
   \code 
   if (!apop_settings_get_group(m, "apop_ols")) ...
   \endcode
-\hideinitializer
 */
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
 /** Removes a settings group from a model's list. 
  
-  If the so-named group is not found, do nothing.
-\hideinitializer
+\li  If the so-named group is not found, do nothing.
 */
 #define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
 
@@ -1070,22 +1064,18 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
 the previous version is removed. Use \ref Apop_settings_get to check whether a group
 of the given type is already attached to a model, and \ref Apop_settings_set to modify
 an existing group.
-
-\hideinitializer
 */
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_settings_add_group.
 
- \return A pointer to the newly-prepped model.
-\hideinitializer
+\return A pointer to the newly-prepped model.
 */
 #define apop_model_copy_set(model, type, ...)  \
     apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
-\hideinitializer
 */
 #define Apop_settings_get(model, type, setting)  \
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
@@ -1094,7 +1084,6 @@ an existing group.
 
 \li If <tt>model==NULL</tt>, fails silently. 
 \li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
-\hideinitializer
 */
 #define Apop_settings_set(model, type, setting, data)   \
     do {                                                \
@@ -1130,7 +1119,7 @@ an existing group.
    void ysg##_settings_free(ysg##_settings *);
 
 /** A convenience macro for declaring the initialization function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
+See \ref modelsettings group for details.
 
   This sets the defaults for every element in the structure, so you will want a line for every element of your structure (except the ones that default to NULL, which have already been set as such).
 
@@ -1154,7 +1143,7 @@ an existing group.
 #define Apop_varad_set(var, value) (out)->var = (in).var ? (in).var : (value);
 
 /** A convenience macro for declaring the copy function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
+See \ref modelsettings group for details.
 
   To just do a direct copy, the default works; let your settings group be named \c ysg:
   \code
@@ -1181,7 +1170,7 @@ Apop_settings_copy (ysg,
     }
 
 /** A convenience macro for declaring the delete function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
+See \ref modelsettings group for details.
 
 If you don't have internal structure elements to free, let your settings group be named \c ysg:
   \code
@@ -1633,7 +1622,7 @@ typedef struct {
 } apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
 
 /** For use with the \ref apop_dconstrain model. See its documentation for an example. 
-\hideinitializer */
+*/
 typedef struct {
     apop_model *base_model; /**< The model, before constraint. */
     double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
@@ -1652,7 +1641,7 @@ typedef struct {
 /** For mixture distributions, typically set up using \ref apop_model_mixture. See
 \ref apop_mixture for discussion. Please consider all elements but \c model_list and \c
 weights as private and subject to change. See the examples for use of these elements.  
-\hideinitializer */
+*/
 typedef struct {
     gsl_vector *weights;     /**< The likelihood of a draw from each component. */
     apop_model **model_list; /**< A \c NULL-terminated list of component models. */

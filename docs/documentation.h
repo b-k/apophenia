@@ -31,7 +31,7 @@ For the full list, click the <a href="group__all__public.html">index</a> link fr
 
 <h5><a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.</h5>
 
-Most users will just want to download the latest packaged version linked from the <a
+Most users will want to download the latest packaged version linked from the <a
 href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
 Apophenia here</a> header.
 
@@ -115,7 +115,7 @@ a closed-form derivative, the ML subsystem will estimate a numerical gradient fo
 you. If you would like to do EM-style maximization (all but the first parameter are
 fixed, that parameter is optimized, then all but the second parameter are fixed, that
 parameter is optimized, ..., looping through dimensions until the change in objective
-across cycles is less than <tt>eps</tt>), just add a settings group specifying the
+across cycles is less than <tt>eps</tt>), add a settings group specifying the
 tolerance at which the cycle should stop: <tt>Apop_settings_add_group(your_model,
 apop_mle, .dim_cycle_tolerance=eps)</tt>.
 
@@ -257,7 +257,7 @@ The following are not necessary but are good to have on hand as long as you are 
 \li tetex -- write up your documentation using the nicest-looking formatter around
 \li X11 -- a windowing system
 
-X-Window will give you a nicer environment in which to work.  After you start Cygwin, just type <tt>startx</tt> to bring up a more usable, nice-looking terminal (and the ability to do a few thousand other things which are beyond the scope of this documentation).  Once you have Cygwin installed and a good terminal running, you can follow along with the remainder of the discussion without modification.
+X-Window will give you a nicer environment in which to work.  After you start Cygwin, type <tt>startx</tt> to bring up a more usable, nice-looking terminal (and the ability to do a few thousand other things which are beyond the scope of this documentation).  Once you have Cygwin installed and a good terminal running, you can follow along with the remainder of the discussion without modification.
 
 Sqlite3 is difficult to build from scratch, but you can get a packaged version by pointing Cygwin's install program to the Cygwin Ports site: http://cygwinports.dotsrc.org/ .
 
@@ -787,16 +787,42 @@ Most functions assume that the data vector, data matrix, and text have the same 
 
 See below for notes on easily managing the \c text element and the row/column names.
 
-The \ref apop_data set includes a \c more pointer, which will typically
-be \c NULL, but may point to another \ref apop_data set. This is
-intended for a main data set and a second or third page with auxiliary
-information, such as estimated parameters on the front page and their
-covariance matrix on page two, or predicted data on the front page and a set of
-prediction intervals on page two. Most functions, such as \ref apop_data_copy and
-\ref apop_data_free, will handle all the pages of information. The \c more pointer
-is not intended as a linked list for millions of data points. In such situations,
-you can often improve efficiency by restructuring your data to use a single table
-(perhaps via \ref apop_data_pack and \ref apop_data_unpack).
+\section pps Pages
+
+The \ref apop_data set includes a \c more pointer, which will typically be \c NULL,
+but may point to another \ref apop_data set. This is intended for a main data set
+and a second or third page with auxiliary information, such as estimated parameters
+on the front page and their covariance matrix on page two, or predicted data on the
+front page and a set of prediction intervals on page two.
+
+The \c more pointer is not intended as a linked list for millions of data points. In
+such situations, you can often improve efficiency by restructuring your data to use
+a single table (perhaps via \ref apop_data_pack and \ref apop_data_unpack).
+
+Most functions, such as \ref apop_data_copy and \ref apop_data_free, will handle all
+the pages of information.
+
+An optimization search over multi-page parameters would search the space given by all
+pages.  But pages may also be appended as output or auxiliary information,
+such as covariances---an MLE would not search over these elements. Any page
+with a name in XML-ish brackets, such as <tt>\<Covariance\></tt>, is considered
+information about the data, not data itself, and therefore ignored by search routines,
+missing data routines, et cetera. This is achieved by a rule in \ref apop_data_pack
+and \ref apop_data_unpack.
+
+Here is a toy example that establishes a baseline data set, adds a page,
+modifies it, and then later retrieves it.
+\code
+apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
+apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(2,2), "new 2 x 2 page");
+gsl_vector_set_all(a_new_page->matrix, 3);
+
+//later:
+apop_data *retrieved = apop_data_get_page(d, "new", 'r'); //'r'=search via regex, not literal match.
+apop_data_show(retrieved); //print a 2x2 grid of 3s.
+\endcode
+
+\section datafns Functions for using \ref apop_data sets
 
 There are a great many functions to collate, copy, merge, sort, prune, and otherwise
 manipulate the \ref apop_data structure and its components.
@@ -1030,7 +1056,7 @@ gsl_matrix_ptr, and like those functions, returns a pointer to the appropriate \
 \li\ref apop_data_get
 \li\ref apop_data_set
 \li\ref apop_data_ptr : returns a pointer to the element.
-\li\ref apop_data_get_page : retrieve a named page from a data set. If you just need a few items, you can specify a page name to \c apop_data_(get|set|ptr).
+\li\ref apop_data_get_page : retrieve a named page from a data set. If you only need a few items, you can specify a page name to \c apop_data_(get|set|ptr).
 
     See also:
 
@@ -1120,7 +1146,7 @@ One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_s
 
 \li If \c apop_opts.thread_count is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation.
 
-\li The \c ...sum functions are convenience functions that just call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
+\li The \c ...sum functions are convenience functions that call \c ...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.
 
 \li\ref apop_map
 \li\ref apop_map_sum
@@ -1223,7 +1249,7 @@ For most of these, you can add a weights vector for weighted mean/var/cov/..., s
 There are no functions provided to convert from \ref apop_data to the constituent
 elements, because you don't need a function.
 
-If you need an individual element, you can just use its pointer to retrieve it:
+If you need an individual element, you can use its pointer to retrieve it:
 
 \code
 apop_data *d = apop_query_to_mixed_data("vmmw", "select result, age, "
@@ -1572,7 +1598,7 @@ apop_data *predict = apop_data_get_page(your_model->info, "<Predicted>");
 
 \par Post-estimation uses
 
-But we expect much more from a model than just estimating parameters from data.  
+But we expect much more from a model than estimating parameters from data.  
 
 Continuing the above example where we got an estimated Probit model named \c the_estimate, we can interrogate the estimate in various familiar ways. In each of the following examples, the model object holds enough information that the generic function being called can do its work:
 
@@ -1652,7 +1678,11 @@ using \ref apop_model_mixture.  Not knowing the true distribution, the analyst w
 down a model with a truncated Normal(2, 1) prior (generated by sending the stock
 \ref apop_normal model to the data-space contraint function \ref apop_dconstrain)
 describing the parameter of a Poisson likelihood model. 
-The \ref apop_update function takes three arguments: the data set, which comes from daws from the mixture, the prior, and the likelihood. It produces an output model which, in this case, is a PMF describing a distribution over \f\$\lambda\f$, because a truncated Normal and a Poisson are not conjugate distributions. Knowing that it is a PMF, the <tt>->data</tt> element holds a set of draws from the posterior.
+The \ref apop_update function takes three arguments: the data set, which comes from
+daws from the mixture, the prior, and the likelihood. It produces an output model
+which, in this case, is a PMF describing a distribution over \f$\lambda\f$, because
+a truncated Normal and a Poisson are not conjugate distributions. Knowing that it is
+a PMF, the <tt>->data</tt> element holds a set of draws from the posterior.
 
 \include ../eg/transform.c
 
@@ -1785,7 +1815,7 @@ The contents of $group are printed to the screen as visible output to this macro
 end 
 \endcode
 
-For just using a model, that's all of what you need to know. For details on writing a new settings group, see \ref settingswriting .
+For using a model, that's all of what you need to know. For details on writing a new settings group, see \ref settingswriting .
 
 \li\ref Apop_settings_add_group
 \li\ref Apop_settings_set
@@ -1991,7 +2021,7 @@ Or, use \ref apop_vector_moving_average for a simpler smoothing method.
 \li\ref apop_test_kolmogorov() : goodness-of-fit via Kolmogorov-Smirnov statistic
 */
 
-/** \page maxipage Maximum likelihood methods
+/** \page maxipage Optimization
 
 This section includes some notes on the maximum likelihood routine. As in the section
 on writing models above, if a model has a \c p or \c log_likelihood method but no \c
@@ -2007,8 +2037,8 @@ function's value.
 
 \li The overall setup is about estimating the parameters of a model with data. The user
 provides a data set and an unparameterized model, and the system tries parameterized
-models until one of them is found to be optimal. The data is fixed. The parameters make sense only in the
-context of a model, so the optimization tries a series of parameterized models,
+models until one of them is found to be optimal. The data is fixed.
+The optimization tries a series of parameterized models,
 searching for the one that is most likely.
 In a non-stats setting, you will probably have \c NULL data, and will be optimizing the
 parameters internal to the model. 
@@ -2049,10 +2079,9 @@ int main(){
 The <tt>vsize=2</tt> specified that your parameters are a vector of size two, which
 means that <tt>in->parameters->vector->data</tt> is the list of <tt>double</tt>s that you
 should send to \c banana. The \c more element of the structure is designed to hold any
-arbitrary structure; if you use it, you will also need to use the \c more_size element, as
-above. 
+arbitrary structure of size \c more_size, which is useful for models that require additional constants or other settings. See \ref settingswriting for more on handling model settings.
 
-\li Statisticians want the covariance and basic tests about the parameters. If you just
+\li Statisticians want the covariance and basic tests about the parameters. If you only
 want the optimal value, then adding this line will shut off all auxiliary calculations:
 \code
 Apop_settings_add_group(your_model, apop_parts_wanted);
@@ -2065,14 +2094,14 @@ of the objective funtion for each evaluation that is part of the search itself.
 \li MLEs have an especially large number of parameter tweaks that could be made;
 see the section on MLE settings above or the \ref apop_mle_settings page.
 
+\li As a useful diagnostic, you can add a \c NULL \ref apop_data set to the MLE settings in the <tt>.path</tt> slot, and it will be allocated and filled with the sequence of points tried by the optimizer.
+
 \li Putting it all together, here is a full program to minimize Rosenbrock's banana
 function. There are some extras: it uses two methods (notice how easy it is to re-run an
 estimation with an alternate method, but the syntax for modifying a setting differs from
 the initialization syntax) and checks that the results are accurate.
 
 \include ../eg/banana.c
-
-\li If you would like to see what the optimizer did, add <tt>.want_path='y'</tt> to the settings group, then get the <tt>path</tt> element from the settings group:
 
 \code
 Apop_settings_add_group(your_model, apop_mle, .want_path='y');
@@ -2086,7 +2115,7 @@ The problem is that the parameters of a function must not take on certain values
 
 The solution is to rewrite the function being maximized such that the function is continuous at the constraint boundary but takes a steep downward slope. The unconstrained maximization routines will be able to search a continuous function but will never return a solution that falls beyond the parameter limits.
 
-If you give it a likelihood function with no regard to constraints plus an array of constraints, 
+If you give it an unconstrained likelihood function plus a separate constraint function, 
 \ref apop_maximum_likelihood will combine them to a function that fits the above description and search accordingly.
 
 A constraint function must do three things:
@@ -2102,10 +2131,10 @@ input are both greater than zero. As with the constraints for many of the models
 ship with Apophenia, it is a wrapper for \ref apop_linear_constraint.
 
 \code
-static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_model *v){
-    //constraint is 0 < beta_2
+static long double greater_than_zero_constraint(apop_data *data, apop_model *v){
     static apop_data *constraint = NULL;
-    if (!constraint) constraint= apop_data_falloc((1,1,1), 0, 1);
+    if (!constraint) constraint= apop_data_falloc((2,2,2), 0, 1, 0,
+                                                           0, 0, 1);
     return apop_linear_constraint(v->parameters->vector, constraint, 1e-3);
 }
 \endcode
@@ -2114,17 +2143,23 @@ static long double beta_zero_greater_than_x_constraint(apop_data *data, apop_mod
 
 \section simanneal Notes on simulated annealing
 
-Simulated annealing is a controlled random walk.  As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is {\em less} likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is basically not dependent on the function: if you give it a 4,000 step program, that is basically how many steps it will take.  If you know your function is globally convex (as are most standard probability functions), then this method is overkill.
-
-The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
-
-Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
+Simulated annealing is a controlled random walk.  As with the other methods, the
+system tries a new point, and if it is better, switches. Initially, the system is
+allowed to make large jumps, and then with each iteration, the jumps get smaller,
+eventually converging. Also, there is some decreasing probability that if the new
+point is less likely, it will still be chosen. Simulated annealing is best for
+situations where there may be multiple local optima. Early in the random walk, the
+system can readily jump from one to another; later it will fine-tune its way toward the
+optimum. The number of points tested is determined by the parameters of the simulated
+colling program, not the values returned by the likelihood function.  If you know your
+function is globally convex (as are most standard probability functions), then this
+method is overkill.
 
 
 \section mlfns Useful functions
 
 \li\ref apop_estimate_restart(): Restarting an MLE with different settings can improve results.
-\li\ref apop_maximum_likelihood(): Rarely used. If a model has no \c estimate element, just call \ref apop_estimate to run an MLE.
+\li\ref apop_maximum_likelihood(): Rarely used. If a model has no \c estimate element, call \ref apop_estimate to run an MLE.
 \li\ref apop_model_numerical_covariance()
 \li\ref apop_numerical_gradient()
 
@@ -2245,7 +2280,7 @@ We'll begin with the C-standard header file:
 
 First, there is an if/else that allows the system to degrade gracefully
 if you are sending C code to a parser like swig, whose goals differ
-too much from straight C compilation for this to work. Just set \c
+too much from straight C compilation for this to work. Set \c
 APOP_NO_VARIADIC to produce a plain function with no variadic support.
 
 Else, we begin the above steps. The \c apop_varad_declare line expands to the following:
@@ -2292,7 +2327,7 @@ apop_varad_head( void , apop_vector_increment){
 \endcode
 
 The 
-\c apop_varad_head macro just reduces redundancy, and will expand to
+\c apop_varad_head macro reduces redundancy, and will expand to
 \code
 void variadic_apop_vector_increment (variadic_type_variadic_apop_vector_increment varad_in)
 \endcode
@@ -2305,9 +2340,17 @@ which simply expands to:
 \code
     double amt = varad_in.amt ? varad_in.amt : 1;
 \endcode
-Thus, the macro declares each not-in-struct variable, and so there will need to be one such declaration line for each argument. Apart from requiring declarations, you can be creative: include sanity checks, post-vary the variables of the inputs, unpack without the macro, and so on. That is, this parent function does all of the bookkeeping, checking, and introductory shunting, so the base function can just do the math. Finally, the introductory section will call the base function.
+Thus, the macro declares each not-in-struct variable, and so there will need to be
+one such declaration line for each argument. Apart from requiring declarations, you
+can be creative: include sanity checks, post-vary the variables of the inputs, unpack
+without the macro, and so on. That is, this parent function does all of the bookkeeping,
+checking, and introductory shunting, so the base function can do the math. Finally,
+the introductory section will call the base function.
 
-The setup goes out of its way to leave the \c _base function in the public namespace, so that those who would prefer speed to bounds-checking can simply call that function directly, using standard notation. You could eliminate this feature by just merging the two functions.
+The setup goes out of its way to leave the \c _base function in the public namespace,
+so that those who would prefer speed to bounds-checking can simply call that function
+directly, using standard notation. You could eliminate this feature by merging
+the two functions.
 
 
 <b>The m4 script</b>
@@ -2331,7 +2374,7 @@ APOP_VAR_END_HEAD
 }
 \endcode
 
-It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can really improve readability.
+It is obviously much shorter. The declaration line is actually a C-standard declaration with the \c APOP_VAR_DECLARE preface, so you don't have to remember when to use semicolons. The function itself looks like a single function, but there is again a marker before the declaration line, and the introductory material is separated from the main matter by the \c APOP_VAR_END_HEAD line. Done right, drawing a line between the introductory checks or initializations and the main function can improve readability.
 
 The m4 script inserts a <tt>return function_base(...)</tt> at the end of the header
 function, so you don't have to. If you want to call the funtion before the last line, you
@@ -2472,8 +2515,7 @@ A lot of real-world data processing is about quotidian annoyances about text ver
 numeric data or dealing with missing values, and the the \ref apop_data set and its
 many support functions are intended to make data processing in C easy. Some users of
 Apophenia use the library only for its \ref apop_data set and associated functions. See
-the "data sets" section of the outline page (linked from the header of this page)
-for extensive notes on using the structure.
+\ref dataoverview for extensive notes on using the structure.
 
 The structure includes seven parts:
 
@@ -2485,7 +2527,7 @@ The structure includes seven parts:
 \li a link to a second page of data
 \li an error marker
 
-This is not a generic and abstract ideal, but is really the sort of mess that data sets look like. For
+This is not a generic and abstract ideal, but is the sort of mess that real-world data sets look like. For
 example, here is some data for a weighted OLS regression. It includes an outcome
 variable in the vector, dependent variables in the matrix and text grid,
 replicate weights, and column names in bold labeling the variables:
@@ -2523,7 +2565,7 @@ The documentation always uses a single capital.
 
 \par Basic manipulations
 
-The outline page lists a number of other manipulations of data sets, such as 
+\ref dataoverview lists a number of other manipulations of data sets, such as 
 \ref apop_data_listwise_delete for quick-and-dirty removal of observations with <tt>NaN</tt>s,
 \ref apop_data_split / \ref apop_data_stack,
 or \ref apop_data_sort to sort all elements by a single column.
@@ -2698,7 +2740,7 @@ apop_model *est = apop_estimate(testme, apop_ols);
 Generating factors and dummies is also considered data prep, not model
 internals. See \ref apop_data_to_dummies and \ref apop_data_to_factors.
 
-Now that you have \c est, an estimated model, you can interrogate it. This is really where Apophenia and its encapsulated
+Now that you have \c est, an estimated model, you can interrogate it. This is where Apophenia and its encapsulated
 model objects shine, because you can do more than just admire the parameter estimates on
 the screen: you can take your estimated data set and fill in or generate new data, use it
 as an input to the parent distribution of a hierarchical model, et cetera. Some simple
@@ -2794,7 +2836,7 @@ of Statistical Models</em></a> (PDF).
 This page is about writing new models from scratch, beginning with basic models and on
 up to models with aribitrary internal settings, specific methods of Bayesian updating
 using your model as a prior or likelihood, and so on. I assume you have already read
-the section on using models in the outline page and have tried a few things with the
+\ref modelsec on using models and have tried a few things with the
 canned models that come with Apophenia, so you already know how a user handles basic
 estimation, adding a settings group, and so on.
 
@@ -2829,7 +2871,7 @@ where \c data is the input data, and \c
 m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
 
-\li Is this a constrained optimization? See the outline page under maximum likelihood methods \f$->\f$ Setting constraints on how to set them. Otherwise, no constraints will be assumed.
+\li Is this a constrained optimization? See \ref constr on how to set them. Otherwise, no constraints will be assumed.
 \li Write the object:
 
 \code

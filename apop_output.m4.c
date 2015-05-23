@@ -182,7 +182,7 @@ static void print_core_v(const gsl_vector *data, char *separator, Output_declare
 You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the default is a tab, which puts the vector on one line, but a newline would print the vector vertically.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */
@@ -197,7 +197,7 @@ APOP_VAR_ENDHEAD
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
 */
 void apop_vector_show(const gsl_vector *data){
@@ -299,7 +299,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
   as determined by the \c .output_type.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */
@@ -325,7 +325,7 @@ APOP_VAR_ENDHEAD
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */

@@ -183,14 +183,17 @@ apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
 
 This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter \ref apop_data set. This is most standard models, so that's not a real problem either.
 If you have a situation where these options are out, you'll have to do something like
-<tt>apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in);</tt> and then set \c in->parameters using your data.
+<tt>apop_model *new = apop_model_copy(in); apop_prep(your_data, new);</tt> and then set \c in->parameters using your data.
 
 \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
 \param ... The list of parameters.
 \return A copy of the input model, with parameters set.
-\exception out->error=='d' dimension error: you gave me a model with an indeterminate number of parameters. Set .vsize or .msize1 and .msize2 first, then call this fn, or use apop_model *new = apop_model_copy(in); apop_model_clear(your_data, in); and then call this (because apop_model_clear sets the dimension based on your data size).
+\exception out->error=='d' dimension error: you gave me a model with an indeterminate
+number of parameters. Set \c .vsize or \c .msize1 and \c .msize2 first, then call this function, or use
+<tt>apop_model *new = apop_model_copy(in); apop_prep(your_data, new);</tt> and then
+call this (because \ref apop_prep is required to correctly allocate \c new->parameters
+to conform to your data).
 \hideinitializer   
-\li This would have been called apop_model_parametrize, but the OED lists four acceptable spellings for parameterise, so it's not a great candidate for a function name.
 */
 apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]){
     apop_model *out = apop_model_copy(in);

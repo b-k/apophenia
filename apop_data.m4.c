@@ -7,21 +7,21 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 #define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
 #define Unset_gsl_handler gsl_set_error_handler(prior_handler);
 
-/** Allocate a \ref apop_data structure, to be filled with data.
+/** Allocate an \ref apop_data structure.
  
 \li The typical case is  three arguments, like <tt>apop_data_alloc(2,3,4)</tt>: vector size, matrix rows, matrix cols. If the first argument is zero, you get a \c NULL vector.
 \li Two arguments, <tt>apop_data_alloc(2,3)</tt>,  would allocate just a matrix, leaving the vector \c NULL.
 \li One argument, <tt>apop_data_alloc(2)</tt>,  would allocate just a vector, leaving the matrix \c NULL.
-\li Zero arguments, <tt>apop_data_alloc()</tt>,  will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
+\li Zero arguments, <tt>apop_data_alloc()</tt>,  will produce a basically blank set, with \c out->matrix and \c out->vector set to \c NULL. 
 
 For allocating the text part, see \ref apop_text_alloc.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
 \code d->weights   = gsl_vector_alloc(row_ct); \endcode
 
-\see apop_data_calloc
+\see \ref apop_data_calloc
 
-\return The \ref apop_data structure, allocated and ready.
+\return The \ref apop_data structure, allocated and ready to be populated with data.
 \exception out->error=='a'  Allocation error. The matrix, vector, or names couldn't be <tt>malloc</tt>ed, which probably means that you requested a very large data set.
 
 \li An \ref apop_data struct, by itself, is about 72 bytes. If I can't allocate that much memory, I return \c NULL.
@@ -145,7 +145,7 @@ I set <tt>freeme.error='c'</tt> and return. If you send in a structure like A ->
 B, then both data sets A and B will be marked.
 
 \return \c 0 on OK, \c 'c' on error.
-  */
+*/
 char apop_data_free_base(apop_data *freeme){
     if (!freeme) return 0;
     if (freeme->more){
@@ -956,6 +956,10 @@ apop_data_add_named_elmt(list, "height", 165);
 apop_data_add_named_elmt(list, "weight", 60);
 
 double height = apop_data_get(list, .rowname="height");
+
+//or
+#define Lookup(dataset, key) apop_data_get(dataset, .rowname=#key)
+height = Lookup(list, height);
 \endcode
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
@@ -1321,33 +1325,15 @@ APOP_VAR_ENDHEAD
     return (apop_data *) data; //de-const.
 }
 
-/** Add a page to a \ref apop_data set. It gets a name so you can find it later.
+/** Add a page to an \ref apop_data set. It gets a name so you can find it later.
 
   \param dataset The input data set, to which a page will be added.
   \param newpage The page to append
-  \param title The name of the new page. Remember, this is truncated at 100 characters.
+  \param title The name of the new page.
 
   \return The new page.  I post a warning if I am appending or appending to a \c NULL data set and  <tt>apop_opts.verbose >=1 </tt>.
 
-  \li Some data is fundamentally multi-page; an optimization search over multi-page
-  parameters would search the space given by all pages, for example. 
-  Also, pages may be appended as output or auxiliary information, such as covariances---an
-  MLE would not search over these elements. Generally, any page with a name in XML-ish
-  brackets, such as <tt>\<Covariance\></tt>, will be considered informational and ignored
-  by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
-  apop_data_pack and \ref apop_data_unpack.
-
-  Here is a toy example that establishes a baseline data set, adds a page,
-  modifies it, and then later retrieves it.
-  \code
-  apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
-  apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(2,2), "new 2 x 2 page");
-  gsl_vector_set_all(a_new_page->matrix, 3);
-
-  //later:
-  apop_data *retrieved = apop_data_get_page(d, "new", 'r'); //use regexes, not literal match.
-  apop_data_show(retrieved); //print a 2x2 grid of 3s.
-  \endcode
+  \li See \ref pps for further notes.
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
     Apop_stopif(!newpage, return NULL, 1, "You are adding a NULL page to a data set. Doing nothing; returning NULL.");

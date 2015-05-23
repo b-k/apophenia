@@ -336,7 +336,13 @@ input to this function, \c thread, is greater than any previous input, then the 
 of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended using
 <tt>++apop_opts.rng_seed</tt> (i.e., the seed is incremented before use).
 
-\param thread_in The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads). If blank, I'll look up the current thread (via \c omp_get_thread_num) for you.
+This function can be used anywhere a \ref gsl_rng would be used.
+
+\param thread_in The number of the RNG to retrieve, starting at zero (which is
+how OpenMP numbers its threads). If blank, I'll look up the current thread (via \c
+omp_get_thread_num) for you.
+
+See \ref threading for additional notes.
 
 \return The appropriate RNG, initialized if necessary.
 \hideinitializer

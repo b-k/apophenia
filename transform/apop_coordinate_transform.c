@@ -54,7 +54,7 @@ typedef apop_data *(*d_to_d)(apop_data*);
 typedef double (*d_to_f)(apop_data*);
 
 /** \def apop_model_coordinate_transform
-Build an \ref apop_coordinate_transform model, qv.
+Build an \ref apop_coordinate_transform model. See its documentation for details and an example.
 
 \return An \ref apop_model that is a copy of \ref apop_coordinate_transform and is appropriately set up.
 

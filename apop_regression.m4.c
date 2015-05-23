@@ -453,15 +453,17 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
     return out;
 }
 
-/** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,
-\f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant). Returns an \ref apop_data set with the following entries (in the vector element):
+/** Also known as \f$R^2\f$. Let \f$Y\f$ be the dependent variable,
+\f$\epsilon\f$ the residual, \f$n\f$ the number of data points, and \f$k\f$ the number
+of independent vars (including the constant). Returns an \ref apop_data set with the
+following entries (in the vector element):
 
 \li  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$
 \li  \f$ SSE \equiv \sum \epsilon ^2       \f$
 \li  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$
 \li  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2)     \f$
 
-  Internally allocates (and frees) a vector the size of your data set.
+Internally allocates (and frees) a vector the size of your data set.
 
 \return: a \f$5 \times 1\f$ apop_data table with the following fields:
 \li "R squared"
