@@ -391,7 +391,7 @@ APOP_VAR_ENDHEAD
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i+basetextsize, j);
-                    else apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
+                    else apop_text_add(out, i+basetextsize, j, "%s", m2->text[i][j]);
         } else {
             Apop_stopif(out->text && m2->textsize[0]!=out->textsize[0], 
                     out->error='d'; return out, 0,
@@ -404,7 +404,7 @@ APOP_VAR_ENDHEAD
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i, j+basetextsize);
-                    else apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
+                    else apop_text_add(out, i, j+basetextsize, "%s", m2->text[i][j]);
             apop_name_stack(out->names, m2->names, 't');
         }
     }
