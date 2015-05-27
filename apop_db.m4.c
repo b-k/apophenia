@@ -522,10 +522,11 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
                     "Something wrong with the matrix element %zu on line %zu, [%g].\n" ,col, row,  apop_data_get(set, row, col));
         if (*set->textsize > row)
             for (size_t col=0; col < set->textsize[1]; col++){
-                if (!strlen(set->text[row][col])) field++; //leave NULL and cleared
+                if (!strlen(set->text[row][col]) || (apop_opts.nan_string && !strcasecmp(apop_opts.nan_string, set->text[row][col])))
+                    {field++; continue;} //leave NULL and cleared
                 Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->text[row][col], -1, SQLITE_TRANSIENT),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->text[row][col]);
+                    "Something wrong with a text element at row %zu, col %zu [%s].\n" , row, col, set->text[row][col]);
             }
         if (set->weights && set->weights->size > row)
                 Apop_stopif(sqlite3_bind_double(p_stmt, field++, gsl_vector_get(set->weights, row)),
