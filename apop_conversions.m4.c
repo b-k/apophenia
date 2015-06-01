@@ -20,18 +20,19 @@ void xprintf(char **q, char *format, ...){
     free(r);
 }
 
-/** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
+/** Copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
 \param size 	How long \c line is. If this is zero or omitted, I'll
 guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick, which will
 work for most arrays allocated using <tt>double []</tt> and won't work
 for those allocated using <tt>double *</tt>. (default = auto-guess)
-\return         A <tt>gsl_vector</tt> (which I will allocate for you).
+\return   A <tt>gsl_vector</tt>, allocated and filled with a copy of (not a pointer to) the input data.
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 
 \li This function uses the \ref designated syntax for inputs.
+\see \ref apop_data_falloc
 */ 
 APOP_VAR_HEAD gsl_vector * apop_array_to_vector(double *in, int size){
     double * apop_varad_var(in, NULL);
@@ -157,10 +158,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 
 For example, I would take
 <table frame=box>                                                                                                              
-<tr>                                                                                                                           
-<td> </td><td> c0</td><td>c1</td>
-</tr><tr valign=bottom>
-<td align=center> </td></tr> 
+<tr><td> </td><td> c0</td><td>c1</td></tr>
 <tr><td>r0</td><td>2</td><td>3</td></tr> 
 <tr><td>r1</td><td>0</td><td>4</td></tr> 
 </table> 
@@ -175,9 +173,9 @@ insert into your_table values ('r1', 'c1', 4);
 \endcode
 
 
-\li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own numbering system, <tt>t0</tt>, <tt>t1</tt>, ..., which is a little more robust than continuing the column count from the matrix.
+\li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own names, <tt>t0</tt>, <tt>t1</tt>.
 
-\li I handle only the matrix and text. 
+\li This function handles only the matrix and text. 
  */
 void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){

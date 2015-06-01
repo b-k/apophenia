@@ -3,8 +3,7 @@
 int main(){
     //Set up an apop_data set with only one number.
     //Most of these functions will only look at the first data point encountered.
-    apop_data *onept = apop_data_alloc(1, 1);
-    apop_data_set(onept, .val=23);
+    apop_data *onept = apop_data_falloc((1), 23);
 
     apop_model *norm = apop_model_set_parameters(apop_normal, 23, 138.8);
     double val = apop_cdf(onept, norm);

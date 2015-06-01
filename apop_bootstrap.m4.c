@@ -101,16 +101,15 @@ They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed.
 apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
 apop_data *boot_stats = apop_data_get_page(boot_output, "<bootstrapped statistics>");
 
-Apop_matrix_row(boot_stats->matrix, 27, row_27)
-//If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
-//it into the right shape. Let's assume for now that it's just a vector:
 printf("The statistics calculated on the 28th iteration:\n");
-apop_vector_print(row_27);
+gsl_vector *row_27 = Apop_rv(boot_stats, 27);
+apop_data_print(apop_data_unpack(row_27));
 \endcode
 \param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \exception out->error=='n'   \c NULL input data.
-\exception out->error=='N'   \c too many Nans.
+\exception out->error=='N'   \c too many NaNs.
+
 \li This function uses the \ref designated syntax for inputs.
 \see apop_jackknife_cov
  */

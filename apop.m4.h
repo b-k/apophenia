@@ -72,9 +72,10 @@ typedef struct{
 
 /** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
 
-If you are viewing the HTML documentation, here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
+Here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
 
 \htmlinclude apop_data_fig.html
+\latexinclude apop_data_fig.tex
 
 Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
 
@@ -101,7 +102,7 @@ typedef struct {
     void *free;
 } apop_settings_type;
 
-/** A statistical model. */
+/** A statistical model. See \ref modelsec for details. */
 typedef struct apop_model apop_model;
 
 /** The elements of the \ref apop_model type, representing a statistical model. */
@@ -463,7 +464,7 @@ double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 #define apop_rng_get_thread(thread_in) apop_rng_get_thread_base(#thread_in[0]=='\0' ? -1: (thread_in+0))
 gsl_rng *apop_rng_get_thread_base(int thread);
 
-int apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
+int apop_arms_draw (double *out, gsl_rng *r, apop_model *m);
 
 
     // maximum likelihod estimation related functions
@@ -610,13 +611,25 @@ Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, 
             || (apop_opts.stop_on_warning=='w') ) \
                 raise(SIGTRAP);}
 
-/** Execute an action and print a message to \c stderr (or the current \c FILE handle held by <tt>apop_opts.log_file</tt>).
- Intended for leaving a function on failure.
+/** Execute an action and print a message to the current \c FILE handle held by <tt>apop_opts.log_file</tt> (default: \c stderr).
  
-\param test The expression that, if true, triggers all the action.
+\param test The expression that, if true, triggers the action.
 \param onfail If the assertion fails, do this. E.g., <tt>out->error='x'; return GSL_NAN</tt>. Notice that it is OK to include several lines of semicolon-separated code here, but if you have a lot to do, the most readable option may be <tt>goto outro</tt>, plus an appropriately-labeled section at the end of your function.
-\param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
+\param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one, or for more verbose debugging output use 2.
 \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
+
+Some examples:
+
+\code
+//the typical case, stopping function execution:
+Apop_stopif(isnan(x), return NAN, 0, "x is NAN; failing");
+
+//Mark a flag, go to a cleanup step
+Apop_stopif(x < 0, needs_cleanup=1; goto cleanup, 0, "x is %g; cleaning up and exiting.", x);
+
+//Print a diagnostic iff <tt>apop_opts.verbose>=1</tt> and continue
+Apop_stopif(x < 0,  , 1, "warning: x is %g.", x);
+\endcode
 
 \li If \c apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
 \li If \c apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
@@ -902,36 +915,38 @@ double apop_vector_skew(const gsl_vector *in);
 */
 
 /** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
-Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
+Generate a view of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
 
  \param data_to_view The root matrix
  \param srow the first row (in the root matrix) of the top of the submatrix
  \param scol the first column (in the root matrix) of the left edge of the submatrix
  \param nrows number of rows in the submatrix
  \param ncols number of columns in the submatrix
+ \return An automatically-allocated view of type c \gsl_matrix.
 */
 
 /** \def Apop_row_t(m, row_name, v)
- After this call, \c v will hold a view of an \ref apop_data set consisting only of the <tt>row</tt>th row of the \ref apop_data set \c m.
- Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find.
+ After this call, \c v will hold an \ref apop_data view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
 \see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_matrix_row
 */
 
 /** \def Apop_col_t(m, col_name, v)
- After this call, \c v will hold a view of an \ref apop_data set consisting only of  vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find.
+ After this call, \c v will hold a view of the \ref apop_data set \c m. The view will consist only of a \c gsl_vector view of the column of the \ref apop_data set \c m with name \c col_name.
+ Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
 \see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_matrix_col
 */
 
 /** \def Apop_row_tv(m, row_name, v)
- After this call, \c v will hold a vector view of the <tt>row</tt>th row of the \ref apop_data set \c m.
- Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find.
+ After this call, \c v will hold a \c gsl_vector view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
 \see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_matrix_row
 */
 
 /** \def Apop_col_tv(m, col_name, v)
- After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find.
+After this call, \c v will hold a \c gsl_vector view of the \ref apop_data set \c m.
+The view will consist only of the column with name \c col_name.
+Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
 \see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_matrix_col
 */
 
@@ -1040,12 +1055,17 @@ void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, vo
 apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 
 /** Retrieves a settings group from a model.  See \ref Apop_settings_get
- to just pull a single item from within the settings group.
+to just pull a single item from within the settings group.
 
-  If it isn't found, then it returns NULL, so you can easily put it in a conditional like 
+This macro returns NULL if a group of type \c type_settings isn't found attached
+to model \c m, so you can easily put it in a conditional like
   \code 
   if (!apop_settings_get_group(m, "apop_ols")) ...
   \endcode
+
+\param m An \ref apop_model
+\param type A string giving the type of the settings group you are retrieving. E.g., for an \ref apop_mle_settings group, use \c apop_mle.
+\return A void pointer to the desired struct (or \c NULL if not found).
 */
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
@@ -1056,9 +1076,11 @@ apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *fr
 #define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
 
 /** Add a settings group. The first two arguments (the model you are
- attaching to and the settings group name) are mandatory, and then you
- can use the \ref designated syntax to specify default values (if any).
- \return A pointer to the newly-prepped group.
+attaching to and the settings group name) are mandatory, and then you
+can use the \ref designated syntax to specify default values (if any).
+\return A pointer to the newly-prepped group.
+
+See \ref modelsettings or \ref maxipage for examples.
 
 \li If a settings group of the given type is already attached to the model, 
 the previous version is removed. Use \ref Apop_settings_get to check whether a group
@@ -1076,6 +1098,10 @@ an existing group.
     apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
+
+\param model An \ref apop_model.
+\param type A string giving the type of the settings group you are retrieving, without the \c _settings ending. E.g., for an \ref apop_mle_settings group, use \c apop_mle.
+\param setting The struct element you want to retrieve.
 */
 #define Apop_settings_get(model, type, setting)  \
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
@@ -1119,18 +1145,7 @@ an existing group.
    void ysg##_settings_free(ysg##_settings *);
 
 /** A convenience macro for declaring the initialization function for a new settings group.
-See \ref modelsettings group for details.
-
-  This sets the defaults for every element in the structure, so you will want a line for every element of your structure (except the ones that default to NULL, which have already been set as such).
-
-  \code
-  Apop_settings_init (ysg, 
-        Apop_varad_set(size1, 99);
-        Apop_varad_set(size2, 2.3);
-        Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
-    )
-  \endcode
-  If you need them, the input is a structure named \c in, and the output a pointer-to-struct named \c out.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_init(name, ...)   \
     name##_settings *name##_settings_init(name##_settings in) {       \
@@ -1143,23 +1158,7 @@ See \ref modelsettings group for details.
 #define Apop_varad_set(var, value) (out)->var = (in).var ? (in).var : (value);
 
 /** A convenience macro for declaring the copy function for a new settings group.
-See \ref modelsettings group for details.
-
-  To just do a direct copy, the default works; let your settings group be named \c ysg:
-  \code
-Apop_settings_copy (ysg, )
-  \endcode
-  generates a function that allocates space for a new settings group and copies all elements from the input group to the output group.
-
-  The space after the comma indicates that there is no new procedural code. If you want to add some, feel free. E.g.,
-  \code
-Apop_settings_copy (ysg, 
-    if (!in->score)
-        out->score = 1;
-    out->data_owner = 0;
-)
-  \endcode
-  The names \c in and \c out are built into the macro.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_copy(name, ...) \
     void * name##_settings_copy(name##_settings *in) {\
@@ -1170,21 +1169,7 @@ Apop_settings_copy (ysg,
     }
 
 /** A convenience macro for declaring the delete function for a new settings group.
-See \ref modelsettings group for details.
-
-If you don't have internal structure elements to free, let your settings group be named \c ysg:
-  \code
-  Apop_settings_free (ysg, )
-  \endcode
-  generates a function that simply frees the input settings group.
-
-  If your structure is pointing to other structures that need to be freed first, then add them after that comma:
-  \code
-Apop_settings_copy (ysg, 
-    apop_data_free(in->dataset);
-)
-  \endcode
-  The name \c in is built into the macro.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_free(name, ...) \
     void name##_settings_free(name##_settings *in) {\
@@ -1592,7 +1577,13 @@ typedef struct {  /* attributes of the entire rejection envelope */
 } arms_state;
     /** \endcond */
 
-/** to perform derivative-free adaptive rejection sampling with metropolis step */
+/** For use with \ref apop_arms_draw, to perform derivative-free adaptive rejection sampling with metropolis step. 
+
+That function generates default values for this if you do not attach one to the
+model beforehand, via a form like <tt>apop_model_add_group(your_model, apop_arms,
+.model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll
+get a run-time complaint if you forget it.
+*/
 typedef struct {
     double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items. */
     double  xl;     /**< Left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10].*/

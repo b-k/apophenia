@@ -238,6 +238,8 @@ variance is narrowed to stay closer to the last accepted proposal. Technically, 
 breaks ergodicity of the Markov chain, but the consensus seems to be that this is
 not a serious problem. If it does concern you, you can set the \c base_adapt_fn in the \ref apop_mcmc_settings group to a do-nothing function, or one that damps its adaptation as \f$n\to\infty\f$.
 
+\li If you have a univariate model, \ref apop_arms_draw may be a suitable simpler alternative.
+
 \li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
 gibbs_chunks='a', all parameters are drawn as a set, and accepted/rejected as a set. The
 variances are adapted at an identical rate. If you set \c gibbs_chunks='i',

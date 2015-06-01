@@ -1,7 +1,5 @@
 /** \file apop_tests.c	 */
 /* Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
- 
-At the moment, the header for  apop_test_anova is in \c asst.h.
  */
 #include "apop_internal.h"
 
@@ -201,6 +199,9 @@ static double one_chi_sq(apop_data *d, int row, int col, int n){
 /** Run a Chi-squared test on an ANOVA table, i.e., an NxN table with the null hypothesis that all cells are equally likely.
 
  \param d The input data, which is a crosstab of various elements. They don't have to sum to one.
+\return A \ref apop_data set including elements named
+     <tt>"chi squared statistic"</tt>, <tt>"df"</tt>, and <tt>"p value"</tt>. Retrieve via,
+     e.g., <tt>apop_data_get(out, .rowname="p value")</tt>.
  \see apop_test_fisher_exact
 */
 apop_data * apop_test_anova_independence(apop_data *d){

@@ -17,9 +17,7 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 For allocating the text part, see \ref apop_text_alloc.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
-\code d->weights   = gsl_vector_alloc(row_ct); \endcode
-
-\see \ref apop_data_calloc
+\code d->weights = gsl_vector_alloc(row_ct); \endcode
 
 \return The \ref apop_data structure, allocated and ready to be populated with data.
 \exception out->error=='a'  Allocation error. The matrix, vector, or names couldn't be <tt>malloc</tt>ed, which probably means that you requested a very large data set.
@@ -27,7 +25,9 @@ The \c weights vector is set to \c NULL. If you need it, allocate it via
 \li An \ref apop_data struct, by itself, is about 72 bytes. If I can't allocate that much memory, I return \c NULL.
                 But if even this much fails, your computer may be on fire and you should go put it out. 
 
- \li This function uses the \ref designated syntax for inputs.
+\li This function uses the \ref designated syntax for inputs.
+
+\see apop_data_calloc
 */
 APOP_VAR_HEAD apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3){
     const size_t apop_varad_var(size1, 0);
@@ -70,9 +70,9 @@ APOP_VAR_ENDHEAD
 /** Allocate a \ref apop_data structure, to be filled with data; set everything in the allocated portion to zero. See \ref apop_data_alloc for details.
 
 \return    The \ref apop_data structure, allocated and zeroed out.
-\exception out->error=='m' malloc error; probably out of memory.
-\see apop_data_alloc 
+\exception out->error=='a' allocation error; probably out of memory.
 \li This function uses the \ref designated syntax for inputs.
+\see apop_data_alloc 
 */
 APOP_VAR_HEAD apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3){
     const size_t apop_varad_var(size1, 0);
@@ -92,15 +92,15 @@ APOP_VAR_ENDHEAD
     }
     else vsize = size1;
     apop_data *setme = malloc(sizeof(apop_data));
-    Apop_stopif(!setme, apop_return_data_error('m'), 0, "malloc failed. Probably out of memory.");
+    Apop_stopif(!setme, apop_return_data_error('a'), 0, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
         setme->matrix = gsl_matrix_calloc(msize1,msize2);
-        Apop_stopif(!setme->matrix, apop_return_data_error('m'), 0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        Apop_stopif(!setme->matrix, apop_return_data_error('a'), 0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector = gsl_vector_calloc(vsize);
-        Apop_stopif(!setme->vector, apop_return_data_error('m'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        Apop_stopif(!setme->vector, apop_return_data_error('a'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     setme->names = apop_name_alloc();
     return setme;
@@ -196,6 +196,7 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 \exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
 */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
+    Set_gsl_handler
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
     if (in->matrix){
@@ -247,6 +248,8 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                 else apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
     if (in->more && out->more) apop_data_memcpy(out->more, in->more);
+    Unset_gsl_handler
+    return error_for_set;
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.

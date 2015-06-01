@@ -486,18 +486,24 @@ static int lte(gsl_vector *v, gsl_vector *ref){
     return 1;
 }
 
-/** Input a data point in canonical form and a model; returns the area of the model's PDF beneath the given point.
+/** Input a one-row data point/vector and a model; returns the area of the model's PDF beneath the given point.
 
-  By default, I just make random draws from the PDF and return the percentage of those
-  draws beneath or equal to the given point. Many models have closed-form solutions that
-  make no use of random draws. 
+By default, make random draws from the PDF and return the percentage of those
+draws beneath or equal to the given point. Many models have closed-form solutions that
+make no use of random draws. 
 
-See also \ref apop_cdf_settings, which is the structure I use to store draws already made (which means the second, third, ... calls to this function will take much less time than the first), the \c gsl_rng, and the number of draws to be made. These are handled without your involvement, but if you would like to change the number of draws from the default, add this group before calling \ref apop_cdf :
+See also \ref apop_cdf_settings, which is the structure used to store draws already
+made (which means the second, third, ... calls to this function will take much less
+time than the first), the \c gsl_rng, and the number of draws to be made. These are
+handled without your involvement, but if you would like to change the number of draws
+from the default, add this group before calling \ref apop_cdf :
 
 \code
 Apop_model_add_group(your_model, apop_cdf, .draws=1e5, .rng=my_rng);
 double cdf_value = apop_cdf(your_data_point, your_model);
 \endcode
+
+\li Only the first row of the input \ref apop_data set is used. Note that if you need to view row 20 of a data set as a one-row data set, use \ref Apop_r.
 
 Here are many examples using common, mostly symmetric distributions.
 

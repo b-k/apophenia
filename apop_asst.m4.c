@@ -303,7 +303,7 @@ double apop_rng_GHgB3(gsl_rng * r, double* a){
 
 /** The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).
 
-The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.
+The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns the appropriate Beta distribution.
 
 \param m
 The mean the Beta distribution should have. Notice that m
@@ -312,7 +312,9 @@ is in [0,1].
 \param v
 The variance which the Beta distribution should have. It is in (0, 1/12), where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near 1/12 and mean far from 1/2.
 
-\return Returns an \c apop_beta model with its parameters appropriately set.
+\return Returns an \ref apop_model produced by copying the \c apop_beta model and
+setting its parameters appropriately.
+
 \exception out->error=='r' Range error: mean is not within [0, 1].
 */
 apop_model *apop_beta_from_mean_var(double m, double v){

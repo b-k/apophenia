@@ -76,19 +76,17 @@ void distract_doxygen_arms(){/*Doxygen gets thrown by the settings macros. This 
 
 /** \brief Adaptive rejection metropolis sampling.
 
-This is a function to make random draws from any univariate distribution (more or less).
+Make random draws from a univariate distribution.
 
 The author, Wally Gilks, explains on 
 http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html , that
 ``ARS works by constructing an envelope function of the log of the target density, which is then used in rejection sampling (see, for example,  Ripley, 1987). Whenever a point is rejected by ARS, the envelope is updated to correspond more closely to the true log density, thereby reducing the chance of rejecting subsequent points. Fewer ARS rejection steps implies fewer point-evaluations of the log density.''
 
-\li It accepts only functions with univariate inputs. I.e., it will put a single value in the vector part of a \ref apop_data set, and then evaluate the log likelihood at that point.
+\li It accepts only functions with univariate inputs. I.e., it will put a single value in the vector part of a \ref apop_data set, and then evaluate the log likelihood at that point. For multivariate situations, see \ref apop_model_metropolis.
 
-\li It is currently the default for the \ref apop_draw function, so you can just call that if you prefer.
+\li It is currently the default for the \ref apop_draw function given a univariate model, so you can just call that if you prefer.
 
 \li There are a great number of parameters, in the \c apop_arms_settings structure.  The structure also holds a history of the points tested to date. That means that the system will be more accurate as more draws are made. It also means that if the parameters change, or you use \ref apop_model_copy, you should call <tt>Apop_settings_rm_group(your_model, apop_arms)</tt> to clear the model of points that are not valid for a different situation.
-
-\li See \ref apop_arms_settings for the list of parameters that you may want to set, via a form like <tt>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll get a run-time complaint if you forget it.
   */
 int apop_arms_draw (double *out, gsl_rng *r, apop_model *m){
     apop_arms_settings *params = Apop_settings_get_group(m, apop_arms);
