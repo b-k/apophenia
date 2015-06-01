@@ -92,11 +92,11 @@ static void rearrange(apop_data *data, size_t height, size_t *perm){
         sorted[start]++;
         while (perm[i]!=start){
             //copy from perm[i] to i
-            apop_data_set_row(data, Apop_r(data, perm[i]), i);
+            apop_data_memcpy(Apop_r(data,i), Apop_r(data, perm[i]));
             sorted[perm[i]]++;
             i = perm[i];
         }
-        apop_data_set_row(data, first_row_storage, i);
+        apop_data_memcpy(Apop_r(data, i), first_row_storage);
         apop_data_free(first_row_storage);
     }
 }

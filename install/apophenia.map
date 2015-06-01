@@ -66,7 +66,6 @@ variadic_apop_data_unpack;
 apop_data_fill_base;
 apop_vector_fill_base;
 apop_text_fill_base;
-apop_data_set_row;
 apop_beta;
 apop_bernoulli;
 apop_binomial;

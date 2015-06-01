@@ -196,7 +196,6 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 \exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
 */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
-    Set_gsl_handler
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
     if (in->matrix){
@@ -225,12 +224,17 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
         gsl_vector_memcpy(out->weights, in->weights);
     }
     if (in->names){
-        apop_name_free(out->names);
-        out->names = apop_name_alloc();
-        apop_name_stack(out->names, in->names, 'v');
-        apop_name_stack(out->names, in->names, 'r');
-        apop_name_stack(out->names, in->names, 'c');
-        apop_name_stack(out->names, in->names, 't');
+        if (!out->names) out->names = apop_name_alloc();
+        if (out->names->vector && in->names->vector) {Asprintf(&out->names->vector, "%s", in->names->vector);}
+        for (int i=0; i< in->names->rowct; i++)
+            if (i< out->names->rowct) {Asprintf(out->names->row+i, "%s", in->names->row[i]);}
+            else  apop_name_add(out->names, in->names->row[i], 'r');
+        for (int i=0; i< in->names->colct; i++)
+            if (i< out->names->colct) {Asprintf(out->names->col+i, "%s", in->names->col[i]);}
+            else  apop_name_add(out->names, in->names->col[i], 'c');
+        for (int i=0; i< in->names->textct; i++)
+            if (i< out->names->textct) {Asprintf(out->names->text+i, "%s", in->names->text[i]);}
+            else  apop_name_add(out->names, in->names->text[i], 't');
     }
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
@@ -248,8 +252,6 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
                 else apop_text_add(out, i, j, "%s", in->text[i][j]);
     }
     if (in->more && out->more) apop_data_memcpy(out->more, in->more);
-    Unset_gsl_handler
-    return error_for_set;
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
@@ -876,67 +878,6 @@ APOP_VAR_ENDHEAD
     return error_for_set;
 }
 
-/** Now that you've used \ref Apop_r to pull a row from an \ref apop_data set,
-  this function lets you write that row to another position in the same data set or a
-  different data set entirely.  
-
-  The set written to must have the same form as the original: 
-  \li a vector element has to be present if one existed in the original, 
-  \li same for the weights vector,
-  \li the matrix in the destination has to have as many columns as in the original, and
-  \li the text has to have a row long enough to hold the original
-  \li If the row to be written to already has a rowname, it is overwritten.
-        If <tt>d->names->rowct == row_number</tt> (all rows up to \c row_number have row names), then extend the list of row names by one to add the new name. Else, don't add the row name. 
-  \li Column names (of all types) aren't touched. Maybe use \c apop_data_copy or \c apop_name_copy if you need to copy these names.
-
-  If any of the source elements are \c NULL, I won't bother to check that element in the
-  destination.
-
-  \return 0=OK, -1=error (probably a source/destination size mismatch).
-
-  \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
-  C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread extension enabled.
-*/
-int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
-    Set_gsl_handler
-    if (row->vector){
-        Apop_assert_negone(d->vector, "You asked me to copy an apop_data row with a vector element to "
-                "an apop_data set with no vector.");
-        gsl_vector_set(d->vector, row_number, row->vector->data[0]);
-    }
-    if (row->matrix && row->matrix->size2 > 0){
-        Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
-                "an apop_data set with no matrix.");
-        gsl_vector_memcpy(Apop_rv(d, row_number), Apop_rv(row, 0));
-    }
-    if (row->textsize[1]){
-        Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data row with text to "
-                "an apop_data set with no text element.");
-        for (int i=0; i < row->textsize[1]; i++){
-            free(d->text[row_number][i]);
-            d->text[row_number][i]= 
-                row->text[0][i] == apop_nul_string
-                    ? apop_nul_string
-                    : strdup(row->text[0][i]);
-        }
-    }
-    if (row->weights){
-        Apop_assert_negone(d->weights, "You asked me to copy an apop_data row with a weight to "
-                "an apop_data set with no weights vector.");
-        gsl_vector_set(d->weights, row_number, row->weights->data[0]);
-    }
-    if (row->names && row->names->rowct && d->names){
-        if (row_number < d->names->rowct){
-            free(d->names->row[row_number]);
-            d->names->row[row_number]=strdup(row->names->row[0]);
-        } else if (row_number == d->names->rowct)
-            apop_name_add(d->names, row->names->row[0], 'r');
-    }
-    Unset_gsl_handler
-    return error_for_set;
-}
-
-
 /** A convenience function to add a named element to a data set.  Many of Apophenia's
 testing procedures use this to easily produce a column of named parameters. It is public
 as a convenience.
@@ -1434,8 +1375,8 @@ APOP_VAR_ENDHEAD
             drop_row = do_drop(Apop_r(in, i), drop_parameter);
         }
         if (!drop_row){
-            if (outlength == i) outlength++;
-            else                apop_data_set_row(in, Apop_r(in, i), outlength++);
+            if (outlength != i) apop_data_memcpy(Apop_r(in, outlength), Apop_r(in, i));
+            outlength++;
         }
     }
     if (!outlength){

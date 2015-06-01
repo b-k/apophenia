@@ -280,8 +280,6 @@ apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
-int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
-
 // Models and model support functions
 
 extern apop_model *apop_beta;
