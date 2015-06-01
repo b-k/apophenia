@@ -260,7 +260,7 @@ Apop_var_declare( int apop_text_to_db(char const *text_file, char *tabname, int 
 
 //rank data
 apop_data *apop_data_rank_expand (apop_data *in);
-apop_data *apop_data_rank_compress (apop_data *in);
+Apop_var_declare( apop_data *apop_data_rank_compress (apop_data *in, int min_bins) )
 
 //From crosstabs
 void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 

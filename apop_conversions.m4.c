@@ -233,19 +233,27 @@ This function takes in a list of observations, and aggregates them into a single
 
 \li For the complement, see \ref apop_data_rank_expand.
 
-\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
+\li See also \ref apop_data_to_factors to convert real numbers or text into a
 matrix of categories.
 
-\li The number of bins is simply the largest number found. So if there
-are bins {0, 1, 2} and your data set happens to consist of <tt>0 0 1 1 0</tt>, then
-I won't know to generate results with three bins where the last bin has probability zero.
+\param in The input \ref apop_data set. If \c NULL, return \c NULL.
+\param min_bins If this is omitted, the number of bins is simply the largest number
+found. So if there are bins {0, 1, 2} and your data set happens to consist of <tt>0 0
+1 1 0</tt>, then I won't know to generate results with three bins where the last bin
+has a count of zero. Set <tt>.min_bins=2</tt> to ensure that bin is included.
 
 \include test_ranks.c
+
+\li This function uses the \ref designated syntax for inputs.
 */
-apop_data *apop_data_rank_compress (apop_data *in){
+APOP_VAR_HEAD apop_data * apop_data_rank_compress (apop_data *in, int min_bins){
+    apop_data * apop_varad_var(in, NULL);
+    if (!in) return NULL;
+    int apop_varad_var(min_bins, 0);
+APOP_VAR_ENDHEAD
     Get_vmsizes(in);
-    int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : 0, 
-                              in->vector ? gsl_vector_max(in->vector) : 0);
+    int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : min_bins,
+                              in->vector ? gsl_vector_max(in->vector) : min_bins);
     apop_data *out = apop_data_calloc(1, upper_bound+1);
     for (int i=0; i< msize1; i++)
         for (int j=0; j< msize2; j++) 

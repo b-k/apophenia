@@ -677,7 +677,7 @@ columns into a list of strings, adds a \c NULL string at the end, and calls that
   \endcode
 
 \param d The data set to prune.
-\param colnames A null-terminated list of names to retain (i.e. the columns that shouldn't be pruned
+\param colnames A NULL-terminated list of names to retain (i.e. the columns that shouldn't be pruned
 out). 
 \return A pointer to the input data set, now pruned.
   */
@@ -715,8 +715,8 @@ apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
 
 /** Get a pointer to an element of an \ref apop_data set. 
 
-\li If a \c NULL vector or matrix (as the case may be), stop (unless <tt>apop_opts.stop_on_warning='n'</tt>, then return \c NULL).
-\li If the row/column you requested is outside the bounds of the matrix (or the name isn't found), always return \c NULL.
+\li If a \c NULL vector or matrix (as the case may be), or the row/column you requested
+    is outside bounds, return \c NULL.
 \li See \ref data_set_get "the set/get page" for details. 
 
 \param data The data set. Must not be \c NULL.

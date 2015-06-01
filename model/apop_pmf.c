@@ -304,9 +304,7 @@ apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimat
 <table frame=box>
 <tr>
 <td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom>
-<td align=center>
-</td></tr>
+</tr><tr valign=bottom> </tr>
 <tr><td>12</td><td>Dozen</td><td>1</td></tr>
 <tr><td>1</td><td>Single</td><td>1</td></tr>
 <tr><td>2</td><td>Pair</td><td>1</td></tr>
@@ -317,23 +315,27 @@ apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimat
 <tr><td>2</td><td>Pair</td><td>1</td></tr>
 </table>
 
-You would like to reduce this to a set of distinct values, with their weights adjusted accordingly:
+Use this function to reduce this to a set of distinct values, with their weights adjusted accordingly:
 
 <table frame=box>
 <tr>
 <td>Vector value</td><td> Text name</td><td>Weights</td>
 </tr><tr valign=bottom>
-<td align=center>
-</td></tr>
+</tr>
 <tr><td>12</td><td>Dozen</td><td>1</td></tr>
 <tr><td>1</td><td>Single</td><td>3</td></tr>
 <tr><td>2</td><td>Pair</td><td>4</td></tr>
 </table>
 
-\param in An \ref apop_data set that may have duplicate rows. As above, the data may be in text and/or numeric formats. If there is a \c weights vector, I will add those weights together as duplicates are merged. If there is no \c weights vector, I will create one, which is initially set to one for all values, and then aggregated as above.
+\param in An \ref apop_data set that may have duplicate rows. As above, the data may
+    be in text and/or numeric formats.
 
-\return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref apop_data_copy before calling this function if you need to retain the original format. For your convenience, this function returns a pointer to your original data, which has now been pruned.
-
+\return Your input is changed in place, via \ref apop_data_rm_rows, so use \ref
+apop_data_copy before calling this function if you need to retain the original
+format. For your convenience, this function returns a pointer to your original data,
+which has now been pruned.  If there is a \c weights vector, I will add those weights
+together as duplicates are merged. If there is no \c weights vector, I will create one,
+which is initially set to one for all values, and then aggregated as above.
 */
 apop_data *apop_data_pmf_compress(apop_data *in){
     Apop_assert_c(in, NULL, 1,  "You sent me a NULL input data set; returning NULL output.");
