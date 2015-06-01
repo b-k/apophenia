@@ -553,11 +553,16 @@ APOP_VAR_ENDHEAD
 
 /** Returns the sample variance/covariance matrix relating each column of the matrix to each other column.
 
-\param in 	An \ref apop_data set. If the weights vector is set, I'll take it into account.
+\param in An \ref apop_data set. If the weights vector is set, I'll take it into account.
 
-\li This is the sample covariance---dividing by \f$n-1\f$, not \f$n\f$.
+\li This is the sample covariance---dividing by \f$n-1\f$, not \f$n\f$. If you need the population variance, use 
+\code
+apop_data *popcov = apop_data_covariance(indata);
+int size=indata->matrix->size1;
+gsl_matrix_scale(popcov->matrix, size/(size-1.));
+\endcode
 
-\return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
+\return Returns an \ref apop_data set the variance/covariance matrix.  
 \exception out->error='a'  Allocation error.
 */
 apop_data *apop_data_covariance(const apop_data *in){
@@ -581,7 +586,7 @@ apop_data *apop_data_covariance(const apop_data *in){
 
 \param in 	A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.
 
-\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+\return Returns the square variance/covariance matrix with dimensions equal to the number of input columns.
 \exception out->error='a'  Allocation error.
 */
 apop_data *apop_data_correlation(const apop_data *in){

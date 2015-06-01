@@ -177,7 +177,8 @@ data, and fail if the copy would write more elements than there are bins.
 
   \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
-  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rs, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_r, \ref Apop_rs, \ref Apop_c,
+      and so on, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
@@ -192,8 +193,8 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
   \param out   A structure that this function will fill. Must be preallocated with the appropriate sizes.
   \param in    The input data.
 
-\exception out.error='d'  Dimension error; couldn't copy.
-\exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
+\exception out.error='d'  Dimension error.
+\exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't.
 */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
@@ -256,9 +257,9 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
-  Basically a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax. 
+Basically a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax. 
 
-  Unlike \ref apop_data_memcpy, I do follow the \c more pointer.
+If the data set has a \c more pointer, that will be followed and subsequent pages copied as well.
  
   \param in    the input data
   \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
@@ -267,7 +268,11 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
 \exception out.error='c'  Cyclic link: <tt>D->more == D</tt> (may be later in the chain, e.g., <tt>D->more->more = D->more</tt>) You'll have only a partial copy.
 \exception out.error='d'  Dimension error; should never happen.
 \exception out.error='p'  Missing part error; should never happen.
-\li If the input data set has an error, then I will copy it anyway, including the error flag (which might be overwritten). I print a warning if the verbosity level is <tt>>=1</tt>.
+
+\li If the input data set has an error, then I will copy it anyway, including the
+error flag (which might be overwritten). I print a warning if the verbosity level
+is <tt>>=1</tt>.
+
   */
 apop_data *apop_data_copy(const apop_data *in){
     if (!in) return NULL;
@@ -757,12 +762,15 @@ APOP_VAR_ENDHEAD
 
 /** Returns the data element at the given point.
  
-  In case of error (probably that you asked for a data point out of bounds), returns \c GSL_NAN.
- See \ref data_set_get "the set/get page" for details.
+In case of error (probably that you asked for a data point out of bounds), returns \c NAN.
+ See \ref data_set_get "the set/get page" for details and examples.
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
-\param col The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param col The column number of the desired element. -1 indicates the vector. 
+If <tt>colname==NULL</tt>, default is zero if the <tt>->matrix</tt> element is not \c
+NULL and -1 if the <tt>->matrix</tt> element is \c NULL and the <tt>->vector</tt> element is not.
+
 \param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
 \param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
@@ -1242,7 +1250,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
   \param data The \ref apop_data set to use. No default; if \c NULL,
       gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
 
-  \param title The name of the page to retrieve. Default=\c "Info", which
+  \param title The name of the page to retrieve. Default=\c "<Info>", which
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
       
@@ -1255,7 +1263,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
 APOP_VAR_HEAD apop_data * apop_data_get_page(const apop_data * data, const char *title, const char match){
     const apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NULL, 1, "You requested a page from a NULL data set. Returning NULL");
-    const char * apop_varad_var(title, "Info");
+    const char * apop_varad_var(title, "<Info>");
     const char apop_varad_var(match, 'c');
     Apop_stopif(match!='r' && match!='e' && match!='c', return NULL, 0,
                 "match type needs to be 'r', 'e', or 'c'; you supplied %c.", match);
