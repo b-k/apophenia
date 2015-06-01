@@ -732,30 +732,31 @@ will return the original data set (stripped of text and names).
 
  \param in an \c apop_data set. No default; if \c NULL, return \c NULL.
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
-  \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
+  \param more_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
 pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'y'. 
 \param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
- \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
+ \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .more_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
 \exception NULL If you give me a vector as input, and its size is not correct, returns \c NULL.
+
 \li This function uses the \ref designated syntax for inputs.
- */
-APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
+*/
+APOP_VAR_HEAD gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages){
     const apop_data * apop_varad_var(in, NULL);
     if (!in) return NULL;
     gsl_vector * apop_varad_var(out, NULL);
-    char apop_varad_var(all_pages, 'y');
+    char apop_varad_var(more_pages, 'y');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
+        size_t total_size = sizecount(in, (more_pages == 'y' || more_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
         Apop_stopif(out->size != total_size, return NULL, 0, "The input data set has %zu elements, "
                "but the output vector you want to fill has size %zu. Please make "
                "these sizes equal.", total_size, out->size);
     }
 APOP_VAR_ENDHEAD
-    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
+    size_t total_size = sizecount(in, (more_pages == 'y' || more_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
     if (!total_size) return NULL;
     int offset = 0;
     if (!out) out = gsl_vector_alloc(total_size);
@@ -777,7 +778,7 @@ APOP_VAR_ENDHEAD
         gsl_vector_memcpy(&vout, in->weights);
         offset  += in->weights->size;
     }
-    if ((all_pages == 'y' ||all_pages =='Y') && in->more){
+    if ((more_pages == 'y' ||more_pages =='Y') && in->more){
         while (use_info_pages=='n' && in->more && apop_regex(in->more->names->title, "^<.*>$"))
             in = in->more;
         if (in->more){

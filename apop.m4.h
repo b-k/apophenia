@@ -267,7 +267,7 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 						char *col_col_name, char *data_col_name);
 
 //packing data into a vector
-Apop_var_declare( gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages) )
+Apop_var_declare( gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages) )
 Apop_var_declare( void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages) )
 
 #define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})

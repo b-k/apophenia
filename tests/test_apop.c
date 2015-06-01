@@ -624,9 +624,8 @@ void apop_pack_test(gsl_rng *r){
                     outp2->weights = gsl_vector_alloc(w);}
             fill_p(p2, r);
         }
-        mid     = apop_data_pack(d, .all_pages= second_p ? 'y' : 'n');
+        mid     = apop_data_pack(d, .more_pages= second_p ? 'y' : 'n');
         apop_data_unpack(mid, dout);
-        //apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
         check_p(d, dout);
         if (second_p)
             check_p(d->more, dout->more);
