@@ -75,7 +75,11 @@ static void white_pad(int ct){
 
 This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up.  There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.
 
-So, I produce an \ref apop_data set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use \ref apop_print to dump your data to a text file, and view the text file, or print subsets.
+So, I produce an \ref apop_data set with no numeric elements and a text element to be
+filled with the input data set, and then print that. That means that I'll be using
+(more than) twice the memory to print this. If this is a problem, you can use \ref
+apop_data_print to dump your data to a text file, and view the text file, or print
+subsets.
 
 For more machine-readable printing, see \ref apop_data_print.
 */

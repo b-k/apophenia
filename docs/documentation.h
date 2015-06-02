@@ -1007,6 +1007,12 @@ double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
 *x = 270;
 assert(apop_data_get(d, 0, 7) == 270);
 
+// This is invalid---the value doesn't follow the colname. Use .val=5.
+// apop_data_set(d, .row = 3, .colname="Column 8", 5);  
+
+// OK, to set (3, 8) to 5:
+apop_data_set(d, 3, 8, 5);
+
 
 //apop_data set holding a scalar:
 apop_data *s = apop_data_alloc(1);

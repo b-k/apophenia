@@ -611,6 +611,7 @@ allocation:
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
+\see apop_data_prune_columns
 */
 static void apop_name_rm_columns(apop_name *n, int *drop){
     apop_name *newname = apop_name_alloc();
@@ -630,11 +631,14 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
 }
 
 
-/** Remove the columns set to one in the \c drop vector.
-The returned data structure looks like it was modified in place, but the data matrix and the names are duplicated before being pared down, so if your data is taking up more than half of your memory, this may not work.
+/** Remove the columns of the \ref apop_data set corresponding to a nonzero value in the \c drop vector.
 
-\param d the \ref apop_data structure to be pared down. 
-\param drop an array of ints. If use[7]==1, then column seven will be cut from the
+\li The returned data structure looks like it was modified in place, but the data
+matrix and the names are duplicated before being pared down, so if your data is taking
+up more than half of your memory, this may not work.
+
+\param d  The \ref apop_data structure to be pared down. 
+\param drop  An array of ints. If use[7]==1, then column seven will be cut from the
 output. A reminder: <tt>calloc(in->size2 , sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
@@ -680,7 +684,8 @@ columns into a list of strings, adds a \c NULL string at the end, and calls that
 \param colnames A NULL-terminated list of names to retain (i.e. the columns that shouldn't be pruned
 out). 
 \return A pointer to the input data set, now pruned.
-  */
+\see apop_data_rm_columns
+*/
 apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
@@ -821,26 +826,17 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
 }
 
 /**  Set a data element.
+See \ref data_set_get "the set/get page" for details and examples. 
  
-  This function uses the \ref designated syntax, so with names you don't have to worry
-  about element ordering. But the ordering of elements may still be
-  noteworthy. For compatibility with older editions of Apophenia, the order is (row, col,
-  value, rowname, colname), so the following would all set row 3, column 8, of \c d to 5:
-  \code
-  apop_data_set(d, 3, 8, 5);
-  apop_data_set(d, .row = 3, .col=8, .val=5);
-  apop_data_set(d, .row = 3, .colname="Column 8", .val=5);
-//but:
-  apop_data_set(d, .row = 3, .colname="Column 8", 5);  //invalid---the value doesn't follow the colname.
-  \endcode
-
-  \return 0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).
+  \return 0=OK, -1=error: couldn't find row/column name, or you asked for a location outside the vector/matrix bounds.
 
 \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
 C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread
 extension enabled.
 
- See \ref data_set_get "the set/get page" for details. 
+\li Set weights via <tt>gsl_vector_set(your_data->weights, row, val);</tt>.
+\li Set text elements via \ref apop_text_add.
+
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
@@ -850,7 +846,8 @@ extension enabled.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
 \param val The value to give the point.
 
-\return The value at the given location. */
+\li This function uses the \ref designated syntax for inputs.
+*/
 APOP_VAR_HEAD int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page){
     apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return -1, 0, "You sent me a NULL data set.");
@@ -1303,11 +1300,13 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
 
 /** Remove the first page from an \ref apop_data set that matches a given name.
 
-  \param data The input data set, to which a page will be added. No default. If \c NULL, I return silently if <tt> apop_opts.verbose < 1 </tt>; print an error otherwise.
-  \param title The case-insensitive name of the page to remove. Default: \c "Info"
-  \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+\param data The input data set, from which a page will be removed. No default. 
+If \c NULL, maybe print a warning (see below).
 
-  \return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
+\param title The case-insensitive name of the page to remove. Default: \c "<Info>"
+\param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+
+\return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
   you can use this to pull a single page from a data set. I set that page's \c more
   pointer to \c NULL, to minimize any confusion about more-than-linear linked list
   topologies. If <tt>free_p=='y'</tt> (the default) or the page is not found, return \c NULL.
@@ -1317,18 +1316,25 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
   set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
   information to a main data set.
 
-  \li If I don't find the page you want, I return NULL, and print a message if
-  <tt>apop_opts.verbose >= 1</tt>.
+  \li If I don't find the page you want, I return NULL, and maybe print a warning; see below.
+
+  \li For the two above cases where a warning may be printed, if the page is to be
+      returned and <tt> apop_opts.verbose >= 1 </tt>, print a warning.
+    If the page is to be freed and <tt> apop_opts.verbose >= 2 </tt>, print a warning.
+
+  \li The remaining \c more pointers in the \ref apop_data set are adjusted accordingly.
 */
 APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
-    apop_data *apop_varad_var(data, NULL);
-    Apop_stopif(!data, return NULL, 1, "You are removing a page from a NULL a data set. Doing nothing.");
-    const char *apop_varad_var(title, "Info");
+    const char *apop_varad_var(title, "<Info>");
     const char apop_varad_var(free_p, 'y');
+    apop_data *apop_varad_var(data, NULL);
+    Apop_stopif(!data, return NULL, free_p=='y'? 2: 1, "You are removing a "
+                               "page from a NULL a data set. Doing nothing.");
 APOP_VAR_ENDHEAD
     while (data->more && strcasecmp(data->more->names->title, title))
         data = data->more;
-    Apop_stopif(!data->more, return NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that.", title);
+    Apop_stopif(!data->more, return NULL, free_p=='y'?2:1, "You asked me to "
+                "remove '%s' but I couldn't find a page matching that.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
@@ -1344,28 +1350,39 @@ APOP_VAR_ENDHEAD
 typedef int (*apop_fn_ir)(apop_data*, void*);
 
 /** Remove the rows set to one in the \c drop vector or for which the \c do_drop function returns one.  
-  \param in the \ref apop_data structure to be pared down
-  \param drop  a vector with as many elements as the max of the vector, matrix, or text
-  parts of \c in, with a one marking those columns to be removed.       \ingroup names
-  \param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
+\param in the \ref apop_data structure to be pared down
+\param drop  a vector with as many elements as the max of the vector, matrix, or text
+  parts of \c in, with a one marking those rows to be removed.
+\param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
   \code
   int your_drop_function(apop_data *onerow, void *extra_param){
-    return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
+    return gsl_isnan(apop_data_get(onerow)) ||
+                !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \ref apop_data_rm_rows uses \ref Apop_r to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
-  \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
+  \ref apop_data_rm_rows will use \ref Apop_r to get a subview of the input data set
+  of height one, and send that subview to this function (and since arguments typically
+  default to zero, you don't have to write out things like \ref apop_data_get
+  <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+\param drop_parameter If your \c do_drop function requires additional input, put it here
+  and it will be passed through.
 
 \return Returns a pointer to the input data set, now pruned.
 
-  \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
-
- \li The typical use is to provide only a list or only a function. If both are \c NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose >=1</tt>. If you provide both, I will drop the row if either the vector has a one in that row's position, or if the function returns a nonzero value.
- \li This function uses the \ref designated syntax for inputs.
+\li If all the rows are to be removed, then you will wind up with the same \ref
+    apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore,
+    you may wish to check for \c NULL elements after use. I remove rownames, but leave
+    the other names, in case you want to add new data rows.
+\li The typical use is to provide only a list or only a function. If both are \c
+    NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose
+    >=2</tt>. If you provide both, I will drop the row if either the vector has a one in
+    that row's position, or if the function returns a nonzero value.
+\li This function uses the \ref designated syntax for inputs.
+\see apop_data_listwise_delete
 */  
 APOP_VAR_HEAD apop_data* apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);
-    Apop_stopif(!in, return in, 1, "Input data set was NULL; no changes made.");
+    Apop_stopif(!in, return in, 2, "Input data set was NULL; no changes made.");
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
