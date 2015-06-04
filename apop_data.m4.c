@@ -317,26 +317,26 @@ For the opposite operation, see \ref apop_data_split.
 
 \param  m1      the upper/rightmost data set (default = \c NULL)
 \param  m2      the second data set (default = \c NULL)
-\param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
-    if 'c', stack columns of m1's matrix to left of m2's<br>
+\param  posn    If 'r', stack rows of m1 above rows of m2<br>
+    if 'c', stack columns of m1 to left of m2's<br>
     (default = 'r')
-\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those functions. Otherwise, allocate a new \ref apop_data set, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place. Otherwise, allocate a new \ref apop_data set, leaving \c m1 unmolested. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
 
 \li The function returns a new data set, meaning that until you apop_data_free()
-    the original data sets, you will be taking up twice as much memory. Plan accordingly.
-\li If m1 or m2 are NULL, this returns a copy of the other element, and if
-    both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c
-    'y', where you'll get the original \c m1 pointer back)
+    the original data sets, you will be taking up twice as much memory.
+\li If m1 or m2 are \c NULL, returns a copy of the other element, and if
+    both are \c NULL, returns \c NULL. If \c m2 is \c NULL and \c inplace is \c
+    'y', returns the original \c m1 pointer unmodified.
 \li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the
     other [number of columns must match]; if 'c', one set of text is set next to the other
     [number of rows must match].
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
     vectors stacked accordingly. If stacking columns by columns, the output
-    vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
+    vector is just a copy of the vector of \c m1 and <tt>m2->vector</tt> doesn't appear in the
     output at all.  
 \li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
 \li Names are a copy of the names for \c m1, with the names for \c m2 appended to the
@@ -433,14 +433,19 @@ APOP_VAR_ENDHEAD
  For the opposite operation, see \ref apop_data_stack.
  
 \param in  The \ref apop_data structure to split 
-\param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
+\param splitpoint The index of what will be the first row/column of the second data set.
+E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second
+data set; if this is the length of the matrix then the whole data set will be in the
+first data set. Another way to put it is that for values between zero and the matrix's
+size, \c splitpoint will equal the number of rows/columns in the first matrix.
+
 \param r_or_c If this is 'r' or 'R', then put some rows in the first data set and some in the second; of 'c' or 'C', split columns into first and second data sets.
 
  \return An array of two \ref apop_data sets. If one is empty then a
  \c NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
  \li When splitting at a row, the text is also split.
- \li \c more pointer is ignored.
+ \li The \c more pointer is ignored.
  \li The <tt>apop_data->vector</tt> is taken to be the -1st element of the matrix.  
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  \li Data is copied, so you may want to call <tt>apop_data_free(in)</tt> after this.

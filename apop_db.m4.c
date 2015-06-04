@@ -543,36 +543,7 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
 #endif
 }
 
-/** Dump an \ref apop_data set into the database.
-
-This function is basically preempted by \ref apop_data_print. Use that one; this may soon no longer be available.
-
-Column names are inserted if there are any. If there are, all dots are converted to underscores.  Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
-
-\li If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.
-
-\li If there are weights, they will be the last column of the table, and the column will be named "weights".
-
-\li If the table exists; append to. If the table does not exist, create. So perhaps call \ref apop_table_exists <tt>("tabname", 'd')</tt> to ensure that the table is removed ahead of time.
-
-\li You can also call this via \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt> to overwrite a new table or with <tt>.output_append='a'</tt> to append.
-
-\li If your data set has zero data (i.e., is just a list of column names or is entirely blank), I return -1 without creating anything in the database.
-
-\li Especially if you are using a pre-2007 version of SQLite, there may be a speed gain to wrapping the call to this function in a begin/commit pair:
-
-\code
-apop_query("begin;");
-apop_data_print(dataset, .output_name="dbtab", .output_type='d');
-apop_query("commit;");
-\endcode
-
-
-\param set 	         The name of the matrix
-\param tabname	     The name of the db table to be created
-\param output_append See \ref apop_prep_output.
-\return 0=OK, -1=error
-*/
+//users are expected to call apop_data_print.
 int apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
     Apop_stopif(!set, return -1, 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
     int	i,j; 

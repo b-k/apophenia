@@ -697,6 +697,31 @@ unset APOP_DB_ENGINE
 apop_text_to_db indata stab db_for_sqlite.db
 \endcode
 
+
+Write \ref apop_data sets to the database using \ref apop_data_print, with <tt>.output_type='d'</tt>.
+
+\li Column names are inserted if there are any. If there are, all dots are converted
+    to underscores.  Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
+\li If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is
+    <tt>"row_name"</tt>), then a so-named column is created, and the row names are placed there.
+\li If there are weights, they will be the last column of the table, and the column will be named \c weights.
+\li If the table exists; append to. If the table does not exist, create. So perhaps
+    call \ref apop_table_exists <tt>("tabname", 'd')</tt> to ensure that the table is
+    removed ahead of time.
+\li Use \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt>
+    to overwrite a new table or with <tt>.output_append='a'</tt> to append.
+\li If your data set has zero data (i.e., is just a list of column names or is entirely
+    blank), \ref apop_data_print returns without creating anything in the database.
+\li Especially if you are using a pre-2007 version of SQLite, there may be a speed
+    gain to wrapping the call to this function in a begin/commit pair:
+
+\code
+apop_query("begin;");
+apop_data_print(dataset, .output_name="dbtab", .output_type='d');
+apop_query("commit;");
+\endcode
+
+
 Finally, Apophenia provides a few nonstandard SQL functions to facilitate math via database; see \ref db_moments.
 
 

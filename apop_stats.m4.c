@@ -185,7 +185,7 @@ where \f$i\f$ iterates over dimensions.
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
     static threadlocal gsl_vector *zero = NULL;
     const gsl_vector * apop_varad_var(ina, NULL);
-    Apop_assert(ina, "The first vector has to be non-NULL.");
+    Apop_stopif(!ina, return NAN, 1, "The first vector is NULL. Returning NAN");
     const gsl_vector * apop_varad_var(inb, NULL);
     if (!inb){
         if (!zero || zero->size !=ina->size){
@@ -226,7 +226,7 @@ APOP_VAR_ENDHEAD
             dist += pow(fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)), norm);
         return pow(dist, 1./norm); 
     }
-  Apop_assert(0, "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
+  Apop_stopif(1, return NAN, 1, "I couldn't find the metric type you gave, %c, in my list of supported types. Returning NaN", metric);
 }
 
 /** This function will normalize a vector, either such that it has mean
@@ -322,7 +322,7 @@ APOP_VAR_END_HEAD
 \param normalization     see \ref apop_vector_normalize.
 */
 void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
-    Apop_assert_c(data, , 1, "input matrix is NULL. Doing nothing.");
+    Apop_stopif(!data, return, 2, "input matrix is NULL. Doing nothing.");
     if (row_or_col == 'r')
         for (size_t j = 0; j < data->size1; j++){
             Apop_matrix_row(data, j, v);
@@ -408,6 +408,8 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 \exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
+
+\li See apop_data_prune_columns for an example.
 */
 apop_data * apop_data_summarize(apop_data *indata){
     Apop_stopif(!indata, return NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
@@ -566,8 +568,8 @@ gsl_matrix_scale(popcov->matrix, size/(size-1.));
 \exception out->error='a'  Allocation error.
 */
 apop_data *apop_data_covariance(const apop_data *in){
-    Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
-    Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
+    Apop_stopif(!in, return NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
+    Apop_stopif(!in->matrix, return NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
     apop_data *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
     Apop_stopif(out->error, return out, 0, "allocation error.");
     for (size_t i=0; i < in->matrix->size2; i++){
@@ -785,7 +787,7 @@ Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this func
 See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
 */
 long double apop_multivariate_gamma(double a, int p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    Apop_stopif(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0, return NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
     long double out = pow(M_PI, p*(p-1.)/4.);
     long double factor = 1;
     for (int i=1; i<=p; i++)
@@ -797,7 +799,7 @@ long double apop_multivariate_gamma(double a, int p){
  \ref apop_multivariate_gamma.
 */
 long double apop_multivariate_lngamma(double a, int p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    Apop_stopif(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0, return NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
     long double out = M_LNPI * p*(p-1.)/4.;
     for (int i=1; i<=p; i++)
         out += gsl_sf_lngamma(a+(1-i)/2.);
@@ -841,7 +843,7 @@ See also \ref apop_matrix_to_positive_semidefinite, which will change the input 
 */
 APOP_VAR_HEAD int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
     gsl_matrix * apop_varad_var(m, NULL);
-    Apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
+    Apop_stopif(!m, return 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite; returning zero.");
     char apop_varad_var(semi, 's');
 APOP_VAR_ENDHEAD
     for (int i=1; i<= m->size1; i++){

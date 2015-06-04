@@ -586,7 +586,7 @@ gsl_vector * apop_vector_moving_average(gsl_vector *, size_t);
 apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1);
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 apop_data *apop_data_pmf_compress(apop_data *in);
-Apop_var_declare( apop_data * apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin) )
+Apop_var_declare( apop_data * apop_data_to_bins(apop_data const *indata, apop_data const *binspec, int bin_count, char close_top_bin) )
 Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) )
 
 //text conveniences

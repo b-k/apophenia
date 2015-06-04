@@ -118,18 +118,17 @@ apop_text_add(sort_order, 0, 1, "5");
 apop_data_sort(data, sort_order);
 \endcode
 
-I use only comparisons, not the actual numeric values, so you can use any sequence of
-numbers: (1, 2, 3) and (-1.32, 0, 27) work identically.
+To determine which columns are sorted at which step, I use only comparisons, not the actual numeric values. For example, (1, 2, 3) and (-1.32, 0, 27) work identically. For text, I use \c atof to convert the your text to a number, as in the example above that set text values of \c "4" and \c "5". A blank string, NaN numeric value, or NULL element in the \ref apop_data set means that column will not be sorted.
 
 \li Strings are sorted case-insensitively, using \c strcasecmp. [exercise for the reader: modify the source to use Glib's locale-correct string sorting.]
 
 \li The setup generates a lexicographic sort using the columns you specify. If you would like a different sort order, such as Euclidian distance to the origin, you can generate a new column expressing your preferred metric, and then sorting on that. See the example below.
 
 \param data The data set to be sorted. If \c NULL, this function is a no-op that returns \c NULL.
-\param sort_order A \ref apop_data set describing the order in which columns are used for sorting, as above. If \c NULL, then sort by the vector, then each matrix column, then text, then weights, then row names.
+\param sort_order An \ref apop_data set describing the order in which columns are used for sorting, as above. If \c NULL, then sort by the vector, then each matrix column, then text, then weights, then row names.
 \param inplace If 'n', make a copy, else sort in place. (default: 'y').
 \param asc If 'a', ascending; if 'd', descending. This is applied to all columns; column-by-column application is to do. (default: 'a').
-\param col_order For internal use only. In your call, it should be \c NULL; the \ref designated syntax will takes care of it for you.
+\param col_order For internal use only. In your call, it should be \c NULL; you can leave this off your function call entirely and the \ref designated syntax will takes care of it for you.
 
 \return A pointer to the sorted data set. If <tt>inplace=='y'</tt> (the default), then this is the same as the input set.
 

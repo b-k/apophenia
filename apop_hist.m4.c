@@ -272,71 +272,86 @@ apop_data *apop_test_kolmogorov(apop_model *m1, apop_model *m2){
     return out;
 }
 
-/** Create a histogram from data by putting data into bins of fixed width. 
+/** Create a histogram from data by putting data into bins of fixed width. Your input
+\ref apop_data set may be multidimensional, and may include both vector and matrix
+parts, and the bins output will have corresponding dimension.
 
-\param indata The input data that will be binned. This is copied and the copy will be modified.
-\param close_top_bin Normally, a bin covers the range from the point equal to its minimum to points strictly less than
-the minimum plus the width.  if \c 'y', then the top bin includes points less than or equal to the upper bound. This solves the problem of displaying histograms where the top bin is just one point.
+\param indata The input data that will be binned, one observation per row. This is
+    copied and the copy will be modified. (No default)
 \param binspec This is an \ref apop_data set with the same number of columns as \c indata. 
-If you want a fixed size for the bins, then the first row of the bin spec is the bin width for each column.
-This allows you to specify a width for each dimension, or specify the same size for all with something like:
-
-\param bin_count If you don't provide a bin spec, I'll provide this many evenly-sized bins. Default: \f$\sqrt(N)\f$.  \code
-Apop_row(indata, 0, firstrow);
-apop_data *binspec = apop_data_copy(firstrow);
+    If you want a fixed size for the bins, then the first row of the bin spec is the
+    bin width for each column.  This allows you to specify a width for each dimension,
+    or specify the same size for all with something like:
+\code
+apop_data *binspec = apop_data_copy(Apop_r(indata, 0));
 gsl_matrix_set_all(binspec->matrix, 10); //bins of size 10 for all dim.s
 apop_data_to_bins(indata, binspec);
 \endcode
-The presumption is that the first bin starts at zero in all cases. You can add a second row to the spec to give the offset for each dimension.  Default: NULL. if no binspec and no binlist, then a grid with offset equal to the min of the column, and bin size such that it takes \f$\sqrt{N}\f$ bins to cover the range to the max element. 
+    The presumption is that the first bin starts at zero in all cases. You can add a second
+    row to the spec to give the offset for each dimension. (default: NULL)
+\param bin_count If you don't provide a bin spec, I'll provide this many evenly-sized bins to cover the data set. (Default: \f$\sqrt{N}\f$)
+\param close_top_bin Normally, a bin covers the range from the point equal to its
+    minimum to points strictly less than the minimum plus the width.  if \c 'y', then
+    the top bin includes points less than or equal to the upper bound. This solves the
+    problem of displaying histograms where the top bin is just one point. (default:
+    \c 'y' if \c binspec==NULL, else \c 'n')
 
+\return A pointer to an \ref apop_data set with the same dimension as your input data.
+Each cell is an integer giving the bin number into which the cell falls.
 
-\return A pointer to a binned \ref apop_data set.  If you didn't give me a binspec, then I attach one to the output set as a page named \c \<binspec\>, so you can snap a second data set to the same grid using 
+\li If no binspec and no binlist, then a grid with offset equal to the min of the
+    column, and bin size such that it takes \f$\sqrt{N}\f$ bins to cover the range to the
+    max element.
+\li The text segment is not binned. The \c more pointer, if any, is not followed.
+\li Given \c NULL input, return \c NULL output. Print a warning if <tt>apop_opts.verbose >= 2</tt>.
+
+Iff you didn't give me a binspec, then I attach one to the output set as a page named
+\c \<binspec\>. This means that you can snap a second data set to the same grid using
 \code
 apop_data_to_bins(first_set, NULL);
 apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 \endcode
+\li If you want to plot the output, it may help to run it through \ref
+    apop_data_pmf_compress to produce a vector of bin weights.
 
-
-  The text segment, if any, is not binned. I use \ref apop_data_pmf_compress as the final step in the binning, 
-  and that does respect the text segment. 
-
-Here is a sample program highlighting the difference between \ref apop_data_to_bins and \ref apop_data_pmf_compress .
+Here is a sample program highlighting \ref apop_data_to_bins and \ref apop_data_pmf_compress .
 
 \include binning.c
+
+\li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data *apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin){
-    apop_data *apop_varad_var(indata, NULL);
-    Apop_assert_c(indata, NULL, 1, "NULL input data set, so returning NULL output data set.");
-    apop_data *apop_varad_var(binspec, NULL);
-    char apop_varad_var(close_top_bin, 'n');
+APOP_VAR_HEAD apop_data *apop_data_to_bins(apop_data const *indata, apop_data const *binspec, int bin_count, char close_top_bin){
+    apop_data const *apop_varad_var(indata, NULL);
+    Apop_assert_c(indata, NULL, 2, "NULL input data set, so returning NULL output data set.");
+    apop_data const *apop_varad_var(binspec, NULL);
+    char apop_varad_var(close_top_bin, binspec==NULL ? 'y' : 'n');
     int apop_varad_var(bin_count, 0);
 APOP_VAR_ENDHEAD
     Get_vmsizes(indata); //firstcol, vsize, msize1, msize2
     double binwidth, offset, max=0;
-    apop_data *out = apop_data_copy(indata);
-    apop_data *bs = binspec ? binspec
+    apop_data *out = apop_data_alloc(vsize, msize1, msize2);
+    apop_data const *bs = binspec ? binspec
                     : apop_data_add_page(out, 
                         apop_data_alloc(vsize? 2: 0, msize1? 2: 0, indata->matrix ? msize2: 0),
                         "<binspec>");
     for (int j= firstcol; j< msize2; j++){
         gsl_vector *onecol = Apop_cv(out, j);
+        gsl_vector *datacol = Apop_cv(indata, j);
         if (binspec){
            binwidth = apop_data_get(binspec, 0, j);
            offset = ((binspec->vector && binspec->vector->size==2 )
                    ||(binspec->matrix && binspec->matrix->size1==2)) ? apop_data_get(binspec, 1, j) : 0;
         } else {
             gsl_vector *abin = Apop_cv(bs, j);
-            max = gsl_vector_max(onecol);
-            offset = abin->data[1] = gsl_vector_min(onecol);
-            binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(onecol->size));
+            max = gsl_vector_max(datacol);
+            offset = abin->data[1] = gsl_vector_min(datacol);
+            binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(datacol->size));
         }
         for (int i=0; i< onecol->size; i++){
-            double val = gsl_vector_get(onecol, i);
-            if (close_top_bin=='y' && val == max && val!=offset) 
-                val -= 2*GSL_DBL_EPSILON;
-            gsl_vector_set(onecol, i, (floor((val -offset)/binwidth))*binwidth+offset);
+            double val = gsl_vector_get(datacol, i);
+            double adjust = (close_top_bin=='y' && val == max && val!=offset) ? 2*GSL_DBL_EPSILON : 0;
+            gsl_vector_set(onecol, i, (floor((val-offset-adjust)/binwidth))*binwidth+offset);
         }
     }
-    apop_data_pmf_compress(out);
     return out;
 }

@@ -68,7 +68,7 @@ gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
     apop_data *result = apop_query_to_data("%s", q);
 	apop_db_close(0);
-    Apop_stopif(!result, exit(2), 0, "Your query returned a blank table. Quitting.");
+    Apop_stopif(!result && !no_plot, exit(2), 0, "Your query returned a blank table. Quitting.");
     Apop_stopif(result->error, exit(2), 0, "Error running your query. Quitting.");
     if (no_plot){
         apop_data_show(result);

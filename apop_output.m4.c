@@ -303,7 +303,8 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
   as determined by the \c .output_type.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also \ref Legi for more details and examples.
+\li See \ref Legi for more details and examples.
+\li See \ref sqlsec for notes on writing an \ref apop_data set to the database.
 \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */

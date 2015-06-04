@@ -190,7 +190,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
             ? d->textsize[0]
             : (col >=0 ? d->matrix->size1 : d->vector->size);
     apop_data *out = (dummyfactor == 'd')
-                ? apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1))
+                ? apop_data_calloc(0, s, (keep_first!='n' ? elmt_ctr : elmt_ctr-1))
                 : d;
     for (size_t i=0; i< s; i++){
         if (type == 'd'){
@@ -199,7 +199,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
         } else 
             index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
         if (dummyfactor == 'd'){
-            if (keep_first)
+            if (keep_first!='n')
                 gsl_matrix_set(out->matrix, i, index,1); 
             else if (index > 0)   //else don't keep first and index==0; throw it out. 
                 gsl_matrix_set(out->matrix, i, index-1, 1); 
@@ -209,7 +209,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
     //Add names:
     if (dummyfactor == 'd'){
         char *basename = apop_get_factor_basename(d, col, type);
-        for (size_t i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
+        for (size_t i = (keep_first!='n') ? 0 : 1; i< elmt_ctr; i++){
             char n[1000];
             if (type =='d'){
                 sprintf(n, "%s dummy %g", basename, gsl_vector_get(delmts,i));
@@ -249,8 +249,7 @@ to remove the column used to generate the dummies. Implemented only for <tt>type
 \li By specifying <tt>.append='i'</tt>, I will place the matrix of dummies in place,
 immediately after the data column you had specified. You will probably use this with
 <tt>.remove='y'</tt> to replace the single column with the new set of dummy columns.
-Bear in mind that if there are two or more dummy columns (which there probably are if you
-are bothering to use this function), subsequent column numbers will change.
+Bear in mind that if there are two or more dummy columns, adding columns will change subsequent column numbers; use \ref apop_name_find to find columns instead of giving an explicit column number.
 
 \li If <tt>.append='i'</tt> and you asked for a text column, I will append to the end of
 the table, which is equivalent to <tt>append='e'</tt>.
@@ -258,11 +257,11 @@ the table, which is equivalent to <tt>append='e'</tt>.
 \param  d The data set with the column to be dummified (No default.)
 \param col The column number to be transformed; -1==vector (default = 0)
 \param type 'd'==data column, 't'==text column. (default = 't')
-\param  keep_first  if zero, return a matrix where each row has a one in the (column specified MINUS
-    ONE). That is, the zeroth category is dropped, the first category
+\param  keep_first  If \c 'n', return a matrix where each row has a one in the (column specified <em>minus
+    one</em>). That is, the zeroth category is dropped, the first category
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
-    and need something special, set this to one and the first category won't be dropped. (default = 0)
+    and need something special, set this to \c 'y' and the first category won't be dropped. (default = \c 'n')
 \param append If \c 'e' or \c 'y', append the dummy grid to the end of the original data
 matrix. If \c 'i', insert in place, immediately after the original data column. (default = \c 'n')
 \param remove If \c 'y', remove the original data or text column. (default = \c 'n')
@@ -272,15 +271,19 @@ matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 \exception out->error=='a' allocation error
 \exception out->error=='d' dimension error
+
 \li NaNs appear at the end of the sort order.
 \li This function uses the \ref designated syntax for inputs.
+\li See \ref fact for further discussion.
+
+\see \ref apop_data_to_factors
 */
 APOP_VAR_HEAD apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
     apop_data *apop_varad_var(d, NULL)
     Apop_stopif(!d, return NULL, 1, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.");
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
-    int apop_varad_var(keep_first, 0)
+    int apop_varad_var(keep_first, 'n')
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
     if (remove =='y' && type == 't') Apop_notify(1, "Remove isn't implemented for text source columns yet.");
@@ -338,17 +341,16 @@ APOP_VAR_ENDHEAD
   it on the vector or (if no vector) zeroth column of the matrix of the input \ref apop_data set, because those models need a list of the unique values of the dependent variable.
 
 \param data The data set to be modified in place. (No default. If \c NULL, returns \c NULL and a warning)
-\param intype If \c 't', then \c incol refers to text, otherwise (\c 'd'
-is a good choice) refers to the vector or matrix. Default = \c 't'.
-\param incol The column in the text that will be converted. -1 is the vector. Default = 0.
-\param outcol The column in the data set where the numeric factors will be written (-1 means the vector). Default = 0.
+\param intype If \c 't', then \c incol refers to text, if \c 'd', refers to the vector or matrix. (default = \c 't')
+\param incol The column in the text that will be converted. -1 is the vector. (default = 0)
+\param outcol The column in the data set where the numeric factors will be written (-1 means the vector). (default = 0)
 
 For example:
 \code
-apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
+apop_data *d  = apop_query_to_mixed_data("mmt", "select 0, year, color from data");
 apop_data_to_factors(d);
 \endcode
-Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.
+Notice that the query pulled a column of zeros for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.
 
 Another example:
 \code
@@ -365,8 +367,12 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 
 \exception out->error=='a' allocation error.
 \exception out->error=='d' dimension error.
+
 \li  If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
 \li This function uses the \ref designated syntax for inputs.
+\li See \ref fact for further discussion.
+
+\see \ref apop_data_to_factors
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)

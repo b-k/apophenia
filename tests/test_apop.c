@@ -865,7 +865,7 @@ int get_factor_index(apop_data *flist, char *findme){
 //If the dummies are a separate matrix, offset=0;
 //If the dummies are an addendum to main, offset=original_data->matrix->size2;
 static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
-  int n;
+    int n;
     apop_data *factorlist = apop_data_get_factor_names(d, 0, 't');
     for(int i=0; i < d->textsize[0]; i ++)
         if ((n = get_factor_index(factorlist, d->text[i][0]))>0){
@@ -1166,40 +1166,27 @@ void test_pmf_compress(gsl_rng *r){
 
     apop_data *b = apop_data_alloc();
     b->vector = apop_array_to_vector((double []){1.1, 2.1, 2, 1, 1}, 5);
-    apop_text_alloc(b, 5, 1);
-    apop_text_add(b, 0, 0, "Type 1");
-    apop_text_add(b, 1, 0, "Type 1");
-    apop_text_add(b, 2, 0, "Type 1");
-    apop_text_add(b, 3, 0, "Type 1");
-    apop_text_add(b, 4, 0, "Type 2");
     apop_data *spec = apop_data_copy(Apop_r(b, 0));
     gsl_vector_set_all(spec->vector, 1);
     apop_data *c = apop_data_to_bins(b, .binspec=spec);
     apop_data_free(b);
-    assert(apop_strcmp(c->text[0][0], "Type 1"));
-    assert(apop_strcmp(c->text[1][0], "Type 1"));
-    assert(apop_strcmp(c->text[2][0], "Type 2"));
-    assert(c->weights->data[0]==2);
-    assert(c->weights->data[1]==2);
-    assert(c->weights->data[2]==1);
+    gsl_vector *should_be = apop_data_falloc((5), 1, 2, 2, 1, 1)->vector;
+    assert(!apop_vector_distance(should_be, c->vector, 'd'));
     apop_data_free(c);
 
     //I assert that if I use the default binspec returned by a call to apop_data_to_bins,
     //then re-binning with the binspec explicitly stated will give identical results.
-    int i, dcount = 10000;
+    int dcount = 10000;
     apop_data *draws = apop_data_alloc(dcount);
     apop_model *norm = apop_model_set_parameters(apop_normal, 0, 1);
-    for (i=0 ; i<dcount; i++)
+    for (int i=0; i<dcount; i++)
         apop_draw(draws->vector->data+i, r, norm);
     apop_data_sort(draws);
     apop_data *drawcopy = apop_data_copy(draws);
     apop_data *binned = apop_data_to_bins(draws);
-    apop_data *binnedc = apop_data_to_bins(drawcopy, .binspec=apop_data_get_page(draws, "<binspec>"));
-    assert(binned->weights->size == binnedc->weights->size);
-    for (i=0; i< binned->weights->size; i++){
+    apop_data *binnedc = apop_data_to_bins(drawcopy, .binspec=apop_data_get_page(draws, "<binspec>"), .close_top_bin='y');
+    for (int i=0; i< binned->vector->size; i++)
         assert(binned->vector->data[i] == binnedc->vector->data[i]);
-        assert(binned->weights->data[i] == binnedc->weights->data[i]);
-    }
 }
 
 void test_vtables(){
