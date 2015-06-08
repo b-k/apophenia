@@ -350,22 +350,20 @@ long double apop_matrix_sum(const gsl_matrix *m){
 
 /** Returns the mean of all elements of a matrix.
 
-Calculated with an eye toward avoiding overflow errors.
-
-\param data	the matrix to be averaged. If \c NULL, return zero.
+\param data	The matrix to be averaged. If \c NULL, return zero.
+\return The mean of all cells of the matrix.
 */
 double apop_matrix_mean(const gsl_matrix *data){
     if (!data) return 0;
-    double  avg     = 0;
-    int     cnt= 0;
-    double  x, ratio;
+    long double avg = 0;
+    int cnt = 0;
     for(size_t i=0; i < data->size1; i++)
         for(size_t j=0; j < data->size2; j++){
-            x       = gsl_matrix_get(data, i,j);
-            ratio   = cnt/(cnt+1.0);
-            cnt     ++;
-            avg     *= ratio;
-            avg     += x/(cnt +0.0);
+            double x = gsl_matrix_get(data, i,j);
+            long double ratio = cnt/(cnt+1.0);
+            cnt++;
+            avg*= ratio;
+            avg+= x/cnt;
         }
 	return avg;
 }
@@ -702,33 +700,34 @@ double a_div(gsl_vector *in){
 
 /** Kullback-Leibler divergence.
 
-  This measure of the divergence of one distribution from another
-  has the form \f$ D(p,q) = \sum_i \ln(p_i/q_i) p_i \f$.
-  Notice that it is not a distance, because there is an asymmetry
-  between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
+This measure of the divergence of one distribution from another has the form \f$ D(p,q)
+= \sum_i \ln(p_i/q_i) p_i \f$.  Notice that it is not a distance, because there is an
+asymmetry between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
 
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
   \param rng    A \c gsl_rng. If \c NULL or number of threads is greater than 1, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
 
-  This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
-  or \ref apop_normal.
+This function can take empirical histogram-type models (\ref apop_pmf) or continuous
+models like \ref apop_loess or \ref apop_normal.
 
- If there is a PMF (I'll try \c from first, under the presumption that you are measuring the divergence of data from an observed data distribution), then I'll step
+If there is a PMF (I'll try \c from first, under the presumption that you are measuring
+the divergence of a fitted model from an observed data distribution), then I'll step
 through it for the points in the summation.
 
-\li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
-but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1</tt>
-I print a message as well.
+\li If you have two empirical distributions in the form of \ref apop_pmf, they must
+be synced: if \f$p_i>0\f$ but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If
+<tt>apop_opts.verbose >=1</tt> I print a message as well.
 
-If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c to and evaluate at those points.
+If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c from
+and evaluate at those points.
 
 \li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
 
 \li This function uses the \ref designated syntax for inputs.
- */
-APOP_VAR_HEAD double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
+*/
+APOP_VAR_HEAD long double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
     apop_model * apop_varad_var(from, NULL);
     apop_model * apop_varad_var(to, NULL);
     Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
@@ -828,14 +827,17 @@ static double biggest_elmt(gsl_matrix *d){
     return  GSL_MAX(fabs(gsl_matrix_max(d)), fabs(gsl_matrix_min(d)));
 }
 
-/** Test whether the input matrix is positive semidefinite.
+/** Test whether the input matrix is positive semidefinite (PSD).
 
 A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
 
-Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
+Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the
+upper left, on up to the full matrix. If the matrix is PSD, then each of these has
+a positive determinant. This function thus calculates \f$N\f$ determinants for an
+\f$N\f$x\f$N\f$ matrix.
 
 \param m The matrix to test. If \c NULL, I will return zero---not PSD.
-\param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
+\param semi If anything but \c 's', check for positive definite, not semidefinite. (default 's')
 
 See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
 

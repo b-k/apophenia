@@ -103,7 +103,7 @@ Allocate and fill the matrix representing these two constraints via:
 apop_data *constr = apop_data_falloc((2,2,3), 3,  2, 4, 7,
                                               0,  0, 1, 0);
 \endcode
-. Default: each elements is greater than zero. E.g., for three parameters:
+. Default: each elements is greater than zero. For three parameters this would be equivalent to setting
 \code
 apop_data *constr = apop_data_falloc((3,3,3), 0,  1, 0, 0,
                                               0,  0, 1, 0,
@@ -112,13 +112,14 @@ apop_data *constr = apop_data_falloc((3,3,3), 0,  1, 0, 0,
 
 \param margin If zero, then this is a >= constraint, otherwise I will return a point this amount within the borders. You could try \c GSL_DBL_EPSILON, which is the smallest value a \c double can hold, or something like 1e-3. Default = 0.
 
-return The penalty = the distance between beta and the closest point that meets the constraints.
+\return The penalty: the distance between beta and the closest point that meets the constraints.
+If the constraint is met, the penalty is zero.
 If the constraint is not met, this \c beta is shifted by \c margin (Euclidean distance) to meet the constraints. 
 
-\li If your \ref apop_data is not just a vector, try \ref apop_data_pack to pack it into a vector. This is what \ref apop_maximum_likelihood does.
-
-\li This function uses the \ref designated syntax for inputs.
-todo The apop_linear_constraint function doesn't check for odd cases like coplanar constraints.
+    \li If your \ref apop_data has more structure than a vector, try \ref apop_data_pack to pack it
+into a vector. This is what \ref apop_maximum_likelihood does.
+    \li The function doesn't check for odd cases like coplanar constraints.
+    \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD long double  apop_linear_constraint(gsl_vector *beta, apop_data * constraint, double margin){
     static threadlocal apop_data *default_constraint;
