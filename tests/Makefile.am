@@ -8,6 +8,7 @@ EXTRA_TESTS = distribution_tests \
 	$(top_builddir)/eg/cross_models \
 	$(top_builddir)/eg/dconstrain \
 	$(top_builddir)/eg/entropy_model \
+	$(top_builddir)/eg/f_test \
 	$(top_builddir)/eg/fix_params \
 	$(top_builddir)/eg/hills2 \
 	$(top_builddir)/eg/jacobian \

@@ -452,7 +452,6 @@ Apop_var_declare( double apop_kl_divergence(apop_model *from, apop_model *to, in
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
 void apop_estimate_parameter_tests (apop_model *est);
 
-
 //Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model *model);
 Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) )

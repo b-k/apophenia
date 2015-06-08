@@ -87,25 +87,39 @@ apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
     return produce_t_test_output(count-1, stat, avg);
 }
 
-/** Runs an F-test specified by \c q and \c c. Your best bet is to see
- the chapter on hypothesis testing in  <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309. It will tell you that:
+/** Runs an F-test specified by \c q and \c c. See
+ the chapter on hypothesis testing in  <a href="http://modelingwithdata.org">Modeling With Data</a>, p 309, which will tell you that:
  \f[{N-K\over q}
  {({\bf Q}'\hat\beta - {\bf c})' [{\bf Q}' ({\bf X}'{\bf X})^{-1} {\bf Q}]^{-1} ({\bf Q}' \hat\beta - {\bf c})
  \over {\bf u}' {\bf u} } \sim F_{q,N-K},\f]
  and that's what this function is based on.
 
- \param est     an \ref apop_model that you have already calculated. (No default)
- \param contrast       The matrix \f${\bf Q}\f$ and the vector \f${\bf c}\f$, where each row represents a hypothesis. (Defaults: if matrix is \c NULL, it is set to the identity matrix with the top row missing. If the vector is \c NULL, it is set to a zero matrix of length equal to the height of the contrast matrix. Thus, if the entire \c apop_data set is NULL or omitted, we are testing the hypothesis that all but \f$\beta_1\f$ are zero.)
- \return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
- \todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
+\param est An \ref apop_model that you have already calculated. (No default)
+\param contrast  An \ref apop_data set whose matrix represents \f${\bf Q}\f$ and whose
+    vector represents \f${\bf c}\f$. Each row represents a hypothesis. (Defaults:
+    if matrix is \c NULL, it is set to the identity matrix with the top row missing. If
+    the vector is \c NULL, it is set to a zero matrix of length equal to the height of
+    the contrast matrix. Thus, if the entire \c apop_data set is NULL or omitted, we are
+    testing the hypothesis that all but \f$\beta_1\f$ are zero.)
 
-\li There are two approaches to an \f$F\f$-test: the ANOVA approach, which is typically built around the claim that all effects but the mean are zero; and the more general regression form, which allows for any set of linear claims about the data. If you send a \c NULL contrast set, I will generate the set of linear contrasts that are equivalent to the ANOVA-type approach. Readers of {\em Modeling with Data}, note that there's a bug in the book that claims that the traditional ANOVA approach also checks that the coefficient for the constant term is also zero; this is not the custom and doesn't produce the equivalence presented in that and other textbooks.
+\return An \c apop_data set with a few variants on the confidence with which we can reject the joint hypothesis.
+\todo There should be a way to get OLS and GLS to store \f$(X'X)^{-1}\f$. In fact, if you did GLS, this is invalid, because you need \f$(X'\Sigma X)^{-1}\f$, and I didn't ask for \f$\Sigma\f$.
 
 \exception out->error='a'  Allocation error.
 \exception out->error='d'  dimension-matching error.
 \exception out->error='i'  matrix inversion error.
 \exception out->error='m'  GSL math error.
+
+\li There are two approaches to an \f$F\f$-test: the ANOVA approach, which is typically
+    built around the claim that all effects but the mean are zero; and the more general
+    regression form, which allows for any set of linear claims about the data. If you send
+    a \c NULL contrast set, I will generate the set of linear contrasts that are equivalent
+    to the ANOVA-type approach. This is why the top row of the default \f${\bf Q}\f$
+    matrix is missing: there is no hypothesis test about the coefficient for the
+    constant term. See the example below.
 \li This function uses the \ref designated syntax for inputs.
+
+\include f_test.c
 */
 APOP_VAR_HEAD apop_data * apop_f_test (apop_model *est, apop_data *contrast){
     apop_model *apop_varad_var(est, NULL)

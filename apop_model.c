@@ -206,15 +206,12 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]){
     return out; 
 }
 
-/** estimate the parameters of a model given data.
+/** Estimate the parameters of a model given data.
 
-This function copies the input model, preps it, and calls \c
-m.estimate(d, m). If your model has no \c estimate method, then I
-assume \c apop_maximum_likelihood(d, m), with the default MLE params.
-
-I assume that you are using this function rather than directly calling the
-model's the \c estimate method. For example, the \c estimate
-method may assume that \c apop_prep has already been called.
+This function copies the input model, preps it (see \ref apop_prep), and calls \c
+m.estimate(d, m) (which users are encouraged to never call directly). If your model
+has no \c estimate method, then call \c apop_maximum_likelihood(d, m), with the default
+MLE settings.
 
 \param d    The data
 \param m    The model
@@ -389,14 +386,13 @@ int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params);//
 
 /** Draw from a model. 
 
-\param out An already-allocated array of <tt>double</tt>s to be filled by the draw method. This probably has size <tt>your_model->dsize</tt>.
+\param out An already-allocated array of <tt>double</tt>s to be filled by the draw method. It must have size <tt>m->dsize</tt>.
 \param r   A \c gsl_rng, probably allocated via \ref apop_rng_alloc. Optional; if \c NULL, then I will call \ref apop_rng_get_thread for an RNG.
 \param m   The model from which to make draws.
 
-\li If the model has its own \c draw method, then use that.
-\li If the model is univariate, use \ref apop_arms_draw to generate random draws.
-\li If the model is multivariate, use \ref apop_model_metropolis to generate random draws.
-
+\li If the model has its own \c draw method, then this function will call it.
+\li Else, if the model is univariate, use \ref apop_arms_draw to generate random draws.
+\li Else, if the model is multivariate, use \ref apop_model_metropolis to generate random draws.
 \li This makes a single draw of the given size. See \ref apop_model_draws to fill a matrix with draws.
 
 \return Zero on success; nozero on failure. <tt>out[0]</tt> is probably \c NAN on failure.

@@ -657,8 +657,12 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     else   /* Conjugate Gradient*/   apop_maximum_likelihood_w_d(data, &info);
 }
 
-/** 
-  The simplest use of this function is to restart a model at the latest parameter estimates.
+/** Maximum likelihod searches are not guaranteed to find a global optimum, and it can be
+difficult to tune a search such that it covers a wide space, but also accurately hones in
+on the optimum. In both cases, one could restart the search using a different starting
+point or different parameters.
+
+The simplest use of this function is to restart a model at the latest parameter estimates.
 
   \code
 apop_model *m = apop_estimate(data, model_using_an_MLE_search);
@@ -679,18 +683,20 @@ apop_data_show(m);
   \endcode
 
 Only one estimate is returned, either the one you sent in or a new
-one. The loser (which may be the one you sent in) is freed. That is,
-there is no memory leak in the above loop.
+one. The loser (which may be the one you sent in) is freed, to prevent memory leaks.
 
- \param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
- \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
+\param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
+\param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
  to the parameters of <tt>e</tt>). If this is <tt>NULL</tt>, then copy <tt>e</tt>. (Default = \c NULL)
- \param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates); "es"= starting point originally used by the first model; "np"=current parameters of the new (second) model; "ns"=starting point specified by the new model's MLE settings. (default = "ep")
- \param boundary I test whether the starting point you give me is outside this certain bound, so I can warn you if there's divergence in your sequence of re-estimations. (default: 1e8)
+\param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates)<br>
+"es"= starting point originally used by the first model<br>
+"np"=current parameters of the new (second) model<br>
+"ns"=starting point specified by the new model's MLE settings. (default = "ep")
+\param boundary I test whether the starting point you give me has magintude greater
+ than this bound, so I can warn you if there's divergence in your sequence of
+ re-estimations. (default: 1e8)
 
-\return         At the end of this procedure, we'll have two \ref
-    apop_model structs: the one you sent in, and the one produced using the
-    new method/scale. If the new estimate includes any NaNs/Infs, then
+\return  If the new estimated parameters  include any NaNs/Infs, then
     the old estimate is returned (even if the old estimate included
     NaNs/Infs). Otherwise, the estimate with the largest log likelihood
     is returned.

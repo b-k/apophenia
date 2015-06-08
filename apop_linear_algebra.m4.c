@@ -365,14 +365,12 @@ static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,
 
 /** A convenience function for dot products, which requires less prep and typing than the <tt>gsl_cblas_dgexx</tt> functions.
 
-Second, it makes some use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
-
-\li This function uses the \ref designated syntax for inputs.
+It makes use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
 \param form1 't' or 'p': transpose or prime \c d1->matrix, or, if \c d1->matrix is \c NULL, read \c d1->vector as a row vector.<br>
-                    'n' or 0: no transpose. (the default)<br>
+                    'n' or 0: use matrix if present; no transpose. (the default)<br>
                     'v': ignore the matrix and use the vector.
 
 \param form2 As above, with \c d2.
@@ -387,32 +385,28 @@ Second, it makes some use of the semi-overloading of the \ref apop_data structur
 
 \li Some systems auto-transpose non-conforming matrices. You input a \f$3 \times 5\f$ and
 a \f$3 \times 5\f$ matrix, and the system assumes that you meant to transpose the second,
-producing a \f$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3\f$ output. Apophenia
+producing a \f$(3 \times 5) \cdot (5 \times 3) \rightarrow (3 \times 3)\f$ output. Apophenia
 does not do this. First, it's ambiguous whether the output should be \f$3 \times 3\f$
 or \f$5 \times 5\f$. Second, your next run might have three observations, and two \f$3 \times 3\f$ 
 matrices don't require transposition; auto-transposition thus creates situations where
 bugs can pop up on only some iterations of a loop.
-
-\li For a vector \f$cdot\f$ a matrix, the vector is always treated as a row vector,
-meaning that a \f$3\times 1\f$ dot a \f$3\times 4\f$ matrix is correct, and produces a
-\f$1 \times 4\f$ vector.  For a vector \f$cdot\f$ a matrix, the vector is always treated
-as a column vector. Requests for transposition are ignored.  
-
+\li For a vector \f$\cdot\f$ a matrix, the vector is always treated as a row vector,
+meaning that a \f$(3\times 1)\f$ dot a \f$(3\times 4)\f$ matrix is correct, and produces a
+\f$(1 \times 4)\f$ vector.  For a matrix \f$\cdot\f$ a vector, the vector is always treated
+as a column vector. Requests for transposing the vector are ignored in both cases.  
 \li As a corrollary to the above rule, a vector dot a vector always produces a scalar,
  which will be put in the zeroth element of the output vector;
 see the example. 
-
 \li If you want to multiply an \f$N \times 1\f$ vector \f$\cdot\f$ a \f$1 \times N\f$
-matrix produce an \f$N \times N\f$ matrix, then use \ref apop_vector_to_matrix to turn
+vector to produce an \f$N \times N\f$ matrix, then use \ref apop_vector_to_matrix to turn
 your vectors into matrices; see the example.
-
-
 \li A note for readers of <em>Modeling with Data</em>: the awkward instructions on using
 this function on p 130 are now obsolete, thanks to the designated initializer syntax
 for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt>
 a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers
 to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0,
 't')</tt>
+\li This function uses the \ref designated syntax for inputs.
 
 Sample code:
 \include dot_products.c

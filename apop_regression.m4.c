@@ -4,13 +4,7 @@
 #include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
 
-/** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
-
-\param est  The \ref apop_model, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
-
-Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
-
-*/
+/* For use by MLE, OLS, et al. Available for public use, but undocumented. */
 void apop_estimate_parameter_tests (apop_model *est){
     Nullcheck_p(est, )
     if (!est->data) return;
@@ -490,7 +484,7 @@ keeps you from finding the \f$R^2\f$ of, say, a kernel smooth; it is up to you t
 whether such a thing is appropriate to your given models and situation.
 
 \li <tt>apop_estimate(yourdata, apop_ols)</tt> does this automatically
-\li If I don't find a Predicted page, I throw an error on the screen and return \c NULL.
+\li If I don't find a <tt>"<Predicted>"</tt> page, I print an error (iff <tt>apop_opts.verbose >=0</tt>) and return \c NULL.
 \li The number of observations equals the number of rows in the Predicted page
 \li The number of independent variables, needed only for the adjusted \f$R^2\f$, is from the
 number of columns in the main data set's matrix (i.e. the first page; i.e. the set of

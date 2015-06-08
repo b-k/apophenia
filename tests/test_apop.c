@@ -65,12 +65,6 @@ int verbose = 1;
 void test_nan_data();
 void db_to_text();
 
-void apop_data_scale (apop_data *d, double scale){
-    if (d->vector) gsl_vector_scale(d->vector, scale);
-    if (d->matrix) gsl_matrix_scale(d->matrix, scale);
-}
-
-
 void v_pow10(double *in){ *in = pow(10,*in);}
 double log_for_map(gsl_vector *v){apop_vector_log(v); return apop_sum(v);}
 double log_by_val(double x){return x;}
@@ -461,28 +455,6 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, vv);
     assert(fabs(apop_vector_sum(prediction)) < tol5);
-}
-
-/** I claim that the F test calculated via apop_F_test(est, NULL, NULL)
- equals a transformation of R^2 (after a normalization step).
-*/
-void test_f(apop_model *est){
-    apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
-    apop_data *constr= apop_data_calloc(est->parameters->vector->size-1, est->parameters->vector->size);
-    int i;
-    for (i=1; i< est->parameters->vector->size; i++)
-        apop_data_set(constr, i-1, i, 1);
-    apop_data *ftab = apop_F_test(est, constr);
-    apop_data *ftab2 = apop_F_test(est, NULL);
-    //apop_data_show(ftab);
-    //apop_data_show(ftab2);
-    double n = est->data->matrix->size1;
-    double K = est->parameters->vector->size-1;
-    double r = apop_data_get(rsq, .rowname="R squared");
-    double f = apop_data_get(ftab, .rowname="F statistic");
-    double f2 = apop_data_get(ftab2, .rowname="F statistic");
-    Diff (f , r*(n-K)/((1-r)*K) , tol5);
-    Diff (f2 , r*(n-K)/((1-r)*K) , tol5);
 }
 
 void test_OLS(gsl_rng *r){
@@ -1290,7 +1262,6 @@ int main(int argc, char **argv){
     do_test("test vector/matrix realloc", test_resize());
     do_test("test_vector_moving_average", test_vector_moving_average());
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
-    do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
     do_test("OLS test", test_OLS(r));
     do_test("test jackknife covariance", test_jack(r));
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
