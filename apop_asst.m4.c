@@ -97,13 +97,13 @@ APOP_VAR_ENDHEAD
 
 \li There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation. 
 
-\li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=1</tt>
+\li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=0</tt>
 
 For example: 
 
 \include test_harmonic.c
 */
-double apop_generalized_harmonic(int N, double s){
+long double apop_generalized_harmonic(int N, double s){
 /* 
 Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
@@ -113,7 +113,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
     static double *  eses	= NULL;
     static int * 	 lengths= NULL;
     static int		 count	= 0;
-    static double ** precalced=NULL;
+    static long double ** precalced=NULL;
     int	old_len, i;
     OMP_critical(generalized_harmonic)
     { //Due to memoization, this can't parallelize.
@@ -123,10 +123,10 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 	if (i == count){	//you need to build the vector from scratch.
 		count			++;
         i               = count - 1;
-		precalced 		= realloc(precalced, sizeof (double*) * count);
+		precalced 		= realloc(precalced, sizeof (long double*) * count);
 		lengths 		= realloc(lengths, sizeof (int*) * count);
 		eses 			= realloc(eses, sizeof (double) * count);
-		precalced[i]	= malloc(sizeof(double) * N);
+		precalced[i]	= malloc(sizeof(long double) * N);
 		lengths[i]	    = N;
 		eses[i]		    = s;
 		precalced[i][0]	= 1;
@@ -136,7 +136,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 		old_len = lengths[i];
 	}
 	if (N-1 >= old_len){	//It's there, but you need to extend what you have.
-		precalced[i] = realloc(precalced[i], sizeof(double) * N);
+		precalced[i] = realloc(precalced[i], sizeof(long double) * N);
 		for (int j = old_len; j<N; j++)
 			precalced[i][j] = precalced[i][j-1] + 1/pow((j+1),s);
 	}

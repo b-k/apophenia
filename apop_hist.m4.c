@@ -47,12 +47,15 @@ APOP_VAR_ENDHEAD
 
 /** Test the goodness-of-fit between two \ref apop_pmf models. 
 
+Let \f$o_i\f$ be the \f$i\f$th observed bin and \f$e_i\f$ the expected value of that
+bin; then under typical assumptions, $\f$\Sum_i^N (o_i-e_i)^2/e_i \sim \Chi^2_{N-1}\f$.
+
 If you send two histograms, I assume that the histograms are synced: for PMFs,
 you've used \ref apop_data_to_bins to generate two histograms using the same binspec,
 or you've used \ref apop_data_pmf_compress to guarantee that each observation value
 appears exactly once in each data set.
 
-In any case, you are confident that all values in the \c observed set appear in the \c
+In any case, all values in the \c observed set must appear in the \c
 expected set with nonzero weight; otherwise this will return a \f$\chi^2\f$ statistic
 of \c GSL_POSINF, indicating that it is impossible for the \c observed data to have
 been drawn from the \c expected distribution.

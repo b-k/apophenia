@@ -566,12 +566,9 @@ make_vtab_fns(apop_model_print)
 /** \endcond */ //End of Doxygen ignore.
 
 
-
-
         //////Asst
 
-
-double apop_generalized_harmonic(int N, double s) __attribute__ ((__pure__));
+long double apop_generalized_harmonic(int N, double s) __attribute__ ((__pure__));
 
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
