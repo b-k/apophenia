@@ -11,6 +11,7 @@ EXTRA_TESTS = distribution_tests \
 	$(top_builddir)/eg/f_test \
 	$(top_builddir)/eg/fix_params \
 	$(top_builddir)/eg/hills2 \
+	$(top_builddir)/eg/jack \
 	$(top_builddir)/eg/jacobian \
 	$(top_builddir)/eg/ml_imputation \
 	$(top_builddir)/eg/pmf_test \

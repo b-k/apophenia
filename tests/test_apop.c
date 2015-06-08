@@ -700,6 +700,7 @@ static void super_broken_est(apop_data *d, apop_model *m){
     apop_normal->estimate(d, m);
 }
 
+//In my inattention, I wrote two jackknife tests: this one and eg/jack.c. So you get double the checks.
 void test_jackknife(gsl_rng *r){
     double pv[] = {3.09,2.8762};
     int len = 2000;
@@ -741,25 +742,6 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
     apop_data_free(out3);
     apop_model_free(m);
 }
-
-//In my inattention, I wrote two jackknife tests. So you get double the checks.
-int test_jack(gsl_rng *r){
-  int i, draws     = 1000;
-  apop_data *d = apop_data_alloc(draws, 1);
-  apop_model *m = apop_normal;
-  double pv[] = {1., 3.};
-    m->parameters = apop_data_fill_base(apop_data_alloc(2), pv);
-    for (i =0; i< draws; i++)
-        m->draw(apop_data_ptr(d, i, 0), r, m); 
-    apop_data *out = apop_jackknife_cov(d, m);
-    double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
-                + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
-                +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
-    apop_data_free(d);
-    apop_data_free(out);
-    return (error < 1e-2);//still not very accurate.
-}
-
 
 void test_multivariate_normal(){
     int len = 5e5;
@@ -1263,7 +1245,6 @@ int main(int argc, char **argv){
     do_test("test_vector_moving_average", test_vector_moving_average());
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
     do_test("OLS test", test_OLS(r));
-    do_test("test jackknife covariance", test_jack(r));
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());

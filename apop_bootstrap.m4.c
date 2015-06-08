@@ -29,24 +29,24 @@ gsl_rng *apop_rng_alloc(int seed){
 
 /** Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
 
-The basic algorithm for the jackknife (with many details glossed over): create a sequence of data
+The basic algorithm for the jackknife (glossing over the details): create a sequence of data
 sets, each with exactly one observation removed, and then produce a new set of parameter estimates 
 using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.
 
-Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.
+\li Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models
+    that are closer to linear. The worse a linear approximation does (at the given data),
+    the worse the jackknife approximates the variance.
 
-Sample usage:
-\code
-apop_data_show(apop_jackknife_cov(your_data, your_model));
-\endcode
- 
 \param in	    The data set. An \ref apop_data set where each row is a single data point.
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
 \exception out->error=='n'   \c NULL input data.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \see apop_bootstrap_cov
- */
+
+For example:
+\include jack.c
+*/
 apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     Apop_stopif(!in, apop_return_data_error(n), 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
