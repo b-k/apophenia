@@ -248,7 +248,7 @@ Apop_var_declare( gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char 
 
 //From matrix
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
-apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
+Apop_var_declare( apop_data *apop_db_to_crosstab(char const*tabname, char const*row, char const*col, char const*data, char is_aggregate) )
 
 //From array
 Apop_var_declare( gsl_vector * apop_array_to_vector(double *in, int size) )

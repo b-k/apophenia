@@ -82,37 +82,40 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
     Apop_assert_c(0, -2, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
-/**Give the name of a table in the database, and names of three of its
-columns: the x-dimension, the y-dimension, and the data.
-the output is a 2D matrix with rows indexed by r1 and cols by
-r2.
+/**Give the name of a table in the database, and optional names of three of its columns:
+the x-dimension, the y-dimension, and the data. The output is a 2D matrix with rows
+indexed by 'row' and cols by 'col' and the cells filled with the entry in the 'data' column.
 
-\param tabname The database table I'm querying. Anything that will work inside a \c from clause is OK, such as a subquery in parens.
-\param r1 The column of the data set that will indicate the rows of the output crosstab
-\param r2 The column of the data set that will indicate the columns of the output crosstab
-\param datacol The column of the data set holding the data for the cells of the crosstab
+\param tabname The database table I'm querying. Anything that will work inside a \c from clause is OK, such as a subquery in parens. (no default; must not be \c NULL)
+\param row The column of the data set that will indicate the rows of the output crosstab (no default; must not be \c NULL)
+\param col The column of the data set that will indicate the columns of the output crosstab (no default; must not be \c NULL)
+\param data The column of the data set holding the data for the cells of the crosstab (default: <tt>count(*)</tt>)
+\param is_aggregate Set to \c 'y' if the \c data is a function like <tt>count(*)</tt>
+    or <tt>sum(col)</tt>. That is, set to \c 'y' if querying this would require a <tt>group
+    by</tt> clause. (default: if I find an end-paren in \c datacol, \c 'y'; else \c 'n'.)
 
-\li  If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
-
-\li This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple \c select query to generate the data. One is to specify an ad hoc table to pull from:
-
-\code
-apop_data * out = apop_db_to_crosstab("(select row, col, count(*) ct from base_data group by row, col)", "row", "col",  "ct");
-\endcode
-
-The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:
-
-\code
-apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col", "count(*)");
-//which will expand to "select row, col, count(*) from base_data group by row, col"
-\endcode
-
-\see \ref apop_crosstab_to_db
+\li  If the query to get data to fill the table (select row, col, data from
+    tabname) returns an empty data set, then I will return a \c NULL data set and if
+    <tt>apop_opts.verbosity >= 1</tt> print a warning.
 
 \exception out->error='n' Name not found error.
 \exception out->error='q' Query returned an empty table (which might mean that it just failed).
+
+\li The simplest use is to get a tally of how often (r1, r2) appears in the data via <tt>apop_db_to_crosstab("datatab", "r1", "r2")</tt>.
+\li If you want a 1-D crosstab, omit the other dimension. Or omit both to get a grand tally of your statistic for the entire table.
+\li There is a commnad-line tool, <tt>apop_db_to_crosstab</tt> that calls this function.
+\li This function uses the \ref designated syntax for inputs.
 */
-apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
+APOP_VAR_HEAD apop_data *apop_db_to_crosstab(char const*tabname, char const*row, char const* col, char const*data, char is_aggregate){
+    char const* apop_varad_var(tabname, NULL);
+    Apop_stopif(!tabname, return NULL, 1, "Missing tabname. Returning NULL.");
+    char const* apop_varad_var(row, "1");
+    char const* apop_varad_var(col, "1");
+    char const* apop_varad_var(data, "count(*)");
+    //This '(' balances the end-paren below, keeping m4 from losing the thread.
+    //Note the transitional check for "group by", which we should one day remove.
+    char apop_varad_var(is_aggregate, (strchr(data, ')') && !strstr(data, "group by"))?'y':'n');
+APOP_VAR_ENDHEAD
     gsl_matrix *out=NULL;
     int	i, j=0;
     apop_data *pre_d1=NULL, *pre_d2=NULL, *datachars=NULL;
@@ -120,19 +123,26 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 
     char p = apop_opts.db_name_column[0];
     apop_opts.db_name_column[0]= '\0';//we put this back at the end.
-    datachars = apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    Apop_stopif(!datachars, return NULL, 1, "selecting %s, %s, %s from %s returned an empty table.",  r1, r2, datacol, tabname);
-    Apop_stopif(datachars->error, goto bailout, 0, "error selecting %s, %s, %s from %s.",  r1, r2, datacol, tabname);
+    char *Q;
+
+    Asprintf(&Q, "select %s, %s, %s from %s %s %s %s %s", row, col, data, tabname,
+                                    is_aggregate!='n' ? "group by" : "",
+                                    is_aggregate!='n' ? row : "",
+                                    is_aggregate!='n' ? "," : "",
+                                    is_aggregate!='n' ? col : "");
+    datachars = apop_query_to_text("%s", Q);
+    Apop_stopif(!datachars, free(Q); return NULL, 2, "[%s] returned an empty table.", Q);
+    Apop_stopif(datachars->error, free(Q); goto bailout, 0, "error from [%s].", Q);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
-    pre_d1 = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    Apop_stopif(!pre_d1||pre_d1->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
+    pre_d1 = apop_query_to_text("select distinct %s, 1 from %s order by %s", row, tabname, row);
+    Apop_stopif(!pre_d1||pre_d1->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", row, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
-	pre_d2 = apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-    Apop_stopif(!pre_d2||pre_d2->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
+	pre_d2 = apop_query_to_text("select distinct %s from %s order by %s", col, tabname, col);
+    Apop_stopif(!pre_d2||pre_d2->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", row, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -666,18 +676,20 @@ APOP_VAR_ENDHEAD
 	return set;
 }
 
-/** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
-    to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
+/** This is the complement to \ref apop_data_pack, qv. It writes the \c gsl_vector
+    produced by that function back to the \ref apop_data set you provide. It overwrites
+    the data in the vector and matrix elements and, if present, the \c weights (and
+    that's it, so names or text are as before).
 
-\param in A \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
+\param in A \c gsl_vector of the form produced by \ref apop_data_pack. No default; must not be \c NULL.
 \param d  That data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
 \param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
-same thing when you both pack and unpack. Default: <tt>'n'</tt>.
+same thing when you both pack and unpack. (Default: \c 'n').
 
-\li If I get to the end of the first page and have more vector to unpack, and the data to
-fill has a \c more element, then I will continue into subsequent pages.
-
+\li If I get to the end of the first page of the \c apop_data set and have more
+    entries in the vector to unpack, and the data to fill has a \c more element,
+    then I will continue into subsequent pages.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){

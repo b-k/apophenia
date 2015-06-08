@@ -54,21 +54,28 @@ static void get_db_type(){
 /** If you want to use a database on the hard drive instead of memory, then call this
 once and only once before using any other database utilities.
 
-If you want a disposable database which you won't use after the program ends, don't bother with this function.
+With SQLite, if you want a disposable database which you won't use after the program
+ends, don't bother with this function.
 
-The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<tt>sqlite3</tt>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
+The trade-offs between an on-disk database and an in-memory db are as one would expect:
+memory is faster, but the database is destroyed when the program exits.
 
 MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set \c apop_opts.db_engine = 'm'.
 
-The Apophenia package assumes you are only using a single SQLite database at a time. You can use the SQL <tt>attach</tt> function to load other databases, or see <a href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further suggestions and sample code.
+The Apophenia package assumes you are only using a single database at a time. You
+can use the SQL <tt>attach</tt> function to load other databases, or see <a
+href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further
+suggestions and sample code.
 
-When you are done doing your database manipulations, be sure to call \ref apop_db_close if writing to disk.
+When you are done doing your database manipulations, call \ref apop_db_close if writing to disk.
 
 \param filename
 The name of a file on the hard drive on which to store the database. If
 <tt>NULL</tt>, then the database will be kept in memory (in which case,
 the other database functions will call this function for you and you
 don't need to bother).
+
+\li See \ref sqlsec for mroe notes on using databases.
 
 \return 0: everything OK<br>
         1: database did not open.

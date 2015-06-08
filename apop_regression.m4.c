@@ -272,9 +272,10 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 \exception out->error=='a' allocation error
 \exception out->error=='d' dimension error
 
+\li Use \ref apop_data_get_factor_names to get the list of category names.
 \li NaNs appear at the end of the sort order.
-\li This function uses the \ref designated syntax for inputs.
 \li See \ref fact for further discussion.
+\li This function uses the \ref designated syntax for inputs.
 
 \see \ref apop_data_to_factors
 */
@@ -368,11 +369,12 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 \exception out->error=='a' allocation error.
 \exception out->error=='d' dimension error.
 
-\li  If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
-\li This function uses the \ref designated syntax for inputs.
+\li If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
+\li Use \ref apop_data_get_factor_names to get the list of category names.
 \li See \ref fact for further discussion.
+\li This function uses the \ref designated syntax for inputs.
 
-\see \ref apop_data_to_factors
+\see \ref apop_data_to_dummies
 */
 APOP_VAR_HEAD apop_data *apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
     apop_data *apop_varad_var(data, NULL)

@@ -1065,24 +1065,25 @@ also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.) 
 copying, these other elements won't be present; if <tt>.inplace='y'</tt>, it is up to you to
 handle these not-transposed elements correctly.
 
-\param in The input \ref apop_data set. If \c NULL, I return \c NULL. Default is \c NULL.
-\param transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
+\param in The input \ref apop_data set. If \c NULL, I return \c NULL. (default: \c NULL)
+\param transpose_text If \c 'y', then also transpose the text element. (default: \c 'y')
 \param inplace If \c 'y', transpose the input in place; if \c 'n', produce a transposed
 copy, leaving the original untouched. Due to how <tt>gsl_matrix_transpose_memcpy</tt>
-works, a copy will still be made, then copied to the original location.  Default is \c 'y'.
-\return  If <tt>inplace=='n'</tt>, a newly alloced \ref apop_data set, with the appropriately transposed
-matrix and/or text. The vector and weights elements will be \c NULL. If
-<tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.<br>
-if <tt>inplace=='y'</tt>, a pointer to the original data set, with matrix and (if <tt>transpose_text='y'</tt>)
-text transposed and vector and weights left in place untouched.
+works, a copy will still be made, then copied to the original location.  (default: \c 'y')
+
+\return  If <tt>inplace=='n'</tt>, a newly alloced \ref apop_data set, with the
+appropriately transposed matrix and/or text. The vector and weights elements will be
+\c NULL. If <tt>transpose_text='n'</tt>, then the text element of the output set will
+also be \c NULL.<br> if <tt>inplace=='y'</tt>, a pointer to the original data set,
+with matrix and (if <tt>transpose_text='y'</tt>, text) transposed and vector and weights
+left in place untouched.
 
 \li Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input).
 \li If only the matrix or only the text have names, then the one set of names is written to the row names of the output.
 \li If both matrix column names and text column names are present, text column names are lost.
 \li if you have a \c gsl_matrix with no names or text, you may prefer to use \c gsl_matrix_transpose_memcpy.
-
 \li This function uses the \ref designated syntax for inputs.
- */ 
+*/ 
 APOP_VAR_HEAD apop_data * apop_data_transpose(apop_data *in, char transpose_text, char inplace){
     apop_data * apop_varad_var(in, NULL);
     Apop_stopif(!in, return NULL, 1, "Transposing a NULL data set; returning NULL.");
