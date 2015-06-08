@@ -410,7 +410,6 @@ Apop_var_declare( double apop_vector_cov(gsl_vector const *v1, gsl_vector const 
 Apop_var_declare( double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm) )
 
 Apop_var_declare( void apop_vector_normalize(gsl_vector *in, gsl_vector **out, const char normalization_type) )
-void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);

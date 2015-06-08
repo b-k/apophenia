@@ -156,7 +156,8 @@ void test_normalizations(gsl_vector *v){
     gsl_vector_add_constant(v, 8);
     apop_data dv = (apop_data){.matrix=apop_vector_to_matrix(v)};
     apop_data_transpose(&dv);
-    apop_matrix_normalize(dv.matrix, 'r', 's');
+    for (int i=0; i< dv.matrix->size1; i++)
+        apop_vector_normalize(Apop_rv(&dv, i), NULL, 's');
     apop_data *dvagain = apop_data_transpose(&dv, .inplace='n');
     apop_data *sum = apop_data_summarize(dvagain);
     apop_data_free(dvagain);

@@ -87,7 +87,11 @@ double apop_matrix_determinant(const gsl_matrix *in) {
 
 /** Principal component analysis: hand in a matrix and (optionally) a number of desired dimensions, and I'll return a data set where each column of the matrix is an eigenvector. The columns are sorted, so column zero has the greatest weight. The vector element of the data set gives the weights.
 
-You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
+You may also specify the number of elements your principal component space should have. If
+this is equal to the rank of the space in which the input data lives, then the sum of
+weights will be one. If the dimensions desired is less than that (probably so you can
+prepare a plot), then the weights will be accordingly smaller, giving you an indication
+of how much variation these dimensions explain.
 
 \param data The input matrix. (No default. If \c NULL, return \c NULL and print a warning iff <tt>apop_opts.verbose >= 1</tt>.)
 I modify int in place so that each column has mean zero.
@@ -117,7 +121,10 @@ APOP_VAR_ENDHEAD
     Apop_stopif(!eigenvectors || !dummy_v || !all_evalues || !square, pc_space->error='a'; return pc_space, 
                 0, "Allocation error setting up workspace for %zu dimensions.", data->size2);
     double eigentotals	= 0;
-    apop_matrix_normalize(data, 'c', 'm');
+    for (int i=0; i< data->size2; i++){
+        Apop_matrix_col(data, i, onecol);
+        apop_vector_normalize(onecol, NULL, 'm');
+    }
 	Checkgsl(gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square))
 	Checkgsl(gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v))
 	for (int i=0; i< all_evalues->size; i++)

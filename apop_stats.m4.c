@@ -313,28 +313,6 @@ APOP_VAR_END_HEAD
 	}
 }
 
-/** Normalize  each row or column in the given matrix, one by one.
-
-  Basically just a convenience fn to iterate through the columns or rows and run \ref apop_vector_normalize for you.
-
-\param data     The data set to normalize.
-\param row_or_col   Either 'r' or 'c'.
-\param normalization     see \ref apop_vector_normalize.
-*/
-void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
-    Apop_stopif(!data, return, 2, "input matrix is NULL. Doing nothing.");
-    if (row_or_col == 'r')
-        for (size_t j = 0; j < data->size1; j++){
-            Apop_matrix_row(data, j, v);
-            apop_vector_normalize(v, NULL, normalization);
-        }
-    else
-        for (size_t j = 0; j < data->size2; j++){
-            Apop_matrix_col(data, j, v);
-            apop_vector_normalize(v, NULL, normalization);
-        }
-}
-
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
 
   \param m	the matrix to be summed. 
@@ -370,13 +348,19 @@ double apop_matrix_mean(const gsl_matrix *data){
 
 /** Returns the mean and population variance of all elements of a matrix.
  
-  \li If you want sample variance, multiply the result returned by <tt>(data->size1*data->size2)/(data->size1*data->size2-1.0)</tt>.
+\li If \c NULL, return \f$\mu=0, \sigma^2=NaN\f$.
+\li Gives the population variance (sum of squares divided by \f$N\f$).  
+If you want sample variance, multiply the result by \f$N/(N-1)\f$:
+\code
+double mu, var;
+apop_data *data= apop_query_to_data("select * from indata");
+apop_matrix_mean_and_var(data->matrix, &mu, &var);
+var *= (data->size1*data->size2)/(data->size1*data->size2-1.0);
+\endcode
 
 \param data	the matrix to be averaged. 
 \param	mean	where to put the mean to be calculated.
 \param	var	where to put the variance to be calculated.
-
-\li If \c NULL, return (zero, NaN).
 */
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
     if (!data) {*mean=0; *var=GSL_NAN; return;}
@@ -769,7 +753,8 @@ APOP_VAR_ENDHEAD
             Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
                                                 "to-distribution doesn't (which produces infinite divergence).");
         }
-        apop_matrix_normalize(draw_list->matrix, 'v', 'p');
+        apop_vector_normalize(Apop_cv(draw_list, 0), NULL, 'p');
+        apop_vector_normalize(Apop_cv(draw_list, 1), NULL, 'p');
         div = apop_map_sum(draw_list, .fn_v=a_div);
     }
     return div;

@@ -153,7 +153,6 @@ apop_vector_distance_base;
 variadic_apop_vector_distance;
 apop_vector_normalize_base;
 variadic_apop_vector_normalize;
-apop_matrix_normalize;
 apop_data_covariance;
 apop_data_correlation;
 apop_vector_entropy;

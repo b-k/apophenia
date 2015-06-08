@@ -1198,7 +1198,6 @@ One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_s
 \li\ref apop_vector_log10 : take the log (base 10) of every element of a vector
 \li\ref apop_vector_distance : find the distance between two vectors via various metrics
 \li\ref apop_vector_normalize : scale/shift a matrix to have mean zero, sum to one, et cetera
-\li\ref apop_matrix_normalize : apply \ref apop_vector_normalize to every column or row of a matrix
 \li\ref apop_vector_entropy : calculate the entropy of a vector of frequencies or probabilities
 
     See also:
