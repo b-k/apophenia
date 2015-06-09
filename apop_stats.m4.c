@@ -322,7 +322,7 @@ long double apop_matrix_sum(const gsl_matrix *m){
     long double	sum	= 0;
 	for (size_t j=0; j< m->size1; j++)
 		for (size_t i=0; i< m->size2; i++)
-			sum     += gsl_matrix_get(m, j, i);
+			sum += gsl_matrix_get(m, j, i);
 	return sum;
 }
 

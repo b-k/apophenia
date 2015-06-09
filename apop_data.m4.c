@@ -616,7 +616,7 @@ allocation:
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
-\see apop_data_prune_columns
+\see \ref apop_data_prune_columns
 */
 static void apop_name_rm_columns(apop_name *n, int *drop){
     apop_name *newname = apop_name_alloc();
@@ -636,6 +636,25 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
 }
 
 
+static gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
+    int ct  = 0,  //how many columns will not be dropped?
+        j   = 0;
+    for (size_t i=0; i < in->size2; i++)
+        if (drop[i]==0)
+            ct++;
+    if (ct == in->size2) return apop_matrix_copy(in);
+    if (ct == 0)         return NULL;
+    gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
+    for (size_t i=0; i < in->size2; i++){
+        if (drop[i]==0){
+            gsl_vector *v = Apop_cv(&(apop_data){.matrix=in}, i);
+            gsl_matrix_set_col(out, j, v);
+            j   ++;
+        }
+    }
+    return out;
+}
+
 /** Remove the columns of the \ref apop_data set corresponding to a nonzero value in the \c drop vector.
 
 \li The returned data structure looks like it was modified in place, but the data
@@ -647,6 +666,7 @@ up more than half of your memory, this may not work.
 output. A reminder: <tt>calloc(in->size2 , sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
+\ref apop_data_rm_rows
 */
 void apop_data_rm_columns(apop_data *d, int *drop){
     gsl_matrix *freeme = d->matrix;
@@ -1384,7 +1404,7 @@ typedef int (*apop_fn_ir)(apop_data*, void*);
     >=2</tt>. If you provide both, I will drop the row if either the vector has a one in
     that row's position, or if the function returns a nonzero value.
 \li This function uses the \ref designated syntax for inputs.
-\see apop_data_listwise_delete
+\see \ref apop_data_listwise_delete, \ref apop_data_rm_columns
 */  
 APOP_VAR_HEAD apop_data* apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
     apop_data* apop_varad_var(in, NULL);

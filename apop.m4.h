@@ -698,9 +698,8 @@ gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) ;
 double      apop_matrix_determinant(const gsl_matrix *in) ;
 //apop_data*  apop_sv_decomposition(gsl_matrix *data, int dimensions_we_want);
 Apop_var_declare( apop_data *  apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) )
-Apop_var_declare( gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace) )
-Apop_var_declare( gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace) )
-gsl_matrix * apop_matrix_rm_columns(gsl_matrix *in, int *drop);
+Apop_var_declare( gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector const * v2, char inplace) )
+Apop_var_declare( gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace) )
 
 void apop_vector_log(gsl_vector *v);
 void apop_vector_log10(gsl_vector *v);

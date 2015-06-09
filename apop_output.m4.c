@@ -71,7 +71,9 @@ static void white_pad(int ct){
         printf(" ");
 }
 
-/** This function prettyprints the \c apop_data set to a screen.
+/* This function prettyprints the \c apop_data set to a screen.
+
+It is currently not in the documentation. It'd be nice to merge this w/apop_data_print.
 
 This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up.  There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.
 
@@ -347,8 +349,7 @@ APOP_VAR_ENDHEAD
     apop_data_print(&(apop_data){.matrix=(gsl_matrix*)data}, Output_vars); //cheating on the const qualifier
 }
 
-/** Convenience function to dump a <tt>gsl_matrix</tt> to the screen.
-*/
+//leaving this undocumented for now.
 void apop_matrix_show(const gsl_matrix *data){
     apop_data_print_core(&(apop_data){.matrix=(gsl_matrix*)data},  stdout, 's');
 }

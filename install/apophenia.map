@@ -257,7 +257,6 @@ apop_vector_stack_base;
 variadic_apop_vector_stack;
 apop_matrix_stack_base;
 variadic_apop_matrix_stack;
-apop_matrix_rm_columns;
 apop_vector_log;
 apop_vector_log10;
 apop_vector_exp;

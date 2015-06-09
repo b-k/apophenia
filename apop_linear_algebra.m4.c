@@ -186,9 +186,9 @@ void apop_vector_exp(gsl_vector *v){
 
 \li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
+APOP_VAR_HEAD gsl_vector *apop_vector_stack(gsl_vector *v1, gsl_vector const * v2, char inplace){
     gsl_vector * apop_varad_var(v1, NULL);
-    gsl_vector * apop_varad_var(v2, NULL);
+    gsl_vector const * apop_varad_var(v2, NULL);
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
     gsl_vector *out;
@@ -220,15 +220,15 @@ APOP_VAR_ENDHEAD
 }
 
 /** Put the first matrix either on top of or to the right of the second matrix.
-  The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
+Returns a new matrix, meaning that at the end of this function, until you \c gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
 
-\param  m1  the upper/rightmost matrix (default=\c NULL, in which case this basically copies \c m2)
-\param  m2  the second matrix (default = \c NULL, in which case \c m1 is returned)
-\param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
-\param  inplace If 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
+\param  m1  the upper/rightmost matrix (default: \c NULL, in which case this copies \c m2)
+\param  m2  the second matrix (default: \c NULL, in which case \c m1 is returned)
+\param  posn    If \c 'r', stack rows on top of other rows. If \c 'c' stack  columns next to columns. (default: \c 'r')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 undisturbed. (default: \c 'n')
 \return     the stacked data, either in a new matrix or a pointer to \c m1.
 
-For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix. The original matrices are unchanged.
+For example, here is a function to merge four matrices into a single two-part-by-two-part matrix. The original matrices are unchanged.
 \code
 gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl, gsl_matrix *dr){
   gsl_matrix *output, *t;
@@ -242,9 +242,9 @@ gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl
 
 \li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace){
+APOP_VAR_HEAD gsl_matrix *apop_matrix_stack(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace){
     gsl_matrix *apop_varad_var(m1, NULL);
-    gsl_matrix *apop_varad_var(m2, NULL);
+    gsl_matrix const *apop_varad_var(m2, NULL);
     char apop_varad_var(posn, 'r');
     char apop_varad_var(inplace, 'n');
 APOP_VAR_ENDHEAD
@@ -276,7 +276,7 @@ APOP_VAR_ENDHEAD
             }
         }
         for (int i=m1size; i< m1size + m2->size1; i++){
-            tmp_vector  = gsl_matrix_row(m2, i- m1size);
+            gsl_vector_const_view tmp_vector = gsl_matrix_const_row(m2, i- m1size);
             gsl_matrix_set_row(out, i, &(tmp_vector.vector));
         }
         return out;
@@ -295,42 +295,11 @@ APOP_VAR_ENDHEAD
             }
         }
         for (int i=0; i< m2->size2; i++){
-            tmp_vector  = gsl_matrix_column(m2, i);
+            gsl_vector_const_view tmp_vector = gsl_matrix_const_column(m2, i);
             gsl_matrix_set_col(out, i+ m1size, &(tmp_vector.vector));
         }
         return out;
     } 
-}
-
-/** Delete columns from a matrix. 
-
-  This is done via copying, so if you have an exceptionally large
-  data set, you're better off producing the matrix in the perfect form
-  directly.
-
-\param in   the \c gsl_matrix to be subsetted
-\return     a \c gsl_matrix with the specified columns removed. If you ask me to remove no columns, I'll return a copy of the original. If you ask me to remove all columns, I'll return \c NULL.
-\param drop an array of <tt>int</tt>s. If use[7]==1, then column seven will be cut from the output. 
-*/
-gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-    int ct  = 0,  //how many columns will not be dropped?
-        j   = 0;
-    for (size_t i=0; i < in->size2; i++)
-        if (drop[i]==0)
-            ct++;
-    if (ct == in->size2)
-        return apop_matrix_copy(in);
-    if (ct == 0)
-        return NULL;
-    gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
-    for (size_t i=0; i < in->size2; i++){
-        if (drop[i]==0){
-            gsl_vector *v = Apop_cv(&(apop_data){.matrix=in}, i);
-            gsl_matrix_set_col(out, j, v);
-            j   ++;
-        }
-    }
-    return out;
 }
 
 /** Test for a situation when a vector is diverging,
