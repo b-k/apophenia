@@ -271,7 +271,6 @@ apop_db_open;
 apop_db_close_base;
 variadic_apop_db_close;
 apop_query;
-apop_query_to_matrix;
 apop_query_to_text;
 apop_query_to_data;
 apop_query_to_mixed_data;

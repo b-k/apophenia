@@ -119,9 +119,9 @@ void db_to_text(){
     assert(apop_data_get(de, 5, .colname="ab")==201);
     unlink("mixedtest");
 
-    gsl_matrix *as_matrix = apop_query_to_matrix("select ab from d");
+    apop_data *as_matrix = apop_query_to_data("select ab from d");
     gsl_vector *as_vector = apop_query_to_vector("select ab from d");
-    Apop_matrix_col(as_matrix, 0, mv);
+    Apop_matrix_col(as_matrix->matrix, 0, mv);
     gsl_vector_sub(as_vector, mv);
     Diff(apop_sum(as_vector), 0, 1e-10);
 
@@ -137,12 +137,10 @@ void test_blank_db_queries(){
     apop_query("create table t (a integer, b integer, c integer)");
     apop_data *d = apop_query_to_data("select * from t");
     apop_data *e = apop_query_to_text("select * from t");
-    gsl_matrix *f = apop_query_to_matrix("select * from t");
     gsl_vector *g = apop_query_to_vector("select * from t");
     double h = apop_query_to_float("select * from t");
     assert(d==NULL);
     assert(e==NULL);
-    assert(f==NULL);
     assert(g==NULL);
     assert(gsl_isnan(h));
 }
@@ -190,8 +188,8 @@ static void test_printing(){
     if (!apop_table_exists("nandata"))
         test_nan_data();
     strcpy(apop_opts.db_name_column, "head");
-    gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
-    apop_matrix_print(m, .output_name=outfile, .output_append='w');
+    apop_data *m  = apop_query_to_data("select * from nandata");
+    apop_matrix_print(m->matrix, .output_name=outfile, .output_append='w');
 
 apop_system("cp %s xxx", outfile);
 

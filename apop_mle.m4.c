@@ -35,7 +35,7 @@ typedef struct {
 
 static apop_model * find_roots (infostruct p); //see end of file.
 
-double default_delta = 1e-3;
+m4_define(<|default_delta|>,1e-3) //as a macro, we can put it in documentation
 
 /* Generate support fns (esp. initializers) for apop_mle_settings and apop_parts_wanted structs. */
 Apop_settings_copy(apop_parts_wanted, )
@@ -107,11 +107,12 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll,
     gsl_vector_free(beta);
 }
 
-/**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
+/**
+A wrapper around the GSL's one-dimensional \c gsl_deriv_central to find a numeric differential for each dimension of the input \ref apop_model's log likelihood (or \c p if \c log_likelihood is \c NULL).
 
 \param data The \ref apop_data set to use for all evaluations.
 \param model The \ref apop_model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
-\param delta The size of the differential. (default: 1e-3, but see below)
+\param delta The size of the differential. (default: default_delta, but see below)
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
@@ -119,7 +120,7 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll,
 
 \li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings
     group attached to the input model, and check that for a \c delta element. If that is
-    also missing, use the default of 1e-3.
+    also missing, use the default of default_delta.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
@@ -176,10 +177,10 @@ to do this for a very computationally-intensive model.]
 
 \param data The \ref apop_data at which the model was estimated (default: \c NULL)
 \param model The \ref apop_model, with parameters already estimated (no default, must not be \c NULL)
-\param delta the step size for the differentials. (default: 1e-3, but see below)
+\param delta the step size for the differentials. (default: default_delta, but see below)
 \return The matrix of estimated second derivatives at the given data and parameter values.
  
-\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of 1e-3.
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of default_delta.
 \li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta){
@@ -224,14 +225,15 @@ APOP_VAR_ENDHEAD
 
 I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens 2008 (who directly cribbed off of both) for further details. 
 
- \param data The data by which your model was estimated
- \param model A model whose parameters have been estimated.
- \param delta The differential by which to step for sampling changes.  (default currently = 1e-3)
- \return A covariance matrix for the data. Also, if the data does not have a
+\param data The data by which your model was estimated
+\param model A model whose parameters have been estimated.
+\param delta The differential by which to step for sampling changes. (default: default_delta, but see below)
+\return A covariance matrix for the data. Also, if the data does not have a
  <tt>"<Covariance>"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
  existing covariance page].  
 
-This function uses the \ref designated syntax for inputs.
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of default_delta.
+\li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta){
     apop_data * apop_varad_var(data, NULL);

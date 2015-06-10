@@ -1023,7 +1023,6 @@ int apop_db_open(char const *filename);
 Apop_var_declare( int apop_db_close(char vacuum) )
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
-gsl_matrix * apop_query_to_matrix(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_text(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_data(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...) __attribute__ ((format (printf,2,3)));

@@ -57,7 +57,7 @@ the search algorithm, then the search algorithm uses its usual rules to step to 
 candidate set of parameters. This provides slightly more flexibility in the search.
 
 \li <b>Estimations of mixture distributions can be sensitive to initial conditions.</b>
-You are encouraged to try a sequence random starting points for your model parameters.
+You are encouraged to try a sequence of random starting points for your model parameters.
 Some authors recommend plotting the data and eyeballing a guess as to the model parameters.
 
 Determining to which parts of a mixture to assign a data point is a
@@ -73,7 +73,7 @@ comes from, its likelihood can be calculated independently of all other observat
 \adoc    Parameter_format The parameters are broken out in a readable form in the
     settings group, so your best bet is to use those. See the sample code for usage.<br>
     The <tt>parameter</tt> element is a single vector piling up all elements, beginning
-    with the first $n-1$ weights, followed by an <tt>apop_data_pack</tt> of each model's
+    with the first \f$n-1\f$ weights, followed by an <tt>apop_data_pack</tt> of each model's
     parameters in sequence. Because all elements are in a single vector, one could run a
     maximum likelihood search for all components (including the weights) at once. Fortunately
     for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack

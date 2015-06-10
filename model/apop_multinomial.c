@@ -207,8 +207,9 @@ See \ref apop_data_to_dummies to do the aggregation (using the <tt>.keep_first='
 The numeraire is bin zero, meaning that \f$p_0\f$ is not explicitly listed, but is
 \f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
 the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example: 
+easily be produced by overwriting that first element. For example:
 \code 
+apop_model *estimated = apop_estimate(your_data, apop_multinomial);
 int n = apop_data_get(estimated->parameters, 0, -1); 
 apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
 \endcode

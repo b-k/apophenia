@@ -509,8 +509,8 @@ void test_inversion(gsl_rng *r){
 void test_summarize(){
     apop_table_exists("td", 'd');
     apop_text_to_db( DATADIR "/" "test_data" , .has_row_names= 0,1, .tabname = "td");
-    gsl_matrix *m = apop_query_to_matrix("select * from td");
-    apop_data *s = apop_data_summarize(&(apop_data){.matrix=m});
+    apop_data *m = apop_query_to_data("select * from td");
+    apop_data *s = apop_data_summarize(m);
     gsl_matrix_free(m);
     double t = gsl_matrix_get(s->matrix, 1,0);
     assert (t ==3);

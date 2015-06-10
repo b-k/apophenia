@@ -23,11 +23,20 @@
   \param output_name The name of the output file, if any. For a database, the table to write.
   \param output_pipe If you have already opened a file and have a \c FILE* on hand, use
   this instead of giving the file name.
-  \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
+  \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database
   \param output_append \c 'a' = append (default), \c 'w' = write over.
 
 At the end, \c output_name, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
+
+\li See \ref legi for more discussion.
+
+\li The default is output to stdout. For example,
+\code
+apop_data_print(your_data);
+//is equivalent to
+apop_data_print(your_data, .output_type='p', .output_pipe=stdout);
+\endcode
 
 \li Tip: if writing to the database, you can get a major speed boost by wrapping the call in a begin/commit wrapper:
 
@@ -46,7 +55,6 @@ int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_
     else if (!output_name && *output_pipe && !*output_type) *output_type = 'p';     
 
     if (*output_type =='p')      *output_pipe = *output_pipe ? *output_pipe: stdout;      
-    else if (*output_type =='s') *output_pipe = stdout; 
     else if (*output_type =='d') *output_pipe = stdout;  //won't be used.
     else *output_pipe = output_name
                         ? fopen(output_name, *output_append == 'a' ? "a" : "w")
@@ -328,8 +336,8 @@ APOP_VAR_ENDHEAD
         fclose(output_pipe);
 }
 
-/** Print a matrix in float format.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+/** Print a \c gsl_matrix to the screen, a file, a pipe, or a database table.
+You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also \ref Legi for more details and examples.

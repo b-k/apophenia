@@ -26,19 +26,31 @@ static apop_data * produce_t_test_output(int df, double stat, double diff){
 }
 
 /** Answers the question: with what confidence can I say that the means of these two columns of data are different?
-<tt>apop_paired_t_test</tt> answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
 If \c apop_opts.verbose is >=1, then display some information to stdout, like the mean/var/count for both vectors and the t statistic.
 
-\param {a, b} two columns of data
+\param a one column of data
+\param b another column of data
 \return an \ref apop_data set with the following elements:
-    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
-    t statistic:    used for the test<br>
-    df:             degrees of freedom<br>
-    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
-    confidence, 1 tail: 1- p value.
-    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
-    confidence, 2 tail: 1-p value
+    <tt>mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    <tt>t statistic</tt>:    used for the test<br>
+    <tt>df</tt>:             degrees of freedom<br>
+    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.
+    <tt>confidence, 1 tail</tt>: 1- p value.
+    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.
+    <tt>confidence, 2 tail</tt>: 1-p value
+
+Example usage:
+\code
+gsl_vector *L = apop_query_to_vector("select * from data where sex='M'");
+gsl_vector *R = apop_query_to_vector("select * from data where sex='F'");
+apop_data *test_out = apop_t_test(L, R);
+printf("Reject the null hypothesis of no difference between M and F with %g%% confidence\n", apop_data_get(test_out, .rowname="confidence, 2 tail"));
+\endcode
+
+\see \ref apop_paired_t_test, which answers the question: with what confidence can I
+say that the mean difference between the two columns is zero?
+
 */
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
     int a_count = a->size,
@@ -62,17 +74,20 @@ apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
 
 /** Answers the question: with what confidence can I say that the mean difference between the two columns is zero?
 
-If \c apop_opts.verbose is >=2, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
+If <tt>apop_opts.verbose >=2</tt>, then display some information, like the mean/var/count for both vectors and the t statistic, to stderr.
 
-\param {a, b} two columns of data
+\param a A column of data
+\param b A matched column of data
 \return an \ref apop_data set with the following elements:
-    mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
-    t statistic:    used for the test<br>
-    df:             degrees of freedom<br>
-    p value, 1 tail: the p-value for a one-tailed test that one vector mean is greater than the other.
-    confidence, 1 tail: 1- p value.
-    p value, 2 tail: the p-value for the two-tailed test that left mean = right mean.
-    confidence, 2 tail: 1-p value
+    <tt>mean left - right</tt>:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    <tt>t statistic</tt>:    used for the test<br>
+    <tt>df</tt>:             degrees of freedom<br>
+    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.
+    <tt>confidence, 1 tail</tt>: 1- p value.
+    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.
+    <tt>confidence, 2 tail</tt>: 1-p value
+
+\see \ref apop_t_test for an example, and for when the element-by-element difference between the vectors has no sensible interpretation.
 */
 apop_data * apop_paired_t_test(gsl_vector *a, gsl_vector *b){
     gsl_vector *diff = gsl_vector_alloc(a->size);

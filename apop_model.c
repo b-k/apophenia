@@ -9,11 +9,8 @@
 At close, the input model has parameters of the correct size.
 
 \li This is the default action for \ref apop_prep, and many models with a custom prep routine
-call \ref apop_model_clear at the end.
-\li \ref apop_estimate calls this function internally. 
+call \ref apop_model_clear at the end. Also, \ref apop_estimate calls this function internally, which means that you robably never have to call this function directly.
 \li If the model has already been prepped, this function should be a no-op.
-
-The above two points mean that you probably don't need to call this function directly.
 
 \param data If your params vary with the size of the data set, then the function needs a data set to calibrate against. Otherwise, it's OK to set this to \c NULL.
 \param model    The model whose output elements will be modified.
@@ -307,15 +304,15 @@ void distract_doxygen(){/*Doxygen gets thrown by the settings macros. This decoy
 For many models, the parameter estimates are well-known, such as the
 \f$t\f$-distribution of the parameters for OLS.
 
-For models where the distribution of \f$\hat{}p\f$ is not known, if you give me data, I
-will return a \ref apop_normal or \ref apop_multivariate_normal model, using the parameter estimates as mean and \ref apop_bootstrap_cov for the variances.
+For models where the distribution of \f$\hat{p}\f$ is not known, if you give me data, I
+will return an \ref apop_normal or \ref apop_multivariate_normal model, using the parameter estimates as mean and \ref apop_bootstrap_cov for the variances.
 
 If you don't give me data, then I will assume that this is a stochastic model where 
 re-running the model will produce different parameter estimates each time. In this case, I will
 run the model 1e4 times and return a \ref apop_pmf model with the resulting parameter
 distributions.
 
-Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{}p\f$.
+Before calling this, I expect that you have already run \ref apop_estimate to produce \f$\hat{p}\f$.
 
 The \ref apop_pm_settings structure dictates details of how the model is generated.
 For example, if you want only the distribution of the third parameter, and you know the
@@ -326,15 +323,17 @@ model via:
   apop_model *dist = apop_parameter_model(your_data, your_model);
 \endcode
 
+Some useful parts of \ref apop_pm_settings:
 \li \c index gives the position of the parameter (in \ref apop_data_pack order)
 in which you are interested. Thus, if this is zero or more, then you will get a
 univariate output distribution describing a single parameter. If <tt>index == -1</tt>,
 then I will give you the multivariate distribution across all parameters.  The default
 is zero (i.e. the univariate distribution of the zeroth parameter).
-\li \c rng If the method requires random draws (as the default bootstrap will), then use this. If you provide \c NULL and one is needed, I provide one for you via <tt>apop_rng_alloc(apop_opts.rng_seed++)</tt>.
 \li \c draws If there is no closed-form solution and bootstrap is inappropriate, then
 the last resort is a large numbr of random draws of the model, summarized into a PMF. Default: 1,000 draws.
-\li The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+\li \c rng If the method requires random draws, then use this. If you provide \c NULL and one is needed, I provide one for you via \ref apop_rng_get_thread.
+
+The default is via resampling as above, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
 
 \code
 typedef apop_model* (*apop_parameter_model_type)(apop_data *, apop_model *);
@@ -422,8 +421,15 @@ int apop_draw(double *out, gsl_rng *r, apop_model *m){
     return apop_draw(out, r, m);
 }
 
-/** The default prep is to simply call \ref apop_model_clear. If the
- function has a prep method, then that gets called instead.
+/** Allocate and initialize the \c parameters, \c info, and other requisite parts of a \ref apop_model.
+
+Some models have associated prep routines that also attach settings groups to the model, and set up additional special-case functions in vtables.
+
+\li The input model is modified in place.
+\li If called repeatedly, subsequent calls to \ref apop_prep are no-ops. Thus, a model
+    can not be re-prepped using a new data set or other conditions.
+\li The default prep is to simply call \ref apop_model_clear. If the
+    input \ref apop_model has a prep method, then that gets called instead.
 */
 void apop_prep(apop_data *d, apop_model *m){
     if (m->prep) m->prep(d, m);
@@ -434,27 +440,26 @@ static double disnan(double in) {return gsl_isnan(in);}
 
 /** A prediction supplies E(a missing value | original data, already-estimated parameters, and other supplied data elements ).
 
-For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable \f$y\f$ is unknown, so the system would predict that value. [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]
+For a regression, one would first estimate the parameters of the model, then supply a row of predictors <b>X</b>. The value of the dependent variable \f$y\f$ is unknown, so the system would predict that value.
 
-For a univariate model (i.e. a model in one-dimensional data space), there is only one variable to omit and fill in, so the prediction problem reduces to the expected value: E(a missing value | original data, already-estimated parameters).
+For a univariate model (i.e. a model in one-dimensional data space), there is only one variable to omit and fill in, so the prediction problem reduces to the expected value: E(a missing value | original data, already-estimated parameters). [In some models, this may not be the expected value, but is a best value for the missing item using some other meaning of `best'.]
 
-In other cases, prediction is the missing data problem: for three-dimensional data, you may supply the input (34, \c NaN, 12), and the parameterized model provides the most likely value of the middle
-parameter.
+In other cases, prediction is the missing data problem: for three-dimensional data,
+you may supply the input (34, \c NaN, 12), and the parameterized model provides the
+most likely value of the middle parameter given the parameters and known data.
 
-\li If you give me a \c NULL data set, I will assume you want all values filled in---the expected value.
+\li If you give me a \c NULL data set, I will assume you want all values filled in, for most models with the expected value.
 
 \li If you give me data with \c NaNs, I will take those as the points to
 be predicted given the provided data.
 
-If the model has no \c predict method, the default is to use the \ref apop_ml_impute function to do the work.
+If the model has no \c predict method, the default is to use the \ref apop_ml_impute function to do the work. That function does a maximum-likelihood search for the best parameters.
 
-\return If you gave me a non-\c NULL data set, I will return that, with the zeroth column or the \c NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
+\return If you gave me a non-\c NULL data set, I will return that, with the \c NaNs filled in.  If \c NULL input, I will allocate an \ref apop_data set and fill it with the expected values.
 
 There may be a second page (i.e., a \ref apop_data set attached to the <tt>->more</tt> pointer of the main) listing confidence and standard error information. See your specific model documentation for details.
 
-This segment of the framework is in beta---subject to revision of the details.
-
-\li The default is to use \ref apop_ml_impute, but special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+\li Special-case calculations for certain models are held in a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
 
 \code
 typedef apop_data * (*apop_predict_type)(apop_data *d, apop_model *params);

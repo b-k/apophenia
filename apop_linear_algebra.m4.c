@@ -93,13 +93,16 @@ weights will be one. If the dimensions desired is less than that (probably so yo
 prepare a plot), then the weights will be accordingly smaller, giving you an indication
 of how much variation these dimensions explain.
 
-\param data The input matrix. (No default. If \c NULL, return \c NULL and print a warning iff <tt>apop_opts.verbose >= 1</tt>.)
-I modify int in place so that each column has mean zero.
+\param data The input matrix.  I modify int in place so that each column has
+mean zero. (No default. If \c NULL, return \c NULL and print a warning iff
+<tt>apop_opts.verbose >= 1</tt>.)
 
-\param dimensions_we_want  (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
-The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
+\param dimensions_we_want The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues. (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
 
-\return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
+\return  Returns an \ref apop_data set whose matrix is the principal component
+space. Each column of the returned matrix will be another eigenvector; the columns
+will be ordered by the eigenvalues.
+
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
 \exception out->error=='a'  Allocation error.
 */
