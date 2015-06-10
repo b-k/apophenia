@@ -389,15 +389,15 @@ gsl_rng *apop_rng_get_thread_base(int thread){
 \exception out->error=='d' Trouble drawing from the distribution for at least one row. That row is set to all \c NAN.
 
 \li Prints a warning if you send in a non-<tt>NULL apop_data</tt> set, but its \c matrix element is \c NULL, when <tt>apop_opts.verbose>=1</tt>.
-
 \li See also \ref apop_draw, which makes a single draw.
-
 \li Random numbers are generated using RNGs from \ref apop_rng_get_thread, qv.
 
 Here is a two-line program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):
 
 \include draw_some_normals.c
- */
+
+\li This function uses the \ref designated syntax for inputs.
+*/
 APOP_VAR_HEAD apop_data *apop_model_draws(apop_model *model, int count, apop_data *draws){
     apop_model * apop_varad_var(model, NULL);
     Apop_stopif(!model, apop_return_data_error(n), 0, "Input model is NULL.");

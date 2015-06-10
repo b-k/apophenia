@@ -127,7 +127,7 @@ necessary data-parameter switching to make that happen.
 \param  mvn A parametrized \ref apop_model from which you expect the data was derived.
 if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
-\return An estimated <tt>apop_ml_impute_model</tt>. Also, the data input will be filled in and ready to use.
+\return An estimated \ref apop_model. Also, the data input will be filled in and ready to use.
 */
 apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     if (!mvn){

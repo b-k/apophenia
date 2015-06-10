@@ -7,6 +7,18 @@
 
 /** Allocates a name structure
 \return	An allocated, empty name structure.  In the very unlikely event that \c malloc fails, return \c NULL.
+
+Because \ref apop_data_alloc uses this to set up its output, you will rarely if ever
+need to call this function explicitly. You may want to use it if wrapping a \c gsl_matrix into an \ref apop_data set. For example, to put a title on a vector:
+
+\code
+apop_data *d = &(apop_data){.vector=your_vector, .names=apop_name_alloc()};
+apop_name_add(d->names, "A column of numbers", 'v');
+apop_data_print(d);
+
+...
+apop_name_free(d->names); //but d itself is auto-allocated; no need to free it.
+\endcode
 */
 apop_name * apop_name_alloc(void){
     apop_name * init_me = malloc(sizeof(apop_name));
@@ -20,9 +32,9 @@ apop_name * apop_name_alloc(void){
 \param n 	An existing, allocated \ref apop_name structure.
 \param add_me 	A string. If \c NULL, do nothing; return -1.
 \param type 	'r': add a row name<br>
-'c': add a column name<br>
-'t': add a text category name<br>
-'h': add a title (or a header. 't' is taken).<br>
+'c': add a matrix column name<br>
+'t': add a text column name<br>
+'h': add a title (i.e., a header).<br>
 'v': add (or overwrite) the vector name<br>
 \return 	Returns the number of rows/cols/depvars after you have added the new one. But if \c add_me is \c NULL, return -1.
 */

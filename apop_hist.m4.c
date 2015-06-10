@@ -13,32 +13,29 @@ Copyright (c) 2006--2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; 
 /** Make random draws from an \ref apop_model, and bin them using a binspec in the style
  of \ref apop_data_to_bins. If you have a data set that used the same binspec, you now have synced histograms, which you can plot or sensibly test hypotheses about.
 
-The output is normalized to integrate to one.
 
 \param binspec A description of the bins in which to place the draws; see \ref apop_data_to_bins. (default: as in \ref apop_data_to_bins.)
 \param model The model to be drawn from. Because this function works via random draws, the model needs to have a 
 \c draw method. (No default)
 \param draws The number of random draws to make. (arbitrary default = 10,000)
 \param bin_count If no bin spec, the number of bins to use (default: as per \ref apop_data_to_bins, \f$\sqrt(N)\f$)
-\param rng The \c gsl_rng used to make random draws. (default: an RNG from \ref apop_rng_get_thread)
 
-\return An \ref apop_pmf model.
+\return An \ref apop_pmf model, with a new binned data set attached (which you may
+have to <tt>apop_data_free(output_model->data)</tt> to prevent memory leaks). The
+weights on the data set are normalized to sum to one.
 
 \li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_model *apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng){
+APOP_VAR_HEAD apop_model *apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count){
     apop_model* apop_varad_var(model, NULL);
     Apop_assert(model && model->draw, "The second argument needs to be an apop_model with a 'draw' function "
                               "that I can use to make random draws.");
     apop_data* apop_varad_var(binspec, NULL);
     int apop_varad_var(bin_count, 0);
     long int apop_varad_var(draws, 1e4);
-    gsl_rng *apop_varad_var(rng, apop_rng_get_thread())
 APOP_VAR_ENDHEAD
     Get_vmsizes(binspec);
-    apop_data *outd = apop_data_alloc(draws, model->dsize); 
-    for (long int i=0; i< draws; i++)
-        apop_draw(Apop_rv(outd, i)->data, rng, model);
+    apop_data *outd = apop_model_draws(model, draws);
     apop_data *outbinned = apop_data_to_bins(outd, binspec, .bin_count=bin_count);
     apop_data_free(outd);
     apop_vector_normalize(outbinned->weights);

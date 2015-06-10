@@ -482,9 +482,6 @@ apop_model * apop_model_fix_params_get_base(apop_model *model_in);
 
 
 
-
-
-
             //////vtables
 /** \cond doxy_ignore */
 
@@ -582,7 +579,7 @@ apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1)
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 apop_data *apop_data_pmf_compress(apop_data *in);
 Apop_var_declare( apop_data * apop_data_to_bins(apop_data const *indata, apop_data const *binspec, int bin_count, char close_top_bin) )
-Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) )
+Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count) )
 
 //text conveniences
 Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter) )

@@ -4,15 +4,14 @@
 #define Declare_type_checking_fns
 #include "apop_internal.h"
 
-/** Allocate an \ref apop_model.
-
-This sets up the output elements of the \c apop_model: the parameters and info. 
+/** Set up the \c parameters and \c info elements of the \c apop_model: 
 
 At close, the input model has parameters of the correct size.
 
-\li This is the default action for \ref apop_prep. If your model has its own \c prep method, then that gets used instead, but most don't (or call \ref apop_model_clear at the end of their prep routine).
-
-\li \ref apop_estimate calls \ref apop_prep internally. 
+\li This is the default action for \ref apop_prep, and many models with a custom prep routine
+call \ref apop_model_clear at the end.
+\li \ref apop_estimate calls this function internally. 
+\li If the model has already been prepped, this function should be a no-op.
 
 The above two points mean that you probably don't need to call this function directly.
 
@@ -45,14 +44,14 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 /** Free an \ref apop_model structure.
 
-The  \c parameters element is freed.  These are all the things that are completely copied, by \c apop_model_copy, so the parent model is still safe after this is called. \c data is not freed, because the odds are you still need it.
-
-If <tt>free_me->more_size</tt> is positive, the function runs
+    \li The \c parameters and \c settings are freed.  These are the elements that are
+copied by \c apop_model_copy.
+    \li The \c data element is not freed, because the odds are you still need it.
+    \li If <tt>free_me->more_size</tt> is positive, the function runs
 <tt>free(free_me->more)</tt>. But it has no idea what the \c more element contains;
 if it points to other structures (like an \ref apop_data set), you need to free them
 before calling this function.
-
-\li If \c free_me is \c NULL, this does nothing.
+    \li If \c free_me is \c NULL, this does nothing.
 
 \param free_me A pointer to the model to be freed.
 */
@@ -82,7 +81,7 @@ void apop_model_free (apop_model * free_me){
 \code
 FILE *out =fopen("outfile.txt", "w"); //or "a" to append.
 apop_model_print(the_model, out);
-fclose(out);  //optional in most cases.
+fclose(out);  //optional in many cases.
 \endcode
 
 \li The default prints the name, parameters, info, &c. but I check a vtable for
@@ -98,13 +97,13 @@ typedef void (*apop_model_print_type)(apop_model *params, FILE *out);
             (m1)->cdf ? (size_t)(m1)->cdf*27*27 : 27)
 \endcode
 
-\li All output should \c fprintf to the input \c FILE* handle. 
+When building a special print method, all output should \c fprintf to the input \c FILE* handle. 
   Apophenia's output routines also accept a file handle; e.g., if the file handle is
   named \c out, then if the \c thismodel print method uses \c apop_data_print to
   print the parameters, it must do so via a form like <tt>apop_data_print(thismodel->parameters,
   .output_pipe=ap)</tt>.
 
-\li Your \c print method can use both by masking itself for a second:
+Your \c print method can use both by masking itself for a few lines:
  \code
 void print_method(apop_model *in, FILE* ap){
   void *temp = in->estimate;
@@ -118,7 +117,6 @@ void print_method(apop_model *in, FILE* ap){
  \endcode
 
 \li Print methods are intended for human consumption and are subject to change.
-
 */
 void apop_model_print (apop_model * print_me, FILE *ap){
     if (!ap) ap = stdout;
@@ -141,9 +139,12 @@ void apop_model_show (apop_model * print_me){
 
 /** Outputs a copy of the \ref apop_model input.
 \param in The model to be copied
-\return A pointer to a copy of the original, which you can mangle as you see fit. Includes copies of all settings groups, and the \c parameters (if not \c NULL, copied via \ref apop_data_copy).
+\return A copy of the original. Includes copies
+of all settings groups, and the \c parameters (if not \c NULL, copied via \ref
+apop_data_copy).
 
 \li If <tt>in.more_size > 0</tt> I <tt>memcpy</tt> the \c more pointer from the original data set.
+\li The data set at \c in->data is not copied, but is also pointed to.
 
 \exception out->error=='a' Allocation error. In extreme cases, where there aren't even a few hundred bytes available, I will return \c NULL.
 \exception out->error=='s' Error copying settings groups.

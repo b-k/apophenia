@@ -201,22 +201,22 @@ be fixed. Set the free parameters to \c NaN.
 For example, here is a Binomial distribution with a fixed \f$n=30\f$ but \f$p_1\f$ allowed to float freely:
 
 \code
-apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, GSL_NAN));
-Apop_model_add_group(bi30, apop_mle, .starting_pt=(double[]){.5}); // The Binomial doesn't like the default 
-                                                                   // starting point of 1.
+apop_model *bi30 = apop_model_fix_params(apop_model_set_parameters(apop_binomial, 30, NAN));
+Apop_model_add_group(bi30, apop_mle, .starting_pt=(double[]){.5}); // The Binomial doesn't like the
+                                                                   //  default starting point of 1.
 apop_model *out = apop_estimate(your_data, bi30);
 \endcode
 
 The output is an \c apop_model that can be estimated, Bayesian updated, et cetera.
 
-\li Rather than using this model, you may simply want a now-filled-in copy of the original model. Use \ref  apop_model_fix_params_get_base to retrieve the original model's parameters.
-
+\li Rather than using this model, you may simply want a now-filled-in copy of the
+    original model. Use \ref apop_model_fix_params_get_base to retrieve the original model's parameters.
 \li The \c estimate method always uses an MLE, and it never calls the base model's \c estimate method.
-
-\li If the input model has MLE-style settings attached, I'll use them for the \c estimate method. Otherwise, I'll set my own.
-
-\li If the parameter input has non-NaN values at the free parameters, then I'll use those as the starting point for any MLE search; the defaults for the variables without fixed values starts from <b>1</b> as usual.
-
+\li If the input model has an \ref apop_mle_settings group attached, I'll use them for the \c
+    estimate method. Otherwise, I'll set my own.
+\li If the parameter input has non-NaN values at the free parameters, then I'll use
+    those as the starting point for any MLE search; the defaults for the variables without
+    fixed values starts from <b>1</b> as usual.
 \li I do check the \c more pointer of the \c parameters for additional pages and <tt>NaN</tt>s on those pages.
 
 Here is a sample program. It produces a few thousand draws from a Multivariate Normal distribution,

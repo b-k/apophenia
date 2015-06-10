@@ -640,18 +640,16 @@ double get_ll(apop_data *d, void *m){ return apop_log_likelihood(d, m); }
 /** Calculate the entropy of a model: \f$\int -\ln(p(x))p(x)dx\f$, which is the expected
   value of \f$-\ln(p(x))\f$.
 
-The default method is to make draws using the input model's \c draw method (or the MCMC or ARMS default methods), then
-evaluate the log likelihood at that point using the models \c log_likelihood method.
+The default method is to make draws using \ref apop_model_draws, then
+evaluate the log likelihood at those points using the model's \c log_likelihood method.
 
 There are a number of routines for specific models, inlcuding the \ref apop_normal and \ref apop_pmf models.
 
-\li  If you have a data set, see \ref apop_vector_entropy.
-
+\li  If you want the entropy of a data set, see \ref apop_vector_entropy.
 \li The entropy is calculated using natural logs. If you prefer base-2 logs, just divide by \f$\ln(2)\f$: <tt>apop_model_entropy(my_model)/log(2)</tt>.
 
 \param in A parameterized \ref apop_model. That is, you have already used \ref apop_estimate or \ref apop_model_set_parameters to estimate/set the model parameters.
 \param draws If using the default method of making random draws, how many random draws to make (default=1,000)
-\param r If using the default method of making random draws, the RNG to use. (default: use \ref apop_rng_get_thread)
 
 Sample code:
 \include entropy_model.c
@@ -844,20 +842,18 @@ APOP_VAR_ENDHEAD
 
 void vfabs(double *x){*x = fabs(*x);}
 
-/**  First, this function passes tests, but is under development.
-  
-It takes in a matrix and converts it to the `closest' positive semidefinite matrix.
+/**  This function takes in a matrix and converts it in place to the `closest' positive semidefinite matrix.
 
-\param m On input, any matrix; on output, a positive semidefinite matrix.
+\param m On input, any matrix; on output, a positive semidefinite matrix. If \c NULL, return \c NaN and print an error.
 \return the distance between the original and new matrices.
 
 \li See also the test function \ref apop_matrix_is_positive_semidefinite.
-\li This function can be used as (the core of) a model constraint.
-
-Adapted from the R Matrix package's nearPD, which is 
-Copyright (2007) Jens Oehlschlägel [and is GPL].
+\li This function can be used as the core of a model constraint.
+\li Adapted from the R Matrix package's nearPD, which is 
+Copyright (2007) Jens Oehlschlägel [under the GPL].
 */
 double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
+    Apop_stopif(!m, return NAN, 0, "Got a NULL matrix. Returning NaN.");
     if (apop_matrix_is_positive_semidefinite(m)) return 0; 
     double diffsize=0, dsize;
     apop_data *qdq; 

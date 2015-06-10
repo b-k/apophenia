@@ -1,11 +1,4 @@
-/** \file apop_mle.c	The MLE functions. Call them with an \ref apop_model.
-
-This file includes a number of distributions and models whose parameters one would estimate using maximum likelihood techniques.
-
-It has (more-or-less) a single public function: \ref apop_maximum_likelihood, and you don't even need to use that one, because the \c apop_estimate function defaults to using it if there is no model-specific estimation routine provided.
-
-At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
-
+/** \file apop_mle.c */
 /*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 #include "apop_internal.h"
 #include <setjmp.h>
@@ -116,15 +109,17 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll,
 
 /**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
 
-\param data The data set to use for all evaluations. It remains constant throughout.
-\param model The model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
-\param delta The size of the differential. If you explicitly give me a \c delta, I'll use it. If \c delta is not specified,
- but \c model has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential. Else, I use 1e-3.
+\param data The \ref apop_data set to use for all evaluations.
+\param model The \ref apop_model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
+\param delta The size of the differential. (default: 1e-3, but see below)
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
  \endcode
 
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings
+    group attached to the input model, and check that for a \c delta element. If that is
+    also missing, use the default of 1e-3.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
@@ -175,15 +170,16 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
 apop_model *apop_model_for_infomatrix = &(apop_model){"Ad hoc model for working out the information matrix.", 
                                                 .log_likelihood = apop_fn_for_infomatrix};
 
-/** Numerically estimate the matrix of second derivatives of the
-parameter values. The math is
- simply a series of re-evaluations at small differential steps. [Therefore, it may be expensive to do this for a very computationally-intensive model.]  
+/** Numerically estimate the matrix of second derivatives of the parameter values, via
+a series of re-evaluations at small differential steps. [Therefore, it may be expensive
+to do this for a very computationally-intensive model.]
 
-\param data The data at which the model was estimated
-\param model The model, with parameters already estimated
-\param delta the step size for the differentials. The current default is around 1e-3.
+\param data The \ref apop_data at which the model was estimated (default: \c NULL)
+\param model The \ref apop_model, with parameters already estimated (no default, must not be \c NULL)
+\param delta the step size for the differentials. (default: 1e-3, but see below)
 \return The matrix of estimated second derivatives at the given data and parameter values.
  
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of 1e-3.
 \li This function uses the \ref designated syntax for inputs.
  */
 APOP_VAR_HEAD apop_data * apop_model_hessian(apop_data * data, apop_model *model, double delta){
@@ -232,8 +228,8 @@ I follow Efron and Hinkley in using the estimated information matrix---the value
  \param model A model whose parameters have been estimated.
  \param delta The differential by which to step for sampling changes.  (default currently = 1e-3)
  \return A covariance matrix for the data. Also, if the data does not have a
- <tt>"Covariance"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
- existing covar].  
+ <tt>"<Covariance>"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
+ existing covariance page].  
 
 This function uses the \ref designated syntax for inputs.
  */
@@ -598,34 +594,37 @@ Onecheck(Newton hybrid no scale)
 return 1;
 }
 
-/** The maximum likelihood calculations. 
+/** Find the likelihood-maximizing parameters of a model given data.
 
-\li I assume that \c apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
+\li I assume that \ref apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
 
 \li All of the settings are specified by adding a
   \ref apop_mle_settings struct to your model, so see the many notes there. Notably,
   the default method is the Fletcher-Reeves conjugate gradient method, and if your model
   does not have a dlog likelihood function, then a numeric gradient will be calculated
-  via \ref apop_numerical_gradient. Add a \ref apop_mle_settings group to your model
-  for other methods, including the Nelder-Mead simplex and simulated annealing.
+  via \ref apop_numerical_gradient. Add an \ref apop_mle_settings group to your model
+  to set tuning parameters or select other methods, including the Nelder-Mead simplex,
+  simulated annealing, and root-finding.
 
 \param data	    An \ref apop_data set.
 
 \param	dist	The \ref apop_model object: \ref apop_gamma, \ref apop_probit, \ref apop_zipf, &amp;c. You can add
     an \c apop_mle_settings struct to it (<tt>Apop_model_add_group(your_model, apop_mle,
-    .verbose=1, .method="PR cg", and_so_on)</tt>). So, see the \c apop_mle_settings
-    documentation for the many options, such as choice of method and tuning parameters.
+    .verbose=1, .method="PR cg", and_so_on)</tt>).
 
 \return	None, but the input model is modified to include the parameter estimates, &c. 
 
 \li There is auxiliary info in the <tt>->info</tt> element of the post-estimation struct. Get elements via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
+
+
 int status = apop_data_get(est->info, .rowname="status");
 if (status)
     //trouble
 else
     //optimum found
+    apop_data_print(est->parameters); //Here are the estimated parameters
 \endcode
 
 \li During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time.
