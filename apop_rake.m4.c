@@ -336,10 +336,10 @@ apop_data **generate_list_of_contrasts(char *const *contras_in, int contrast_ct)
 	return out;
 }
 
-apop_data *get_var_list(char const *margin_table, char const *count_col, char const *init_count_col, char const *all_vars,
+apop_data *get_var_list(char const *margin_table, char const *count_col, char const *init_count_col,
                         char * const *varlist, int *var_ct){
     apop_data *all_vars_d=NULL;
-    if (!all_vars && !varlist){
+    if (!varlist){
         Apop_stopif(apop_opts.db_engine=='m', apop_return_data_error(y),
                     0, "I need a list of the full set of variable "
                        "names sent as .varlist= (char *[]){\"var1\", \"var2\",...}");
@@ -352,10 +352,6 @@ apop_data *get_var_list(char const *margin_table, char const *count_col, char co
                     apop_text_add(all_vars_d, 0, ctr++, all_vars_d->text[i][1]);
         apop_text_alloc(all_vars_d, 1, ctr);
         *var_ct = ctr;
-    } else if (!varlist){
-        apop_regex(all_vars, pipe_parse, &all_vars_d);
-        *var_ct = *all_vars_d->textsize;
-        return apop_data_transpose(all_vars_d);
     } else {
         all_vars_d = apop_text_alloc(NULL, 1, *var_ct); 
         for (int i=0; i<*var_ct; i++) apop_text_add(all_vars_d, 0, i, varlist[i]);
@@ -470,54 +466,38 @@ points, not to the full cross of all categories. Set <tt>apop_opts.verbose</tt> 
 
 \li One could use raking to generate `fully synthetic' data: start with observation-level data in a margin table. Begin the raking with a starting data set of all-ones. Then rake until the all-ones set transforms into something that conforms to the margins and (if any) structural zeros. You now have a data set which matches the marginal totals but does not use any other information from the observation-level data. If you do not specify an <tt>.init_table</tt>, then an all-ones default table will be used.
 
-\li Set <tt>apop_opts.verbose=3</tt> to see the intermediate tables at the end of each round of raking.
-
-\li If you want all cells to have nonzero value, then you can do that via pre-processing:
-\code
-apop_query("update data_table set count_col = 1e-3 where count_col = 0");
-\endcode
-
 
 \param margin_table The name of the table in the database to use for calculating
-the margins.  The table should have one observation per row.  No default. (This used
-to be called \c table_name; that name is now deprecated.)
+the margins.  The table should have one observation per row.  (No default)
 
 \param var_list The full list of variables to search. A list of strings, e.g., <tt>(char *[]){"var1", "var2", ..., "var15"}</tt>
 
 \param var_ct The count of the full list of variables to search.
 
-\param all_vars deprecated.
+\param contrasts The contrasts describing your model. Like the \c var_list input, a list of strings like <tt>(char *[]){"var1", "var7", "var13"}</tt>
+contrast is a pipe-delimited list of variable names. (No default)
 
-\param contrasts The contrasts describing your model. Like the \c all_vars input, each
-contrast is a pipe-delimited list of variable names. No default.
-
-\param contrast_ct The number of contrasts in the list of contrasts. No default.
+\param contrast_ct The number of contrasts in the list of contrasts. (No default)
 
 \param structural_zeros a SQL clause indicating combinations that can never take a nonzero
 value. This will go into a \c where clause, so anything you could put there is OK, e.g.
 "age <65 and gets_soc_security=1 or age <15 and married=1". 
-Your margin data is not checked for structural zeros.  Default: no structural zeros.
+Your margin data is not checked for structural zeros.  (default: no structural zeros)
 
-\param max_iterations Number of rounds of raking at which the algorithm halts. Default: 1000.
+\param max_iterations Number of rounds of raking at which the algorithm halts. (default: 1000)
 
 \param tolerance I calculate the change for each cell from round to round;
-if the largest cell change is smaller than this, I stop. Default: 1e-5.
+if the largest cell change is smaller than this, I stop. (default: 1e-5)
 
 \param count_col This column gives the count of how many observations are represented
-by each row. If \c NULL, ech row represents one person. Default: \c NULL.
-
-\param run_number Because I write intermediate tables to the database, I need a way to
-distinguish distinct runs should you be threading several runs at once. If you aren't
-running several instances simultaneously, don't worry about this; if you are, do supply a
-value, since it's hard for the function to supply one in a race-proof manner. Default:
-internally-maintained values.
+by each row. If \c NULL, ech row represents one person. (default: \c NULL)
 
 \param init_table The default is to initially set all table elements to one and then
 rake from there. This is effectively the `fully synthetic' approach, which uses only
 the information in the margins and derives the data set closest to the all-ones data
 set that is consistent with the margins. Care is taken to maintan sparsity in this
 case.  If you specify an \c init_table, then I will get the initial cell counts from
-it. Default: the fully-synthetic approach, using a starting point of an all-ones grid.
+it. (default: the fully-synthetic approach, using a starting point of an all-ones grid.)
 
 \param init_count_col The column in \c init_table with the cell counts.
 
@@ -527,32 +507,34 @@ to anything.  Recall that this function works on sparse sets, so I first filter 
 those cells that could possibly have a nonzero value given the observations, then I
 add <tt>nudge</tt> to any zero cells within that subset.
 
-\param table_name Deprecated; replaced with \c margin_table.
-
 \return An \ref apop_data set where every row is a single combination of variable values
 and the \c weights vector gives the most likely value for each cell.
+
 \exception out->error='i' Input was somehow wrong.
 \exception out->error='c' Raking did not converge, reached max. iteration count.
-\li This function uses the \ref designated syntax for inputs.
 
-\li The interface is still beta, and subject to change---notably, handling of text
-categories will soon be added.
+\li Set <tt>apop_opts.verbose=3</tt> to see the intermediate tables at the end of each round of raking.
+\li If you want all cells to have nonzero value, then you can do that via pre-processing:
+\code
+apop_query("update data_table set count_col = 1e-3 where count_col = 0");
+\endcode
+\li This function is thread-safe. To make this happen, temp database tables are 
+    named using a number built with \c omp_get_thread_num.
+\li This function uses the \ref designated syntax for inputs.
 */
-APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_list, int var_ct, char const *all_vars, char * const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, int run_number, char const *init_table, char const *init_count_col, double nudge, char const* table_name){
+APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_list, int var_ct, char * const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, char const *init_table, char const *init_count_col, double nudge){
     #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
         static _Atomic(int) defaultrun = 0;
     #else
         static int defaultrun = 0;
     #endif
-    char const * apop_varad_var(table_name, NULL); //the deprecated name for margin_table
-    char const * apop_varad_var(margin_table, table_name);
+    char const * apop_varad_var(margin_table, NULL);
     Apop_stopif(!margin_table, apop_return_data_error(i), 0,  
                         "I need the name of a table in the database that will be the data source.");
     Apop_stopif(!apop_table_exists(margin_table), apop_return_data_error(i), 
                         0, "your margin_table, %s, doesn't exist in the database.", margin_table);
     char *const* apop_varad_var(var_list, NULL);
     int apop_varad_var(var_ct, 0);
-    char const * apop_varad_var(all_vars, NULL); //deprecated; use var_list/var_ct
     char *const * apop_varad_var(contrasts, NULL); //default to all vars?
     int apop_varad_var(contrast_ct, 0);
     Apop_stopif(contrasts&&!contrast_ct, apop_return_data_error(i),
@@ -562,7 +544,6 @@ APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_l
     char const * apop_varad_var(count_col, NULL);
     int apop_varad_var(max_iterations, 1e3);
     double apop_varad_var(tolerance, 1e-5);
-    int apop_varad_var(run_number, defaultrun++);
     char const * apop_varad_var(init_count_col, NULL);
     char const * apop_varad_var(init_table, NULL);
     Apop_stopif(init_table && !apop_table_exists(init_table), apop_return_data_error(i),
@@ -570,8 +551,14 @@ APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_l
     if (init_count_col && !init_table) init_table = margin_table;
     double apop_varad_var(nudge, 0);
 APOP_VAR_ENDHEAD
+    #ifdef OpenMP
+        int run_number = omp_get_thread_num();
+    #else
+        int run_number = 0;
+    #endif
+
 	apop_data **contras = generate_list_of_contrasts(contrasts, contrast_ct);
-    apop_data *all_vars_d = get_var_list(margin_table, count_col, init_count_col, all_vars, var_list, &var_ct);
+    apop_data *all_vars_d = get_var_list(margin_table, count_col, init_count_col, var_list, &var_ct);
     Apop_stopif(all_vars_d->error, return all_vars_d, 0, "Trouble setting up the list of variables.");
     int tt = all_vars_d->textsize[0]; all_vars_d->textsize[0] = 1; //mask all but the first row
     char *list_of_fields = apop_text_paste(all_vars_d, .between=", ");

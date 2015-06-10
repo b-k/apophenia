@@ -210,7 +210,9 @@ static int count_parens(const char *string){
     return out;
 }
 
-/** A convenience function for regular expression searching 
+/** Extract subsets from a string via regular expressions.
+
+This function takes a regular expression and repeatedly applies it to an input string. It returns the count of matches, and optionally returns the matches themselves organized into the \c text grid of an \ref apop_data set.
 
 \li There are three common flavors of regular expression: Basic, Extended,
 and Perl-compatible (BRE, ERE, PCRE). I use EREs, as per the specs of
@@ -233,8 +235,8 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \li If <tt>strings==NULL</tt>, I return 0---no match---and if \c substrings is provided, set it to \c NULL.
 
 \li Here is the test function. Notice that the substring-pulling
-function call passes \c &subs, not plain \c subs. Also, the non-match
-has a zero-length blank in <tt>subs->text[0][1]</tt>.
+function call passes \c &subs, not plain \c subs. 
+
 
 \include test_regex.c
 

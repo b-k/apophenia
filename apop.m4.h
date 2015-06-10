@@ -668,10 +668,10 @@ Apop_var_declare( apop_data *apop_data_sort(apop_data *data, apop_data *sort_ord
 
 //raking
 Apop_var_declare( apop_data * apop_rake(char const *margin_table, char * const*var_list, 
-                    int var_ct, char const *all_vars, char * const *contrasts, int contrast_ct, 
+                    int var_ct, char * const *contrasts, int contrast_ct, 
                     char const *structural_zeros, int max_iterations, double tolerance, 
-                    char const *count_col, int run_number, char const *init_table, 
-                    char const *init_count_col, double nudge, char const* table_name) )
+                    char const *count_col, char const *init_table, 
+                    char const *init_count_col, double nudge) )
 
 
 #include <gsl/gsl_cdf.h>
