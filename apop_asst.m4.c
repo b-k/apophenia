@@ -199,10 +199,13 @@ int apop_system(const char *fmt, ...){
 /** Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
 
 \param data	a \c gsl_vector of data. (No default, must not be \c NULL.)
-\param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. If \c 'u' or \c 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = \c 'd'.)
-
-\li You may eventually want to \c free() the array returned by this function.
-\li This function uses the \ref designated syntax for inputs.
+\param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. 
+(Default = \c 'd'.)
+    \li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
+the sample is below returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5%
+or more of the sample is above returned_vector[5]".
+    \li You may eventually want to \c free() the array returned by this function.
+    \li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);

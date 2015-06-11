@@ -168,7 +168,7 @@ void apop_vector_log(gsl_vector *v){
     }
 }
 
-/** Replace every vector element \f$v_i\f$ with exp(\f$v_i\f$).
+/** Replace every vector element \f$v_i\f$ with exp\f$(v_i)\f$.
 
 \li If the input vector is \c NULL, do nothing. 
 */
@@ -184,7 +184,7 @@ void apop_vector_exp(gsl_vector *v){
 
 \param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
 \param  v2  the second vector (default=\c NULL, in which case nothing is added)
-\param  inplace If 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 undisturbed. (default='n')
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 \li This function uses the \ref designated syntax for inputs.

@@ -44,8 +44,3 @@ int main(){
     apop_data_free(c2);
     gsl_vector_free(v);
 }
-
-/*
-export LDLIBS="`pkg-config --libs apophenia`"
-export CFLAGS="-g -Wall `pkg-config --cflags apophenia` -O3 -std=gnu11"
-*/

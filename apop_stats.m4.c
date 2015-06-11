@@ -24,29 +24,28 @@ long double apop_vector_sum(const gsl_vector *in){
   An alias for \ref apop_vector_sum. Returns the sum of the data in the given vector.
 */
 
-/**  \def apop_vector_mean(in)
- 
- Returns the mean of the data in the given vector.
-*/
-
-/**  \def apop_mean(in)
+/**  \def apop_mean
   An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
 */
 
 /** \def apop_var(in)
-  An alias for \ref apop_vector_var.
+An alias for \ref apop_vector_var.
 Returns the variance of the data in the given vector.
 */
 
-/** Returns an unbiased estimate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
+/** Returns an unbiased estimate of the sample skew of the data in the given vector.
 */
 double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
 
-/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given
-vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.
+/** Returns the sample kurtosis of the data in the given
+vector. Corrections are made to produce an unbiased result as per <a
+href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling
+with data</em>.
 
-  \li This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
+\li This is an estimate of the fourth central moment without normalization. The kurtosis
+    of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
+\see \ref apop_vector_kurtosis_pop
 */
 double apop_vector_kurtosis(const gsl_vector *in){
     size_t n = in->size;
@@ -74,7 +73,7 @@ static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int expo
 
 \param v       The data vector
 \param weights The weight vector. Default: equal weights for all observations.
-\return        The weighted skew. No sample adjustment given weights.
+\return        The weighted skew.
  
 \li  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 
@@ -103,14 +102,18 @@ APOP_VAR_ENDHEAD
     return avg;
 }
 
-/** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector, with an optional weighting.
+/** Returns the population kurtosis [\f$\sum_i (x_i - \mu)^4/n)\f$] of the data in
+the given vector, with an optional weighting.
 
 \param v The data vector
 \param weights The weight vector. If NULL, assume equal weights.
-\return The weighted kurtosis. No sample adjustment given weights.
+\return The weighted kurtosis.
  
-\li Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
-\li This function uses the \ref designated syntax for inputs.
+    \li Some people like to normalize the fourth central moment by dividing by variance
+squared, or by subtracting three; those things are not done here, so you'll have to
+do them separately if need be.
+    \li This function uses the \ref designated syntax for inputs.
+\see \ref apop_vector_kurtosis for the unbiased sample version.
 */
 APOP_VAR_HEAD double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights){
     gsl_vector const * apop_varad_var(v, NULL);
@@ -241,45 +244,22 @@ APOP_VAR_ENDHEAD
 /** This function will normalize a vector, either such that it has mean
 zero and variance one, or ranges between zero and one, or sums to one.
 
-\param in 	A gsl_vector which you have already allocated and filled. \c NULL input gives \c NULL output. (No default)
+\param in	A \c gsl_vector with the un-normalized data. \c NULL
+input gives \c NULL output. (No default)
 
 \param out 	If normalizing in place, \c NULL.
-If not, the address of a <tt>gsl_vector</tt>. Do not allocate. (default = \c NULL.)
+If not, the address of a <tt>gsl_vector*</tt>. Do not allocate. (default = \c NULL.)
 
 \param normalization_type 
-'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br>
-'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
-'s': normalized vector will have mean zero and variance one. Replace
+\c 'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br>
+\c 'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
+\c 's': normalized vector will have mean zero and (sample) variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
 standard deviation.<br>
-'m': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
+\c 'm': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
 \b Example 
 \code
-#include <apop.h>
-
-int main(void){
-gsl_vector  *in, *out;
-
-in = gsl_vector_calloc(3);
-gsl_vector_set(in, 1, 1);
-gsl_vector_set(in, 2, 2);
-
-printf("The original vector:\n");
-apop_vector_show(in);
-
-apop_vector_normalize(in, &out, 's');
-printf("Standardized with mean zero and variance one:\n");
-apop_vector_show(out);
-
-apop_vector_normalize(in, &out, 'r');
-printf("Normalized range with max one and min zero:\n");
-apop_vector_show(out);
-
-apop_vector_normalize(in, NULL, 'p');
-printf("Normalized into percentages:\n");
-apop_vector_show(in);
-}
 \endcode
 
 \li This function uses the \ref designated syntax for inputs.
@@ -323,7 +303,6 @@ APOP_VAR_END_HEAD
 }
 
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
-
   \param m	the matrix to be summed. 
 */
 long double apop_matrix_sum(const gsl_matrix *m){
@@ -472,22 +451,20 @@ APOP_VAR_END_HEAD
 
 /** Find the sample variance of a vector, weighted or unweighted.
 
-\li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
-
-\li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
-
 \param v       The data vector
-\param weights The weight vector. If NULL, assume equal weights.
+\param weights The weight vector. If NULL (the default), assume equal weights.
 \return        The weighted sample variance.  
 
-\li Apophenia tries to be smart about reading the weights. If weights
+    \li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias
+introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
+    \li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
+    \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
-
-\li This function uses the \ref designated syntax for inputs.
-\see apop_vector_var_m If you already have the vector's mean, use this.
+    \li This function uses the \ref designated syntax for inputs.
+\see apop_vector_var_m for the case where you already have the vector's mean.
 */
 APOP_VAR_HEAD double apop_vector_var(gsl_vector const *v, gsl_vector const *weights){
     gsl_vector const * apop_varad_var(v, NULL);

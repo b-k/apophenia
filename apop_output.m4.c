@@ -192,7 +192,7 @@ static void print_core_v(const gsl_vector *data, char *separator, Output_declare
 	if (output_name) fclose(f);
 }
 
-/** Print a vector in float format.
+/** Print a vector to the screen, a file, a pipe, or the database
 You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the default is a tab, which puts the vector on one line, but a newline would print the vector vertically.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
@@ -207,7 +207,8 @@ APOP_VAR_ENDHEAD
 	print_core_v(data, apop_opts.output_delimiter, Output_vars);
  }
 
-/** Dump a <tt>gsl_vector</tt> to the screen. 
+/* currently removed from the documentation.
+ Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.

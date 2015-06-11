@@ -3,7 +3,7 @@ Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see CO
 
 \amodel apop_beta The Beta distribution.
 
-The beta distribution has two parameters and is restricted between zero and one. You
+The beta distribution has two parameters and is restricted to data between zero and one. You
 may also find \ref apop_beta_from_mean_var to be useful.
 
 \adoc    Input_format  Any arrangement of scalar values. 

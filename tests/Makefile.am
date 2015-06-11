@@ -39,6 +39,7 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/fake_logit \
 	$(top_builddir)/eg/iv \
 	$(top_builddir)/eg/ks_tests \
+	$(top_builddir)/eg/normalization_demo \
 	$(top_builddir)/eg/parameterization \
 	$(top_builddir)/eg/simple_subsets \
 	$(top_builddir)/eg/test_distances \

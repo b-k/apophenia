@@ -1730,7 +1730,7 @@ is closest to that posterior.
 \li\ref apop_model_copy : duplicate a model
 \li\ref apop_model_set_parameters : Models ship with no parameters set. Use this to convert a Normal(μ, σ) with unknown μ and σ into a Normal(0, 1), for example.
 \li\ref apop_model_free
-\li\ref apop_model_clear , apop_prep : remove the parameters from a parameterized model. Used infrequently.
+\li\ref apop_model_clear , \ref apop_prep : remove the parameters from a parameterized model. Used infrequently.
 \li\ref apop_model_draws : many random draws from an estimated model.
 
 
@@ -1767,7 +1767,7 @@ models of arbitrary detail.
 \li\ref apop_model_dconstrain : constrain the data space of a model to a subspace. E.g., truncate a Normal distribution so \f$x>0\f$.
 \li\ref apop_model_fix_params : hold some parameters constant
 \li\ref apop_model_mixture : a linear combination of models
-\li\ref apop_model_stack : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has an <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
+\li\ref apop_model_cross : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has an <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
 \li\ref apop_model_dcompose : use the output of one model as a data set for another
 
 
@@ -1812,17 +1812,13 @@ Settings groups are copied with the model, which facilitates chaining
 estimations. Continuing the above example, you could re-estimate to get the predicted
 values and covariance via:
 
-
 \code
 Apop_settings_set(est, apop_parts_wanted, predicted, 'y');
 apop_model *est2 = apop_estimate(data, est);
 \endcode
 
-
 \li \ref Apop_settings_set, for modifying a single setting, doesn't use the designated initializers format.
-
 \li  The \ref settings page lists the settings structures included in Apophenia and their use.
-
 \li Because the settings groups are buried within the model, debugging them can be a
 pain. Here is a documented macro for \c gdb that will help you pull a settings group out of a 
 model for your inspection, to cut and paste into your \c .gdbinit. It shouldn't be too difficult to modify this macro for other debuggers.
@@ -1847,8 +1843,8 @@ For using a model, that's all of what you need to know. For details on writing a
 
 \li\ref Apop_settings_add_group
 \li\ref Apop_settings_set
-\li\ref Apop_settings_get  get a single element from a settings group.
-\li\ref Apop_settings_get_group get the whole settings group.
+\li\ref Apop_settings_get : get a single element from a settings group.
+\li\ref Apop_settings_get_group : get the whole settings group.
 */
 
 /** \page dataones Data format for regression-type models
@@ -2870,8 +2866,8 @@ This page includes:
 \li \ref write_likelihoods, giving a quick overview of how to write a new model from scratch.
 \li \ref settingswriting, covering the writing of <em>ad hoc</em> structures to hold model- or method-specific details, like the number of periods for burning in an MCMC run or the number of bins in a histogram.
 \li \ref vtables, covering the means of writing special-case routines for functions that are not part of the \ref apop_model itself, including the score or conjugate prior/likelihood pairs for \ref apop_update.
-\li \ref modeldataparts, a detailed list of the requirements for the data (non-function) elements of an \ref apop_model.
-\li \ref methodsection, a detailed list of requirements for the method (function) elements of an \ref apop_model.
+\li \ref modeldataparts, a detailed list of the requirements for the non-function elements of an \ref apop_model.
+\li \ref methodsection, a detailed list of requirements for the function elements of an \ref apop_model.
 
 \section write_likelihoods A walkthrough
 
@@ -2882,7 +2878,7 @@ method but no \c p method, then \ref apop_p will use exp(\c log_likelihood). If 
 give an \c estimate method, then \c apop_estimate will call \ref apop_maximum_likelihood.
 
 So the game in writing a new model is to write just enough internal methods to give the helper functions what they need.
-In the not-uncommon best case, all you need to do is write a log likelihood function.
+In the not-uncommon best case, all you need to do is write a log likelihood function or an RNG.
 
 Here is how one would set up a model that could be estimated using maximum likelihood:
 
@@ -2893,7 +2889,7 @@ long double new_log_likelihood(apop_data *data, apop_model *m);
 \endcode
 
 where \c data is the input data, and \c
-m is the parametrized model (i.e. your model with a \c parameters element set by the caller). 
+m is the parametrized model (i.e. your model with a \c parameters element already filled in by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
 
 \li Is this a constrained optimization? See \ref constr on how to set them. Otherwise, no constraints will be assumed.
@@ -2905,7 +2901,7 @@ apop_model *your_new_model = &(apop_model){"The Me distribution",
             .log_likelihood = new_log_likelihood };
 \endcode
 
-\li The first element is the human-language name for your model.
+\li The first element is the <tt>.name</tt>, a human-language name for your model.
 \li the \c vsize, \c msize1, and \c msize2 elements specify the shape of the parameter
 set. For example, if there are three numbers in the vector, then set <tt>.vsize=3</tt>
 and omit the matrix sizes. The default model prep routine will call
@@ -2916,7 +2912,7 @@ and omit the matrix sizes. The default model prep routine will call
 count will be filled in if you specify \c -1 for \c vsize, <tt>msize(1|2)</tt>, or
 <tt>dsize</tt>. If the allocation is exceptional in a different way, then you will
 need to allocate parameters by writing a custom \c prep method for the model.
-\li If there are constraints, add an element for those too.
+\li If there are constraints, add a <tt>.constraint</tt> element for those too.
 
 You already have more than enough that something like this will work (the \c dsize is used for random draws):
 \code
@@ -2929,14 +2925,30 @@ For example, if you are using a maximum likelihood method to estimate parameters
 
 \code
 void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
-    //some algebra here to find df/dp0, df/dp1, df/dp2....
+    //do algebra here to find df/dp0, df/dp1, df/dp2....
     gsl_vector_set(gradient, 0, d_0);
     gsl_vector_set(gradient, 1, d_1);
 }
 \endcode
-The score has to be registered (see below) using 
+The score is not part of the model object, but is registered (see below) using 
 \code
 apop_score_insert(apop_new_dlog_likelihood, your_new_model);
+\endcode
+
+\subsection On Threading
+Many procedures in Apophenia use OpenMP to thread operations. If a method can not be threaded, be sure to wrap it in an OpenMP critical region. E.g.,
+
+
+\code
+
+void apop_new_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model *m){
+    #pragma omp critical (newdlog)
+    {
+        //un-threadable algebra here
+    }
+    gsl_vector_set(gradient, 0, d_0);
+    gsl_vector_set(gradient, 1, d_1);
+}
 \endcode
 
 \section settingswriting  Writing new settings groups
@@ -2994,7 +3006,9 @@ three functions below. This is everything you would
 need in a header file, should you need one. These are just declarations; we'll write
 the actual init/copy/free functions below.
 
-The structure itself gets the full name, \c ysg_settings. Everything else is a macro, and so you need only specify \c ysg, and the \c _settings part is filled in. Because of these macros, your struct name must end in \c _settings.
+The structure itself gets the full name, \c ysg_settings. Everything else is a macro
+keyed on \c ysg, without the \c _settings part. Because of these macros, your struct
+name must end in \c _settings.
 
 If you have an especially simple structure, then you can generate the three functions with these three macros in your <tt>.c</tt> file:
 
@@ -3006,10 +3020,10 @@ Apop_settings_free(ysg, )
 
 These macros generate appropriate functions to do what you'd expect: allocating the
 main structure, copying one struct to another, freeing the main structure.  
-The spaces after the commas indicate that no special code gets added to
-the functions that these macros generate.
+The spaces after the commas indicate that in these cases no special code gets added to
+the functions that these macros expand into.
 
-You'll never call these funtions directly; they are called by \ref Apop_settings_add_group,
+You'll never call the generated funtions directly; they are called by \ref Apop_settings_add_group,
 \ref apop_model_free, and other model or settings-group handling functions.
 
 Now that initializing/copying/freeing of
@@ -3023,7 +3037,7 @@ Continuing the above example:
 
 \code
 Apop_settings_init (ysg, 
-      Apop_stopif(in.size1, return NULL, 0, "I need you to give me a value for size1.");
+      Apop_stopif(!in.size1, return NULL, 0, "I need you to give me a value for size1.");
       Apop_varad_set(size2, 10);
       Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
       Apop_varad_set(refs, malloc(sizeof(int)));
@@ -3033,10 +3047,14 @@ Apop_settings_init (ysg,
 
 Now, <tt>Apop_settings_add(a_model, ysg, .size1=100)</tt> would set up a group with a 100-by-10 data set, and set the owner bit to one. 
 
-\li Some functions do extensive internal copying, so you will need a copy function even if you don't do any explicit calls to \ref apop_model_copy. The default above simply copies every element in the structure. Pointers are copied, giving you two pointers pointing to the same data. We have to be careful to prevent double-freeing later.
+\li Some functions do extensive internal copying, so you will need a copy function even
+if your code has no explicit calls to \ref apop_model_copy. The default above simply
+copies every element in the structure. Pointers are copied, giving you two pointers
+pointing to the same data. We have to be careful to prevent double-freeing later.
 
 \code
-//The elements of the set to copy are all copied, and then make one additional modification:
+//The elements of the set to copy are all copied by the function's boilerplate,
+//and then make one additional modification:
 Apop_settings_copy (ysg,
         (*refs)++;
 )
@@ -3060,6 +3078,9 @@ settings group like any other, and users can use \ref Apop_settings_add_group to
 populate it and attach it to any model.
 
 \section vtables Registering new methods in vtables
+
+The settings groups are for adding arbitrary model-specific nouns; vtables are for
+adding arbitrary model-specific verbs.
 
 For any given function (e.g., entropy, the dlog likelihood, Bayesian updating), there is
 probably a special case for well-known models like the Normal distribution. 
@@ -3085,9 +3106,9 @@ same special-case function.
 e.g. <tt>apop_update_vtable_drop(apop_beta, apop_binomial)</tt>. You can guarantee that a method will not be re-added by following up the <tt>_drop</tt> with, e.g., <tt>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</tt>.
 \li Place a call to <tt>..._vtable_add</tt> in the \c prep method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to \ref apop_estimate.
 
-This overview will not go into detail about setting up a new vtable. Briefly:
+The easiest way to set up a new vtable is to copy/paste/modify an existing one. Briefly:
 
-\li See the existing setups in <tt>vtables.h</tt>. 
+\li See the existing setups in the vtables portion of <tt>apop.h</tt>. 
 \li Cut/paste one and do a search and replace to change the name to match your desired use.
 \li Set the typedef to describe the functions that get added to the vtable.
 \li Rewrite the hash function to check the part of the inputs that interest you. For
@@ -3097,14 +3118,14 @@ is changed will still match.
 
 \section modeldataparts The data elements
 
-The remainder of this page covers the detailed expectations regarding the elements
+The remainder of this section covers the detailed expectations regarding the elements
 of the \ref apop_model structure. I begin with the data (non-function) elements,
 and then cover the method (function) elements. Some of the following will be
 requirements for all models and some will be advice to authors; I use the accepted
 definitions of <a href="http://tools.ietf.org/html/rfc2119">"must", "shall", "may"</a>
 and related words.
 
-\subsection datasubsec data
+\subsection datasubsec Data
 
 \li Each row should be a single observation. 
 For example, \ref apop_bootstrap_cov depends on each row being an iid observation to function correctly.
@@ -3124,18 +3145,12 @@ apop_draw to use your model's RNG (or a default) to draw a
     For example, regression-type functions use a function named \c ols_shuffle
     to convert a matrix where the first column is the dependent variable to a data
     set with dependent variable in the vector and a column of ones in the first
-    matrix column. By checking for a vector, the prep function knows whether to do
-    the shuffling or not. Most univariate distributions take each scalar element as
-    a separate data point; having one data point per row is a special case.
+    matrix column; see \ref dataprep.
 
 \subsection paramsubsec Parameters, vsize, msize1,  msize2
 
 \li The sizes will be used by the \c prep method of the model; see below. Given the model \c m and its elements \c m.vsize, \c m.msize1, \c m.msize2,
     functions that need to allocate a parameter set will do so via <tt>apop_data_alloc(m.vsize, m.msize1, m.msize2)</tt>. 
-
-\li As a special case, if you set any of \c .vsize, \c .msize1, or \c .msize2
-to \c -1, then the default prep method will set that size to the number of columns in
-the input data. This is what you want for regression methods, where there is one parameter per independent variable.
 
 
 \subsection infosubsec Info
@@ -3143,7 +3158,7 @@ the input data. This is what you want for regression methods, where there is one
 \li The first page, named \c &lt;info&gt; is typically a list of scalars. Nothing is guaranteed, but the elements may include:
 
 \li AIC: <a href="https://en.wikipedia.org/wiki/Akaike's_Information_Criterion">Aikake Information Criterion</a>
-\li AIC_c: AIC with a finite sample correction. "<em>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</em>" [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
+\li AIC_c: AIC with a finite sample correction. ``<em>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</em>'' [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
 \li BIC: <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a>
 \li R squared
 \li R squared adj
@@ -3178,20 +3193,20 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \li The inputs are an \ref apop_data set and an \ref apop_model, which should include the elements needed to fully estimate the probability/likelihood (probably a filled <tt>->parameters</tt> element, possibly a settings group added by the user).
 \li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. If the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are missing.
 \li Return \c NaN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
-\li If observations are assumed to be iid, you can probably use \ref apop_map_sum to write the core of the log likelihood function.
 \li If your model includes both \c log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
+\li If observations are assumed to be iid, you can probably use \ref apop_map_sum to write the core of the log likelihood function.
 
 \subsection prepsubsection prep
 
 \li Function header looks like <tt>void your_prep(apop_data *data, apop_model *params)</tt>.
-\li If \c vsize, \c msize1, or \c msize2 are -1, then the prep function shall set them to the width of the input data.
-\li If \c dsize is -1, then the prep function shall set it to the width of the input data.
-\li If the \c parameters element is not allocated, the function shall allocate it via <tt>apop_data_alloc(vsize, msize1, msize2)</tt> (or equivalent).
 \li Re-prepping a model after it has already been prepped shall have no effect. Where there is ambiguity with the other requirements, this takes precedence.
 \li The model's <tt>data</tt> pointer shall be set to point to the input data.
 \li The \c info element shall be allocated and its title set to "<Info>".
+\li If \c vsize, \c msize1, or \c msize2 are -1, then the prep function shall set them to the width of the input data.
+\li If \c dsize is -1, then the prep function shall set it to the width of the input data.
+\li If the \c parameters element is not allocated, the function shall allocate it via <tt>apop_data_alloc(vsize, msize1, msize2)</tt> (or equivalent).
 \li The default is \ref apop_model_clear. It does all of the above.
-\li The input data may be modified by the prep routine. For example, the OLS prep routine shuffles a single input matrix as described above under \c data.
+\li The input data may be modified by the prep routine. For example, the \ref apop_ols prep routine shuffles a single input matrix as described above under \c data, and the \ref apop_pmf prep routine calls \ref apop_data_pmf_compress on the input data.
 \li The prep routine may initialize any desired settings groups. Unless otherwise
 stated, these should not be removed if they are already there, so that users can override defaults by adding a settings group before starting an estimation.
 \li If any functions associated with the model need to be added to 
@@ -3199,9 +3214,9 @@ a vtable (see above), the registration shall happen here. Registration may also 
 
 \subsection estimatesubsection estimate
 
-\li Function header looks like  <tt> void your_estimate(apop_data * data, apop_model *params)</tt>.
+\li Function header looks like  <tt> void your_estimate(apop_data *data, apop_model *params)</tt>.
 \li Assume that the prep routine has already been run. Notably, this means that parameters have been allocated.
-\li Assume that the \c parmaeters hold garbage (as in a \c malloc without a subsequent assignment to the <tt>malloc</tt>-ed space).
+\li Assume that the \c parameters hold garbage (as in a \c malloc without a subsequent assignment to the <tt>malloc</tt>-ed space).
 \li The function modifies the input model, and returns nothing. Note that this is different from the wrapper function, \ref apop_estimate, which makes a copy of its input model, preps it, and then calls the \c estimate function with the prepeped copy.
 \li The function shall set the \c parameters of the input model. For consistency with other models, the estimate should be the maximum likelihood estimate, unless otherwise documented.
 \li Additional settings may be set.
@@ -3213,8 +3228,8 @@ a vtable (see above), the registration shall happen here. Registration may also 
 \subsection drawsubsection draw
 
 \li Function header looks like <tt>void your_draw(double *out, gsl_rng* r, apop_model *params)</tt>
-\li Assume that model \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the draw method should check that \c parameters are not \c NULL and fill the output with NaNs if necessary parameters are not set.
-\li User inputs a pointer-to-<tt>double</tt> of length \c dsize; user is expected to make sure that there is adequate space.  User also inputs a \c gsl_rng, already allocated (probably via \ref apop_rng_alloc).
+\li Assume that model \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the draw method should check that \c parameters are not \c NULL if needed and fill the output with NaNs if necessary parameters are not set.
+\li Caller inputs a pointer-to-<tt>double</tt> of length \c dsize; user is expected to make sure that there is adequate space. Caller also inputs a \c gsl_rng, already allocated (probably via \ref apop_rng_alloc, possibly from \ref appo_rng_get_thread).
 \li The function shall fill the space pointed to by the input pointer with a random draw from the data space, where the likelihood of any given observation is proportional to its likelihood as given by the \c p method. Data shall be reduced to a single vector via \ref apop_data_pack if it is not already a single vector.
 
 \subsection cdfsubsection cdf
@@ -3223,7 +3238,7 @@ a vtable (see above), the registration shall happen here. Registration may also 
 \li Assume that \c paramters are set, via \ref apop_estimate or \ref apop_model_set_parameters. The author of the CDF method should check that \c parameters are not \c NULL and return NaN if necessary parameters are not set.
 \li The CDF method must accept data as a single row of data in the \c matrix of the input \ref apop_data set (as per a draw produced using the \c draw method). May accept other formats.
 \li Returns the percentage of the likelihood function \f$\leq\f$ the first row of the input data. The definition of \f$\leq\f$ is chosen by the model author.
-\li If one is not already present, an \c apop_cdf_settings group may be added to the model. See the \ref apop_cdf function for details of its use.
+\li If one is not already present, an \c apop_cdf_settings group may be added to the model to store temp data. See the \ref apop_cdf function for details.
 
 \subsection constraintsubsection constraint
 

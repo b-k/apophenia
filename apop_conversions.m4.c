@@ -54,7 +54,7 @@ APOP_VAR_ENDHEAD
 \return a newly-allocated <tt>gsl_matrix</tt> with one column (or row).
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
-\li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
+\li If \c gsl_matrix_alloc fails you get a \c NULL pointer in return.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){

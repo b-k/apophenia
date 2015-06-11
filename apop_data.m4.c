@@ -322,7 +322,7 @@ For the opposite operation, see \ref apop_data_split.
 \param  posn    If 'r', stack rows of m1 above rows of m2<br>
     if 'c', stack columns of m1 to left of m2's<br>
     (default = 'r')
-\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place. Otherwise, allocate a new \ref apop_data set, leaving \c m1 unmolested. (default='n')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place. Otherwise, allocate a new \ref apop_data set, leaving \c m1 undisturbed. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
@@ -1242,16 +1242,15 @@ cropped away (in a non--memory-leaking manner). If the new height is larger than
 then new cells will be filled with garbage; it is your responsibility
 to zero out or otherwise fill them before use.
 
-<b>Warning I</b>: Using this function is basically bad form---especially
-when used in a <tt>for</tt> loop that adds an element each time. A large
+\li A large
 number of <tt>realloc</tt>s can take a noticeable amount of time. You are
 thus encouraged to make an effort to determine the size of your data
-beforehand.
+and do one allocation, rather than writing \c for loops that resize a vector at every increment.
 
-<b>Warning II</b>: The <tt>gsl_vector</tt> is a versatile struct that
-can represent subvectors, matrix columns and other cuts from parent data. I can't
-deal with those, and check for such situations beforehand. [Besides,
-resizing a portion of a parent matrix makes no sense.]
+\li The <tt>gsl_vector</tt> is a versatile struct that
+can represent subvectors, matrix columns and other cuts from parent data. 
+Resizing a portion of a parent matrix makes no sense, so
+return \c NULL and print an error if asked to resize a view.
 
 \param v The already-allocated vector to resize.  If you give me \c NULL, this is equivalent to \c gsl_vector_alloc
 \param newheight The height you'd like the vector to be.
