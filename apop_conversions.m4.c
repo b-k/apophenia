@@ -296,15 +296,15 @@ apop_data *apop_data_rank_expand (apop_data *in){
 }
 
 /** Copy one  <tt>gsl_vector</tt> to another. That is, all data is duplicated.
- Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
+Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination,
+so you can use it like this:
+\code
+gsl_vector *a_copy = apop_vector_copy(original);
+\endcode
 
- \code
- gsl_vector *a_copy = apop_vector_copy(original);
- \endcode
-
-  \param in    the input data
-  \return       a structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL.
-  */
+\param in   The input vector
+\return     A structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL and print a warning.
+*/
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
     gsl_vector *out = gsl_vector_alloc(in->size);
@@ -584,15 +584,17 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
     }
 }
 
-/** Read a delimited text file into the matrix element of an \ref apop_data set.
+/** Read a delimited or fixed-wisdth text file into the matrix element of an \ref apop_data set.
 
-  See \ref text_format.
+See \ref text_format.
+
+See also \ref apop_text_to_db, which handles text data, and may othewise be a perferable approach to data management.
 
 \param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
-\param has_row_names = 'n'. Does the lines of data have row names?
-\param has_col_names = 'y'. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
-\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
-\param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
+\param has_row_names Does the lines of data have row names? \c 'y' =yes; \c 'n' =no (default: 'n')
+\param has_col_names  Is the top line a list of column names? See \ref text_format for notes on dimension (default: 'y')
+\param field_ends If fields have a fixed size, give the end of each field, e.g. <tt>.field_ends=(int[]){3, 8 11}</tt>. (default: \c NULL, indicating not fixed width)
+\param delimiters A string listing the characters that delimit fields. (default: <tt>"|,\t"</tt>)
 \return 	Returns an apop_data set.
 \exception out->error=='a' allocation error
 \exception out->error=='t' text-reading error
@@ -1100,28 +1102,30 @@ char *cut_at_dot(char const *infile){
     return out;
 }
 
-/** Read a text file into a database table.
+/** Read a delimited or fixed-wisdth text file into a database table.
+  See \ref text_format. 
 
-  See \ref text_format.
+For purely numeric data, you may be able to bypass the database by using \ref apop_text_to_data.
 
 See the \ref apop_ols page for an example that uses this function to read in sample data (also listed on that page).
 
-Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:
+Apophenia ships with an \c apop_text_to_db command-line utility, which is a wrapper for this function.
 
+Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:
 \code
 apop_query("begin;");
 apop_data_print(dataset, .output_name="dbtab", .output_type='d');
 apop_query("commit;");
 \endcode
 
-\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
-\param tabname      The name to give the table in the database (default
-= \c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>; default in Python/R interfaces="t")
-\param has_row_names Does the lines of data have row names? (default = 0)
-\param has_col_names Is the top line a list of column names? (default = 1)
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
-\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
-\param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
+\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default: "-")
+\param tabname      The name to give the table in the database (default:
+\c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>)
+\param has_row_names Does the lines of data have row names? (default: 0)
+\param has_col_names Is the top line a list of column names? (default: 1)
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default: NULL)
+\param field_ends If fields have a fixed size, give the end of each field, e.g.  <tt>.field_ends=(int[]){3, 8 11}</tt>. (default: \c NULL, indicating not fixed width)
+\param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching. (default: NULL)
 \param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 \param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
 \param if_table_exists What should I do if the table exists?<br>

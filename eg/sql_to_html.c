@@ -17,6 +17,7 @@ int main(){
                                 .between="</td><td>", .after="</tr>\n<tr><td>");
     char *html_table = apop_text_paste(d, .before=html_head, .after="</td></tr></table>\n",
                                 .between="</tr>\n<tr><td>", .between_cols="</td><td>");
-    FILE *outfile = fopen("yourdata.html", "w");                                                                                                                              fprintf(outfile, "%s", html_table);
+    FILE *outfile = fopen("yourdata.html", "w");
+    fprintf(outfile, "%s", html_table);
     fclose(outfile);
 }

@@ -6,5 +6,5 @@ int main() {
                               30, 50, 45, 
                               34, 12, 17 );
     apop_data * t2 = apop_test_fisher_exact(testdata);
-    assert(fabs(apop_data_get(t2,1) - 0.0001761) < 1e-6);
+    assert(fabs(apop_data_get(t2,.rowname="p value") - 0.0001761) < 1e-6);
 }

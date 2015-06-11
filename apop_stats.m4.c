@@ -139,8 +139,8 @@ APOP_VAR_ENDHEAD
 double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
-/** Returns the correlation coefficient of two vectors. It's just
-\f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
+/** Returns the correlation coefficient of two vectors:
+\f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) \sqrt(\hbox{var}(b))}.\f$
 
 An example
 \code 
@@ -150,28 +150,37 @@ Apop_matrix_row(m, 3, rowthree);
 printf("The correlation coefficient between rows two "
        "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
 \endcode 
+
+    \li \c ina and \c inb are mandatory and must be non-NULL, but you can leave the weights
+vector off in the typical case of uniform weights.
+    \li This function uses the \ref designated syntax for inputs.
 */
-double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
-	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb)); }
+APOP_VAR_HEAD double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights){
+    gsl_vector const * apop_varad_var(ina, NULL);
+    gsl_vector const * apop_varad_var(inb, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+APOP_VAR_ENDHEAD
+	return apop_vector_cov(ina, inb, weights) 
+            / sqrt(apop_vector_var(ina, weights) * apop_vector_var(inb, weights)); }
 
 
 /** Returns the distance between two vectors, where distance is defined
  based on the third (optional) parameter:
 
- - 'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+ - 'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
  - 'm' or 'M'  Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
 where \f$i\f$ iterates over dimensions.
  - 'd' or 'D' The discrete norm: if \f$a = b\f$, return zero, else return one.
  - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
- - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
+ - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{|a_i - b_i|^2}\right)^{1/p}\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
 
  \param ina First vector (No default, must not be \c NULL)
  \param inb Second vector (Default = zero)
  \param metric The type of metric, as above.
  \param norm  If you are using an \f$L_p\f$ norm, this is \f$p\f$. Must be strictly greater than zero. (default = 2)
 
- Notice that the defaults are such that
+\li  The defaults are such that
  \code
  apop_vector_distance(v);
  apop_vector_distance(v, .metric = 's');
@@ -502,9 +511,10 @@ APOP_VAR_END_HEAD
 /** Find the sample covariance of a pair of vectors, with an optional weighting. This only
 makes sense if the weightings are identical, so the function takes only one weighting vector for both.
 
-\param  v1, v2  The data vectors
-\param  weights The weight vector. Default: equal weights for all elements.
+\param  v1, v2  The data vectors (no default; must not be \c NULL)
+\param  weights The weight vector. (default equal weights for all elements)
 \return The sample covariance
+
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD double apop_vector_cov(const gsl_vector *v1, const gsl_vector *v2, const gsl_vector *weights){

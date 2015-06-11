@@ -32,12 +32,12 @@ If \c apop_opts.verbose is >=1, then display some information to stdout, like th
 \param a one column of data
 \param b another column of data
 \return an \ref apop_data set with the following elements:
-    <tt>mean left - right:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
+    <tt>mean left - right</tt>:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
     <tt>t statistic</tt>:    used for the test<br>
     <tt>df</tt>:             degrees of freedom<br>
-    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.
-    <tt>confidence, 1 tail</tt>: 1- p value.
-    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.
+    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.<br>
+    <tt>confidence, 1 tail</tt>: 1- p value.<br>
+    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.<br>
     <tt>confidence, 2 tail</tt>: 1-p value
 
 Example usage:
@@ -50,7 +50,6 @@ printf("Reject the null hypothesis of no difference between M and F with %g%% co
 
 \see \ref apop_paired_t_test, which answers the question: with what confidence can I
 say that the mean difference between the two columns is zero?
-
 */
 apop_data *	apop_t_test(gsl_vector *a, gsl_vector *b){
     int a_count = a->size,
@@ -82,9 +81,9 @@ If <tt>apop_opts.verbose >=2</tt>, then display some information, like the mean/
     <tt>mean left - right</tt>:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
     <tt>t statistic</tt>:    used for the test<br>
     <tt>df</tt>:             degrees of freedom<br>
-    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.
-    <tt>confidence, 1 tail</tt>: 1- p value.
-    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.
+    <tt>p value, 1 tail</tt>: the p-value for a one-tailed test that one vector mean is greater than the other.<br>
+    <tt>confidence, 1 tail</tt>: 1- p value.<br>
+    <tt>p value, 2 tail</tt>: the p-value for the two-tailed test that left mean = right mean.<br>
     <tt>confidence, 2 tail</tt>: 1-p value
 
 \see \ref apop_t_test for an example, and for when the element-by-element difference between the vectors has no sensible interpretation.
@@ -378,7 +377,7 @@ rejecting the null hypothesis when it is true.]
 will return the density of the standard Normal distribution that is more than 1.3 from zero.  
 If this function returns a small value, we can be confident that the statistic is significant. Or, 
    \code
-   apop_test(1.3, "t", 10, tail='u');
+   apop_test(1.3, "t", 10, .tail='u');
    \endcode
 
 will give the appropriate odds for an upper-tailed test using the \f$t\f$-distribution with 10 degrees of freedom (e.g., a \f$t\f$-test of the null hypothesis that the statistic is less than or equal to zero).
@@ -397,16 +396,16 @@ Several more distributions are supported; see below.
 
 \return The odds of a Type I error given the model (the \f$p\f$-value).
 
-Here is a list of distributions you can use, and their parameters.
+Here are the distributions you can use and their parameters.
 
 \c "normal" or \c "gaussian" 
-\li p1=mu, p2=sigma
+\li p1=\f$\mu\f$, p2=\f$\sigma\f$
 \li default (0, 1)
 
 \c "lognormal"  
-\li p1=mu, p2=sigma
+\li p1=\f$\mu\f$, p2=\f$\sigma\f$
 \li default (0, 1) 
-\li Remember, mu and sigma refer to the Normal one would get after exponentiation
+\li Remember, \f$\mu\f$ and \f$\sigma\f$ refer to the Normal one would get after exponentiation
 \li One-tailed tests only
 
 \c "uniform"  

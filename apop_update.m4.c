@@ -121,19 +121,33 @@ likelihood. If you give me a parametrized normal, with no data, then I'll take t
 
 /** Take in a prior and likelihood distribution, and output a posterior distribution.
 
-This function first checks a table of conjugate distributions for the pair you
-sent in. If the names match the table, then the function returns a closed-form
-model with updated parameters.  If the parameters aren't in the table of conjugate
-priors/likelihoods, then it uses Markov Chain Monte Carlo to sample from the posterior
-distribution, and then outputs a histogram model for further analysis. Notably,
-the histogram can be used as the input to this function, so you can chain Bayesian
-updating procedures.
+\li This function first checks a table of conjugate distributions for the pair you sent
+in. If the models are listed on the table, then the function returns a corresponding
+closed-form model with updated parameters.
 
-\li If the prior distribution has a \c p or \c log_likelihood element, then I use \ref apop_model_metropolis to generate the posterior.
+\li If the parameters aren't in the table of conjugate, and the prior distribution has
+a \c p or \c log_likelihood element, then use \ref apop_model_metropolis to generate
+the posterior.  If you expect MCMC to run, you may add an \ref apop_mcmc_settings
+group to your prior to control the details of the search. See also the \ref
+apop_model_metropolis documentation.
 
-\li If the prior does not have a \c p or \c log_likelihood but does have a \c draw element, then I make draws from the prior and weight them by the \c p given by the likelihood distribution. This is not a rejection sampling method, so the burnin is ignored.
+\li If the prior does not have a \c p or \c log_likelihood but does have a \c draw
+element, then make draws from the prior and weight them by the \c p given by the
+likelihood distribution. This is not a rejection sampling method, so the burnin
+is ignored.
 
-Here are the conjugate distributions currently defined:
+\param data     The input data, that will be used by the likelihood function (default = \c NULL.)
+\param  prior   The prior \ref apop_model. If the system needs to
+estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method.  (No default, must not be \c NULL.)
+\param likelihood The likelihood \ref apop_model. If the system needs to
+estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method (ll preferred). (No default, must not be \c NULL.)
+\param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: an RNG from \ref apop_rng_get_thread)
+\return an \ref apop_model struct representing the posterior, with updated parameters. 
+
+
+\li In all cases, the output is a \ref apop_model that can be used as the input to this
+function, so you can chain Bayesian updating procedures.
+\li Here are the conjugate distributions currently defined:
 
 <table>
 <tr>
@@ -151,24 +165,18 @@ Here are the conjugate distributions currently defined:
 </td></tr>
 </table>
 
-\li The conjugate table is stored using a vtable; see \ref vtables for details. The typedef new functions must conform to and the hash used for lookups are:
+Here is a test function that compares the output via conjugate table and via
+Metropolis-Hastings sampling: 
+\include test_updating.c
+
+\li The conjugate table is stored using a vtable; see \ref vtables for details. If you
+are writing a new vtable entry, the typedef new functions must conform to and the hash
+used for lookups are:
 
 \code
 typedef apop_model *(*apop_update_type)(apop_data *, apop_model , apop_model);
 #define apop_update_hash(m1, m2) ((size_t)(m1).draw + (size_t)((m2).log_likelihood ? (m2).log_likelihood : (m2).p)*33)
 \endcode
-
-\param data     The input data, that will be used by the likelihood function (default = \c NULL.)
-\param  prior   The prior \ref apop_model. If the system needs to
-estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method.  (No default, must not be \c NULL.)
-\param likelihood The likelihood \ref apop_model. If the system needs to
-estimate the posterior via MCMC, this needs to have a \c log_likelihood or \c p method (ll preferred). (No default, must not be \c NULL.)
-\param rng      A \c gsl_rng, already initialized (e.g., via \ref apop_rng_alloc). (default: an RNG from \ref apop_rng_get_thread)
-\return an \ref apop_model struct representing the posterior, with updated parameters. 
-
-Here is a test function that compares the output via conjugate table and via
-Metropolis-Hastings sampling: 
-\include test_updating.c
 
 \li This function uses the \ref designated syntax for inputs.
 */

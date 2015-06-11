@@ -892,6 +892,7 @@ gsl_vector * v = &( apop_vv_##v );
 long double apop_vector_sum(const gsl_vector *in);
 double apop_vector_var_m(const gsl_vector *in, const double mean);
 double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
+Apop_var_declare( double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights) )
 double apop_vector_kurtosis(const gsl_vector *in);
 double apop_vector_skew(const gsl_vector *in);
 

@@ -255,7 +255,15 @@ double apop_log_likelihood(apop_data *d, apop_model *m){
 
 /** Find the vector of first derivatives (aka the gradient) of the log likelihood of a data/parametrized model pair.
 
-\param d    The data
+On input, the model \c m must already be sufficiently prepped
+that the log likelihood can be evaluated; see \ref psubsection for details.
+
+On output, the \c gsl_vector input to the function will be filled with the gradients
+(or <tt>NaN</tt>s on errors). If the model parameters have a more complex shape
+than a simple vector, then the vector will be in \c apop_data_pack order; use \c
+apop_data_unpack to reformat to the preferred shape.
+
+\param d    The \ref apop_data set at which the score is being evaluated.
 \param out  The score to be returned. I expect you to have allocated this already.
 \param m    The parametrized model, which must have either a \c log_likelihood or a \c p method.
 
@@ -267,16 +275,10 @@ new functions must conform to and the hash used for lookups are:
 typedef void (*apop_score_type)(apop_data *d, gsl_vector *gradient, apop_model *m);
 #define apop_score_hash(m1) ((size_t)((m1).log_likelihood ? (m1).log_likelihood : (m1).p))
 \endcode
-
-As input to your function, you can expect that the model \c m is sufficiently prepped
-that the log likelihood can be evaluated; see \ref psubsection for details.
-On output, the a \c gsl_vector input to the function must be filled with the gradients
-(or <tt>NaN</tt>s on errors). If the model parameters have a more complex shape
-than a simple vector, then the vector must be in \c apop_data_pack order; use \c
-apop_data_unpack to reformat to the preferred shape.
 */
 void apop_score(apop_data *d, gsl_vector *out, apop_model *m){
     Nullcheck_m(m, );
+    Apop_stopif(!out, return, 0, "out vector is NULL. It must be pre-allocated to the correct size. E.g., gsl_vector *out = gsl_vector_alloc(m->vsize + m->size1*m->size2))).");
     apop_score_type ms = apop_score_vtable_get(m);
     if (ms){
         ms(d, out, m);

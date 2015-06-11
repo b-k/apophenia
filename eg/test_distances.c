@@ -4,10 +4,9 @@
 int main(){
     gsl_vector *v1 = gsl_vector_alloc(2);
     gsl_vector *v2 = gsl_vector_alloc(2);
-    gsl_vector_set(v1, 0,2);
-    gsl_vector_set(v1, 1,2);
-    gsl_vector_set(v2, 0,5);
-    gsl_vector_set(v2, 1,6);
+    apop_vector_fill(v1, 2, 2);
+    apop_vector_fill(v2, 5, 6);
+
     assert(apop_vector_distance(v1, v1, 'd') == 0);     //discrete: if vectors are equal d==0;
     assert(apop_vector_distance(v1, v2, 'd') == 1);     //          if vectors differ d ==1
     assert(apop_vector_distance(v1, NULL, 'm') == 4.);  //length of v1, Manhattan metric

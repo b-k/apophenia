@@ -77,7 +77,7 @@ void * apop_settings_get_grp(apop_model *m, char *type, char fail){
 }
 
 /** Copy a settings group with the given name from the second model to
-the first.  (i.e., the arguments are in memcpy order). 
+the first (i.e., the arguments are in memcpy order). 
 
 You probably won't need this often---just use \ref apop_model_copy.
 

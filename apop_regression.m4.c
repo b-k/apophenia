@@ -76,9 +76,8 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
     return out;
 }
 
-/** Give me a column of text, and I'll give you a sorted list of the unique
-  elements. 
-  This is basically running "select distinct * from datacolumn", but without 
+/** Give me a column of text, and I'll give you a sorted list of the unique elements. 
+  This is basically running <tt>select distinct * from datacolumn</tt>, but without 
   the aid of the database.  
 
   \param d An \ref apop_data set with a text component

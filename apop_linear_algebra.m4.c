@@ -305,26 +305,24 @@ APOP_VAR_ENDHEAD
     } 
 }
 
-/** Test for a situation when a vector is diverging,
-so you can preempt a procedure that is about to break on infinite values.
+/** Test for a situation when a vector is diverging, so you can preempt a procedure
+that is about to break on infinite values.
 
-Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether all of the matrix's elements are finite.
-
- \param in  A <tt>gsl_vector</tt>
- \param max An upper and lower bound to the elements of the vector. (default: GSL_POSINF)
- \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise. 
+\param in  A <tt>gsl_vector</tt>
+\param max An upper and lower bound to the elements of the vector. (default: INFINITY)
+\return  1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$;<br> 0 otherwise. 
  
-\li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=1</tt>.
+\li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=2</tt>.
+\li Set \c max to \c INFINITY to test whether all of the matrix's elements are finite.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){
     const gsl_vector * apop_varad_var(in, NULL)
-    Apop_stopif(!in, return 1, 1, "You sent in a NULL vector; returning 1.");
-    long double apop_varad_var(max, GSL_POSINF)
+    Apop_stopif(!in, return 1, 2, "You sent in a NULL vector; returning 1.");
+    long double apop_varad_var(max, INFINITY)
 APOP_VAR_END_HEAD
-    double x;
     for (size_t i=0; i< in->size; i++){
-        x   = gsl_vector_get(in, i);
+        double x = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)
             return 0;
     }

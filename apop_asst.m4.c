@@ -26,7 +26,37 @@ static void apop_tack_on(char **in, char *addme){
 
 typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
 
-/** Join together a list or array of strings, with optional separators between the strings.
+/** Join together the \c text grid of an \ref apop_data set into a single string.
+
+For example, say that we have a data set with some text: row 0 has
+\c "a0", \c "b0", \c "c0"; row 2 has 
+\c "a1", \c "b1", \c "c1"; and so on. We would like to produce
+
+\code
+insert into tab values ('a0', 'b0', 'c0');
+insert into tab values ('a1', 'b1', 'c1');
+...
+\endcode
+
+This could be sent to an SQL engine to copy the data to a database (but this is just an example
+for demonstration---use \ref apop_data_print to write to a database table).
+
+To construct this single string from the text grid, we would need to add:
+\li before the text, <tt>Insert into tab values ('</tt>.
+\li between each element on a row: <tt>', '</tt>
+\li between rows: <tt>'); \\ninsert into tab values('</tt>
+\li at the tail end: <tt>');'
+
+Thus, do the conversion via:
+\code
+char *insert_string = apop_text_paste(indata,
+    .before="Insert into tab values ('",
+    .between="', '",
+    .between_cols="'); \\ninsert into tab values(',
+    .after="');'"
+);
+\endcode
+
 
 \param strings  An \ref apop_data set with a grid of text to be combined into a single string
 \param between  The text to put in between the rows of the table, such as ", ". (Default is a single space: " ")
@@ -34,7 +64,6 @@ typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
 \param after   The text to put at the tail of the string. For the query example, <tt>.after=" from data_table"</tt>. (Default: NULL)
 \param between_cols The text to insert between columns of text. See below for an example (Default is set to equal <tt>.between</tt>)
 \param prune If you don't want to use the entire text set, you can provide a function to indicate which elements should be pruned out. Some examples:
-
 \code
 //Just use column 3
 int is_not_col_3(apop_data *indata, int row, int col, void *ignore){
@@ -46,20 +75,23 @@ int is_blank(apop_data *indata, int row, int col, void *ignore){
     return strlen(indata->text[row][col])==0;
 }
 \endcode
-
 \param prune_parameter A void pointer to pass to your \c prune function.
 
-\return A single string with the elements of the \c strings table joined as per your specification. Allocated by the function, to be freed by you if desired.
+\return A single string with the elements of the \c strings table joined as per your
+specification. Allocated by the function, to be freed by you if desired.
 
-\li If the table of strings is \c NULL or has no text, I will print only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
-\li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
-\li This function uses the \ref designated syntax for inputs.
+    \li If the table of strings is \c NULL or has no text, the output string will have
+only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
+    \li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
+    \li It is sometimes useful to use \c Apop_r and \c Apop_rs to get a view of only
+one or a few rows in conjunction with this function.
 
-The sample snippet generates the SQL for a query using a list of column names (where
+    \li This function uses the \ref designated syntax for inputs.
+
+This sample snippet generates the SQL for a query using a list of column names (where
 the query begins with <tt>select </tt>, ends with <tt>from datatab</tt>, and has commas
 in between each element), re-processes the same list to produce the head of an HTML
-table, then produces the body of the table with the query result (pasting the
-<tt>tr</tt>s and <tt> td</tt>s into the right places).
+table, then produces the body of the table with the query result.
 
 \include sql_to_html.c
 */
@@ -292,10 +324,10 @@ APOP_VAR_ENDHEAD
 
 Devroye uses this as the base for many of his distribution-generators, including the Waring.
 
-\li If one of the inputs is <=0, error. Returns \c GSL_NAN if the function doesn't stop.
+\li If one of the inputs is <=0, error; return NaN and print a warning.
 */  //Header in stats.h
 double apop_rng_GHgB3(gsl_rng * r, double* a){
-    Apop_stopif(!((a[0]>0) && (a[1] > 0) && (a[2] > 0)), return GSL_NAN, 0, "all inputs must be positive.");
+    Apop_stopif(!((a[0]>0) && (a[1] > 0) && (a[2] > 0)), return NAN, 0, "all inputs must be positive.");
     double aa = gsl_ran_gamma(r, a[0], 1),
 		   b  = gsl_ran_gamma(r, a[1], 1),
 		   c  = gsl_ran_gamma(r, a[2], 1);

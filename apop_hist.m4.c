@@ -215,10 +215,7 @@ static double psmirnov2x(double x, int m, int n) {
 /** Run the Kolmogorov-Smirnov test to determine whether two distributions are identical.
 
 \param m1 A sorted PMF model. I.e., a model estimated via something like 
-
-\code
-apop_model *m1 = apop_estimate(apop_data_sort(input_data), apop_pmf);
-\endcode
+<tt>apop_model *m1 = apop_estimate(apop_data_sort(input_data), apop_pmf);</tt>
 
 \param m2  Another \ref apop_model. If it is a PMF, then I will use a two-sample test,
 which is different from the one-sample test used if this is not a PMF.
@@ -229,10 +226,12 @@ test that the two distributions are equal.
 \exception out->error='m'  Model error: \c m1 is not an \ref apop_pmf. I verify this
 by checking whether <tt>m1->cdf == apop_pmf->cdf</tt>.
 
-\li If you are using a \ref apop_pmf model, <b>the data set(s) must be sorted before
-you call this.</b> See \ref apop_data_sort and the discussion of CDFs in the \ref
-apop_pmf documentation. If you don't do this, the test will almost certainly reject
-the null hypothesis that \c m1 and \c m2 are identical.
+\li If you are using a \ref apop_pmf model, the data set(s) must be sorted before
+you set up the model, as per the example below. See \ref apop_data_sort and the
+discussion of CDFs in the \ref apop_pmf documentation. If you don't do this, the test
+will almost certainly reject the null hypothesis that \c m1 and \c m2 are identical.
+A future version of Apophenia may implement a mechanism to allow this function to test
+for sorted data, but it currently can't.
 
 Here is an example, which tests whether a set of draws from a Normal(0, 1) matches a
 sequence of Normal distributions with increasing mean.

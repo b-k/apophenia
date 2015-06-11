@@ -122,11 +122,9 @@ Recreating a table which already exists can cause errors, so it is good practice
 \return
 0 = table does not exist<br>
 1 = table was found, and if remove=='d', has been deleted
+-1 = processing error
 
 \li In the SQLite engine, this function considers table views to be tables.
-
-\li If <tt>apop_opts.stop_on_warning='n'</tt>, returns -1 on errors.
-
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_table_exists(char const *name, char remove){

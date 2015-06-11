@@ -369,13 +369,13 @@ gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
 }
 
 /** Apply a function to every row of a matrix.  The function that you input takes in
-a \c gsl_vector and returns nothing. \c apop_apply will send a pointer to each element
+a \c gsl_vector and returns nothing. This function will send a pointer to each element
 of your vector to your function.
 
   \param v  The input vector
   \param fn A function of the form <tt>void fn(double in)</tt>
 
-  \li If the vector is \c NULL, this is a no-op and returns immediately.
+  \li If the vector is \c NULL, this is a no-op.
   \li See \ref mapply "the map/apply page" for details.
 \see \ref apop_map, \ref apop_map_sum
 */

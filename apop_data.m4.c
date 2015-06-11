@@ -115,13 +115,15 @@ static void apop_text_blank(apop_data *in, const size_t row, const size_t col){
     in->text[row][col] = apop_nul_string;
 }
 
-/** Free a matrix of chars* (i.e., a char***). This is the form of the
- text element of the \ref apop_data set, so you can use this for:
- \code
- apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
- \endcode
- This is what \c apop_data_free uses internally.
-   */
+/** Free a matrix of chars* (i.e., a char***).
+This is what \c apop_data_free uses internally to deallocate the \c text element of
+an \ref apop_data set. You may never need to use it directly.
+
+Sample usage:
+\code
+apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
+\endcode
+*/
 void apop_text_free(char ***freeme, int rows, int cols){
     if (rows && cols)
         for (int i=0; i < rows; i++){
@@ -960,25 +962,22 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 
 \param in   The \ref apop_data set, that already has an allocated \c text element.
 \param row  The row
-\param col  The col
+\param col  The column
 \param fmt The text to write.
 \param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
 
 \return 0=OK, -1=error (probably out-of-bounds)
 
-\li UTF-8 or ASCII text is correctly handled.
-\li Apophenia follows a general rule of not reallocating behind your back: if your text
-matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display
-an error rather than reallocating the text matrix.
-\li Resizing a text matrix is annoying in C, so note that \ref apop_text_alloc will
-reallocate to a new size if you need. For example, this code will fill the diagonals of
-the text array with a message, resizing as it goes:
-\li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
-\li If there had been a string at the grid point you are writing to, 
-the old one is effectively lost when the new one is placed. So, I free
-the old string to prevent leaks if necessary. Remember this if you had other pointers aliasing that
-string, in which case you may as well avoid this function and just use <tt>
-asprintf(&(your_dataset->text[row][col]), "your string")</tt>.
+    \li UTF-8 or ASCII text is correctly handled.
+    \li Apophenia follows a general rule of not reallocating behind your back: if
+your text matrix is currently of size (3,3) and you try to put an item in slot (4,4),
+then I display an error rather than reallocating the text matrix.
+    \li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
+    \li If there had been a string at the grid point you are writing to,
+the old one is freed to prevent leaks. Remember this if you had other pointers aliasing
+that string.
+    \li \ref apop_text_alloc will reallocate to a new size if you need. For example,
+this code will fill the diagonals of the text array with a message, resizing as it goes:
 
 \code
 apop_data *list = (something already allocated.);
@@ -1005,7 +1004,7 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
     return 0;
 }
 
-/** This allocates an array of strings and puts it in the \c text element of an \ref apop_data set. 
+/** This allocates or resizes the \c text element of an \ref apop_data set. 
 
   If the \c text element already exists, then this is effectively a \c realloc function,
   reshaping to the size you specify.
