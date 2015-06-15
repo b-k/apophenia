@@ -29,8 +29,8 @@ int main(){
     apop_data *perm = apop_data_copy(Apop_r(d, 0));
     perm->vector = NULL;
     apop_data_fill(perm, 5, 3, 4);
-    apop_text_add(perm, 0, 0, "2");
-    apop_text_add(perm, 0, 1, "1");
+    apop_text_set(perm, 0, 0, "2");
+    apop_text_set(perm, 0, 1, "1");
 
     apop_data_sort(d, perm);
 #ifndef Testing

@@ -865,7 +865,7 @@ manipulate the \ref apop_data structure and its components.
 \li\ref apop_matrix_realloc
 \li\ref apop_matrix_rm_columns
 \li\ref apop_matrix_stack
-\li\ref apop_text_add
+\li\ref apop_text_set
 \li\ref apop_text_paste
 \li\ref apop_text_to_data
 \li\ref apop_vector_bounded
@@ -1372,7 +1372,7 @@ Text should be encoded in UTF-8. US ASCII is a subset of UTF-8, so that's OK too
 There are a few simple forms for handling the \c text element of an \c apop_data set, which handle the tedium of memory-handling for you.
 
 \li Use \ref apop_text_alloc to allocate the block of text. It is actually a realloc function, which you can use to resize an existing block without leaks.
-\li Use \ref apop_text_add to add text elements. It replaces any existing text in the given slot without memory leaks.
+\li Use \ref apop_text_set to write text elements. It replaces any existing text in the given slot without memory leaks.
 \li The number of rows of text data in <tt>tdata</tt> is
 <tt>tdata->textsize[0]</tt>; 
 the number of columns is <tt>tdata->textsize[1]</tt>.
@@ -1383,7 +1383,7 @@ you can check via <tt>if (!strlen(dataset->text[i][j])) printf("<blank>")</tt> o
 <tt>if (!*dataset->text[i][j]) printf("<blank>")</tt>. For the sake of efficiency
 when dealing with large, sparse data sets, all blank cells point to <em>the same</em>
 static empty string, meaning that freeing cells must be done with care. Your best bet
-is to rely on \ref apop_text_add, \ref apop_text_alloc, and \ref apop_text_free to do
+is to rely on \ref apop_text_set, \ref apop_text_alloc, and \ref apop_text_free to do
 the memory management for you.
 
 Here is a sample program that uses these forms, plus a few text-handling functions.
@@ -1399,7 +1399,7 @@ functions.
 
 \li\ref apop_query_to_text
 \li\ref apop_text_alloc : allocate or resize the text part of an \ref apop_data set.
-\li\ref apop_text_add: replace a single cell of the text grid with new text.
+\li\ref apop_text_set: replace a single cell of the text grid with new text.
 \li\ref apop_text_paste : convert a table of little strings into one long string.
 \li\ref apop_text_unique_elements : get a sorted list of unique elements for one column of text.
 \li\ref apop_text_free : you may never need this, because \ref apop_data_free calls it.
@@ -2608,7 +2608,7 @@ of text data is a pointer-to-pointer-to-pointer-to-character. The text grid in t
 \ref apop_data structure actually takes this form, but functions are provided to do
 most or all the pointer work for you.  The \ref apop_text_alloc function
 is really a realloc function: you can use it to resize the text grid as necessary. The
-\ref apop_text_add function will do the pointer work in copying a single string to the
+\ref apop_text_set function will do the pointer work in copying a single string to the
 grid. Functions that act on entire data sets, like \ref apop_data_rm_rows, handle the
 text part as well.
 

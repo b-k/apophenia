@@ -201,7 +201,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
         } else {
-            apop_text_add(d, rows, jj-ncshift, (argv[jj]==NULL)? apop_opts.nan_string: argv[jj]);
+            apop_text_set(d, rows, jj-ncshift, (argv[jj]==NULL)? apop_opts.nan_string: argv[jj]);
             //Asprintf(&(d->text[rows][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
             if(addnames)
                 apop_name_add(d->names, column[jj], 't'); 

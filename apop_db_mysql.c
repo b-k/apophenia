@@ -153,7 +153,7 @@ static void * process_result_set_chars (MYSQL *conn, MYSQL_RES *res_set) {
                 passed_name = 1;
                 continue;
             }
-            apop_text_add(out, i, jj-passed_name, "%s", (row[jj]==NULL)?  apop_opts.nan_string : row[jj]);
+            apop_text_set(out, i, jj-passed_name, "%s", (row[jj]==NULL)?  apop_opts.nan_string : row[jj]);
 		}
     }
     check_and_clean(;)
@@ -243,7 +243,7 @@ apop_data* apop_mysql_mixed_query(char const *intypes, char const *query){
             if (c == 'n' || c =='N')
                 apop_name_add(out->names, row[j], 'r');
             else if (c == 't'|| c=='T')
-                apop_text_add(out, i, thist++, "%s", (row[j]==NULL)?  apop_opts.nan_string : row[j]);
+                apop_text_set(out, i, thist++, "%s", (row[j]==NULL)?  apop_opts.nan_string : row[j]);
             else if (c == 'v'|| c=='V'){
                 double valor = (!row[j] || !strcmp(row[j], "NULL")) ? NAN : atof(row[j]);
                 gsl_vector_set(out->vector, i, valor);

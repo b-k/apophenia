@@ -240,9 +240,9 @@ void test_crosstabbing() {
     assert(apop_data_get(d, .rowname="C", "G")==1);
 
     apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
-    apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
-    apop_data_set(ct, 1, 0, 2); apop_text_add(ct, 1, 0, "second");
-    apop_data_set(ct, 2, 0, 3); apop_text_add(ct, 2, 0, "third");
+    apop_data_set(ct, 0, 0, 1); apop_text_set(ct, 0, 0, "first");
+    apop_data_set(ct, 1, 0, 2); apop_text_set(ct, 1, 0, "second");
+    apop_data_set(ct, 2, 0, 3); apop_text_set(ct, 2, 0, "third");
     apop_table_exists("ct", 'd');
     apop_crosstab_to_db(ct, "ct", "r", "c", "val");
     if (apop_opts.db_engine=='s'){

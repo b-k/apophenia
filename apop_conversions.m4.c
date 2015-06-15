@@ -579,8 +579,8 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
             parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
         fn	= apop_text_alloc(fn, add_this_line->textsize[0], 1);
         for (int i=0; i< fn->textsize[0]; i++)
-            if (field_names) apop_text_add(fn, i, 0, field_names[i]);
-            else             apop_text_add(fn, i, 0, "col_%i", i);
+            if (field_names) apop_text_set(fn, i, 0, field_names[i]);
+            else             apop_text_set(fn, i, 0, "col_%i", i);
     }
 }
 
@@ -956,7 +956,7 @@ apop_data *apop_text_fill_base(apop_data *data, char* text[]){
     int ctr=0;
     for (int i=0; i< data->textsize[0]; i++)
         for (int j=0; j< data->textsize[1]; j++)
-            apop_text_add(data, i, j, text[ctr++]);
+            apop_text_set(data, i, j, text[ctr++]);
     return data;
 }
 

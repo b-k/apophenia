@@ -349,12 +349,12 @@ apop_data *get_var_list(char const *margin_table, char const *count_col, char co
         for (int i=0; i< all_vars_d->textsize[0]; i++)
             if (all_vars_d->text[i][1] && (count_col ? strcmp(all_vars_d->text[i][1], count_col) : 1)
                  && (init_count_col ? strcmp(all_vars_d->text[i][1], init_count_col): 1))
-                    apop_text_add(all_vars_d, 0, ctr++, all_vars_d->text[i][1]);
+                    apop_text_set(all_vars_d, 0, ctr++, all_vars_d->text[i][1]);
         apop_text_alloc(all_vars_d, 1, ctr);
         *var_ct = ctr;
     } else {
         all_vars_d = apop_text_alloc(NULL, 1, *var_ct); 
-        for (int i=0; i<*var_ct; i++) apop_text_add(all_vars_d, 0, i, varlist[i]);
+        for (int i=0; i<*var_ct; i++) apop_text_set(all_vars_d, 0, i, varlist[i]);
     }
     Apop_stopif(!all_vars_d, apop_return_data_error(y), 0, "Trouble getting/parsing the list of variables.");
     return all_vars_d;

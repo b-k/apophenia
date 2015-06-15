@@ -8,9 +8,9 @@ int main(){
                 "insert into datatab values ('Michael', 14, 'm');");
 
     apop_data *cols = apop_text_alloc(NULL, 3, 1);
-    apop_text_add(cols, 0, 0, "name");
-    apop_text_add(cols, 1, 0, "age");
-    apop_text_add(cols, 2, 0, "sex");
+    apop_text_set(cols, 0, 0, "name");
+    apop_text_set(cols, 1, 0, "age");
+    apop_text_set(cols, 2, 0, "sex");
     char *query= apop_text_paste(cols, .before="select ", .between=", ");
     apop_data *d = apop_query_to_text("%s from datatab", query);
     char *html_head = apop_text_paste(cols, .before="<table><tr><td>",

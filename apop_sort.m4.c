@@ -113,8 +113,8 @@ E.g., to sort by the last column of a five-column matrix first, then the next-to
 apop_data *sort_order = apop_data_copy(Apop_r(data, 0));
 sort_order->vector = NULL; //so it will be skipped.
 Apop_data_fill(sort_order, NAN, NAN, 3, 2, 1);
-apop_text_add(sort_order, 0, 0, "4");
-apop_text_add(sort_order, 0, 1, "5");
+apop_text_set(sort_order, 0, 0, "4");
+apop_text_set(sort_order, 0, 1, "5");
 apop_data_sort(data, sort_order);
 \endcode
 

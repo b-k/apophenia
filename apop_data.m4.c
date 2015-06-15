@@ -252,7 +252,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
             for(size_t j=0; j < in->textsize[1]; j ++)
                 if (in->text[i][j] == apop_nul_string)
                      apop_text_blank(out, i, j);
-                else apop_text_add(out, i, j, "%s", in->text[i][j]);
+                else apop_text_set(out, i, j, "%s", in->text[i][j]);
     }
     if (in->more && out->more) apop_data_memcpy(out->more, in->more);
 }
@@ -403,7 +403,7 @@ APOP_VAR_ENDHEAD
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i+basetextsize, j);
-                    else apop_text_add(out, i+basetextsize, j, "%s", m2->text[i][j]);
+                    else apop_text_set(out, i+basetextsize, j, "%s", m2->text[i][j]);
         } else {
             Apop_stopif(out->text && m2->textsize[0]!=out->textsize[0], 
                     out->error='d'; return out, 0,
@@ -416,7 +416,7 @@ APOP_VAR_ENDHEAD
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i, j+basetextsize);
-                    else apop_text_add(out, i, j+basetextsize, "%s", m2->text[i][j]);
+                    else apop_text_set(out, i, j+basetextsize, "%s", m2->text[i][j]);
             apop_name_stack(out->names, m2->names, 't');
         }
     }
@@ -862,7 +862,7 @@ C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of 
 extension enabled.
 
 \li Set weights via <tt>gsl_vector_set(your_data->weights, row, val);</tt>.
-\li Set text elements via \ref apop_text_add.
+\li Set text elements via \ref apop_text_set.
 
 
 \param data The data set. Must not be \c NULL.
@@ -983,11 +983,11 @@ this code will fill the diagonals of the text array with a message, resizing as 
 apop_data *list = (something already allocated.);
 for (int n=0; n < 10; n++){
     apop_text_alloc(list, n+1, n+1);
-    apop_text_add(list, n, n, "This is cell (%i, %i)", n, n);
+    apop_text_set(list, n, n, "This is cell (%i, %i)", n, n);
 }
 \endcode
 */
-int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+int apop_text_set(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
     Apop_stopif(!in, return -1, 0, "You asked me to write text to a NULL data set.");
     Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
@@ -1182,7 +1182,7 @@ APOP_VAR_ENDHEAD
             for (int c=0; c< in->textsize[1]; c++)
                 if (in->text[r][c] == apop_nul_string)
                      apop_text_blank(out, c, r);
-                else apop_text_add(out, c, r, in->text[r][c]);
+                else apop_text_set(out, c, r, in->text[r][c]);
     }
     if (in->names && in->names->textct && !in->names->colct)
         apop_name_stack(out->names, in->names, 't', 'r');

@@ -106,7 +106,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
     //pack and ship
     apop_data *out = apop_text_alloc(NULL, elmt_ctr, 1);
     for (int j=0; j< elmt_ctr; j++)
-        apop_text_add(out, j, 0, telmts[j]);
+        apop_text_set(out, j, 0, telmts[j]);
     free(telmts);
     return out;
 }
@@ -171,7 +171,7 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
         apop_text_alloc((*factor_list), delmts->size, 1);
         for (size_t i=0; i< (*factor_list)->vector->size; i++){
             //shift to the text, for conformity with the more common text version.
-            apop_text_add((*factor_list), i, 0, "%g", gsl_vector_get(delmts, i));
+            apop_text_set((*factor_list), i, 0, "%g", gsl_vector_get(delmts, i));
             apop_data_set((*factor_list), i, -1, i);
         }
     }

@@ -220,7 +220,8 @@ Apop_var_declare( double * apop_data_ptr(apop_data *data, int row, int col, cons
 Apop_var_declare( double apop_data_get(const apop_data *data, size_t row, int  col, const char *rowname, const char *colname, const char *page) )
 Apop_var_declare( int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *rowname, const char * colname, const char *page) )
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
-int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
+#define apop_text_add apop_text_set   //Deprecated
+int apop_text_set(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
 Apop_var_declare( apop_data * apop_data_transpose(apop_data *in, char transpose_text, char inplace) )

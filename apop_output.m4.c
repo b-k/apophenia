@@ -118,32 +118,32 @@ void apop_data_show(const apop_data *in){
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
     if (hasrownames)
         for (size_t i=0; i < in->names->rowct; i ++)
-            apop_text_add(printout, i + hascolnames, 0, "%s", in->names->row[i]);
+            apop_text_set(printout, i + hascolnames, 0, "%s", in->names->row[i]);
     for (size_t i=0; i < vsize; i ++) //vsize may be zero.
-        apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
+        apop_text_set(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
     for (size_t i=0; i < msize1; i ++) //msize1 may be zero.
         for (size_t j=0; j < msize2; j ++)
-            apop_text_add(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
+            apop_text_set(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
     if (in->textsize[0])
         for (size_t i=0; i < in->textsize[0]; i ++)
             for (size_t j=0; j < in->textsize[1]; j ++)
-                apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, "%s", in->text[i][j]);
+                apop_text_set(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, "%s", in->text[i][j]);
     if (hasweights)
         for (size_t i=0; i < in->weights->size; i ++)
-            apop_text_add(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
+            apop_text_set(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
 
 //column names
     if (hascolnames){
         if (vsize && in->names->vector)
-            apop_text_add(printout, 0 , hasrownames, "%s", in->names->vector);
+            apop_text_set(printout, 0 , hasrownames, "%s", in->names->vector);
         if (msize2 && in->names)
             for (size_t i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i, "%s", in->names->col[i]);
+                apop_text_set(printout, 0 , hasrownames + (vsize>0) + i, "%s", in->names->col[i]);
         if (in->textsize[1] && in->names)
             for (size_t i=0; i < in->names->textct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, "%s", in->names->text[i]);
+                apop_text_set(printout, 0 , hasrownames + (vsize>0) + msize2 + i, "%s", in->names->text[i]);
         if (hasweights)
-            apop_text_add(printout, 0 , outsize_c-1, "Weights");
+            apop_text_set(printout, 0 , outsize_c-1, "Weights");
     }
 
 //get column sizes

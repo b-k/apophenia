@@ -194,7 +194,7 @@ void test_listwise_delete(){
   apop_text_alloc(t1, 10, 10);
   for (int i=0; i< 10; i++)
       for (int j=0; j< 10; j++)
-          apop_text_add(t1, i, j, "%i", i*j);
+          apop_text_set(t1, i, j, "%i", i*j);
   //no NaNs yet
   apop_data *t1c = apop_data_listwise_delete(t1);
   assert(t1c->matrix->size1==10);
@@ -230,7 +230,7 @@ void test_listwise_delete(){
     apop_text_alloc(t1, 12, 10);
     for (int i=0; i< 10; i++)
         for (int j=0; j< 9; j++)
-            apop_text_add(t1, i, j, "%i", i*j);
+            apop_text_set(t1, i, j, "%i", i*j);
     t2 = apop_data_copy(t1);
     apop_data_transpose(t1);
     assert(!strlen(t1->text[7][11]));
@@ -246,7 +246,7 @@ void test_listwise_delete(){
     t1 = apop_text_alloc(NULL, 10, 12);
     for (int i=0; i< 9; i++)
         for (int j=0; j< 10; j++)
-            apop_text_add(t1, i, j, "%i", i*j);
+            apop_text_set(t1, i, j, "%i", i*j);
     apop_data *t4 = apop_data_transpose(t1, .inplace='n');
     assert(!strlen(t4->text[11][7]));
     assert(atoi(t4->text[9][8])==72);
@@ -405,8 +405,8 @@ void test_split_and_stack(gsl_rng *r){
     apop_data *txt2 = apop_text_alloc(NULL, 3,3);
     for (int i=0; i< 3; i++)
         for (int j=0; j< 3; j++){
-            apop_text_add(txt, i, j, "(%i, %i)", i, j);
-            apop_text_add(txt2, i, j, "[%i, %i]", i, j);
+            apop_text_set(txt, i, j, "(%i, %i)", i, j);
+            apop_text_set(txt2, i, j, "[%i, %i]", i, j);
         }
 
     apop_data *rbound = apop_data_stack(txt, txt2, .posn='r');
@@ -912,15 +912,15 @@ void test_unique_elements(){
     assert(gsl_vector_get(distinct, 4) == .1);
 
     apop_data *t = apop_text_alloc(NULL, 9, 7);
-    apop_text_add(t, 0, 0, "Hi,");
-    apop_text_add(t, 1, 0, "there");
-    apop_text_add(t, 2, 0, ".");
-    apop_text_add(t, 3, 0, "This");
-    apop_text_add(t, 4, 0, "there");
-    apop_text_add(t, 5, 0, "is");
-    apop_text_add(t, 6, 0, "dummy");
-    apop_text_add(t, 7, 0, "text");
-    apop_text_add(t, 8, 0, ".");
+    apop_text_set(t, 0, 0, "Hi,");
+    apop_text_set(t, 1, 0, "there");
+    apop_text_set(t, 2, 0, ".");
+    apop_text_set(t, 3, 0, "This");
+    apop_text_set(t, 4, 0, "there");
+    apop_text_set(t, 5, 0, "is");
+    apop_text_set(t, 6, 0, "dummy");
+    apop_text_set(t, 7, 0, "text");
+    apop_text_set(t, 8, 0, ".");
     apop_data *dt = apop_text_unique_elements(t, 0);
     assert(dt->textsize[0] == 7);
     assert(!strcmp(".", dt->text[0][0]));
