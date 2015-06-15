@@ -1,9 +1,8 @@
 #include <apop.h>
 
 double row_offset;
-gsl_rng *r;
 
-void offset_rng(double *v){*v = gsl_rng_uniform(r) + row_offset;}
+void offset_rng(double *v){*v = gsl_rng_uniform(apop_rng_get_thread()) + row_offset;}
 double find_tstat(gsl_vector *in){ return apop_mean(in)/sqrt(apop_var(in));}
 double conf(double in, void *df){ return gsl_cdf_tdist_P(in, *(int *)df);}
 
@@ -12,9 +11,9 @@ double mu(gsl_vector *in){ return apop_vector_mean(in);}
 
 int main(){
     apop_data *d = apop_data_alloc(10, 100);
-    r = apop_rng_alloc(3242);
+    gsl_rng *r = apop_rng_alloc(3242);
     for (int i=0; i< 10; i++){
-        row_offset = gsl_rng_uniform(r)*2 -1;
+        row_offset = gsl_rng_uniform(r)*2 -1; //declared and used above.
         Apop_row_v(d, i, onerow);
         apop_vector_apply(onerow, offset_rng);
     }

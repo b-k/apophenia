@@ -897,9 +897,9 @@ Apop_var_declare( double apop_vector_correlation(const gsl_vector *ina, const gs
 double apop_vector_kurtosis(const gsl_vector *in);
 double apop_vector_skew(const gsl_vector *in);
 
-#define apop_sum(in) apop_vector_sum(in)
-#define apop_var(...) apop_vector_var(__VA_ARGS__) 
-#define apop_mean(...) apop_vector_mean(__VA_ARGS__)
+#define apop_sum apop_vector_sum
+#define apop_var apop_vector_var
+#define apop_mean apop_vector_mean
 
 /** Find the mean of the input vector.
 
