@@ -280,7 +280,7 @@ APOP_VAR_END_HEAD
 		mu = apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
-        double scaling = 1./(sqrt(apop_vector_var_m(in, 0)));
+        double scaling = 1./(sqrt(apop_vector_var_m(*out, 0)));
         Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
 		gsl_vector_scale(*out, scaling);
 	} 

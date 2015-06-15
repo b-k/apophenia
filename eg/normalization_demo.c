@@ -13,7 +13,7 @@ apop_vector_normalize(in, &out, 's');
 printf("Standardized with mean zero and variance one:\n");
 apop_vector_print(out);
 assert(apop_vector_sum(out)<1e-5);
-//assert(fabs((apop_vector_var(out))- 1)<1e-5);
+assert(fabs((apop_vector_var(out))- 1)<1e-5);
 
 apop_vector_normalize(in, &out, 'r');
 printf("Normalized range with max one and min zero:\n");
