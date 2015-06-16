@@ -257,7 +257,7 @@ Info</h2>
 </ul>
 <ul>
 <li>AIC: <a href="https://en.wikipedia.org/wiki/Akaike&apos;s_Information_Criterion">Aikake Information Criterion</a> </li>
-<li>AIC_c: AIC with a finite sample correction. ``<em>Generally, we advocate the use of AIC_c when the ratio <img class="formulaInl" alt="$n/K$" src="form_127.png"/> is small (say <img class="formulaInl" alt="$<$" src="form_187.png"/> 40)</em>'' [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.] </li>
+<li>AIC_c: AIC with a finite sample correction. ``<em>Generally, we advocate the use of AIC_c when the ratio <img class="formulaInl" alt="$n/K$" src="form_128.png"/> is small (say <img class="formulaInl" alt="$<$" src="form_129.png"/> 40)</em>'' [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.] </li>
 <li>BIC: <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a> </li>
 <li>R squared </li>
 <li>R squared adj </li>
@@ -284,7 +284,7 @@ p, log_likelihood</h2>
 <li>The inputs are an <a class="el" href="gentle.html#apop_data">apop_data</a> set and an <a class="el" href="structapop__model.html">apop_model</a>, which should include the elements needed to fully estimate the probability/likelihood (probably a filled <code>-&gt;parameters</code> element, possibly a settings group added by the user). </li>
 <li>We assume that the parameters have been set, by users via <a class="el" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> or <a class="el" href="group__all__public.html#ga36cae46a2950eb6cfb65794cdd5dac7e">apop_model_set_parameters</a>, or by <a class="el" href="group__all__public.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> by its search algorithms. If the parameters are necessary, the function shall check that the parameters are not <code>NULL</code> and set the model's <code>error</code> element to <code>'p'</code> if they are missing. </li>
 <li>Return <code>NaN</code> on errors. If an error in the input model is found, the function may set the input model's <code>error</code> element to an appropriate <code>char</code> value. </li>
-<li>If your model includes both <code>log_likelihood</code> and <code>p</code> methods, it must be the case that <code>log(p(d, m))</code> equals <code>log_likelihood(d, m)</code> for all <code>d</code> and <code>m</code>. This implies that <code>p</code> must return a value <img class="formulaInl" alt="$\geq 0$" src="form_188.png"/> </li>
+<li>If your model includes both <code>log_likelihood</code> and <code>p</code> methods, it must be the case that <code>log(p(d, m))</code> equals <code>log_likelihood(d, m)</code> for all <code>d</code> and <code>m</code>. This implies that <code>p</code> must return a value <img class="formulaInl" alt="$\geq 0$" src="form_130.png"/> </li>
 <li>If observations are assumed to be iid, you can probably use <a class="el" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> to write the core of the log likelihood function.</li>
 </ul>
 <h2><a class="anchor" id="prepsubsection"></a>

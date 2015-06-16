@@ -106,7 +106,7 @@ $(document).ready(function(){initNavTree('maxipage.html','');});
 <li>The overall setup is about estimating the parameters of a model with data. The user provides a data set and an unparameterized model, and the system tries parameterized models until one of them is found to be optimal. The data is fixed. The optimization tries a series of parameterized models, searching for the one that is most likely. In a non-stats setting, you will probably have <code>NULL</code> data, and will be optimizing the parameters internal to the model.</li>
 </ul>
 <ul>
-<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_120.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_121.png"/> is fixed ahead of time, say at 100.</li>
+<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_121.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_122.png"/> is fixed ahead of time, say at 100.</li>
 </ul>
 <div class="fragment"><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
 <div class="line">        <span class="keywordtype">double</span> scaling;</div>
