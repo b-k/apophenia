@@ -55,7 +55,7 @@ To start off, have a look at this \ref gentle "Gentle Introduction" to the libra
 
 <a href="outline.html">The outline</a> gives a more detailed narrative.
 
-The <a href="globals.html">index</a> lists every function in the
+The <a href="group__all__public.html">index</a> lists every function in the
 library, with detailed reference
 information. Notice that the header to every page has a link to the outline and the index.
 
@@ -2939,7 +2939,6 @@ where \c data is the input data, and \c
 m is the parametrized model (i.e. your model with a \c parameters element already filled in by the caller). 
 This function will return the value of the log likelihood function at the given parameters.
 
-\li Is this a constrained optimization? See \ref constr on how to set them. Otherwise, no constraints will be assumed.
 \li Write the object:
 
 \code
@@ -2959,7 +2958,7 @@ and omit the matrix sizes. The default model prep routine will call
 count will be filled in if you specify \c -1 for \c vsize, <tt>msize(1|2)</tt>, or
 <tt>dsize</tt>. If the allocation is exceptional in a different way, then you will
 need to allocate parameters by writing a custom \c prep method for the model.
-\li If there are constraints, add a <tt>.constraint</tt> element for those too.
+\li Is this a constrained optimization?  Add a <tt>.constraint</tt> element for those too.  See \ref constr for more.
 
 You already have more than enough that something like this will work (the \c dsize is used for random draws):
 \code
@@ -2983,7 +2982,7 @@ apop_score_insert(apop_new_dlog_likelihood, your_new_model);
 \endcode
 
 \subsection On Threading
-Many procedures in Apophenia use OpenMP to thread operations. If a method can not be threaded, be sure to wrap it in an OpenMP critical region. E.g.,
+Many procedures in Apophenia use OpenMP to thread operations, so assume your functions are running in a threaded environment. If a method can not be threaded, wrap it in an OpenMP critical region. E.g.,
 
 
 \code
@@ -3012,26 +3011,25 @@ long double ysg_ll(apop_data *d, apop_model *m){
 \endcode
 
 These model-specific structs are handled as expected by \ref apop_model_copy and \ref
-apop_model_free, and many functions that modify or transform \ref apop_models try to
+apop_model_free, and many functions that modify or transform an \ref apop_model try to
 handle settings groups as expected. This section describes how to build a settings
 group so all these automatic steps happen as expected, and your methods can reliably retrieve settings as needed.
 
 But before getting into the detail of how to make model-specific groups of settings
 work, note that there's a lightweight method of storing sundry settings, so in many
 cases you can bypass all of the following.
-
 The \ref apop_model structure has a \c void pointer named \c more which you can use to
 point to a model-specific struct. If \c more_size is larger than zero (i.e. you set
 it to <tt>your_model.more_size=sizeof(your_struct)</tt>), then it will be copied via \c
 memcpy by \ref apop_model_copy, and freed by \ref apop_model_free. Apophenia's
-estimation routines will never impinge on this item, so do what you wish with it.
+routines will never impinge on this item, so do what you wish with it.
 
 The remainder of this subsection describes the information you'll have to provide to make
 use of the conveniences described to this point: initialization of defaults, smarter
 copying and freeing, and adding to an arbitrarily long list of settings groups attached
 to a model.  You will need four items: a typedef for the structure itself, plus init, copy, and
 free functions.  This is the sort of boilerplate that will be familiar to users of
-object oriented languages in the style of C++ or Java, but it's really a list of
+object-oriented languages in the style of C++ or Java, but it's really a list of
 arbitrarily-typed elements, which makes this feel more like LISP. [And being a
 reimplementation of an existing feature of LISP, this section will be macro-heavy.]
 
@@ -3078,17 +3076,17 @@ the structure itself is handled, the remainder of this section will be about how
 add instructions for the structure internals, like data that is pointed to by the structure elements.
 
 \li For the allocate function, use the above form if everything in your code defaults to zero/\c NULL.  
-In most cases, though, you will need a new line declaring a default for every element in your structure. There is a macro to help with this too. 
+Otherwise, you will need a new line declaring a default for every element in your structure. There is a macro to help with this too. 
 These macros will define for your use a structure named \c in, and an output pointer-to-struct named \c out.
 Continuing the above example:
 
 \code
 Apop_settings_init (ysg, 
-      Apop_stopif(!in.size1, return NULL, 0, "I need you to give me a value for size1.");
-      Apop_varad_set(size2, 10);
-      Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
-      Apop_varad_set(refs, malloc(sizeof(int)));
-      *refs=1;
+    Apop_stopif(!in.size1, return NULL, 0, "I need you to give me a value for size1.");
+    Apop_varad_set(size2, 10);
+    Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
+    Apop_varad_set(refs, malloc(sizeof(int)));
+    *refs=1;
 )
 \endcode
 
@@ -3103,6 +3101,7 @@ pointing to the same data. We have to be careful to prevent double-freeing later
 //The elements of the set to copy are all copied by the function's boilerplate,
 //and then make one additional modification:
 Apop_settings_copy (ysg,
+    #pragma omp critical (ysg_refs)
         (*refs)++;
 )
 \endcode
@@ -3129,28 +3128,31 @@ populate it and attach it to any model.
 The settings groups are for adding arbitrary model-specific nouns; vtables are for
 adding arbitrary model-specific verbs.
 
-For any given function (e.g., entropy, the dlog likelihood, Bayesian updating), there is
-probably a special case for well-known models like the Normal distribution. 
+Many functions (e.g., entropy, the dlog likelihood, Bayesian updating) have
+special cases for well-known models like the Normal distribution. 
 Any function may maintain a registry of models and associated special-case procedures, aka a vtable.
 
-This subsection will discuss how to add
-a function to an existing vtable.
-
-\li See \ref apop_update, \ref apop_score, \ref apop_predict, \ref apop_model_print, and \ref
-apop_parameter_model for examples and procedure-specific details.
-\li Write a function following the given type definition.
-\li Use the associated <tt>_vtable_add</tt> function to add the function and associate it
-with the given model. For example, to add a Beta-binomial routine named \c betabinom
-to the registry of Bayesian updating routines, use <tt>apop_update_vtable_add(betabinom,
-apop_beta, apop_binomial)</tt>.
-\li Lookups happen based on a hash that takes into account the elements of the model
+Lookups happen based on a hash that takes into account the elements of the model
 that will be used in the calculation. For example, the \c apop_update_hash takes in two
 models and calculates the hash based on the address of the prior's \c draw method and
 the likelihood's \c log_likelihood or \c p method. Thus, a vtable lookup for new models
 that re-use the same methods (at the same addresses in memory) will still find the
 same special-case function.
-\li If you need to deregister the function, use the associated deregister function,
-e.g. <tt>apop_update_vtable_drop(apop_beta, apop_binomial)</tt>. You can guarantee that a method will not be re-added by following up the <tt>_drop</tt> with, e.g., <tt>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</tt>.
+
+If you need to deregister the function, use the associated deregister function,
+e.g. <tt>apop_update_vtable_drop(apop_beta, apop_binomial)</tt>. You can guarantee
+that a method will not be re-added by following up the <tt>_drop</tt> with, e.g.,
+<tt>apop_update_vtable_add(NULL, apop_beta, apop_binomial)</tt>.
+
+The steps for adding a function to an existing vtable:
+
+\li See \ref apop_update, \ref apop_score, \ref apop_predict, \ref apop_model_print, and \ref
+apop_parameter_model for examples and procedure-specific details.
+\li Write a function following the given type definition, as listed in the function's documentation.
+\li Use the associated <tt>_vtable_add</tt> function to add the function and associate it
+with the given model. For example, to add a Beta-binomial routine named \c betabinom
+to the registry of Bayesian updating routines, use <tt>apop_update_vtable_add(betabinom,
+apop_beta, apop_binomial)</tt>.
 \li Place a call to <tt>..._vtable_add</tt> in the \c prep method of the given model, thus ensuring that the auxiliary functions are registered after the first time the model is sent to \ref apop_estimate.
 
 The easiest way to set up a new vtable is to copy/paste/modify an existing one. Briefly:
@@ -3174,7 +3176,7 @@ and related words.
 
 \subsection datasubsec Data
 
-\li Each row should be a single observation. 
+\li Each row is treated as a single observation by many functions. 
 For example, \ref apop_bootstrap_cov depends on each row being an iid observation to function correctly.
 Calculating the Bayesian Information Criterion (BIC) requires knowing
 the number of observations in the data, and assumes that row count==observation count.
@@ -3202,15 +3204,15 @@ apop_draw to use your model's RNG (or a default) to draw a
 
 \subsection infosubsec Info
 
-\li The first page, named \c &lt;info&gt; is typically a list of scalars. Nothing is guaranteed, but the elements may include:
+\li The first page, which should be named \c &lt;info&gt;, is typically a list of scalars. Nothing is guaranteed, but the elements may include:
 
 \li AIC: <a href="https://en.wikipedia.org/wiki/Akaike's_Information_Criterion">Aikake Information Criterion</a>
-\li AIC_c: AIC with a finite sample correction. ``<em>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$< 40\f$)</em>'' [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
+\li AIC_c: AIC with a finite sample correction. ``<em>Generally, we advocate the use of AIC_c when the ratio \f$n/K\f$ is small (say \f$<\f$ 40)</em>'' [Kenneth P. Burnham, David R. Anderson: <em>Model Selection and Multi-Model Inference</em>, p 66, emphasis in original.]
 \li BIC: <a href="https://en.wikipedia.org/wiki/Bayesian_information_criterion">Bayesian Information Criterion</a>
 \li R squared
 \li R squared adj
 \li log likelihood
-\li status.
+\li status [0=OK, nozero=other].
 
 For those elements that require a count of input data, the calculations assume each row in the input \ref apop_data set is a single datum.
 
@@ -3230,6 +3232,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 
 \li As many settings groups of different types as desired can be added to a single \ref apop_model.
 \li One \ref apop_model can not hold two settings groups of the same type. Re-additions cause the removal of the previous version of the group.
+\li If the \c more pointer points to a structure or value (let it be \c ss), then more_size must be set to <tt>sizeof(ss)</tt>.
 
 
 \section methodsection Methods
@@ -3240,7 +3243,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \li The inputs are an \ref apop_data set and an \ref apop_model, which should include the elements needed to fully estimate the probability/likelihood (probably a filled <tt>->parameters</tt> element, possibly a settings group added by the user).
 \li We assume that the parameters have been set, by users via \ref apop_estimate or \ref apop_model_set_parameters, or by \ref apop_maximum_likelihood by its search algorithms. If the parameters are necessary, the function shall check that the parameters are not \c NULL and set the model's \c error element to \c 'p' if they are missing.
 \li Return \c NaN on errors. If an error in the input model is found, the function may set the input model's \c error element to an appropriate \c char value.
-\li If your model includes both \c log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m.
+\li If your model includes both \c log_likelihood and \c p methods, it must be the case that <tt>log(p(d, m))</tt> equals <tt>log_likelihood(d, m)</tt> for all \c d and \c m. This implies that \c p must return a value \f$\geq 0\f$
 \li If observations are assumed to be iid, you can probably use \ref apop_map_sum to write the core of the log likelihood function.
 
 \subsection prepsubsection prep
@@ -3248,7 +3251,7 @@ means of attaching an arbitrary struct to a model. See \ref settingswriting abov
 \li Function header looks like <tt>void your_prep(apop_data *data, apop_model *params)</tt>.
 \li Re-prepping a model after it has already been prepped shall have no effect. Where there is ambiguity with the other requirements, this takes precedence.
 \li The model's <tt>data</tt> pointer shall be set to point to the input data.
-\li The \c info element shall be allocated and its title set to "<Info>".
+\li The \c info element shall be allocated and its title set to <tt>\<Info\></tt>.
 \li If \c vsize, \c msize1, or \c msize2 are -1, then the prep function shall set them to the width of the input data.
 \li If \c dsize is -1, then the prep function shall set it to the width of the input data.
 \li If the \c parameters element is not allocated, the function shall allocate it via <tt>apop_data_alloc(vsize, msize1, msize2)</tt> (or equivalent).

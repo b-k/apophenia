@@ -21,7 +21,7 @@ For example, here is a typical crosstab:
 Here it is as a sparse listing:
 
 <table>
-<tr>        <td></td> value</td></td> dimension 1<td></td> dimension 2<td></tr>
+<tr>        <td> value</td><td> dimension 1</td><td> dimension 2</td></tr>
 <tr> <td>8.1</td> <td>0</td> <td>1</td> </tr>
 <tr> <td>3.2</td> <td>0</td> <td>2</td> </tr>
 <tr> <td>2.2</td> <td>1</td> <td>2</td> </tr>
@@ -304,7 +304,7 @@ apop_model *apop_pmf = &(apop_model){"PDF or sparse matrix", .dsize=-1, .estimat
 <table frame=box>
 <tr>
 <td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom> </tr>
+</tr><tr valign=bottom><td></td> </tr>
 <tr><td>12</td><td>Dozen</td><td>1</td></tr>
 <tr><td>1</td><td>Single</td><td>1</td></tr>
 <tr><td>2</td><td>Pair</td><td>1</td></tr>
@@ -320,7 +320,7 @@ Use this function to reduce this to a set of distinct values, with their weights
 <table frame=box>
 <tr>
 <td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom>
+</tr><tr valign=bottom<td></td>
 </tr>
 <tr><td>12</td><td>Dozen</td><td>1</td></tr>
 <tr><td>1</td><td>Single</td><td>3</td></tr>
