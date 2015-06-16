@@ -281,7 +281,7 @@ APOP_VAR_HEAD apop_model *apop_model_metropolis(apop_data *d, gsl_rng *rng, apop
     apop_data *apop_varad_var(d, NULL);
     apop_model *apop_varad_var(m, NULL);
     Apop_stopif(!m, return NULL, 0, "NULL model input.");
-    gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread(-1));
 APOP_VAR_END_HEAD
     apop_model *outp;
     OMP_critical(metropolis)

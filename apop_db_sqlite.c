@@ -135,7 +135,8 @@ static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     Staticdef(gsl_rng *, rng, apop_rng_alloc(apop_opts.rng_seed++));
-    sqlite3_result_double(context, gsl_rng_uniform(rng));
+    //sqlite3_result_double(context, gsl_rng_uniform(rng));
+    sqlite3_result_double(context, gsl_rng_uniform(apop_rng_get_thread(-1)));
 }
 
 #define sqfn(name) static void name##Fn(sqlite3_context *context, int argc, sqlite3_value **argv){ \

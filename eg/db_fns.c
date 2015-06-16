@@ -46,7 +46,7 @@ int main(){
     //compare the std dev of a uniform as reported by the 
     //database routine, the matrix routine, and math.
     apop_query("create table atab (a numeric)");
-    for (int i=0; i< 1e5; i++)
+    for (int i=0; i< 2e5; i++)
         apop_query("insert into atab values(ran())");
     apop_query("create table powa as "
             "select a, pow(a, 2) as sq, pow(a, 0.5) as sqrt "
@@ -63,9 +63,9 @@ int main(){
 
     float sq_mean = apop_query_to_float("select avg(sq) from powa");
     float actual_sq_mean = 1./3;
-    Diff(sq_mean, actual_sq_mean);
+    Diff2(sq_mean, actual_sq_mean);
 
     float sqrt_mean = apop_query_to_float("select avg(sqrt) from powa");
     float actual_sqrt_mean = 2./3;
-    Diff(sqrt_mean, actual_sqrt_mean);
+    Diff2(sqrt_mean, actual_sqrt_mean);
 }

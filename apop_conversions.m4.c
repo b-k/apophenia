@@ -336,7 +336,7 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 
 /** \page text_format Input text file formatting
 
-This section describes the assumptions made by \ref apop_text_to_db and \ref apop_text_to_data.
+This reference section describes the assumptions made by \ref apop_text_to_db and \ref apop_text_to_data.
 
 Each row of the file will be converted to one record in the database or one row in the
 matrix. Values on one row are separated by delimiters. Fixed-width input is also OK;
@@ -350,25 +350,20 @@ will delimit separate entries.  To change the default, use an argument to
 The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. 
 If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
 
-\li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, or \c ".
-
-\li If a field contains several such special characters, surround it by \c "s. The surrounding marks are stripped and the text read verbatim.
-
-\li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
-E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
-
-\li Everything after a # is taken to be comments and ignored. 
-
-\li Blank lines (empty or consisting only of white space) are also ignored.
-
-\li If you are reading into the <tt>gsl_matrix</tt> element of an \ref apop_data set,
+  \li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, or \c ".
+  \li If a field contains several such special characters, surround it by \c "s. The
+surrounding marks are stripped and the text read verbatim.
+  \li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
+E.g., "Males, 30-40", is an OK column name, as is "Males named \"Joe\\"".
+  \li Everything after an unprotected # is taken to be comments and ignored. 
+  \li Blank lines (empty or consisting only of white space) are also ignored.
+  \li If you are reading into the <tt>gsl_matrix</tt> element of an \ref apop_data set,
 all text fields are taken as zeros. You will be warned of such substitutions unless
-you set \code apop_opts.verbose==0\endcode beforehand. For mixed text/numeric data,
+you set <tt>apop_opts.verbose==0</tt> beforehand. For mixed text/numeric data,
 try using \ref apop_text_to_db and then \ref apop_query_to_mixed_data.
-
-\li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
+  \li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
 like this, the user typically means that there is a missing value and the system should
-insert an NAN; when it is two tabs in a row, this is typically just a formatting
+insert a NAN; when it is two tabs in a row, this is typically just a formatting
 glitch. Thus, if there are multiple delimiters in a row, I check whether the second
 (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any
 other delimiter (including the end of the line) then a NaN is inserted.
@@ -393,22 +388,18 @@ apop_opts.nan_string = NULL;
 \endcode
 
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
-\ref apop_query_to_data will convert both your \c nan_string string and \c NULL to an \c NaN value.
+\ref apop_query_to_data will convert both your \c nan_string string and \c NULL to \c NaN.
 
-\li The system uses the standards for C's \c atof() function for
+  \li The system uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
-
-\li If there are row names and column names, then the input will not be perfectly square:
+  \li If there are row names and column names, then the input will not be perfectly square:
 there should be no first entry in the sequence of column names like <tt>row names</tt>. That is,
 for a 100x100 data set with row and column names, there are 100 names in the top row,
 and 101 entries in each subsequent row (name plus 100 data points).
-
-\li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
+  \li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
 is eqivalent to <tt>1,2,3,4,5," six ",7</tt>.
-
-\li NUL characters are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string will probably break.
-
-\li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
+  \li NUL characters (<tt>'\0'</tt>) are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string terminates the string as it always does in C.
+  \li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
 \code
 NUMLEOL
 123AABB

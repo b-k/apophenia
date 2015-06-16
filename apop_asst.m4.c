@@ -378,10 +378,10 @@ of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended 
 This function can be used anywhere a \ref gsl_rng would be used.
 
 \param thread_in The number of the RNG to retrieve, starting at zero (which is
-how OpenMP numbers its threads). If blank, I'll look up the current thread (via \c
+how OpenMP numbers its threads). If -1, I'll look up the current thread (via \c
 omp_get_thread_num) for you.
 
-See \ref threading for additional notes.
+See \ref threading for additional notes. In most cases, you want to use <tt>apop_rng_get_thread(-1)</tt>.
 
 \return The appropriate RNG, initialized if necessary.
 \hideinitializer

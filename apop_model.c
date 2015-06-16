@@ -400,7 +400,7 @@ int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *params);//
 \return Zero on success; nozero on failure. <tt>out[0]</tt> is probably \c NAN on failure.
 */
 int apop_draw(double *out, gsl_rng *r, apop_model *m){
-    if (!r) r = apop_rng_get_thread();
+    if (!r) r = apop_rng_get_thread(-1);
     if (m->draw)
         return m->draw(out, r, m); 
     else if (m->dsize == 1)

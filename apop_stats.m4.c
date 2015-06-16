@@ -702,7 +702,7 @@ APOP_VAR_HEAD long double apop_kl_divergence(apop_model *from, apop_model *to, i
     Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
     Apop_stopif(!to, return NAN, 0, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
-    gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
+    gsl_rng * apop_varad_var(rng, apop_rng_get_thread(-1));
 APOP_VAR_ENDHEAD
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
@@ -728,7 +728,7 @@ APOP_VAR_ENDHEAD
         apop_data *draw_list = apop_data_alloc(draw_ct, 2);
         OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
             double draw[from->dsize];
-            apop_draw(draw, apop_rng_get_thread(), from);
+            apop_draw(draw, apop_rng_get_thread(-1), from);
             gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
             double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
             double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);

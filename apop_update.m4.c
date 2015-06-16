@@ -184,7 +184,7 @@ APOP_VAR_HEAD apop_model * apop_update(apop_data *data, apop_model *prior, apop_
     apop_data *apop_varad_var(data, NULL);
     apop_model *apop_varad_var(prior, NULL);
     apop_model *apop_varad_var(likelihood, NULL);
-    gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread(-1));
 APOP_VAR_END_HEAD
     static int setup=0; if (!(setup++)){
         apop_update_vtable_add(betabinom, apop_beta, apop_binomial);
