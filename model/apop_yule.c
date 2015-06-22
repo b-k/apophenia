@@ -11,14 +11,13 @@ The special case of the \ref apop_waring "Waring" where \f$ \alpha = 0.	\f$<br>
 
 \f$ d\ln Y/db	= 1/(b-1)  + \psi(b) - \psi(k+b)				\f$
 
-apop_yule.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-
 \adoc    Input_format     
-Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
+One scalar observation per row (in the \c matrix or \c vector).  
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
 See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 \adoc    Parameter_format  One element at the top of the parameter set's vector.
-\adoc    settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
+\adoc    Settings   MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings    */
 
 #include "apop_internal.h"
 
@@ -61,7 +60,7 @@ static void yule_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model 
 	gsl_vector_set(gradient, 0, d_bb);
 }
 
-/* \adoc RNG Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
+/* \adoc RNG From <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, p 553.  */
 static int yule_rng( double *out, gsl_rng * r, apop_model *a){
 	double e1 = gsl_ran_exponential(r, 1);
 	double e2 = gsl_ran_exponential(r, 1);

@@ -124,10 +124,9 @@ APOP_VAR_ENDHEAD
     Apop_stopif(!eigenvectors || !dummy_v || !all_evalues || !square, pc_space->error='a'; return pc_space, 
                 0, "Allocation error setting up workspace for %zu dimensions.", data->size2);
     double eigentotals	= 0;
-    for (int i=0; i< data->size2; i++){
-        Apop_matrix_col(data, i, onecol);
-        apop_vector_normalize(onecol, NULL, 'm');
-    }
+    for (int i=0; i< data->size2; i++)
+        apop_vector_normalize(Apop_mcv(data, i), NULL, 'm');
+
 	Checkgsl(gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square))
 	Checkgsl(gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v))
 	for (int i=0; i< all_evalues->size; i++)
@@ -292,10 +291,8 @@ APOP_VAR_ENDHEAD
             out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
-            for (int i=0; i< m1size; i++){
-                tmp_vector  = gsl_matrix_column(m1, i);
-                gsl_matrix_set_col(out, i, &(tmp_vector.vector));
-            }
+            for (int i=0; i< m1size; i++)
+                gsl_matrix_set_col(out, i, Apop_mcv(m1, i));
         }
         for (int i=0; i< m2->size2; i++){
             gsl_vector_const_view tmp_vector = gsl_matrix_const_column(m2, i);

@@ -21,17 +21,17 @@ For example, here is a typical crosstab:
 Here it is as a sparse listing:
 
 <table>
-<tr>        <td> value</td><td> dimension 1</td><td> dimension 2</td></tr>
-<tr> <td>8.1</td> <td>0</td> <td>1</td> </tr>
-<tr> <td>3.2</td> <td>0</td> <td>2</td> </tr>
-<tr> <td>2.2</td> <td>1</td> <td>2</td> </tr>
-<tr> <td>7.3</td> <td>2</td> <td>1</td> </tr>
-<tr> <td>1.2</td> <td>2</td> <td>2</td> </tr>
+<tr> <td> dimension 1</td><td> dimension 2</td><td> value</td></tr>
+<tr>  <td>0</td> <td>1</td> <td>8.1</td></tr>
+<tr>  <td>0</td> <td>2</td> <td>3.2</td></tr>
+<tr>  <td>1</td> <td>2</td> <td>2.2</td></tr>
+<tr>  <td>2</td> <td>1</td> <td>7.3</td></tr>
+<tr>  <td>2</td> <td>2</td> <td>1.2</td></tr>
 </table>
 
 The \c apop_pmf internally represents data in this manner, with the dimensions 
 in the \c matrix, \c vector, and \c text element of the data set, and the cell values
-are held in the \c weights element (<em>not the vector</em>).
+are held in the \c weights element (not the vector).
 
 If your data is in a crosstab (with entries in the matrix element for 2-D data or the
 vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.

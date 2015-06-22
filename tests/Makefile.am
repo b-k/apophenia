@@ -32,6 +32,7 @@ check_PROGRAMS= \
 	test_apop \
 	$(top_builddir)/eg/apop_map_row \
 	$(top_builddir)/eg/binning \
+	$(top_builddir)/eg/data_fill \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
 	$(top_builddir)/eg/dot_products \
@@ -40,6 +41,8 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/iv \
 	$(top_builddir)/eg/ks_tests \
 	$(top_builddir)/eg/normalization_demo \
+	$(top_builddir)/eg/ols \
+	$(top_builddir)/eg/ols_oneliner \
 	$(top_builddir)/eg/parameterization \
 	$(top_builddir)/eg/simple_subsets \
 	$(top_builddir)/eg/t_test_by_rows \

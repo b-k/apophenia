@@ -375,8 +375,6 @@ If you are entirely new to Apophenia, \ref gentle "have a look at the Gentle Int
 As well as the information in this outline, there is a separate page covering the details of 
  \ref setup "setting up a computing environment" and another page with \ref eg "some sample code" for your perusal.
 
-For another concrete example of folding Apophenia into a project, have a look at this \ref sample_program "sample program".
-
 \subpage gentle
 
 \subpage setup
@@ -2533,6 +2531,12 @@ I'll discuss the value of the database step more at the end of this page, but fo
 now, note that there are several functions, \ref apop_query, and \ref
 apop_query_to_data being the ones you will most frequently be using, that will allow you to talk to and pull data from either an SQLite or mySQL/mariaDB database. 
 
+By the way, the program above was good form and demonstrated useful features, but if you are concerned about 
+the count of lines of code, the code below will do the same thing in two lines:
+
+\include ols_oneliner.c
+
+
 <em> Designated initializers</em>
 
 Like this line,
@@ -3194,7 +3198,7 @@ apop_draw to use your model's RNG (or a default) to draw a
     For example, regression-type functions use a function named \c ols_shuffle
     to convert a matrix where the first column is the dependent variable to a data
     set with dependent variable in the vector and a column of ones in the first
-    matrix column; see \ref dataprep.
+    matrix column.
 
 \subsection paramsubsec Parameters, vsize, msize1,  msize2
 
@@ -3299,4 +3303,39 @@ a vtable (see above), the registration shall happen here. Registration may also 
 \li If the constraint fails, then (1) move the \c parameters in the input model to a
 constraint-satisfying value, and (2) return the distance between the input parameters and
 what you've moved the parameters to. The choice of within-bounds parameters and distance function is left to the author of the constraint function.
+*/
+
+
+/**\defgroup models 
+
+This section is a detailed description of the stock models that ship with Apophenia.
+It is a reference. For an explanation of what to do with an \ref apop_model, see \ref modelsec.
+
+The primary questions one has about a model in practice are what format the input data should take and what to expect of an estimated output.
+
+Generally, the input data consists of an \ref apop_data set where each row is a single observation. Details beyond that are listed below.
+
+The output after running \ref apop_estimate to produce a fitted model are generally
+found in three places: the vector of the output parameter set, its matrix, or a new
+settings group. The basic intuition is that if there exists a situation where the
+parameters could take matrix form, the data will be in the matrix; if they are always
+a short list of scalars, they are in the vector; if they require more structure than
+that, they will be a settings group.
+
+If the basic structure of the \ref apop_data set is unfamiliar to you, see \ref
+dataoverview, which will discuss the basic means of getting data out of a struct. For
+example, the estimated \ref apop_normal distribution has the mean in position zero of
+the vector and the standard deviation in position one, so we would use it as follows:
+
+\code
+apop_data *d = apop_text_to_data("sample data from before")
+apop_model *out = apop_estimate(d, apop_normal);
+double mu = apop_data_get(out>parameters, 0);
+double sigma = apop_data_get(out>parameters, 1);
+
+//What is the p-value of test whose null hypothesis is that μ=3.3?
+printf ("pval=%g\n", apop_test(3.3, "normal", mu, sigma);
+\endcode
+
+See \ref modelsec for discussion of how to pull settings groups.
 */

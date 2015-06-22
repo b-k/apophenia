@@ -524,15 +524,11 @@ double apop_cdf(apop_data *d, apop_model *m){
         if (m->dsize == -1) apop_prep(d, m);
         Apop_stopif(m->dsize==0, return GSL_NAN, 0, "I need to make random draws from your model, but it has dsize==0. Returning NaN");
         cs->draws_made = gsl_matrix_alloc(cs->draws, m->dsize);
-        for (int i=0; i< cs->draws; i++){
-            Apop_matrix_row(cs->draws_made, i, onerow);
-            apop_draw(onerow->data, cs->rng, m);
-        }
+        for (int i=0; i< cs->draws; i++)
+            apop_draw((Apop_mrv(cs->draws_made, i))->data, cs->rng, m);
     }
-    for (int i=0; i< cs->draws_made->size1; i++){
-        Apop_matrix_row(cs->draws_made, i, onerow);
-        tally += lte(onerow, ref);
-    }
+    for (int i=0; i< cs->draws_made->size1; i++)
+        tally += lte(Apop_mrv(cs->draws_made, i), ref);
     gsl_vector_free(ref);
     return tally/(double)cs->draws_made->size1;
 }

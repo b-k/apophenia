@@ -8,16 +8,16 @@
 \f$dln Z(\mu,k)/d\mu 	= \sum_k -1/\mu + k/(\mu^2)			\f$ <br>
 
 Some write the function as:
-\f$Z(C,k) dx = \ln C C^{-k}. \f$
+\f$Z(C,k) = \ln C C^{-k}. \f$
 If you prefer this form, just convert your parameter via \f$\mu = {1\over \ln C}\f$
 (and convert back from the parameters this function gives you via \f$C=\exp(1/\mu)\f$).
 
 \adoc    Input_format  
-Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
-\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+One scalar observation per row (in the \c matrix or \c vector).  
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
                     
 \adoc    Parameter_format   \f$\mu\f$ is in the zeroth element of the vector.   
-\adoc    CDF  Produces a single number.
+\adoc    CDF  Returns a scalar draw.
 \adoc    settings   None.  */
 
 #include "apop_internal.h"
@@ -46,7 +46,6 @@ static void exponential_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop
 	gsl_vector_set(gradient,0, d_likelihood);
 }
 
-/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void exponential_estimate(apop_data * data,  apop_model *est){
     apop_score_vtable_add(exponential_dlog_likelihood, apop_exponential);
     apop_name_add(est->parameters->names, "μ", 'r');

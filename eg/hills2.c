@@ -1,10 +1,8 @@
 #include <apop.h>
 
 /* 
-Use \ref apop_model_mixture to generate a hump-filled distribution, then find 
+Use apop_model_mixture to generate a hump-filled distribution, then find 
 the most likely data points and check that they are near the humps.
-
-Part of Apophenia's test suite.
 */
 
 //Produce a 2-D multivariate normal model with unit covariance and given mean 
@@ -27,15 +25,13 @@ int main(){
 
     int len = 100000;
     apop_data *d = apop_model_draws(many_humps, len);
+
     gsl_vector *first = Apop_cv(d, 0);
-    #ifndef Testing
     printf("mu=%g\n", apop_mean(first));
-    #endif
     assert(fabs(apop_mean(first)- 0) < 5e-2);
+
     gsl_vector *second = Apop_cv(d, 1);
-    #ifndef Testing
     printf("mu=%g\n", apop_mean(second));
-    #endif
     assert(fabs(apop_mean(second)- 1) < 5e-2);
 
 /*  Abuse the ML imputation routine to search for the input value with the highest
@@ -47,9 +43,8 @@ int main(){
     apop_opts.stop_on_warning='v';
     Apop_settings_add_group(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method="annealing");
     apop_ml_impute(x, many_humps);
-    #ifndef Testing
+
     printf("Optimum found at:\n");
     apop_data_show(x);
-    #endif
     assert(fabs(apop_data_get(x, .col=0)- 0) + fabs(apop_data_get(x, .col=1) - 1) < 1e-2);
 }

@@ -3,7 +3,7 @@ Copyright (c) 2009, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 #include "apop_internal.h"
 
 //There used to be a χ^2 and F model, but nobody used them and they were largely untested.
-//They last appeared in commit 2b4715111704cee3a86fca1b16903c4408bdacb9 if you'd like to recover them.
+//They last appeared in commit 2b4715111 if you'd like to recover them.
 
 static void apop_t_estimate(apop_data *d, apop_model *m){
     Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
@@ -69,13 +69,9 @@ static long double apop_t_dist_constraint(apop_data *beta, apop_model *m){
 If you want to test a hypothesis, you probably don't need this, and should instead
 use \ref apop_test.
 
-Given a statistic of the right properties, you can find the odds that the statistic
-is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref
-apop_test function.
-
-In that world, those three distributions are actually parameter free. The data is
+In that world, those three distributions are actually parameter free. The data are
 assumed to be normalized to be based on a mean zero, variance one process, you get
-the degrees of freedom from the size of the data, and the distribution is fixed.
+the degrees of freedom from the size of the data, and the distribution is thus fixed.
 
 For modeling purposes, more could be done. For example, the t-distribution is a favorite
 proxy for Normal-like situations where there are fat tails relative to the Normal
@@ -106,9 +102,10 @@ apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
 to find the best-fitting model for descriptive purposes.
 
 \adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
-\adoc    Parameter_format  vector->data[0] = mu<br>
-                            vector->data[1] = sigma<br>
-                            vector->data[2] = df 
+\adoc    Parameter_format  Three scalars in the \c vector element:<br>
+<tt>double mu=apop_data_get(estimated_model->parameters, 0)</tt><br>
+<tt>double sigma=apop_data_get(estimated_model->parameters, 1)</tt><br>
+<tt>double df=apop_data_get(estimated_model->parameters, 2)</tt>
 \adoc    Estimate_results  I'll just count elements and set \f$df = n-1\f$. If you set the \c estimate method to \c NULL, via MLE.
 \adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */

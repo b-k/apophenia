@@ -4,8 +4,6 @@
 data constraint. E.g., truncate \f$P(d)\f$ to zero for all \f$d\f$ outside of a given
 constraint. Generate using \ref apop_model_dconstrain .
 
-\li This is still in beta. Expect the interface to change.
-
 The log likelihood works by using the \c base_model log likelihood, and then scaling
 it based on the part of the base model's density that is within the constraint. If you
 have an easy means of specifying what that density is, please do, as in the example. If

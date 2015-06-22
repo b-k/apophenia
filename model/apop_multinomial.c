@@ -4,9 +4,9 @@ Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the GPLv2; se
  \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 This differs from the \ref apop_multinomial only in the input data format.
 
-It is implemented as an alias of the \ref apop_multinomial model, except that it has
-a CDF, <tt>.vsize==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
-and a draw returns a scalar).
+It is implemented as an alias of the \ref apop_multinomial model, except that
+it has a CDF, and we know it has two parameters and a draw returns a scalar. I.e., 
+<tt>.vsize==2</tt> and <tt>.dsize==1</tt>.
 
 \adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$p_1\f$. Thus, \f$p_0\f$
         isn't written down; see \ref apop_multinomial for further discussion.
@@ -20,7 +20,7 @@ and a draw returns a scalar).
 \adoc    RNG The RNG returns a single number representing the success count, not a
     vector of length two giving both the failure bin and success bin. This is notable
     because it differs from the input data format, but it tends to be what people expect
-    from a Binomial RNG. For draws with both dimensions, use a \ref apop_multinomial model
+    from a Binomial RNG. For draws with both dimensions (or situations where draws are fed back into the model), use a \ref apop_multinomial model
     with <tt>.vsize =2</tt>.
 */
 
@@ -197,8 +197,10 @@ static void multinom_prep(apop_data *data, apop_model *params){
 /* \adoc    Input_format Each row of the matrix is one observation: a set of draws from a single bin.
   The number of draws of type zero are in column zero, the number of draws of type one in column one, et cetera.
 
-\li You may have a set of several Bernoulli-type draws, which could be summed together to form a single Binomial draw.
-See \ref apop_data_to_dummies to do the aggregation (using the <tt>.keep_first='y'</tt> option).
+   \li You may have a set of several Bernoulli-type draws, which could be summed together
+to form a single Binomial draw.  The \ref apop_data_to_dummies function (using the
+<tt>.keep_first='y'</tt> option), to split a single column of numbers into a sequence
+of columns, may help with this.
 
 \adoc    Parameter_format
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -210,8 +212,8 @@ the zeroth element of the parameters vector holds \f$n\f$, and so a full probabi
 easily be produced by overwriting that first element. For example:
 \code 
 apop_model *estimated = apop_estimate(your_data, apop_multinomial);
-int n = apop_data_get(estimated->parameters, 0, -1); 
-apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
+int n = apop_data_get(estimated->parameters); 
+apop_data_set(estimated->parameters, .val=1 - (apop_sum(estimated->parameters)-n)); 
 \endcode
 And now the parameter vector is a proper list of probabilities.
 

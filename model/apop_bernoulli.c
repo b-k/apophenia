@@ -4,11 +4,9 @@ Copyright (c) 2007--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 /* \amodel apop_bernoulli The Bernoulli model: A single random draw with probability \f$p\f$.
 
 \adoc   Input_format
-  The matrix or vector can have any size, and I just count up zeros
-  and non-zeros. The Bernoulli parameter \f$p\f$ is the percentage of non-zero
+  The Bernoulli parameter \f$p\f$ is the percentage of non-zero
   values in the matrix. Its variance is \f$p(1-p)\f$.
-
-\adoc    Parameter_format A vector of length one */
+*/
 
 #include "apop_internal.h"
 
@@ -25,7 +23,8 @@ static long double bernoulli_log_likelihood(apop_data *d, apop_model *params){
 
 static double nonzero (double in) { return in !=0; }
 
-/* \adoc estimated_parameters \f$p\f$ is the only element in the vector. A
+/* \adoc estimated_parameters \f$p\f$ is the only element in the vector (e.g., <tt>double
+p = apop_data_get(outmodel->parameters);</tt>). A
 <tt>\<Covariance\></tt> page has the variance of \f$p\f$ in the (0,0)th element of the matrix.
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */
@@ -47,7 +46,7 @@ static long double bernoulli_constraint(apop_data *data, apop_model *inmodel){
     return apop_linear_constraint(inmodel->parameters->vector, constraint, 1e-3);
 }
 
-/* \adoc    RNG Returns a single zero or one. */
+/* \adoc    RNG Returns zero or one. */
 static int bernoulli_rng(double *out, gsl_rng *r, apop_model* eps){
     *out = gsl_rng_uniform (r) < eps->parameters->vector->data[0]; 
     return 0;
@@ -75,7 +74,6 @@ static void bernie_prep(apop_data *data, apop_model *params){
     apop_model_clear(data, params);
 }
 
-/* \adoc Settings None. */
 apop_model *apop_bernoulli = &(apop_model){"Bernoulli distribution", 1, .dsize=1, .prep=bernie_prep,
 	.estimate = bernoulli_estimate, .log_likelihood = bernoulli_log_likelihood, 
    .constraint = bernoulli_constraint, .cdf = bernoulli_cdf, .draw = bernoulli_rng};

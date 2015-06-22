@@ -7,7 +7,7 @@
 expressing a uniform distribution over [a, b].
 
 The MLE of this distribution is simply a = min(your data); b = max(your data).
-Primarily useful for the RNG, such as when you have a Uniform prior model.
+Often useful for the RNG, such as when you have a Uniform prior model.
 
 \adoc    Input_format  An unordered set of numbers in the data set's vector, matrix, or both.
 \adoc    Parameter_format  Zeroth vector element is \f$a\f$, the min;
@@ -73,9 +73,7 @@ apop_model *apop_uniform = &(apop_model){"Uniform distribution", 2, 0, 0,  .dsiz
     .draw = uniform_rng, .cdf = unif_cdf};
 
 /* \amodel apop_improper_uniform The improper uniform returns \f$P(x) = 1\f$ for every value of x, all the
-time (and thus, log likelihood(x)=0).  It has zero parameters. It is
-useful, for example, as an input to Bayesian updating, to represent a
-fully neutral prior.
+time (and thus, log likelihood(x)=0).  It has zero parameters.
 
 \li See also the \ref apop_uniform model.
 

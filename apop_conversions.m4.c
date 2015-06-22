@@ -826,47 +826,29 @@ apop_data *count_vector = apop_data_fill(apop_data_alloc(5), 0, 1, 2, 3, 4);
 /** \def apop_data_fill
 Fill a pre-allocated data set with values.
 
-For example:
-\code
-#include <apop.h>
-
-int main(){
-    apop_data *a =apop_data_alloc(2,2,2);
-    double    eight   = 8.0;
-    apop_data_fill(a, 8, 2.2, eight/2,
-                      0, 6.0, eight);
-    apop_data_show(a);
-}
-\endcode
-
-Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
-
-Underlying this function is a base function that takes a single list, as opposed to a set of unassociated numbers as above:
-
-\code
-#include <apop.h>
-
-int main(){
-  apop_data *a =apop_data_alloc(2,2,2);
-  double    eight   = 8.0;
-  double list[] = {8, 2.2, eight/2, 
-                   0, 6.0, eight};
-    apop_data_fill_base(a, list);
-    apop_data_show(a);
-}
-\endcode
-
 \param adfin  An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
 \return     A pointer to the same data set that was input.
 
-\li I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use \c matrix->size1.
+\li I need as many arguments as the size of the data set, and can't count them for
+you. Too many will be ignored; too few will produce unpredictable results, which may
+include padding your matrix with garbage or a simple segfault.
+
+\li Underlying this function is a base function that takes a single list, as opposed
+to the set of unassociated numbers sent to \ref apop_data_fill. See the example below for a comparison.
+
+\li This function assumes that if the \ref apop_data set has both \c vector and \c
+matrix, then <tt>vector->size==matrix->size1</tt>.
 
 \li See also \ref apop_data_falloc to allocate and fill on one line. E.g., to
 generate a unit vector for three dimensions:
 \code
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
+
+An example, using both a loose list of numbers and an array.
+
+\include data_fill.c
 
 \see apop_text_fill, apop_data_falloc, apop_data_unpack
 */

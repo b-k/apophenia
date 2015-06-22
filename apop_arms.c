@@ -74,9 +74,7 @@ Apop_settings_init(apop_arms,
 
 void distract_doxygen_arms(){/*Doxygen gets thrown by the settings macros. This decoy function is a workaround. */}
 
-/** \brief Adaptive rejection metropolis sampling.
-
-Make random draws from a univariate distribution.
+/** Adaptive rejection Metropolis sampling, to make random draws from a univariate distribution.
 
 The author, Wally Gilks, explains on 
 http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html , that

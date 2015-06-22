@@ -15,7 +15,7 @@
 # 
 # \adoc    Input_format  Any arrangement of scalar values. 
 # \adoc    Parameter_format   a vector, v[0]=\f$\alpha\f$; v[1]=\f$\beta\f$    
-# \adoc    settings None. 
+# \adoc    Settings None. 
 # */
 # [...]
 # /* \adoc Name  <tt>Beta distribution</tt>  */

@@ -13,9 +13,15 @@ Copyright (c) 2007, 2010, 2013 by Ben Klemens.  Licensed under the GPLv2; see CO
 At each point along the histogram, put a distribution (default: Normal(0,1)) on top
 of the point. Sum all of these distributions to form the output distribution.
 
+Setting up a kernel density consists of setting up a model with the base data and the
+information about the kernel model around each point. This can be done using the \ref
+apop_model_copy_set function to get a copy of the base \ref apop_kernel_density model
+and add a \ref apop_kernel_density_settings group with the appropriate information;
+see the \c main function of the example below.
+
 Elements of \ref apop_kernel_density_settings that you may want to set:
 
-\li \c data a data set, which, if  not \c NULL and \c !base_pmf , will be converted to an \ref apop_pmf model.
+\li \c data a data set, which, if  not \c NULL and \c base_pmf is \c NULL, will be converted to an \ref apop_pmf model.
 \li \c base_pmf This is the preferred format for input data. It is the histogram to be smoothed.
 \li \c kernelbase The kernel to use for smoothing, with all parameters set and a \c p method. Popular favorites are \ref apop_normal and \ref apop_uniform.
 \li \c set_params A function that takes in a single number and the model, and sets
@@ -30,17 +36,9 @@ static void apop_set_first_param(apop_data *in, apop_model *m){
 }
 \endcode
 
-For a Uniform[0,1] recentered around the first element of the PMF matrix, you could put this function in your code:
+See the sample code for for a Uniform[0,1] recentered around the first element of the PMF matrix.
 
-\code
-void set_midpoint(apop_data * in, apop_model *m){
-    apop_data_set(m->parameters, 0, -1, apop_data_get(in)+0.5);
-    apop_data_set(m->parameters, 1, -1, apop_data_get(in)-0.5);
-}
-\endcode
-
-\adoc Input_format  I'll estimate a \ref apop_pmf internally, so I
-                   follow that format, which is one observation (of any format) per line.
+\adoc Input_format  One observation (of any format) per line. Each row in turn will be passed through to the elements of <tt>kernelbase</tt> and optional <tt>set_params</tt> function.
 \adoc Parameter_format  None
 \adoc Estimated_parameters None
 \adoc Estimated_settings  The estimate method basically just runs

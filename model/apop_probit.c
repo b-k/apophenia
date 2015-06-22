@@ -1,14 +1,15 @@
 /* Probit and Logit. 
 Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
-\amodel apop_probit The Probit model.
+\amodel apop_probit
 
-  Apophenia makes no distinction between the bivariate probit and the multinomial probit. This one does both.
+Apophenia makes no distinction between the Bivariate Probit and the Multinomial
+Probit. This one does both.
 
 \adoc    Input_format  
 The first column of the data matrix this model expects is zeros, ones, ..., enumerating
-the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it,
-I'll run it on the first data column for you.  The remaining columns are values of the
+the factors. To get there, try \ref apop_data_to_factors; if no factors are found (i.e., <tt>apop_data_get_factor_names(depvar_name)</tt> returns \c NULL),
+the prep routine will run it on the first data column for you.  The remaining columns are values of the
 independent variables. Thus, the model will return [(data columns)-1]\f$\times\f$[(option
 count)-1] parameters.  Column names are options; row names are input variables.
 
@@ -158,7 +159,7 @@ apop_model *apop_probit = &(apop_model){"Probit", .log_likelihood = multiprobit_
     .dsize=-1, .prep = probit_prep};
 
 
-/* \amodel apop_multinomial_probit The Multinomial Probit model.
+/* amodel apop_multinomial_probit The Multinomial Probit model.
 
   \deprecated  Use \ref apop_probit, which handles multiple options.*/
 
@@ -332,7 +333,7 @@ static int logit_rng(double *out, gsl_rng *r, apop_model *m){
 }
 
 
-/* \amodel apop_logit The Logit model.
+/* \amodel apop_logit
 
 Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.
 
@@ -346,8 +347,8 @@ Apophenia makes no distinction between the bivariate logit and the multinomial l
 ones, ..., enumerating the factors; to get there, try \ref apop_data_to_factors; if
 you  forget to run it, I'll run it on the first data column for you.  The remaining
 columns are values of the independent variables. Thus, the model will return [(data
-columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names are options;
-row names are input variables.
+columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names list factors in the dependent variables;
+row names list the independent variables.
 
 \adoc    Parameter_format  As above.    
 \adoc    Prep_routine You will probably want to convert some column of your data into
@@ -363,6 +364,7 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc RNG Much like the \ref apop_ols RNG, qv. Returns the category drawn.
 
+<!--
 \li PS: Here is a nice trick used in the implementation. let \f$y_i = x\beta_i\f$.
   Then
 \f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
@@ -371,6 +373,7 @@ The elements of the sum are all now exp(something negative), so
 overflow won't happen, and if there's underflow, then that term
 must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
+-->
 
 Here is an artifical example:
 

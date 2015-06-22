@@ -24,9 +24,13 @@ long double apop_vector_sum(const gsl_vector *in){
   An alias for \ref apop_vector_sum. Returns the sum of the data in the given vector.
 */
 
-/**  \def apop_mean
-  An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
+/** \def apop_mean(v)
+ Returns the mean of the elements of the vector \c v.
+
+\param v A \ref gsl_vector.
 */
+
+
 
 /** \def apop_var(in)
 An alias for \ref apop_vector_var.
@@ -148,10 +152,8 @@ double apop_vector_var_m(const gsl_vector *in, const double mean){
 An example
 \code 
 gsl_matrix *m = [fill matrix here];
-Apop_matrix_row(m, 2, rowtwo);
-Apop_matrix_row(m, 3, rowthree);
 printf("The correlation coefficient between rows two "
-       "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
+       "and three is %g.\n", apop_vector_correlation(Apop_mrv(m, 2), Apop_mrv(m, 3)));
 \endcode 
 
     \li \c ina and \c inb are mandatory and must be non-NULL, but you can leave the weights

@@ -4,10 +4,10 @@ measured with greater precision, then sets up and runs an instrumental variable 
 
 To guarantee that the base data set has noise and the instrument is cleaner, the
 procedure first generates the clean data set, then copies the first column to the
-instrument set, then the \c add_noise function inserts Gaussian noise into the base
+instrument set, then the add_noise function inserts Gaussian noise into the base
 data set. Once the base set and the instrument set have been generated, the setup for
-the IV consists of adding the relevant names and using \ref Apop_model_add_group to add a
-\c lm (linear model) settings group with a <tt>.instrument= instrument_data</tt> element.
+the IV consists of adding the relevant names and using Apop_model_add_group to add a
+lm (linear model) settings group with a .instrument= instrument_data element.
 
 In fact, the example sets up a sequence of IV regressions, with more noise each
 time. This sample is part of Apophenia's test suite, and so checks that the coefficients
@@ -15,7 +15,8 @@ are correct along the way.
 */
 
 #include <apop.h>
-#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R)>=(eps)), return, 0, "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
+#define Diff(L, R, eps) Apop_stopif(fabs((L)-(R)>=(eps)), return, 0, "%g is too different \
+        from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 int datalen =1e4;
 
@@ -45,10 +46,8 @@ int main(){
     }
     apop_name_add(data->names, "dependent", 'c');
     apop_name_add(data->names, "independent", 'c');
-    #ifndef Testing
     apop_model *oest = apop_estimate(data, apop_ols);
     apop_model_show(oest);
-    #endif
 
     //the data with no noise will be the instrument.
     gsl_vector *col1 = Apop_cv(data, 1);
@@ -63,12 +62,10 @@ int main(){
     for (int nscale=0; nscale<tries; nscale++){
         add_noise(col1, r, nscale==0 ? 0 : pow(10, nscale-tries));
         ests[nscale] = apop_estimate(data, apop_iv);
-        #ifndef Testing
         if (nscale==tries-1){ //print the one with the largest error.
             printf("\nnow IV:\n");
             apop_model_show(ests[nscale]);
         }
-        #endif
     }
 
     /* Now test. The parameter estimates are unbiased.

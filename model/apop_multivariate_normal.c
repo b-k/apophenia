@@ -1,5 +1,5 @@
 /* apop_multivariate_normal.c  The multivariate Normal distribution.
- Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
+Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
 \amodel apop_multivariate_normal This is the multivariate generalization of the Normal distribution.
 
@@ -8,7 +8,7 @@
                             means, and whose matrix is the covariances.
 
 If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a \f$1\times 1\f$ matrix. This differs from the setup for \ref apop_normal, which outputs a single vector with \f$\mu\f$ in element zero and \f$\sigma\f$ in element one.
-\adoc    Settings   None.    */
+*/
  
 #include "apop_internal.h"
 
@@ -62,7 +62,7 @@ static void multivariate_normal_estimate(apop_data * data, apop_model *p){
 
 /* \adoc    RNG  The RNG fills an input array whose length is based on the input parameters.
 
- The nice, easy method from Devroye, p 565 */
+ The method from Devroye, p 565 */
 static int mvnrng(double *out, gsl_rng *r, apop_model *eps){
     apop_data *params = eps->parameters;
     gsl_vector *v = gsl_vector_alloc(params->vector->size);

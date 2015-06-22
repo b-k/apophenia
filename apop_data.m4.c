@@ -708,8 +708,7 @@ columns into a list of strings, adds a \c NULL string at the end, and calls that
   \endcode
 
 \param d The data set to prune.
-\param colnames A NULL-terminated list of names to retain (i.e. the columns that shouldn't be pruned
-out). 
+\param colnames A NULL-terminated list of names to retain. 
 \return A pointer to the input data set, now pruned.
 \see apop_data_rm_columns
 */

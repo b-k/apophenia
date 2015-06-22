@@ -267,10 +267,8 @@ static void oldforloop(threadpass *tc){
         tc->rc = 'r';
         return forloop(tc);
     }
-    OMP_for (int i=0; i< tc->m->size1; i++){
-        Apop_matrix_row(tc->m, i, v);
-        vtov(v);
-    }
+    OMP_for (int i=0; i< tc->m->size1; i++)
+        vtov(Apop_mrv(tc->m, i));
 }
 
 //if mapping to self, then set tc.v = in_v
@@ -404,8 +402,7 @@ gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
     gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
     OMP_for (size_t i=0; i< in->size1; i++){
         gsl_vector_const_view inv = gsl_matrix_const_row(in, i);
-        Apop_matrix_row(out, i, v);
-        apop_matrix_map_all_vector_subfn(&inv.vector, v, fn);
+        apop_matrix_map_all_vector_subfn(&inv.vector, Apop_mrv(out, i), fn);
     }
     return out;
 }
@@ -423,8 +420,7 @@ gsl_matrix * apop_matrix_map_all(const gsl_matrix *in, double (*fn)(double)){
 void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
     if (!in) return;
     OMP_for (size_t i=0; i< in->size1; i++){
-        Apop_matrix_row(in, i, v);
-        apop_vector_apply(v, fn);
+        apop_vector_apply(Apop_mrv(in, i), fn);
     }
 }
 

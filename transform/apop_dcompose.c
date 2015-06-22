@@ -2,8 +2,6 @@
 
 /* \amodel apop_dcomposition Use random draws or parameter estimates output from a first model as input data for a second model.
 
-\li This is still in beta. Expect the interface to change.
-
 \adoc Input_format The input data is sent to the first model, so use the input format for that model.
 \adoc Settings   \ref apop_composition_settings
 */

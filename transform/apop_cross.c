@@ -1,7 +1,7 @@
 /* Cross product of distributions.
  Copyright (c) 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
-\amodel apop_cross A cross of models.
+\amodel apop_cross A cross product of models.  Generate via \ref apop_model_cross .
 
 For the case when you need to bundle two uncorrelated models into one larger model. For example, the prior for a multivariate normal (whose parameters are a vector of means and a covariance matrix) is a Multivariate Normal-Wishart pair.
 
@@ -15,8 +15,7 @@ If \c splitpage is \c NULL, then I will send the same data set to both models.
 \adoc    Parameter_format  
 currently \c NULL; check the sub-models for their parameters.
 
-\adoc    Example 
-\include cross_models.c
+\adoc    For an example, see \ref apop_model_cross .
 */
 
 #include "apop_internal.h"
@@ -141,4 +140,9 @@ Sample use:
 
 \li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 1</tt>.
 \exception error=='n' First model input is \c NULL.
+
+Another example:
+
+\include cross_models.c
+
 */

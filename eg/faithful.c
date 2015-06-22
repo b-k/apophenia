@@ -1,7 +1,9 @@
 #include <apop.h>
 
-/* This replacement for apop_model_show(in) demonstrates retrieval of the useful
-settings: the weights (λ) and list of estimated models. */
+/* This replacement for apop_model_printt(in) demonstrates retrieval of the useful
+settings: the weights (λ) and list of estimated models. It is here only for
+demonstration purposes---it is what apop_model_print(your_mix, NULL) will do.
+*/
 void show_mix(apop_model *in){
     apop_mixture_settings *ms = Apop_settings_get_group(in, apop_mixture);
     printf("The weights:\n");
@@ -10,7 +12,6 @@ void show_mix(apop_model *in){
     for (apop_model **m = ms->model_list; *m; m++) //model_list is a NULL-terminated list.
         apop_model_print(*m, stdout);
 }
-
 
 int main(){
     apop_text_to_db("faith.data", "ff");

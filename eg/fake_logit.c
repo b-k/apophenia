@@ -33,11 +33,9 @@ int main(){
     /* Apophenia's test suite checks that this code produces 
        values close to canned values. As a human, you probably 
        just want to print the results to the screen. */
-    #ifndef Testing
         apop_model_show(est);
-    #else
+
         assert(fabs(apop_data_get(est->parameters, .rowname="1")- -1.155026) < 1e-6);
         assert(fabs(apop_data_get(est->parameters, .rowname="A")- 4.039903) < 1e-6);
         assert(fabs(apop_data_get(est->parameters, .rowname="B")- 1.494694) < 1e-6);
-    #endif
 }

@@ -34,7 +34,7 @@ in one distribution or the other, and if we knew with certainty which data point
 came from which distribution, then the estimation problem would be trivial:
 just generate the subsets and call <tt>apop_estimate(dataset1, model1)</tt>, ...,
 <tt>apop_estimate(datasetn, modeln)</tt> separately.  But the assignment of which
-element goes where is unknown information, which we guess at using an E-M algorithm. The
+element goes where is unknown information, which we guess at using an expectation-maximization algorithm. The
 standard algorithm starts with an initial set of parameters for the models, and assigns
 each data point to its most likely model. It then re-estimates the
 model parameters using their subsets. The standard algorithm, see e.g. <a
@@ -56,7 +56,7 @@ provides model parameters, then the LL method allocates observations and reports
 the search algorithm, then the search algorithm uses its usual rules to step to the next
 candidate set of parameters. This provides slightly more flexibility in the search.
 
-\li <b>Estimations of mixture distributions can be sensitive to initial conditions.</b>
+<em>Estimations of mixture distributions can be sensitive to initial conditions.</em>
 You are encouraged to try a sequence of random starting points for your model parameters.
 Some authors recommend plotting the data and eyeballing a guess as to the model parameters.
 
@@ -87,6 +87,8 @@ iff all component models have the same \c dsize.
 \adoc   Examples
 The first example uses a text file \c faith.data, in the \c tests directory of the distribution.
 \include faithful.c
+
+This example begins with a fixed mixture distribution, and makes assertions about the characteristics of draws from it.
 
 \include hills2.c
 */

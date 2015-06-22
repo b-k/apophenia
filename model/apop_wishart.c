@@ -153,7 +153,7 @@ static void wishart_estimate(apop_data *d, apop_model *m){
     apop_model_free(fixed_wish);
 }
 
-/*\amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 
+/* amodel apop_wishart The Wishart distribution, which is currently somewhat untested. 
 
 Here's the likelihood function. \f$p\f$ is the dimension of the data and covariance
 matrix, \f$n\f$ is the degrees of freedom, \f$\mathbf{V}\f$ is the \f$p\times p\f$
@@ -172,7 +172,7 @@ See also notes in \ref tfchi.
                       sequence of matrices into rows.     
 \adoc    Parameter_format  \f$N\f$ (the degrees of freedom) is the zeroth element of the vector. The matrix holds the matrix of parameters.
 \adoc    Estimate_results  Via MLE.    
-\adoc    Prep_routine   Just allocates the parameters based on the size of the input data.       
+\adoc    Prep_routine   Allocates the parameters based on the size of the input data.       
 \adoc    RNG  You can use this to generate random covariance matrices, should you need them. See example below. 
 \adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings    
 \adoc    Examples Making some random draws:
