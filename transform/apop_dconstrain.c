@@ -12,7 +12,8 @@ the base model and checking whether they are in or out of the constraint. Becaus
 default method is stochastic, there is some loss of precision, and conjugate gradient
 methods may get confused.
 
-Here is an example that makes a few draws and estimations from data-constrained models.
+Here is an example that makes a few draws and estimations from data-constrained
+models. Note the use of \ref apop_model_set_settings to prepare the constrained models.
 
 \adoc Examples
 \include dconstrain.c

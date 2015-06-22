@@ -3,7 +3,8 @@
 /* \amodel apop_coordinate_transform Apply a coordinate transformation of the data to
 produce a distribution over the transformed data space. This is sometimes called a Jacobian transformation.
 
-Here is an example that replicates the Lognormal distribution.
+Here is an example that replicates the Lognormal distribution. Note the use of \ref
+apop_model_copy_set to set up a model with the given settings.
 
 \include jacobian.c
 
@@ -49,11 +50,3 @@ apop_model *apop_coordinate_transform = &(apop_model){"Jacobian-transformed mode
 
 typedef apop_data *(*d_to_d)(apop_data*);
 typedef double (*d_to_f)(apop_data*);
-
-/** \def apop_model_coordinate_transform
-Build an \ref apop_coordinate_transform model. See its documentation for details and an example.
-
-\return An \ref apop_model that is a copy of \ref apop_coordinate_transform and is appropriately set up.
-
-\li Uses the \ref apop_ct_settings group. This macro takes elements of that struct as inputs.
-*/

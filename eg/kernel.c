@@ -47,8 +47,8 @@ apop_data *draw_some_data(){
 int main(){
     apop_data *d = draw_some_data();    
     apop_model *k = apop_estimate(d, apop_kernel_density);
-    apop_model *k2 = apop_model_copy_set(apop_kernel_density,
-                    apop_kernel_density, .base_data=d,
+    apop_model *k2 = apop_model_set_settings(apop_kernel_density,
+                                         .base_data=d,
                                          .set_fn = set_uniform_edges,
                                          .kernel = apop_uniform);
     plot(k, k2);

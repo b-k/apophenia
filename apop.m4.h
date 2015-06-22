@@ -1077,6 +1077,26 @@ an existing group.
 #define apop_model_copy_set(model, type, ...)  \
     apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
+
+/** This is the complement to \ref apop_model_set_parameters, for those models that are
+ set up by adding settings group, rather than filling in a list of parameters.
+
+For example, the \ref apop_kernel_density model is built by adding a \ref apop_kernel_density_settings group. From the example on the \ref apop_kernel_density page:
+
+\code
+apop_model *k2 = apop_model_set_settings(apop_kernel_density,
+                    .base_data=d,
+                    .set_fn = set_uniform_edges,
+                    .kernel = apop_uniform);
+\endcode
+
+The name of the model and the settings group to be built must match, which is the case
+for many model transformations, including \ref apop_dconstrain and \ref apop_cross. If the names do not match, use \ref apop_model_copy_set.
+*/
+#define apop_model_set_settings(model, ...)  \
+    apop_settings_group_alloc_wm(apop_model_copy(model), #model, model ## _settings_free, model ## _settings_copy, model ##_settings_init ((model ## _settings) {__VA_ARGS__}))
+
+
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
 
 \param model An \ref apop_model.
@@ -1633,6 +1653,7 @@ typedef struct {
     //Models built via call to apop_model_copy_set.
 
 #define apop_model_coordinate_transform(...) Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__)
+#define apop_model_dcompose(...) Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__)
 #define apop_model_dconstrain(...) Apop_model_copy_set(apop_dconstrain, apop_dconstrain, __VA_ARGS__)
 
 //Doxygen drops whatever is after these declarations, so I put them last.

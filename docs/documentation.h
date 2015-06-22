@@ -1636,7 +1636,7 @@ set the \c msize1, \c msize2, \c vsize, and \c dsize elements to the size you wa
 the example below.
   \li Some models have disparate, non-numeric settings rather than a simple matrix of
 parameters. For example, an kernel density estimate needs a model as a kernel and a
-base data set, which can be set via \ref apop_model_copy_set.
+base data set, which can be set via \ref apop_model_set_settings.
 
 Here is an example that shows the options for parameterizing a model. After each
 parameterization, 20 draws are made and written to a file named draws-[modelname].

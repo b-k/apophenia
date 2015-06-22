@@ -18,7 +18,8 @@ int main(){
       default scaling function is used.*/
     gsl_rng *r = apop_rng_alloc(213);
     apop_model *norm = apop_model_set_parameters(apop_normal, 1.2, 0.8);
-    apop_model *trunc = apop_model_dconstrain(.base_model=apop_model_copy(norm), 
+    apop_model *trunc = apop_model_set_settings(apop_dconstrain,
+                            .base_model=apop_model_copy(norm), 
                             .constraint=over_zero, .draw_ct=5e4, .rng=r);
 
     //make draws. Currently, you need to prep the model first.
@@ -38,7 +39,8 @@ int main(){
     }
 
     //this time, use an unparameterized model, and the in_bounds fn
-    apop_model *re_trunc = apop_model_dconstrain(.base_model=apop_normal, 
+    apop_model *re_trunc = apop_model_set_settings(apop_dconstrain,
+                            .base_model=apop_normal, 
                             .constraint=over_zero, .scaling=in_bounds);
 
     apop_model *re_est = apop_estimate(normald, re_trunc);

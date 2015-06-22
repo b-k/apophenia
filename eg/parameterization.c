@@ -37,7 +37,7 @@ int main(){
 
     /*A KDE estimation consists of filling an apop_kernel_density_settings group,
       so we can set it to use a Normal(μ, 2) kernel via: */
-    apop_model *k2 = apop_model_copy_set(apop_kernel_density, apop_kernel_density, 
+    apop_model *k2 = apop_model_set_settings(apop_kernel_density,
                          .base_data=d,
                          .kernel = apop_model_set_parameters(apop_normal, 0, 2));
     print_draws(k2);

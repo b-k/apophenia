@@ -15,7 +15,7 @@ of the point. Sum all of these distributions to form the output distribution.
 
 Setting up a kernel density consists of setting up a model with the base data and the
 information about the kernel model around each point. This can be done using the \ref
-apop_model_copy_set function to get a copy of the base \ref apop_kernel_density model
+apop_model_set_settings function to get a copy of the base \ref apop_kernel_density model
 and add a \ref apop_kernel_density_settings group with the appropriate information;
 see the \c main function of the example below.
 
