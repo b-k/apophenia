@@ -784,16 +784,9 @@ gsl_vector * v = &( apop_vv_##v );
 
 /** \cond doxy_ignore */
 /* Not (yet) for public use. */
-#define apop_subvector(v, start, len) (                                          \
+#define Apop_subvector(v, start, len) (                                          \
         ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
         : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
-
-/* Not (yet) for public use. */
-#define apop_mrow(m, row) (                                       \
-        ((m) == NULL || (m)->size1 <= (row) || (row) < 0) ? NULL    \
-        : &(gsl_matrix){.size1=1, .size2=(m)->size2, \
-             .tda=(m)->tda, .data=gsl_matrix_ptr((m), (row), 0)} \
-        )
 /** \endcond */
 
 #define Apop_rs(d, rownum, len)(                                                      \
@@ -810,9 +803,9 @@ gsl_vector * v = &( apop_vv_##v );
                 .rowct = (d)->names->row ? (GSL_MIN(1, GSL_MAX((d)->names->rowct - (int)(rownum), 0)))      \
                                           : 0,                                   \
                 .textct = (d)->names->textct }),                                 \
-        .vector= apop_subvector((d->vector), (rownum), (len)),                   \
+        .vector= Apop_subvector((d->vector), (rownum), (len)),                   \
         .matrix = Apop_subm(((d)->matrix), (rownum), 0,  (len), (d)->matrix?(d)->matrix->size2:0),    \
-        .weights =  apop_subvector(((d)->weights), (rownum), (len)),             \
+        .weights =  Apop_subvector(((d)->weights), (rownum), (len)),             \
         .textsize[0]=(d)->textsize[0]> (rownum)+(len)-1 ? (len) : 0,                                   \
         .textsize[1]=(d)->textsize[1],                                           \
         .text = (d)->text ? &((d)->text[rownum]) : NULL,                         \
