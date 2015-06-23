@@ -158,9 +158,9 @@ can be reported to you. That run is done using \c model->data as input.
 \return On return, \c out is filled with the next step in the Markov chain. The <tt>->data</tt> element of the PMF model is extended to include the additional steps in the chain.
 If a proposal failed the model constraints, then return 1; else return 0. See the notes in the documentation for \ref apop_model_metropolis.
 
-    \li After pulling the attached settings group, the parent model is ignored. One expects
+  \li After pulling the attached settings group, the parent model is ignored. One expects
 that \c base_model in the mcmc settings group == the parent model.
-    \li If your settings break the model parameters into several chunks, this function
+  \li If your settings break the model parameters into several chunks, this function
 returns after stepping through all chunks.
 \ingroup all_public
 */
@@ -244,14 +244,14 @@ Attach an \ref apop_mcmc_settings group to your model to specify the proposal
 distribution, burnin, and other details of the search. See the \ref apop_mcmc_settings
 documentation for details.
 
-    \li The default proposal includes an adaptive step: you specify a target accept rate
+  \li The default proposal includes an adaptive step: you specify a target accept rate
 (default: .35), and if the accept rate is currently higher the variance of the proposals
 is widened to explore more of the space; if the accept rate is currently lower the
 variance is narrowed to stay closer to the last accepted proposal. Technically, this
 breaks ergodicity of the Markov chain, but the consensus seems to be that this is
 not a serious problem. If it does concern you, you can set the \c base_adapt_fn in the \ref apop_mcmc_settings group to a do-nothing function, or one that damps its adaptation as \f$n\to\infty\f$.
-    \li If you have a univariate model, \ref apop_arms_draw may be a suitable simpler alternative.
-    \li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
+  \li If you have a univariate model, \ref apop_arms_draw may be a suitable simpler alternative.
+  \li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
 gibbs_chunks='a', all parameters are drawn as a set, and accepted/rejected as a set. The
 variances are adapted at an identical rate. If you set \c gibbs_chunks='i',
 then each scalar parameter is assigned its own proposal distribution, which is adapted
@@ -259,17 +259,17 @@ at its own pace. With \c gibbs_chunks='b' (the default), then each of the vector
 and weights of your model's parameters are drawn/accepted/adapted as a block (and so
 on to additional chunks if your model has <tt>->more</tt> pages). This works well for
 complex models which naturally break down into subsets of parameters.
-    \li Each chunk counts as a step in the Markov chain. Therefore, if there are
+  \li Each chunk counts as a step in the Markov chain. Therefore, if there are
 several chunks, you can expect chunks to repeat from step to step. If you want a
 draw after cycling through all chunks, try using \ref apop_model_metropolis_draw,
 which has that behavior.
-    \li If the likelihood model has \c NULL parameters, I will allocate them. That
+  \li If the likelihood model has \c NULL parameters, I will allocate them. That
 means you can use one of the stock models that ship with Apophenia. If I need
 to run the model's prep routine to get the size of the parameters, then I will
 make a copy of the likelihood model, run prep, and then allocate parameters
 for that copy of a model.
-    \li On exit, the \c parameters element of your likelihood model has the last accepted parameter proposal.
-    \li If you set <tt>apop_opts.verbose=2</tt> or greater, I will report the accept
+  \li On exit, the \c parameters element of your likelihood model has the last accepted parameter proposal.
+  \li If you set <tt>apop_opts.verbose=2</tt> or greater, I will report the accept
 rate of the M-H sampler. It is a common rule of thumb to select a proposal so that
 this is between 20% and 50%. Set <tt>apop_opts.verbose=3</tt> to see the stream
 of proposal points, their likelihoods, and the acceptance odds. You may want to

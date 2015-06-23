@@ -41,14 +41,14 @@ apop_model * apop_model_clear(apop_data * data, apop_model *model){
 
 /** Free an \ref apop_model structure.
 
-    \li The \c parameters and \c settings are freed.  These are the elements that are
+  \li The \c parameters and \c settings are freed.  These are the elements that are
 copied by \c apop_model_copy.
-    \li The \c data element is not freed, because the odds are you still need it.
-    \li If <tt>free_me->more_size</tt> is positive, the function runs
+  \li The \c data element is not freed, because the odds are you still need it.
+  \li If <tt>free_me->more_size</tt> is positive, the function runs
 <tt>free(free_me->more)</tt>. But it has no idea what the \c more element contains;
 if it points to other structures (like an \ref apop_data set), you need to free them
 before calling this function.
-    \li If \c free_me is \c NULL, this does nothing.
+  \li If \c free_me is \c NULL, this does nothing.
 
 \param free_me A pointer to the model to be freed.
 */

@@ -80,13 +80,13 @@ int is_blank(apop_data *indata, int row, int col, void *ignore){
 \return A single string with the elements of the \c strings table joined as per your
 specification. Allocated by the function, to be freed by you if desired.
 
-    \li If the table of strings is \c NULL or has no text, the output string will have
+  \li If the table of strings is \c NULL or has no text, the output string will have
 only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
-    \li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
-    \li It is sometimes useful to use \c Apop_r and \c Apop_rs to get a view of only
+  \li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
+  \li It is sometimes useful to use \c Apop_r and \c Apop_rs to get a view of only
 one or a few rows in conjunction with this function.
 
-    \li This function uses the \ref designated syntax for inputs.
+  \li This function uses the \ref designated syntax for inputs.
 
 This sample snippet generates the SQL for a query using a list of column names (where
 the query begins with <tt>select </tt>, ends with <tt>from datatab</tt>, and has commas
@@ -201,11 +201,11 @@ int apop_system(const char *fmt, ...){
 \param data	a \c gsl_vector of data. (No default, must not be \c NULL.)
 \param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. 
 (Default = \c 'd'.)
-    \li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
+  \li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
 the sample is below returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5%
 or more of the sample is above returned_vector[5]".
-    \li You may eventually want to \c free() the array returned by this function.
-    \li This function uses the \ref designated syntax for inputs.
+  \li You may eventually want to \c free() the array returned by this function.
+  \li This function uses the \ref designated syntax for inputs.
 */ 
 APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
     gsl_vector *apop_varad_var(data, NULL);

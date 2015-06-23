@@ -113,10 +113,10 @@ the given vector, with an optional weighting.
 \param weights The weight vector. If NULL, assume equal weights.
 \return The weighted kurtosis.
  
-    \li Some people like to normalize the fourth central moment by dividing by variance
+  \li Some people like to normalize the fourth central moment by dividing by variance
 squared, or by subtracting three; those things are not done here, so you'll have to
 do them separately if need be.
-    \li This function uses the \ref designated syntax for inputs.
+  \li This function uses the \ref designated syntax for inputs.
 \see \ref apop_vector_kurtosis for the unbiased sample version.
 */
 APOP_VAR_HEAD double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights){
@@ -156,9 +156,9 @@ printf("The correlation coefficient between rows two "
        "and three is %g.\n", apop_vector_correlation(Apop_mrv(m, 2), Apop_mrv(m, 3)));
 \endcode 
 
-    \li \c ina and \c inb are mandatory and must be non-NULL, but you can leave the weights
+  \li \c ina and \c inb are mandatory and must be non-NULL, but you can leave the weights
 vector off in the typical case of uniform weights.
-    \li This function uses the \ref designated syntax for inputs.
+  \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights){
     gsl_vector const * apop_varad_var(ina, NULL);
@@ -457,15 +457,15 @@ APOP_VAR_END_HEAD
 \param weights The weight vector. If NULL (the default), assume equal weights.
 \return        The weighted sample variance.  
 
-    \li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias
+  \li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias
 introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
-    \li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
-    \li Apophenia tries to be smart about reading the weights. If weights
+  \li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
+  \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
-    \li This function uses the \ref designated syntax for inputs.
+  \li This function uses the \ref designated syntax for inputs.
 \see apop_vector_var_m for the case where you already have the vector's mean.
 */
 APOP_VAR_HEAD double apop_vector_var(gsl_vector const *v, gsl_vector const *weights){

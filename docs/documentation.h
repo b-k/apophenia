@@ -1941,22 +1941,21 @@ apop_model_print(apop_estimate(regression_data, apop_logit), NULL);
 
 /** \page testpage Tests & diagnostics
 
-Apophenia provides a few functions for doing the more common hypothesis tests, and
-enough tools associated with the \ref apop_model struct that confidence-interval type
-tests can be constructed for any arbitrary distribution.
+Here is the model for all hypothesis testing within Apophenia:
 
-If you are producing a statistic that you know has a common form, like a central limit
-theorem tells you that your statistic is Normally distributed, then the convenience
-function \ref apop_test will do the final lookup step of checking where your statistic
-lies on your chosen distribution.
+\li Calculate a statistic.
+\li Describe the distribution of that statistic.
+\li Work out how much of the distribution is (above|below|closer to zero than) the statistic.
+
+There are a handful of named tests that produce a known statistic and then compare to a
+known distribution, like \ref apop_test_kolmogorov or \ref apop_test_fisher_exact. For
+traditional distributions (Normal, \f$t\f$, \f$\chi^2\f$), use the \ref apop_test convenience
+function.
 
 In especially common cases, like the parameters from an OLS regression,
 the commonly-associated \f$t\f$ test is included as part of the estimation
 output, typically as a row in the \c info element of the output \ref apop_model.
 
-Some tests, like ANOVA, produce a statistic using a specialized procedure, so
-Apophenia includes some functions, like \ref apop_test_anova_independence and \ref
-apop_test_kolmogorov, to produce the statistic and look up its significance level.
 
 \li\ref apop_test
 \li\ref apop_paired_t_test
@@ -1967,10 +1966,6 @@ apop_test_kolmogorov, to produce the statistic and look up its significance leve
 \li\ref apop_test_kolmogorov
 \li\ref apop_estimate_coefficient_of_determination
 \li\ref apop_estimate_r_squared
-
-These are all situations where the statistic in question is known to have a textbook
-distribution. \ref gentle_testing gives discussion and an example for the case where
-the distribution of the statistic must be derived via Monte Carlo methods.
 
 See also these Monte Carlo methods:
 
@@ -1987,11 +1982,9 @@ Apophenia, but seemed a bit out of place. Here it is as a sample:
 
 double apop_test_chi_squared_var_not_zero(const gsl_vector *in){
     Apop_stopif(!in, return NAN, 0, "input vector is NULL. Doing nothing.");
-    double sum=0;
     gsl_vector	*normed = apop_vector_normalize((gsl_vector *)in, .normalization_type='s');
     gsl_vector_mul(normed, normed);
-    for(size_t i=0;i< normed->size; 
-        sum +=gsl_vector_get(normed,i++));
+    double sum=apop_vector_sum(normed);
     gsl_vector_free(normed);
     return gsl_cdf_chisq_P(sum, in->size); 
 }
@@ -2012,6 +2005,45 @@ Given the correct assumptions, this is \f$\sim \chi^2_m\f$, where \f$m\f$ is the
 \code
 double p_value = apop_test(stat, "chi squared", beta->size);
 \endcode
+
+<em>Generalized parameter tests</em>
+
+But if your model is not from the textbook, then you have the tools to apply the
+above three-step process directly:
+
+\li Model parameters are a statistic, and you know that  <tt>apop_estimate(your_data,
+        your_model)</tt> will output a model with a <tt>parameters</tt> element.
+\li The distribution of a parameter is also a model, so 
+\ref apop_parameter_model will also return an \ref apop_model.
+\li \ref apop_cdf takes in a model and a data point, and returns the area under the data
+point.
+
+Defaults for the parameter models are filled in via bootstrapping or resampling, meaning
+that if your model's parameters are decidedly off the Normal path, you can still test
+claims about the parameters.
+
+The introductory example ran a standard OLS regression, whose output includes some
+standard hypothesis tests; to conclude, let us go the long way and replicate those results
+via the general \ref apop_parameter_model mechanism. The results here will of course be
+identical, but the more general mechanism can be used in situations where the standard
+models don't apply.
+
+The first part of this program is identical to the program above. The second
+half executes the three steps uses many of the above features: one of the inputs to
+\ref apop_parameter_model (which row of the parameter set to use) is sent by adding a
+settings group, we pull that row into a separate data set using \ref Apop_r, and we
+set its vector value by referring to it as the -1st element.
+
+\include ols2.c
+
+Note that the procedure did not assume the model parameters had a certain form. It
+queried the model for the distribution of parameter \c x_1, and if the model didn't have
+a closed-form answer then a distribution via bootstrap would be provided. Then that model
+was queried for its CDF. [The procedure does assume a symmetric distribution. Fixing this
+is left as an exercise for the reader.] For a model like OLS, this is entirely overkill, 
+which is why OLS provides the basic hypothesis tests automatically. But for models
+where the distribution of parameters is unknown or has no closed-form solution, this
+may be the only recourse.
 */
 
 /** \page Histosec Empirical distributions and PMFs (probability mass functions)
@@ -2463,9 +2495,9 @@ m4 prep_variadics.m4 myfile.m4.c > myfile.c
 
 This is a "gentle introduction" to the Apophenia library. It is intended 
 to give you some initial bearings on the typical workflow and the concepts and tricks that
-the manual pages assume you have met.
+the manual pages assume you are familiar with.
 
-This introduction assumes you already have some familiarity with C, how to compile a program, and how to use a debugger. If you want to install Apophenia now so you can try the samples on this page, see the \ref setup page.
+If you want to install Apophenia now so you can try the samples on this page, see the \ref setup page.
 
 An outline of this overview:
 
@@ -2618,10 +2650,10 @@ As per the example above, use \ref apop_text_to_data or \ref apop_text_to_db and
 
 <em> Subsets</em>
 
-There are many macros to get subsets of the data. Each generates what is
-considered to be a disposable view: once the variable goes out of scope (by the usual C
-rules of scoping), it is no longer valid. However, these structures are all wrappers for pointers
-to the base data, so all operations on the data view affect the base data. 
+There are many macros to get views of subsets of the data. Each generates a disposable
+wrapper around the base data: once the variable goes out of scope, the wrapper
+disappears, but modifications made to the data in the view are modifications to the
+base data itself.
 
 \include simple_subsets.c
 
@@ -2630,7 +2662,7 @@ background variables in the current scope (something a function can't do). Tradi
 custom is to put macro names in all caps, like \c APOP_DATA_ROWS, which to modern
 sensibilities looks like yelling. The custom has a logic: there are ways to hang
 yourself with macros, so it is worth distinguishing them typographically. 
-The documentation always uses a single capital.
+Apophenia tones it down by capitalizing only the first letter.
 
 <em> Basic manipulations</em>
 
@@ -2680,7 +2712,7 @@ relate. It is taken from this
 which will be useful to you if only because it lists some of the functions that act on
 GSL vectors and matrices that are useful (in fact, essential) but out of the scope of the Apophenia documentation.
 
-\image html http://apophenia.info/structs.png
+\image html http://apophenia.info/structs.png width="100%"
 \image latex ../structs.png width=18cm
 
 All of the elements of the \ref apop_data structure are laid out at middle-left. You have
@@ -2737,7 +2769,7 @@ model, \c est, which is identical to the base OLS model but has estimated parame
 functions like \ref apop_estimate, \ref apop_draw, or \ref apop_predict; more examples below.
 Other than \ref apop_estimate, most require a parameterized model like \c est. After all, it doesn't make sense to
 draw from a Normal distribution until its mean and standard deviation are specified.
-\li If you know what the parameters should be, use \ref apop_model_set_parameters. E.g.
+\li If you know what the parameters should be, for most models use \ref apop_model_set_parameters. E.g.
 
 \code
 apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
@@ -2748,7 +2780,32 @@ apop_data *a_thousand_waits = apop_model_draws(poisson, 1000);
 \endcode
 
 \li You can use \ref apop_model_print to print the various elements to screen.
-\li You can combine and transform models with functions such as \ref apop_model_fix_params, \ref apop_model_coordinate_transform, or \ref apop_model_mixture. Each of these functions produce a new model, which can be estimated, re-combined, or otherwise used like any other model.
+\li You can combine and transform models with functions such as \ref
+apop_model_fix_params, \ref apop_model_coordinate_transform, or \ref
+apop_model_mixture. Each of these functions produce a new model, which can be estimated,
+re-combined, or otherwise used like any other model.
+
+\code
+//A helper function to check whether a data point is nonnegative
+double over_zero(apop_data *in, apop_model *m){ return apop_data_get(in) > 0; }
+
+//Generate a truncated Normal distribution by adding a data constraint:
+apop_model *truncated_normal= apop_model_dconstrain(.base_model=apop_normal,
+                                                    .constraint=over_zero);
+
+//Get the cross product of that and a free Normal
+apop_model *cross = apop_model_cross(apop_normal, truncated_normal);
+
+//Given assumed data, estimate the parameters of the cross product
+apop_model *xest = apop_estimate(assumed_data, cross);
+
+//Assuming more data, use the cross product as the prior for a Normal distribution
+apop_model *posterior = apop_update(moredata, .prior=xest, .likelihood=apop_normal);
+
+//Assuming more data, use the cross product as the prior for a Normal distribution
+apop_model *post2 = apop_update(moredata2, .prior=posterior, .likelihood=apop_normal);
+\endcode
+
 \li Writing your own models won't be covered in this introduction, but it can be easy to
 copy and modify the procedures of an existing model to fit your needs. When in doubt, delete a procedure, because any procedures that are missing will have
 defaults filled when used by functions like \ref apop_estimate (which uses \ref
@@ -2831,65 +2888,32 @@ printf("ΔAIC_c=%g\n", apop_data_get(est->info, .rowname="AIC_c")
                        - apop_data_get(est2->info, .rowname="AIC_c"));
 \endcode
 
-\section gentle_testing Testing
-
-Here is the model for all hypothesis testing within Apophenia:
-
-\li Calculate a statistic.
-\li Describe the distribution of that statistic.
-\li Work out how much of the distribution is (above|below|closer to zero than) the statistic.
-
-There are a handful of named tests that produce a known statistic and then compare to a
-known distribution, like \ref apop_test_kolmogorov or \ref apop_test_fisher_exact. For
-traditional distributions (Normal, \f$t\f$, \f$\chi^2\f$), use the \ref apop_test convenience
-function.
-
-But if your model is not from the textbook, then you have the tools to apply the
-above three-step process directly. First I'll give an overview of the three steps,
-then another working example.
-
-\li Model parameters are a statistic, and you know that  <tt>apop_estimate(your_data,
-        your_model)</tt> will output a model with a <tt>parameters</tt> element.
-\li The distribution of a parameter is also a model, so 
-\ref apop_parameter_model will also return an \ref apop_model.
-\li \ref apop_cdf takes in a model and a data point, and returns the area under the data
-point.
-
-Defaults for the parameter models are filled in via bootstrapping or resampling, meaning
-that if your model's parameters are decidedly off the Normal path, you can still test
-claims about the parameters.
-
-The introductory example ran a standard OLS regression, whose output includes some
-standard hypothesis tests; to conclude, let us go the long way and replicate those results
-via the general \ref apop_parameter_model mechanism. The results here will of course be
-identical, but the more general mechanism can be used in situations where the standard
-models don't apply.
-
-The first part of this program is identical to the program above. The second
-half executes the three steps uses many of the above features: one of the inputs to
-\ref apop_parameter_model (which row of the parameter set to use) is sent by adding a
-settings group, we pull that row into a separate data set using \ref Apop_r, and we
-set its vector value by referring to it as the -1st element.
-
-\include ols2.c
-
-Note that the procedure did not assume the model parameters had a certain form. It
-queried the model for the distribution of parameter \c x_1, and if the model didn't have
-a closed-form answer then a distribution via bootstrap would be provided. Then that model
-was queried for its CDF. [The procedure does assume a symmetric distribution. Fixing this
-is left as an exercise for the reader.] For a model like OLS, this is entirely overkill, 
-which is why OLS provides the basic hypothesis tests automatically. But for models
-where the distribution of parameters is unknown or has no closed-form solution, this
-may be the only recourse.
-
+\section gentle_end Conclusion
 
 This introduction has shown you the \ref apop_data set and some of the functions
-associated, which might be useful even if you aren't formally doing statistical work but do have to deal with data with real-world elements like column names and mixed
-numeric/text values. You've seen how Apophenia encapsulates many of a model's
-characteristics into a single \ref apop_model object, which you can send with
-data to functions like \ref apop_estimate, \ref apop_predict, or \ref apop_draw. Once
-you've got your data in the right form, you can use this to simply estimate model
-parameters, or as an input to later analysis.
+associated, which might be useful even if you aren't formally doing statistical
+work but do have to deal with data with real-world elements like column names and
+mixed numeric/text values. You've seen how Apophenia encapsulates many of a model's
+characteristics into a single \ref apop_model object, which you can send with data to
+functions like \ref apop_estimate, \ref apop_predict, or \ref apop_draw. Once you've
+got your data in the right form, you can use this to simply estimate model parameters,
+or as an input to later analysis.
+
+What's next?  
+  \li Check out the system for hypothesis testing, both with traditional known
+distributions (using \ref apop_test for dealing with Normal-, \f$t\f$-,
+\f$\chi^2\f$-distributed statistics); and for the parameters of any model; in \ref testpage.
+  \li Try your own hand at putting new models into the \ref apop_model framework,
+as discussed in \ref modeldetails.
+  \li For example, have a look at <a href="http://modelingwithdata.org/arch/00000154.htm">this blog</a>
+and its subsequent posts, which wrap a microsimulation into an \ref apop_model, so
+that its parameters can be estimated and confidence intervals set around them.
+  \li See the \ref maxipage page for discussion of the many features the optimization
+system has. It allows you to use a diverse set of search types on constrained or
+unconstrained models.
+  \li Skim through <a href="http://apophenia.info/group__all__public.html">the full list
+of macros and functions</a>---there are hundreds---to get a sense of what else
+Apophenia offers.
 */
 
 /** \page modeldetails Writing new models

@@ -96,23 +96,23 @@ If 'v' (as in void), return \c NULL.  (Default = 'n')
 
 \exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
 
-    \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
+  \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
 \ref Apop_r to get each row in turn, and send it to the function. The first
 implication is that your function should be expecting a \ref apop_data set with
 exactly one row in it. The second is that \c part is ignored: it only makes sense to go
 row-by-row. 
-    \li For these \c r functions, if you set \c inplace='y', then you will be modifying
+  \li For these \c r functions, if you set \c inplace='y', then you will be modifying
 your input data set, row by row; if you set \c inplace='n', then I will return an \ref
 apop_data set whose \c vector element is as long as your data set (i.e., as long as
 the longest of your text, vector, or matrix parts).
-    \li If you set <tt>apop_opts.thread_count</tt> to a value greater than one,
+  \li If you set <tt>apop_opts.thread_count</tt> to a value greater than one,
 I will split the data set into as many chunks as you specify, and process them
 simultaneously. You need to watch out for the usual hang-ups about multithreaded
 programming, but if your data is iid, and each row's processing is independent of the
 others, you should have no problems. Bear in mind that generating threads takes some
 small overhead, so simple cases like adding a few hundred numbers will actually be
 slower when threading.
-    \li See \ref mapply for many more examples and notes.
+  \li See \ref mapply for many more examples and notes.
 \see apop_map_sum
 \ingroup all_public
 */
@@ -471,13 +471,13 @@ elements. Thus, this function returns a \c double. See the \ref apop_map page fo
 details of the inputs, which are the same here, except that \c inplace doesn't make
 sense---this function will always just add up the input function outputs.
 
-    \li I don't copy the input data to send to your input function. Therefore, if your
+  \li I don't copy the input data to send to your input function. Therefore, if your
 function modifies its inputs as a side-effect, your data set will be modified as this
 function runs.
-    \li The sum of zero elements is zero, so that is what is returned if the input \ref
+  \li The sum of zero elements is zero, so that is what is returned if the input \ref
 apop_data set is \c NULL. If <tt>apop_opts.verbose >= 2</tt> print a warning.
-    \li See \ref mapply for many more examples and notes.
-    \li This function uses the \ref designated syntax for inputs.
+  \li See \ref mapply for many more examples and notes.
+  \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */
 APOP_VAR_HEAD double apop_map_sum(apop_data *in, apop_fn_d *fn_d, apop_fn_v *fn_v, apop_fn_r *fn_r, apop_fn_dp *fn_dp, apop_fn_vp *fn_vp, apop_fn_rp *fn_rp, apop_fn_dpi *fn_dpi,  apop_fn_vpi *fn_vpi, apop_fn_rpi *fn_rpi, apop_fn_di *fn_di, apop_fn_vi *fn_vi, apop_fn_ri *fn_ri, void *param, char part, int all_pages){ 

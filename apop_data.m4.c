@@ -967,15 +967,15 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 
 \return 0=OK, -1=error (probably out-of-bounds)
 
-    \li UTF-8 or ASCII text is correctly handled.
-    \li Apophenia follows a general rule of not reallocating behind your back: if
+  \li UTF-8 or ASCII text is correctly handled.
+  \li Apophenia follows a general rule of not reallocating behind your back: if
 your text matrix is currently of size (3,3) and you try to put an item in slot (4,4),
 then I display an error rather than reallocating the text matrix.
-    \li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
-    \li If there had been a string at the grid point you are writing to,
+  \li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
+  \li If there had been a string at the grid point you are writing to,
 the old one is freed to prevent leaks. Remember this if you had other pointers aliasing
 that string.
-    \li \ref apop_text_alloc will reallocate to a new size if you need. For example,
+  \li \ref apop_text_alloc will reallocate to a new size if you need. For example,
 this code will fill the diagonals of the text array with a message, resizing as it goes:
 
 \code
