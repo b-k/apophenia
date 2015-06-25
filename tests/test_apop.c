@@ -36,6 +36,10 @@ post-install tests.  */
 #include <apop.h>
 #include <unistd.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifdef FULL_TOLERANCE
 double tol6 = 1e-6;
 double tol5 = 1e-5;
@@ -1203,7 +1207,9 @@ void test_ols_offset(gsl_rng *r){
 
 int main(int argc, char **argv){
     int  slow_tests = 0;
-    apop_opts.thread_count = 2;
+#ifdef _OPENMP
+    if (omp_get_num_threads()==1) omp_set_num_threads(2); //always at least 2 threads.
+#endif
     int c;
     char opts[]  = "sqt:";
     if (argc==1)
@@ -1211,7 +1217,9 @@ int main(int argc, char **argv){
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 's')       slow_tests++;
         else if (c == 'q')  verbose--;
-        else if (c == 't')  apop_opts.thread_count = atoi(optarg);
+#ifdef _OPENMP
+        else if (c == 't')  omp_set_num_threads(atoi(optarg));
+#endif
 
     //set up some global or common variables
     gsl_rng *r = apop_rng_alloc(8); 

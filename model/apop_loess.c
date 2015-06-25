@@ -2852,6 +2852,7 @@ static void loess_prune( long	*parameter, long *a, double	*xi, double *vert, dou
 
 ////// predict.c
 
+/** \cond doxy_ignore  Private to this file.*/
 struct pred_struct {
 	double	*fit;           //The evaluated loess surface at eval.
 	double	*se_fit;        //Estimates of the standard errors of the surface values.
@@ -2859,6 +2860,7 @@ struct pred_struct {
 	double  df;             //The degrees of freedom of the t-distribution used to compute pointwise 
                             //   confidence intervals for the evaluated surface. 
 };
+/** \endcond */ //End of Doxygen ignore.
 
 void predict(double  *new_x, long M, struct loess_struct *lo, struct pred_struct *pre, int want_cov) {
 	

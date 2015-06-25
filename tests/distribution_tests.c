@@ -6,6 +6,10 @@
 */
 #include <apop.h>
 #include <unistd.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define Diff(L, R, eps) Apop_assert(fabs((L)-(R))<(eps), "%g is too different from %g (abitrary limit=%g).", (double)(L), (double)(R), eps);
 
 #define Print_dot if(verbose){printf(".");fflush(NULL);}
@@ -194,14 +198,18 @@ void test_distributions(gsl_rng *r){
 static void got_bored(){ exit(0); }
 
 int main(int argc, char **argv){
-    apop_opts.thread_count = 2;
+#ifdef _OPENMP
+    if (omp_get_num_threads()==1) omp_set_num_threads(2); //always at least 2 threads
+#endif
     int c;
     char opts[] = "sqt:";
     if (argc==1)
         printf("\tDistribution tests. Each dot is an optimization run, including some methods known to be inefficient.\n\tFor quieter output, use -q. Default is two threads; change with -t1, -t3, ...\n");
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 'q')      verbose  --;
-        else if (c == 't') apop_opts.thread_count  = atoi(optarg);
+#ifdef _OPENMP
+        else if (c == 't')  omp_set_num_threads(atoi(optarg));
+#endif
 
     gsl_rng *r = apop_rng_alloc(213452);
     signal(SIGINT, got_bored);

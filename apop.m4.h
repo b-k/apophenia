@@ -95,38 +95,24 @@ typedef struct {
 /** A statistical model. See \ref modelsec for details. */
 typedef struct apop_model apop_model;
 
-/** The elements of the \ref apop_model type, representing a statistical model. */
+/** The elements of the \ref apop_model type, representing a statistical model. See \ref
+ modelsec and \ref modeldetails for use and details.  */
 struct apop_model{
     char name[101]; 
-    int vsize, msize1, msize2, dsize; /**< The size of the parameter set.
-                     If a dimension is -1, then use yourdata->matrix->size2. For
-                    anything more complex, allocate the parameter set in the prep
-                    method. \c dsize is for the canonical form, and is
-                    the size of the data the RNG will return. */
-    apop_data *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
-    apop_data *parameters; /**< The coefficients or parameters estimated by the model. */
-    apop_data *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
-                        covariance matrix, confidence intervals, expected score. See your
-                        specific model's documentation for what it puts here.
-                        */
+    int vsize, msize1, msize2, dsize;
+    apop_data *data;
+    apop_data *parameters;
+    apop_data *info;
     void (*estimate)(apop_data * data, apop_model *params); 
-                /**< The estimation routine. Call via \ref apop_estimate */
     long double (*p)(apop_data *d, apop_model *params);
-                /**< Probability of the given data and parameterized model. Call via \ref apop_p */
     long double (*log_likelihood)(apop_data *d, apop_model *params);
-                /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
-    long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
-                            the integral up to the single data point you provide.  Call via \ref apop_cdf */
+    long double (*cdf)(apop_data *d, apop_model *params);
     long double (*constraint)(apop_data *data, apop_model *params);
     int (*draw)(double *out, gsl_rng* r, apop_model *params);
-                /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
     apop_settings_type *settings;
-    void *more; /**< This element is copied and freed as necessary by Apophenia's
-                     model-handling functions, but is otherwise untouched. Put whatever
-                     information you want here. */
-    size_t more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
-                         \ref apop_model_copy can do the \c memcpy as necessary. */
+    void *more;
+    size_t more_size;
     char error;
 };
 
@@ -137,14 +123,13 @@ typedef struct{
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
-    char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
-    char *nan_string; /**< The string used to indicate NaN. */
+    char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. Max length is currently 300 chars.*/
+    char *nan_string; /**< The string used to indicate NaN. Default: <tt>"NaN</tt>. Comparisons are case-insensitive.*/
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
     FILE *log_file;  /**< The file handle for the log. Defaults to \c stderr, but change it with, e.g.,
                            <tt>apop_opts.log_file = fopen("outlog", "w");</tt> */
-    int  thread_count; /**< Deprecated. Use \c omp_set_num_threads(n).  */
     #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
         _Atomic(int) rng_seed;
     #else
@@ -1176,7 +1161,7 @@ See \ref settingswriting for details and an example.
 
 /** The settings for maximum likelihood estimation (including simulated annealing). */
 typedef struct{
-    double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
+    double      *starting_pt;   /**< An array of doubles (e.g., <tt>(double*){2,4,6,8}</tt>) suggesting a starting point. 
                                   If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
                                   \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
     char *method; /**< The method to be used for the optimization. All strings are case-insensitive.
@@ -1202,10 +1187,10 @@ typedef struct{
 
 <tr><td> "Newton hybrid no scale"</td><td>  Newton's method/gradient descent hybrid with spherical scale</td><td>  As above, but use a simplified trust region. </td></tr>
 </table> */
-    double      step_size, /**< the initial step size. */
-                tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
+    double      step_size, /**< The initial step size. */
+                tolerance, /**< The precision the minimizer uses in its stopping rule. Only vaguely related to the precision of the actual MLE.*/
 delta;
-    int         max_iterations; /**< Ignored by simulated annealing. Other methods halt if
+    int         max_iterations; /**< Ignored by simulated annealing. Other methods halt (and set the \c "status" element of the output estimate's info page) if
                                  they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
@@ -1222,15 +1207,7 @@ delta;
     gsl_rng     *rng;
     apop_data   **path;    /**< If not \c NULL, record each vector tried by the optimizer as one row of this \ref apop_data set.
                               Each row of the \c matrix element holds the vector tried; the corresponding element in the \c vector is the evaluated value at that vector (after out-of-constraints penalties have been subtracted).
-                              A new \ref apop_data set is allocated at the pointer you send in. This data set has no names; add them as desired. Sample use:
-\code                              
-apop_data *mypath;
-Apop_model_add_group(mymodel, apop_mle, .path=&mypath);
-apop_model *out = apop_estimate(mydata, mymodel);
-apop_data_print(mypath, .output_name="search");
-apop_data_free(mypath);
-\endcode                              
-                              
+                              A new \ref apop_data set is allocated at the pointer you send in. This data set has no names; add them as desired. For a sample use, see \ref maxipage.
 */
 } apop_mle_settings;
 
@@ -1248,7 +1225,7 @@ typedef struct {
   Some uses of a model depend on these items, but if they are a waste
   of time for your purposes, this settings group gives a quick way to bypass them all.
 
-  Simply adding this settings group to your model without changing any default values---
+  Adding this settings group to your model without changing any default values---
   \code
   Apop_model_add_group(your_model, apop_parts_wanted);
   \endcode
@@ -1324,7 +1301,7 @@ struct apop_mcmc_settings;
 information.  By default, these will be \ref apop_multivariate_normal models. The \c
 step_fn and \c adapt_fn have to be written around the model and your preferences.
 For the defaults, the step function recenters the mean of the distribution around the
-last accepted proposal, and the adapt function widens the Σ for the Normal if the
+last accepted proposal, and the adapt function widens \f$\Sigma\f$ for the Normal if the
 accept rate is too low; narrows it if the accept rate is too large.
 
 You may provide an array of proposals. The length of the list of proposals
@@ -1332,8 +1309,6 @@ must match the number of chunks, as per the \c gibbs_chunks setting in the \ref
 apop_mcmc_settings group that the array of proposals is a part of. Each proposal must
 be initialized to include all elements, and the step and adapt functions probably have
 to be written anew for each type of model.
-
-This segment of the interface is in beta. A future revision may make it easier to design new proposals.
 */
 typedef struct apop_mcmc_proposal_s {
     apop_model *proposal; /**< The distribution from which test parameters will be
@@ -1355,8 +1330,10 @@ typedef struct apop_mcmc_proposal_s {
         every step, to adapt the proposal distribution using information to this point in
         the chain. */
 
-    int accept_count, reject_count;  /**< These are about this chunk. The \ref apop_mcmc_settings group
-                                       has a total for the aggregate across all chunks. */
+    int accept_count, reject_count;  /**< If there are multiple \ref apop_mcmc_proposal_s structs for 
+                                       multiple chunks, These count accepts/rejects for
+                                       this chunk. The \ref apop_mcmc_settings group has
+                                       a total for the aggregate across all chunks. */
 } apop_mcmc_proposal_s;
 
 /** Method settings for a model to be put through Bayesian updating. */
@@ -1366,8 +1343,8 @@ typedef struct apop_mcmc_settings {
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
-    double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
-    apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model
+    double last_ll; /**< If you have already run MCMC, the last log likelihood in the chain.*/
+    apop_model *pmf; /**< If you have already run MCMC, I keep a pointer to the model
             so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
     apop_model *base_model; /**< The model you provided with a \c log_likelihood or
             \c p element (which need not sum to one). You do not have to set this: if it is
@@ -1377,17 +1354,19 @@ typedef struct apop_mcmc_settings {
             struct for details. */
     int proposal_count; /**< The number of proposal sets; see \c gibbs_chunks below. */
     double target_accept_rate; /**< The desired acceptance rate, for use by adaptive proposals. Default: .35 */
-    int accept_count;   /**< After calling apop_mcmc, this will have the number of accepted proposals.*/
-    int reject_count;   /**< After calling apop_mcmc, this will have the number of rejected proposals.*/
-    char gibbs_chunks;  /**< 'a': One step draws and accepts/rejects all parameters as a unit<br>
+    int accept_count;   /**< After calling \ref apop_model_metropolis, this will have the number of accepted proposals.*/
+    int reject_count;   /**< After calling \ref apop_model_metropolis, this will have the number of rejected proposals.*/
+    char gibbs_chunks;  /**< See the \ref apop_model_metropolis documentation for discussion.
+                          
+                          \c 'a': One step draws and accepts/rejects all parameters as a unit<br>
 
-                             'b': draw in blocks: the vector is a block, the matrix
+                             \c 'b': draw in blocks: the vector is a block, the matrix
                                 is a separate block, the weights are a separate
                                 block, and so on through every page of the model
                                 parameters. Each block of parameters is drawn and
                                 accepted/rejected as a unit. <br>
 
-                             '1': draw each parameter and accept/reject separately. One
+                             \c '1': draw each parameter and accept/reject separately. One
                                 MCMC step consists of a set of draws for every
                                 parameter.<br> */
     size_t *block_starts; /**< For internal use */
@@ -1396,13 +1375,14 @@ typedef struct apop_mcmc_settings {
     char start_at; /**< If \c '1' (the default), start with a first proposal of all
         1s. Even when this is a far-from-useful starting point, MCMC typically does a good
         job of crawling to better spots early in the chain.<br>
-    If \c 'p', start at the \c parameters of the \ref apop_model sent in to \ref
+    The default when this is unset is to start at the \c parameters of the \ref apop_model sent in to \ref
     apop_model_metropolis.*/
-    void (*base_step_fn)(double const *, struct apop_mcmc_proposal_s*, struct apop_mcmc_settings *); /**< If a \ref apop_mcmc_proposal_s has \c NULL \c step_fn, use this. If you don't want a step function, set this to a do-nothing function. */
+    void (*base_step_fn)(double const *, struct apop_mcmc_proposal_s*, struct apop_mcmc_settings *); /**< If an \ref apop_mcmc_proposal_s struct has \c NULL \c step_fn, use this. If you don't want a step function, set this to a do-nothing function. */
     int (*base_adapt_fn)(struct apop_mcmc_proposal_s *ps, struct apop_mcmc_settings *ms); /**< If a \ref apop_mcmc_proposal_s has \c NULL \c adapt_fn, use this.  If you don't want an adapt function, set this to a do-nothing function.*/
 
 } apop_mcmc_settings;
 
+/** \cond doxy_ignore */
 //Loess, including the old FORTRAN-to-C.
 struct loess_struct {
 	struct {
@@ -1441,6 +1421,7 @@ struct loess_struct {
 		double  *divisor;
 	} out;
 };
+/** \endcond */ //End of Doxygen ignore.
 
 /** The code for the loess system is based on FORTRAN code from 1988,
 overhauled in 1992, linked in to Apophenia in 2009. The structure that
@@ -1466,14 +1447,14 @@ typedef struct {
 		locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
 
 <tt>.lo_s.normalize</tt>:	Should numeric predictors
-		be normalized?	If 'y' - the default - the standard normalization
-		is used. If 'n', no normalization is carried out.
+		be normalized?	If \c 'y' - the default - the standard normalization
+		is used. If \c 'n', no normalization is carried out.
 
 \c .lo_s.model.parametric:	for two or more numeric predictors, this argument
 		specifies those variables that should be
 		conditionally-parametric. The argument should be a logical
-		vector of length p, specified in the order of the predictor
-		group ordered in x.  Default is a vector of 0's of length p.
+		vector of length \c p, specified in the order of the predictor
+		group ordered in \c x.  Default is a vector of 0's of length \c p.
 
 \c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
 		numeric predictors, this argument specifies those numeric
@@ -1481,7 +1462,7 @@ typedef struct {
 		fitting variables. The method of specification is the same as
 		for parametric.  Default is a vector of 0's of length p.
 
-\c .lo_s.model.family: the assumed distribution of the errors. The values are
+\c .lo_s.model.family: the assumed distribution of the errors. The values may be 
         <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
         If the second value is specified, a robust fitting procedure is used.
 
@@ -1545,7 +1526,7 @@ typedef struct {
    \c  divisor:	normalization divisor for numeric predictors.
 */
 
-    int     want_predict_ci; /**< If 'y' (the default), calculate the
+    int     want_predict_ci; /**< If \c 'y' (the default), calculate the
                                 confidence bands for predicted values */
     double  ci_level; /**< If running a prediction, the level at which
                         to calculate the confidence interval. default: 0.95 */

@@ -105,8 +105,8 @@ row-by-row.
 your input data set, row by row; if you set \c inplace='n', then I will return an \ref
 apop_data set whose \c vector element is as long as your data set (i.e., as long as
 the longest of your text, vector, or matrix parts).
-  \li If you set <tt>apop_opts.thread_count</tt> to a value greater than one,
-I will split the data set into as many chunks as you specify, and process them
+  \li If you set <tt>omp_set_num_threads(n)</tt> using \f$n>1\f$,
+split the data set into as many chunks as you specify and process them
 simultaneously. You need to watch out for the usual hang-ups about multithreaded
 programming, but if your data is iid, and each row's processing is independent of the
 others, you should have no problems. Bear in mind that generating threads takes some

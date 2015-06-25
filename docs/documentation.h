@@ -1210,7 +1210,7 @@ One more toy example, demonstrating the use of \ref apop_map and \ref apop_map_s
 \include apop_map_row.c
 
 
-\li If \c apop_opts.thread_count is greater than one, then the matrix will be broken
+\li If the number of threads is greater than one, then the matrix will be broken
 into chunks and each sent to a different thread. Notice that the GSL is generally
 threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that
 you'll find in the SQLite documentation. See \ref apop_rng_get_thread() to use the GSL's RNGs in a threaded environment.
