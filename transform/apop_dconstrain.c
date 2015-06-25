@@ -54,7 +54,7 @@ Apop_settings_free(apop_dconstrain,)
 static void dc_prep(apop_data *d, apop_model *m){
     apop_dconstrain_settings *cs = Apop_settings_get_group(m, apop_dconstrain); 
     Apop_stopif(!cs, m->error='s', 0, "missing apop_dconstrainct_settings group. "
-            "Maybe initialize this with apop_model_dcompose?");
+            "Maybe initialize this with apop_model_dconstrain?");
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;
     m->constraint=cs->base_model->constraint;

@@ -26,7 +26,7 @@ Apop_settings_free(apop_ct,)
 static void jacobian_prep(apop_data *d, apop_model *m){
     apop_ct_settings *cs = Apop_settings_get_group(m, apop_ct); 
     Apop_stopif(!cs, m->error='s', 0, "missing apop_ct_settings group. "
-            "Maybe initialize this with apop_model_dcompose?");
+            "Maybe initialize this with apop_model_coordinate_transform?");
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;
     m->dsize=cs->base_model->dsize;

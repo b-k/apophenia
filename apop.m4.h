@@ -1654,7 +1654,6 @@ typedef struct {
     //Models built via call to apop_model_copy_set.
 
 #define apop_model_coordinate_transform(...) Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__)
-#define apop_model_dcompose(...) Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__)
 #define apop_model_dconstrain(...) Apop_model_copy_set(apop_dconstrain, apop_dconstrain, __VA_ARGS__)
 
 //Doxygen drops whatever is after these declarations, so I put them last.

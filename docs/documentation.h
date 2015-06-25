@@ -1808,7 +1808,6 @@ models of arbitrary detail.
 \li\ref apop_model_fix_params : hold some parameters constant
 \li\ref apop_model_mixture : a linear combination of models
 \li\ref apop_model_cross : If \f$(p_1, p_2)\f$ has a Normal distribution and \f$p_3\f$ has an independent Poisson distribution, then \f$(p_1, p_2, p_3)\f$ has an <tt>apop_model_stack(apop_normal, apop_poisson)</tt> distribution.
-\li\ref apop_model_dcompose : use the output of one model as a data set for another
 
 
 \section modelsettings Settings groups
