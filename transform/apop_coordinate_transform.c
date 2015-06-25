@@ -9,7 +9,6 @@ Here is an example that replicates the Lognormal distribution.
 
 \adoc Input_format The input data is sent to the first model, so use the input format for that model.
 \adoc Settings   \ref apop_ct_settings
-
 */
 
 Apop_settings_init(apop_ct,
@@ -37,7 +36,7 @@ static long double ct_ll(apop_data *indata, apop_model* mj){
     Apop_stopif(!cs->base_model, return GSL_NAN, 0, "No base model to transform back to.");
     Apop_stopif(!cs->transformed_to_base, return GSL_NAN, 0, "No reverse transformation function.");
     Apop_stopif(!cs->jacobian_to_base, return GSL_NAN, 0, "No Jacobian for the reverse transformation function, "
-                                                          "and I haven't yet implemented the numeric derivative.");
+                                                          "and using numeric derivatives is not yet implemented.");
 
     apop_data *rev = cs->transformed_to_base(indata);
     double ll = apop_log_likelihood(rev, cs->base_model);

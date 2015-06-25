@@ -70,17 +70,7 @@ typedef struct{
 	int colct, rowct, textct;
 } apop_name;
 
-/** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
-
-Here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
-
-\htmlinclude apop_data_fig.html
-\latexinclude apop_data_fig.tex
-
-Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
-
-See also \ref dataoverview for further notes on getting and manipulating the elements of an \ref apop_data set.
-*/
+/** The \ref apop_data structure represents a data set. See \ref dataoverview.*/
 typedef struct apop_data{
     gsl_vector  *vector;
     gsl_matrix  *matrix;
@@ -1244,13 +1234,13 @@ apop_data_free(mypath);
 */
 } apop_mle_settings;
 
-/** Settings for least-squares type models */
+/** Settings for least-squares type models such as \ref apop_ols or \ref apop_iv */
 typedef struct {
-    int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
+    int destroy_data; /**< If \c 'y', then the input data set may be normalized or otherwise mangled. */
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
     char want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     char want_expected_value; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
-    apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
+    apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model holding this struct, but the distribution of \f$X\f$ needs to be specified as well for any calculation of \f$P(Y)\f$. See the notes in the RNG section of the \ref apop_ols documentation. */
 } apop_lm_settings;
 
 /** The default is for the estimation routine to give some auxiliary information,
@@ -1317,11 +1307,14 @@ typedef struct {
 typedef struct{
     apop_data *base_data; /**< The data that will be smoothed by the KDE. */
     apop_model *base_pmf; /**< I actually need the data in a \ref apop_pmf. You can give
-                            that to me explicitly, or I can wrap the .base_data in a PMF.  */
+                            that to me explicitly, or I can wrap the <tt>.base_data</tt> in a PMF.  */
     apop_model *kernel; /**< The distribution to be centered over each data point. Default, 
                                     \ref apop_normal with std dev 1. */
     void (*set_fn)(apop_data*, apop_model*); /**< The function I will use for each data
-                                                  point to center the kernel over each point.*/
+                                                  point to center the kernel over each point.
+            Default: set the upper-left element of the parameter set to the upper-left scalar in the data:
+            <tt>apop_data_set(m->parameters, .val= apop_data_get(in));</tt>.
+                                                  */
     int own_pmf, own_kernel; /**< For internal use only. */
 }apop_kernel_density_settings;
 
@@ -1607,7 +1600,7 @@ typedef struct {
 } apop_arms_settings;
 
 
-/** The settings to accompany the \ref apop_cross model, representing the cross product of two models (or, via recursion, and arbitrary set of more models).*/
+/** The settings to accompany the \ref apop_cross model, representing the cross product of two models (or, via recursion, a list of models of arbitrary length).*/
 typedef struct {
     char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
     apop_model *model1; /**< The first model in the stack.*/
@@ -1615,11 +1608,12 @@ typedef struct {
 } apop_cross_settings;
 
 typedef struct {
-    apop_data *(*base_to_transformed)(apop_data*);
-    apop_data *(*transformed_to_base)(apop_data*);
-    double (*jacobian_to_base)(apop_data*);
-    apop_model *base_model;
-} apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
+    apop_data *(*base_to_transformed)(apop_data*); /**< The function to transform the model from pre-transform space to post-transform space. */
+    apop_data *(*transformed_to_base)(apop_data*); /**< The function to transform from post-transform space back to pre-transform space. If this function does not exist, using a Jacobian-based transformation is probably not mathematically correct. */
+    double (*jacobian_to_base)(apop_data*); /**< The derivative of the \c transformed_to_base function. */
+    apop_model *base_model;  /**< The pre-transformation model. */
+} apop_ct_settings;/**< Settings for an \ref apop_coordinate_transform model; see its documentation for notes and an example.
+*/
 
 /** For use with the \ref apop_dconstrain model. See its documentation for an example. 
 */

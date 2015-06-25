@@ -82,11 +82,13 @@ static void apop_data_predict_fill(apop_data *data, apop_data *predict){
 
 /////////End predict table machinery.
 
+/** \cond doxy_ignore  Not in the apop.m4.h header --> not public. */
 typedef struct {
     apop_model *base_model;
     apop_data *predict;
     int ct;
 } apop_fix_params_settings;
+/** \endcond */ //End of Doxygen ignore.
 
 static void unpack(apop_data *out, apop_model *m){
     //predict table --> real param set 
