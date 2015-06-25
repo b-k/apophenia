@@ -51,8 +51,7 @@ This example sets up and uses KDEs based on a Normal and a Uniform distribution.
 */
 
 static void apop_set_first_param(apop_data *in, apop_model *m){
-    m->parameters->vector->data[0] = in->vector ? in->vector->data[0] 
-                                                 : gsl_matrix_get(in->matrix, 0, 0);
+    apop_data_set(m->parameters, .val= apop_data_get(in));
 }
 
 Apop_settings_init(apop_kernel_density, 
