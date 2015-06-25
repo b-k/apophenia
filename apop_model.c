@@ -179,18 +179,24 @@ For example, if you need a N(0,1) quickly:
 apop_model *std_normal = apop_model_set_parameters(apop_normal, 0, 1);
 \endcode
 
-This doesn't take in data, so it won't work with models that take the number of parameters from the data, and it will only set the vector of the model's parameter \ref apop_data set. This is most standard models, so that's not a real problem either.
-If you have a situation where these options are out, you'll have to do something like
-<tt>apop_model *new = apop_model_copy(in); apop_prep(your_data, new);</tt> and then set \c in->parameters using your data.
+This doesn't take in data, so it won't work with models that take the number of
+parameters from the data, and it will only set the vector of the model's parameter \ref
+apop_data set. This is most standard models. If you have a situation where these options
+are out, you could
+\li manually set Set \c .vsize and/or \c .msize1 and \c .msize2 first, then call this function, or
+\li prep the model via something like <tt>apop_model *new = apop_model_copy(in);
+apop_prep(your_data, new);</tt> (because \ref apop_prep is required to correctly
+allocate \c new->parameters to conform to your data).
 
 \param in An unparameterized model, like \ref apop_normal or \ref apop_poisson.
 \param ... The list of parameters.
 \return A copy of the input model, with parameters set.
 \exception out->error=='d' dimension error: you gave me a model with an indeterminate
-number of parameters. Set \c .vsize or \c .msize1 and \c .msize2 first, then call this function, or use
+number of parameters.  See notes above.
+Set \c .vsize or \c .msize1 and \c .msize2 first, then call this function, or use
 <tt>apop_model *new = apop_model_copy(in); apop_prep(your_data, new);</tt> and then
-call this (because \ref apop_prep is required to correctly allocate \c new->parameters
-to conform to your data).
+call this .
+\see apop_data_fill
 \hideinitializer   
 */
 apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]){
@@ -543,7 +549,6 @@ Apop_settings_init(apop_cdf,
 Apop_settings_free(apop_cdf,
     if (in->draws_made && !--*in->draws_refcount)
         gsl_matrix_free(in->draws_made);
-    apop_model_free(in->cdf_model);
 )
 
 Apop_settings_copy(apop_cdf,

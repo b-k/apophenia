@@ -144,7 +144,7 @@ apop_model *apop_model_cross_base(apop_model *mlist[]){
     Apop_stopif(!mlist[0], apop_model *oute = apop_model_copy(apop_cross); oute->error='i', 
                             0, "No inputs. Returning blank model with outmodel->error=='n'.");
     Apop_stopif(!mlist[1], return apop_model_copy(mlist[1]), 
-                            1, "Only one model input; returning a copy of that model.");
+                            2, "Only one model input; returning a copy of that model.");
     apop_model *m2 = mlist[2] ? apop_model_cross_base(mlist+1): mlist[1];
     apop_model *out = apop_model_copy(apop_cross);
     Apop_model_add_group(out, apop_cross, .model1=mlist[0], .model2=m2);
@@ -156,7 +156,8 @@ apop_model *apop_model_cross_base(apop_model *mlist[]){
 Generate a model consisting of the cross product of several independent models. The output \ref apop_model
 is a copy of \ref apop_cross; see that model's documentation for details.
 
-\li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 1</tt>.
+\li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 2</tt>.
+
 \exception error=='n' First model input is \c NULL.
 
 Examples:

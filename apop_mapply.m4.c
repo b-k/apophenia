@@ -349,9 +349,9 @@ void apop_matrix_apply(gsl_matrix *m, void (*fn)(gsl_vector*)){
     mapply_core(NULL, m, NULL, fn, NULL, 0, 0, NULL, 0, false);
 }
 
-/** Map a function onto every element of a vector. \c apop_vector_map will send each
-element to your function, and will output a \c gsl_vector holding your function's
-output for each row.
+/** Map a function onto every element of a vector. Thus function will send each
+element to the function you provide, and will output a \c gsl_vector holding your
+function's output for each row.
 
   \param v  The input vector
   \param fn A function of the form <tt>double fn(double in)</tt>
@@ -369,15 +369,15 @@ gsl_vector *apop_vector_map(const gsl_vector *v, double (*fn)(double)){
 }
 
 /** Apply a function to every row of a matrix.  The function that you input takes in
-a \c gsl_vector and returns nothing. This function will send a pointer to each element
-of your vector to your function.
+a \c double* and may modify the input value in place. This function will send a pointer
+to each element of your vector to your function.
 
   \param v  The input vector
   \param fn A function of the form <tt>void fn(double in)</tt>
 
   \li If the vector is \c NULL, this is a no-op.
   \li See \ref mapply "the map/apply page" for details.
-\see \ref apop_map, \ref apop_map_sum
+\see \ref apop_map
 */
 void apop_vector_apply(gsl_vector *v, void (*fn)(double*)){
     if (!v) return;
@@ -424,7 +424,9 @@ void apop_matrix_apply_all(gsl_matrix *in, void (*fn)(double *)){
     }
 }
 
-/** Like \c apop_vector_map, but returns the sum of the resulting mapped function. For example, <tt>apop_vector_map_sum(v, isnan)</tt> returns the number of elements of <tt>v</tt> that are \c NaN.
+/** Returns the sum of the output of \c apop_vector_map. For example,
+<tt>apop_vector_map_sum(v, isnan)</tt> returns the count of elements of <tt>v</tt>
+that are \c NaN.
 
   \li If you input a \c NULL vector, I return the sum of zero items: zero.
   \li See \ref mapply "the map/apply page" for details.

@@ -143,47 +143,41 @@ APOP_VAR_ENDHEAD
     return pc_space;
 }
 
-/** Take the log (base ten) of every element in a vector.
+static void l10(double *d){ *d = log10(*d); }
+static void ln(double *d){ *d = log(*d); }
+static void ex(double *d){ *d = exp(*d); }
 
+/** Replace every vector element \f$v_i\f$ with log\f$_{10}(v_i)\f$.
 \li If the input vector is \c NULL, do nothing. 
 */
 void apop_vector_log10(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d = gsl_vector_ptr(v, i);
-	    *d = log10(*d);
-    }
+    apop_vector_apply(v, l10);
 }
 
-/** Take the natural log of every element in a vector.
-
+/** Replace every vector element \f$v_i\f$ with ln\f$(v_i)\f$.
 \li If the input vector is \c NULL, do nothing. 
 */
 void apop_vector_log(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d  = gsl_vector_ptr(v, i);
-	    *d = gsl_sf_log(*d);
-    }
+    apop_vector_apply(v, ln);
 }
 
 /** Replace every vector element \f$v_i\f$ with exp\f$(v_i)\f$.
-
 \li If the input vector is \c NULL, do nothing. 
 */
 void apop_vector_exp(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d = gsl_vector_ptr(v, i);
-        *d = exp(*d);
-    }
+    apop_vector_apply(v, ex);
 }
 
 /** Put the first vector on top of the second vector.
 
-\param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
+\param  v1  the upper vector (default=\c NULL, in which case this copies \c v2)
 \param  v2  the second vector (default=\c NULL, in which case nothing is added)
-\param  inplace If 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 undisturbed. (default='n')
+\param  inplace If \c 'y', use \ref apop_vector_realloc to modify \c v1 in place;
+    see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1
+    undisturbed. (default=\c 'n')
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 \li This function uses the \ref designated syntax for inputs.
@@ -294,23 +288,20 @@ APOP_VAR_ENDHEAD
             for (int i=0; i< m1size; i++)
                 gsl_matrix_set_col(out, i, Apop_mcv(m1, i));
         }
-        for (int i=0; i< m2->size2; i++){
-            gsl_vector_const_view tmp_vector = gsl_matrix_const_column(m2, i);
-            gsl_matrix_set_col(out, i+ m1size, &(tmp_vector.vector));
-        }
+        for (int i=0; i< m2->size2; i++)
+            gsl_matrix_set_col(out, i+ m1size, Apop_mcv((gsl_matrix*)m2, i));
         return out;
     } 
 }
 
-/** Test for a situation when a vector is diverging, so you can preempt a procedure
-that is about to break on infinite values.
+/** Test that all elements of a vector are within bounds, so you can preempt a procedure
+that is about to break on infinite or too-large values.
 
 \param in  A <tt>gsl_vector</tt>
 \param max An upper and lower bound to the elements of the vector. (default: INFINITY)
 \return  1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$;<br> 0 otherwise. 
  
 \li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=2</tt>.
-\li Set \c max to \c INFINITY to test whether all of the matrix's elements are finite.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD int apop_vector_bounded(const gsl_vector *in, long double max){

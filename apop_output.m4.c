@@ -192,12 +192,14 @@ static void print_core_v(const gsl_vector *data, char *separator, Output_declare
 	if (output_name) fclose(f);
 }
 
-/** Print a vector to the screen, a file, a pipe, or the database
-You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the default is a tab, which puts the vector on one line, but a newline would print the vector vertically.
+/** Print a vector to the screen, a file, a pipe, or the database.
 
-\li See \ref apop_prep_output for more on how printing settings are set.
-\li See also \ref Legi for more details and examples.
-\li This function uses the \ref designated syntax for inputs.
+  \li See \ref apop_prep_output for more on how printing settings are set.
+  \li For example, the default for \ref apop_opts_type "apop_opts.output_delimiter"
+is a tab, which puts the vector on one line, but <tt>apop_opts.output_type="\n"</tt>
+would print the vector vertically.
+  \li See also \ref Legi for more details and examples.
+  \li This function uses the \ref designated syntax for inputs.
 \ingroup all_public
 */
 APOP_VAR_HEAD void apop_vector_print(gsl_vector *data, Output_declares){
@@ -338,7 +340,6 @@ APOP_VAR_ENDHEAD
 }
 
 /** Print a \c gsl_matrix to the screen, a file, a pipe, or a database table.
-You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
 \li See also \ref Legi for more details and examples.

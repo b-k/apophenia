@@ -196,40 +196,6 @@ int apop_system(const char *fmt, ...){
     return out;
 }
 
-/** Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
-
-\param data	a \c gsl_vector of data. (No default, must not be \c NULL.)
-\param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. 
-(Default = \c 'd'.)
-  \li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
-the sample is below returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5%
-or more of the sample is above returned_vector[5]".
-  \li You may eventually want to \c free() the array returned by this function.
-  \li This function uses the \ref designated syntax for inputs.
-*/ 
-APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
-    gsl_vector *apop_varad_var(data, NULL);
-    Apop_stopif(!data, return NULL, 0, "You gave me NULL data.");
-    char apop_varad_var(rounding, 'd');
-APOP_VAR_ENDHEAD
-    gsl_vector *sorted	= gsl_vector_alloc(data->size);
-    double     *pctiles = malloc(sizeof(double) * 101);
-	gsl_vector_memcpy(sorted,data);
-	gsl_sort_vector(sorted);
-	for(int i=0; i<101; i++){
-		int index = i*(data->size-1)/100.0;
-		if (rounding == 'u' && index != i*(data->size-1)/100.0)
-			index ++; //index was rounded down, but should be rounded up.
-		if (rounding == 'a' && index != i*(data->size-1)/100.0)
-            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
-        else pctiles[i]	= gsl_vector_get(sorted, index);
-	}
-	gsl_vector_free(sorted);
-	return pctiles;
-}
-
-/** \} */
-
 static int count_parens(const char *string){
     int out = 0;
     int last_was_backslash = 0;
@@ -368,14 +334,15 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 /** \def apop_rng_get_thread
 The \c gsl_rng is not itself thread-safe, in the sense that it can not be used
-simultaneously by multiple threads. However, if each thread has its own \c gsl_rng, then each will safely operate independently.
+simultaneously by multiple threads. However, if each thread has its own \c gsl_rng,
+then each will safely operate independently.
 
 Thus, Apophenia keeps an internal store of RNGs for use by threaded functions. If the
 input to this function, \c thread, is greater than any previous input, then the array
 of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended using
 <tt>++apop_opts.rng_seed</tt> (i.e., the seed is incremented before use).
 
-This function can be used anywhere a \ref gsl_rng would be used.
+This function can be used anywhere a \c gsl_rng would be used.
 
 \param thread_in The number of the RNG to retrieve, starting at zero (which is
 how OpenMP numbers its threads). If -1, I'll look up the current thread (via \c

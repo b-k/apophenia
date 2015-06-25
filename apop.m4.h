@@ -416,6 +416,7 @@ long double apop_matrix_sum(const gsl_matrix *m);
 double apop_matrix_mean(const gsl_matrix *data);
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 apop_data * apop_data_summarize(apop_data *data);
+Apop_var_declare( double * apop_vector_percentiles(gsl_vector *data, char rounding)  )
 
 apop_data *apop_test_fisher_exact(apop_data *intab); //in apop_fisher.c
 
@@ -583,8 +584,13 @@ Apop_var_declare( apop_model * apop_model_to_pmf(apop_model *model, apop_data *b
 Apop_var_declare( char* apop_text_paste(apop_data const*strings, char *between, char *before, char *after, char *between_cols, int (*prune)(apop_data* ! int ! int ! void*), void* prune_parameter) )
 /** Notify the user of errors, warning, or debug info. 
 
+writes to \ref apop_opts.log_file, which is a \c FILE handle. The default is \c stderr,
+but use \c fopen to attach to a file.
+
  \param verbosity   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
- \param ... The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
+ \param ... The message to write to the log (presuming the verbosity level is high
+enough). This can be a printf-style format with following arguments, 
+e.g., <tt>apop_notify(0, "Beta is currently %g", beta)</tt>.
 */
 #define Apop_notify(verbosity, ...) {\
     if (apop_opts.verbose != -1 && apop_opts.verbose >= verbosity) {  \
@@ -660,9 +666,6 @@ Apop_var_declare( apop_model * apop_update(apop_data *data, apop_model *prior, a
 
 Apop_var_declare( double apop_test(double statistic, char *distribution, double p1, double p2, char tail) )
 
-//Sorting (apop_asst.c)
-Apop_var_declare( double * apop_vector_percentiles(gsl_vector *data, char rounding)  )
-
 //apop_sort.c
 Apop_var_declare( apop_data *apop_data_sort(apop_data *data, apop_data *sort_order, char asc, char inplace, double *col_order))
 
@@ -703,27 +706,20 @@ void apop_vector_log10(gsl_vector *v);
 void apop_vector_exp(gsl_vector *v);
 
 /** \cond doxy_ignore */
-/** Deprecated. Use \ref Apop_subm. */
+/** These are all deprecated.*/
 #define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix((m), (srow), (scol), (nrows),(ncols)).matrix;\
-gsl_matrix * o = &( apop_mm_##o );
+gsl_matrix * o = &( apop_mm_##o );                                                  // Use \ref Apop_subm. 
 #define Apop_submatrix APOP_SUBMATRIX
 
-/** \def Deprecated. Use \ref Apop_rv. */
-#define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)
-
-/** Deprecated. Use \ref Apop_cv. */
 #define Apop_col_v(m, col, v) gsl_vector apop_vv_##v = ((col) == -1) ? (gsl_vector){} : gsl_matrix_column((m)->matrix, (col)).vector;\
-gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );
+gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );                      // Use \ref Apop_cv.
 
-/** Deprecated. Use \ref Apop_rs.  */ 
-#define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)
-
-/** Deprecated. Use \ref Apop_r.  */ 
-#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)
-
-/** Deprecated. Use \ref Apop_cs.  */ 
-#define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len);
+#define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)                  // Use \ref Apop_rv.
+#define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)   // Use \ref Apop_rs.
+#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)                           // Use \ref Apop_r.
+#define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len); // Use \ref Apop_cs.
 /** \endcond */ //End of Doxygen ignore.
+
 
 #define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
@@ -988,7 +984,7 @@ for (int i=0; i< your_data->matrix->size1; i++)
 \endcode
 
 The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_mrv
+\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
 */
 
 /** \def Apop_cv(d, col)
@@ -1014,13 +1010,18 @@ scope in which it is declared.
 A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
 row \c row. The view is also an \ref apop_data set, with names and other decorations.
 \code
-apop_data *v = Apop_r(your_data, i);
+//pull a single row
+apop_data *v = Apop_r(your_data, 7);
 
+//or loop through a sequence of one-row data sets.
+apop_model *std = apop_model_set_parameters(apop_normal, 0, 1);
 for (int i=0; i< your_data->matrix->size1; i++)
-    apop_data_print(Apop_r(your_data, i));
+    printf("Std Normal CDF up to observation %i is %g\n",
+                       i, apop_cdf(Apop_r(your_data, i), std));
 \endcode
 
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
 \see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_mrv
 */
 
@@ -1284,12 +1285,11 @@ typedef struct {
     char info;/*< If 'y', add an info table with elements such as log likelihood or AIC. Default 'n'. */
 } apop_parts_wanted_settings;
 
-/** Some CDFs use random draws; some use closed-form models.  */
+/** For use by \ref apop_cdf when the CDF is generated via Monte Carlo methods. */
 typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
-    apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
-    gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
+    gsl_matrix *draws_made; /**< A store of random draws used to calcuate the CDF. Need only be generated once, and so stored here. */
     int *draws_refcount; /**< For internal use.*/
 } apop_cdf_settings;
 
@@ -1582,26 +1582,32 @@ typedef struct {  /* attributes of the entire rejection envelope */
 
 /** For use with \ref apop_arms_draw, to perform derivative-free adaptive rejection sampling with metropolis step. 
 
-That function generates default values for this if you do not attach one to the
+That function generates default values for this struct if you do not attach one to the
 model beforehand, via a form like <tt>apop_model_add_group(your_model, apop_arms,
-.model=your_model, .xl=8, .xr =14);</tt>.  The \c model element is mandatory; you'll
-get a run-time complaint if you forget it.
+.model=your_model, .xl=8, .xr =14);</tt>. If you initialize it manually via \ref
+apop_settings_add_group, the \c model element is mandatory; you'll get a run-time
+complaint if you forget it.
 */
 typedef struct {
-    double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items. */
+    double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending
+                      order, e.g., <tt>(double *){1, 10, 100}</tt>.  . Default: -1,
+                      0, 1. If this isn't \c NULL, I need at least three items, and
+                      the length in \c ninit. */
     double  xl;     /**< Left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10].*/
     double  xr;     /**< Right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. */
     double convex;  /**< Adjustment for convexity */
-    int ninit;      /**< Number of starting values supplied (i.e. number of elements in \c xinit)*/
+    int ninit;      /**< The length of \c xinit.*/
     int npoint;     /**< Maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset. Default = 1e5. */
-   char do_metro;   /**< Whether metropolis step is required. (I.e., set to one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o*/
-   double xprev;    /**< Previous value from Markov chain */
+   char do_metro;   /**< Set to \c 'y' if the metropolis step is required (i.e.,
+                           if you're not sure if the function is log-concave).*/
+   double xprev;    /**< For internal use; please ignore. Previous value from Markov chain. */
    int neval;       /**< On exit, the number of function evaluations performed */
    arms_state *state;
-   apop_model *model; /**< The model from which I will draw. Mandatory. Must have either a \c log_likelihood or \c p method.*/
+   apop_model *model; /**< The model from which to draw. Mandatory. Must have either a \c log_likelihood or \c p method.*/
 } apop_arms_settings;
 
 
+/** The settings to accompany the \ref apop_cross model, representing the cross product of two models (or, via recursion, and arbitrary set of more models).*/
 typedef struct {
     char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
     apop_model *model1; /**< The first model in the stack.*/

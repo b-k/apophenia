@@ -108,5 +108,6 @@ the output of one model as the input data for another model.
 
 \li The \ref apop_dcomposition model relies on the \ref apop_composition_settings struct, qv. This macro takes the elements of that struct as input. You can use the designated initializer syntax to specify them.
 
-\return An \ref apop_model that is a copy of the \c apop_composition model.
+\return An \ref apop_model that is a copy of the \c apop_composition model, with an
+\ref apop_composition_settings structure attached.
 */

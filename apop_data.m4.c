@@ -1192,12 +1192,12 @@ APOP_VAR_ENDHEAD
 
 Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your responsibility to zero out or otherwise fill new rows/columns before use.
 
-\li A large number of <tt>realloc</tt>s can take a noticeable amount of time. You
+  \li A large number of <tt>realloc</tt>s can take a noticeable amount of time. You
 are encouraged to determine the size of your data beforehand and avoid writing \c for
 loops that reallocate the matrix at every iteration.
-
-\li The <tt>gsl_matrix</tt> is a versatile struct that can represent submatrices and
-other cuts from parent data. Resizing a subset of a parent matrix makes no sense, so return \c NULL and print a warning if asked to resize a view of a matrix.
+  \li The <tt>gsl_matrix</tt> is a versatile struct that can represent submatrices and
+other cuts from parent data. Resizing a subset of a parent matrix makes no sense,
+so return \c NULL and print a warning if asked to resize a view of a matrix.
 
 \param m The already-allocated matrix to resize.  If you give me \c NULL, this becomes equivalent to \c gsl_matrix_alloc
 \param newheight, newwidth The height and width you'd like the matrix to be.
@@ -1241,12 +1241,10 @@ cropped away (in a non--memory-leaking manner). If the new height is larger than
 then new cells will be filled with garbage; it is your responsibility
 to zero out or otherwise fill them before use.
 
-\li A large
-number of <tt>realloc</tt>s can take a noticeable amount of time. You are
-thus encouraged to make an effort to determine the size of your data
-and do one allocation, rather than writing \c for loops that resize a vector at every increment.
-
-\li The <tt>gsl_vector</tt> is a versatile struct that
+  \li A large number of <tt>realloc</tt>s can take a noticeable amount of time. You
+are thus encouraged to make an effort to determine the size of your data and do one
+allocation, rather than writing \c for loops that resize a vector at every increment.
+  \li The <tt>gsl_vector</tt> is a versatile struct that
 can represent subvectors, matrix columns and other cuts from parent data. 
 Resizing a portion of a parent matrix makes no sense, so
 return \c NULL and print an error if asked to resize a view.

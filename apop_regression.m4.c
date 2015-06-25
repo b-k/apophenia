@@ -50,12 +50,13 @@ static int strcmpwrap(const void *a, const void *b){
     return strcmp(*aa, *bb);
 }
 
-/** Give me a vector of numbers, and I'll give you a sorted list of the unique elements. 
-  This is basically running "select distinct datacol from data order by datacol", but without the aid of the database.
+/** Give me a vector of numbers, and I'll give you a sorted list of the unique elements.
+  This is basically running <tt>select distinct datacol from data order by datacol</tt>,
+  but without the aid of the database.
 
   \param v a vector of items
   \return a sorted vector of the distinct elements that appear in the input.
-  \li NaNs appear at the end of the sort order.
+  \li NaNs (if any) appear at the end of the sort order.
   \see apop_text_unique_elements 
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
@@ -266,7 +267,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 \exception out->error=='d' dimension error
 
 \li Use \ref apop_data_get_factor_names to get the list of category names.
-\li NaNs appear at the end of the sort order.
+\li NaNs (if any) appear at the end of the sort order.
 \li See \ref fact for further discussion.
 \li This function uses the \ref designated syntax for inputs.
 

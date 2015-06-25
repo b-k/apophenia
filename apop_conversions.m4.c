@@ -45,7 +45,8 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types to the GSL. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
+/** This function copies the data in a vector to a new one-column (or one-row) matrix
+and returns the newly-allocated and filled matrix.
 
   For the reverse, try \ref apop_data_pack.
 
@@ -53,13 +54,13 @@ APOP_VAR_ENDHEAD
 \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
 \return a newly-allocated <tt>gsl_matrix</tt> with one column (or row).
 
-\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
+\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=2 </tt>.
 \li If \c gsl_matrix_alloc fails you get a \c NULL pointer in return.
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
     const gsl_vector * apop_varad_var(in, NULL);
-    Apop_assert_c(in, NULL, 1, "Converting NULL vector to NULL matrix.");
+    Apop_assert_c(in, NULL, 2, "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
 APOP_VAR_ENDHEAD
     bool isrow = (row_col == 'r' || row_col == 'R');

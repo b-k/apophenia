@@ -42,7 +42,7 @@ Returns the variance of the data in the given vector.
 double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
 
-/** Returns the sample kurtosis of the data in the given
+/** Returns the sample fourth central moment of the data in the given
 vector. Corrections are made to produce an unbiased result as per <a
 href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling
 with data</em>.
@@ -79,7 +79,7 @@ static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int expo
 \param weights The weight vector. Default: equal weights for all observations.
 \return        The weighted skew.
  
-\li  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
+\li  Some people like to normalize the skew by dividing by (variance)\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 
 \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
@@ -106,7 +106,7 @@ APOP_VAR_ENDHEAD
     return avg;
 }
 
-/** Returns the population kurtosis [\f$\sum_i (x_i - \mu)^4/n)\f$] of the data in
+/** Returns the population fourth central moment [\f$\sum_i (x_i - \mu)^4/n)\f$] of the data in
 the given vector, with an optional weighting.
 
 \param v The data vector
@@ -115,7 +115,7 @@ the given vector, with an optional weighting.
  
   \li Some people like to normalize the fourth central moment by dividing by variance
 squared, or by subtracting three; those things are not done here, so you'll have to
-do them separately if need be.
+do them separately if desired.
   \li This function uses the \ref designated syntax for inputs.
 \see \ref apop_vector_kurtosis for the unbiased sample version.
 */
@@ -147,18 +147,19 @@ double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
 /** Returns the correlation coefficient of two vectors:
-\f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) \sqrt(\hbox{var}(b))}.\f$
+\f$ {\hbox{cov}(a,b)\over \sqrt{\hbox{var}(a)} \sqrt{\hbox{var}(b)}}.\f$
 
 An example
 \code 
-gsl_matrix *m = [fill matrix here];
+gsl_matrix *m = apop_text_to_data("indata")->matrix;
 printf("The correlation coefficient between rows two "
        "and three is %g.\n", apop_vector_correlation(Apop_mrv(m, 2), Apop_mrv(m, 3)));
 \endcode 
 
-  \li \c ina and \c inb are mandatory and must be non-NULL, but you can leave the weights
-vector off in the typical case of uniform weights.
-  \li This function uses the \ref designated syntax for inputs.
+\param ina, inb Two vectors of equal length (no default, must not be NULL)
+\param weights Replicate weights for the observations. (default: equal weights for all observations)
+
+\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights){
     gsl_vector const * apop_varad_var(ina, NULL);
@@ -172,12 +173,12 @@ APOP_VAR_ENDHEAD
 /** Returns the distance between two vectors, where distance is defined
  based on the third (optional) parameter:
 
- - 'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+ - 'e'  (the default): scalar distance (standard Euclidean metric) between two vectors. \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
- - 'm' or 'M'  Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
+ - 'm'   Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
 where \f$i\f$ iterates over dimensions.
- - 'd' or 'D' The discrete norm: if \f$a = b\f$, return zero, else return one.
- - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
+ - 'd'  The discrete norm: if \f$a = b\f$, return zero, else return one.
+ - 's'  The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
  - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{|a_i - b_i|^2}\right)^{1/p}\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
 
  \param ina First vector (No default, must not be \c NULL)
@@ -189,12 +190,12 @@ where \f$i\f$ iterates over dimensions.
  \code
  apop_vector_distance(v);
  apop_vector_distance(v, .metric = 's');
+ apop_vector_distance(v, .metric = 'm');
  \endcode
- gives you the standard Euclidean length of \c v and its longest element.
+gives you the standard Euclidean length of \c v, its longest element, and its sum.
+\li This function uses the \ref designated syntax for inputs.
 
 \include test_distances.c
-
-\li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
     static threadlocal gsl_vector *zero = NULL;
@@ -430,6 +431,43 @@ apop_data * apop_data_summarize(apop_data *indata){
 	return out;
 }
 
+/** Returns an array of size 101, where \c returned_vector[95] gives the value of the
+95th percentile, for example. \c Returned_vector[100] is always the maximum value,
+and \c returned_vector[0] is always the min (regardless of rounding rule).
+
+  \param data	A \c gsl_vector with the data. (No default, must not be \c NULL.)
+  \param rounding Either be \c 'u', \c 'd', or \c 'a'. Unless your data is
+exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round
+up (use the next highest value); if \c 'd', round down to the next lowest value; if \c
+'a', take the mean of the two nearest points.  (Default = \c 'd'.)
+
+\li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
+the sample is below returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5%
+or more of the sample is above returned_vector[5]".
+\li You may eventually want to \c free() the array returned by this function.
+\li This function uses the \ref designated syntax for inputs.
+*/ 
+APOP_VAR_HEAD double * apop_vector_percentiles(gsl_vector *data, char rounding){
+    gsl_vector *apop_varad_var(data, NULL);
+    Apop_stopif(!data, return NULL, 0, "You gave me NULL data.");
+    char apop_varad_var(rounding, 'd');
+APOP_VAR_ENDHEAD
+    gsl_vector *sorted	= gsl_vector_alloc(data->size);
+    double     *pctiles = malloc(sizeof(double) * 101);
+	gsl_vector_memcpy(sorted,data);
+	gsl_sort_vector(sorted);
+	for(int i=0; i<101; i++){
+		int index = i*(data->size-1)/100.0;
+		if (rounding == 'u' && index != i*(data->size-1)/100.0)
+			index ++; //index was rounded down, but should be rounded up.
+		if (rounding == 'a' && index != i*(data->size-1)/100.0)
+            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
+        else pctiles[i]	= gsl_vector_get(sorted, index);
+	}
+	gsl_vector_free(sorted);
+	return pctiles;
+}
+
 /** Find the mean, weighted or unweighted. 
 
 \param v        The data vector
@@ -459,7 +497,7 @@ APOP_VAR_END_HEAD
 
   \li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias
 introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
-  \li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
+  \li  Multiply the output by (n-1)/n if you need population variance.
   \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
@@ -576,7 +614,7 @@ apop_data *apop_data_correlation(const apop_data *in){
 
 /** Given a vector representing a probability distribution of observations, calculate the entropy, \f$\sum_i -\ln(v_i)v_i\f$.
 
-\li The input vector need not be normalized to sum to one. You may input a vector giving frequencies.
+\li You may input a vector giving frequencies (normalized to sum to one) or counts (arbitrary sum).
 
 \li The entropy of a data set depends only on the frequency with which elements are
 observed, not the value of the elements themselves. The \ref apop_data_pmf_compress
