@@ -13,7 +13,7 @@ apop_opts_type apop_opts	=
             .output_delimiter ="\t",       .input_delimiters = "|,\t", 
             .db_name_column = "row_names", .nan_string = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
-            .db_pass = "\0",
+            .db_pass = "\0",               .stop_on_warning = 'n',
             .log_file = NULL,
             .rng_seed = 479901,            .version = m4_apop_version };
 

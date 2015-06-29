@@ -578,9 +578,8 @@ e.g., <tt>apop_notify(0, "Beta is currently %g", beta)</tt>.
 
 /** \cond doxy_ignore */
 #define Apop_maybe_abort(level) \
-            {if ((level == -5 && apop_opts.stop_on_warning!='n')                \
-            || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
-            || (apop_opts.stop_on_warning=='w') ) \
+            {if ((apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
+                 || (apop_opts.stop_on_warning=='w') ) \
                 raise(SIGTRAP);}
 /** \endcond */
 
