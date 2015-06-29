@@ -364,7 +364,6 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 \exception out->error=='d' dimension error.
 
 \li If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
-\li Use \ref apop_data_get_factor_names to get the list of category names.
 \li See \ref fact for further discussion.
 \li This function uses the \ref designated syntax for inputs.
 
@@ -467,7 +466,7 @@ following entries (in the vector element):
 
 Internally allocates (and frees) a vector the size of your data set.
 
-\return: a \f$5 \times 1\f$ apop_data table with the following fields:
+\return A \f$5 \times 1\f$ apop_data table with the following fields:
 \li "R squared"
 \li "R squared adj"
 \li "SSE"
@@ -484,7 +483,7 @@ keeps you from finding the \f$R^2\f$ of, say, a kernel smooth; it is up to you t
 whether such a thing is appropriate to your given models and situation.
 
 \li <tt>apop_estimate(yourdata, apop_ols)</tt> does this automatically
-\li If I don't find a <tt>"<Predicted>"</tt> page, I print an error (iff <tt>apop_opts.verbose >=0</tt>) and return \c NULL.
+\li If I don't find a <tt>"<Predicted>"</tt> page, print an error (iff <tt>apop_opts.verbose >=0</tt>) and return \c NULL.
 \li The number of observations equals the number of rows in the Predicted page
 \li The number of independent variables, needed only for the adjusted \f$R^2\f$, is from the
 number of columns in the main data set's matrix (i.e. the first page; i.e. the set of

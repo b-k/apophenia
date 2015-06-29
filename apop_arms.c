@@ -80,7 +80,7 @@ The author, Wally Gilks, explains on
 http://www.amsta.leeds.ac.uk/~wally.gilks/adaptive.rejection/web_page/Welcome.html , that
 ``ARS works by constructing an envelope function of the log of the target density, which is then used in rejection sampling (see, for example,  Ripley, 1987). Whenever a point is rejected by ARS, the envelope is updated to correspond more closely to the true log density, thereby reducing the chance of rejecting subsequent points. Fewer ARS rejection steps implies fewer point-evaluations of the log density.''
 
-\li It accepts only functions with univariate inputs. I.e., it will put a single value in the vector part of a \ref apop_data set, and then evaluate the log likelihood at that point. For multivariate situations, see \ref apop_model_metropolis.
+\li It accepts only functions with univariate inputs. I.e., it will put a single value into a 1x1 \ref apop_data set, and then evaluate the log likelihood at that point. For multivariate situations, see \ref apop_model_metropolis.
 
 \li It is currently the default for the \ref apop_draw function given a univariate model, so you can just call that if you prefer.
 
@@ -525,8 +525,8 @@ double logshift(double y, double y0){
 
 double perfunc(apop_arms_settings *params, double x){
 // to evaluate log density and increment count of evaluations 
-    Staticdef( apop_data *, d , apop_data_alloc(1));
-    d->vector->data[0] = x;
+    Staticdef( apop_data *, d , apop_data_alloc(1,1));
+    d->matrix->data[0] = x;
   double y = apop_log_likelihood(d, params->model);
   Apop_assert(isfinite(y), "Evaluating the log likelihood of %g returned %g.", x, y);
   (params->neval)++; // increment count of function evaluations

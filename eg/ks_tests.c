@@ -7,12 +7,6 @@ apop_model * model_to_pmfs(apop_model *m1, int size){
     return apop_estimate(apop_data_sort(outd1), apop_pmf);
 }
 
-#ifndef Testing
-#define cprintf(...) printf(__VA_ARGS__)
-#else
-#define cprintf(...)
-#endif 
-
 int main(){
     apop_model *n1 = apop_model_set_parameters(apop_normal, 0, 1);
     apop_model *pmf1 = model_to_pmfs(n1, 5e2);
@@ -26,17 +20,15 @@ int main(){
 
     //as the mean m drifts, the pval for a comparison
     //between a N(0, 1) and N(m, 1) gets smaller.
-    cprintf("mean\tpval\n");
+    printf("mean\tpval\n");
     double prior_pval = 18;
     for(double i=0; i<= .6; i+=0.2){
         apop_model *n11 = apop_model_set_parameters(apop_normal, i, 1);
         ktest = apop_test_kolmogorov(pmf1, n11);
-        #ifndef Testing
-            apop_data_show(ktest);
-        #endif
+        apop_data_print(ktest, NULL);
         double pval = apop_data_get(ktest, .rowname="p value, 2 tail");
         assert(pval < prior_pval);
-        cprintf("%g\t%g\n", i, pval);
+        printf("%g\t%g\n", i, pval);
         prior_pval = pval;
     }
     apop_model_free(pmf1);

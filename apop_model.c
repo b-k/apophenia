@@ -135,6 +135,7 @@ void apop_model_show (apop_model * print_me){
 }
 
 /** Outputs a copy of the \ref apop_model input.
+
 \param in The model to be copied
 \return A copy of the original. Includes copies
 of all settings groups, and the \c parameters (if not \c NULL, copied via \ref

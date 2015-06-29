@@ -352,11 +352,11 @@ The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must
 If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
 
   \li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, or \c ".
-  \li If a field contains several such special characters, surround it by \c "s. The
+\li If a field contains several such special characters, surround it by \c "s. The
 surrounding marks are stripped and the text read verbatim.
   \li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
 E.g., "Males, 30-40", is an OK column name, as is "Males named \"Joe\\"".
-  \li Everything after an unprotected # is taken to be comments and ignored. 
+  \li Everything after an unprotected \c # is taken to be comments and ignored. 
   \li Blank lines (empty or consisting only of white space) are also ignored.
   \li If you are reading into the <tt>gsl_matrix</tt> element of an \ref apop_data set,
 all text fields are taken as zeros. You will be warned of such substitutions unless
@@ -406,7 +406,8 @@ NUMLEOL
 123AABB
 456CCDD
 \endcode
-we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7.
+and <tt>.field_ends=(int[]){3, 5, 7}</tt>, we have three columns, named NUM, LE,
+and OL. The names can be read from the first row by setting <tt>.has_row_names='y'</tt>.
 */
 
 static int prep_text_reading(char const *text_file, FILE **infile){
@@ -877,7 +878,7 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 /** \def apop_vector_fill
  Fill a pre-allocated \c gsl_vector with values.
 
-  See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
+  See \ref apop_data_alloc for a relevant example. See also \ref apop_matrix_alloc.
 
 Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your vector with garbage or a simple segfault.
 
@@ -899,7 +900,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
 \param dataset A data set that you already prepared with \ref apop_text_alloc.
 \param ... A list of strings. The first row is filled first, then the second, and so on to the end of the text grid.
 
-\li No \c NULL strings. A blank string, <tt>""</tt> is OK.
+\li If an element is \c NULL, write <tt>apop_opts.nan_string</tt> at that point. You may prefer to use <tt>""</tt> to express a blank.
 \li If you provide more or fewer strings than are needed to fill the text grid and
      <tt>apop_opts.verbose >=1</tt>, I print a warning and continue to 
      the end of the text grid or data set, whichever is shorter.
@@ -1076,7 +1077,7 @@ char *cut_at_dot(char const *infile){
     return out;
 }
 
-/** Read a delimited or fixed-wisdth text file into a database table.
+/** Read a delimited or fixed-width text file into a database table.
   See \ref text_format. 
 
 For purely numeric data, you may be able to bypass the database by using \ref apop_text_to_data.

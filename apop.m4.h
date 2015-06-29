@@ -13,8 +13,8 @@ this more navigable.*/
 /** \defgroup all_public Public functions, structs, and types
 \addtogroup all_public
 @{
-
 */
+
 #pragma once
 #ifdef	__cplusplus
 extern "C" {
@@ -324,8 +324,10 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 
 //apop_mixture.c
 /** Produce a model as a linear combination of other models. See the documentation for the \ref apop_mixture model. 
-\param ... A list of models, either all parameterized or all unparameterized. See examples in the \ref apop_mixture documentation.
- */
+
+\param ... A list of models, either all parameterized or all unparameterized. See
+examples in the \ref apop_mixture documentation.
+*/
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
@@ -719,18 +721,21 @@ gsl_vector * v = &( apop_vv_##v );
         )
 
 /** Get a vector view of a single row of a \ref gsl_matrix.
-  \param matrix_to_vew A \ref gsl_matrix.
-  \param row An integer giving the row to be viewed.
-  \return A \c gsl_vector view of the given row. The view is automatically allocated,
+
+\param matrix_to_vew A \ref gsl_matrix.
+\param row An integer giving the row to be viewed.
+\return A \c gsl_vector view of the given row. The view is automatically allocated,
   and disappears as soon as the program leaves the scope in which it is declared.
-  \see Apop_r, Apop_rv
+
+\see Apop_r, Apop_rv
 */
 #define Apop_mrv(matrix_to_view, row) Apop_rv(&(apop_data){.matrix=matrix_to_view}, row)
 
 /** Get a vector view of a single column of a \ref gsl_matrix.
-  \param matrix_to_vew A \ref gsl_matrix.
-  \param row An integer giving the column to be viewed.
-  \return A \c gsl_vector view of the given column. The view is automatically allocated,
+
+\param matrix_to_vew A \ref gsl_matrix.
+\param row An integer giving the column to be viewed.
+\return A \c gsl_vector view of the given column. The view is automatically allocated,
   and disappears as soon as the program leaves the scope in which it is declared.
 
   \see Apop_r, Apop_cv
@@ -896,7 +901,7 @@ Generate a view of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al.,
  \param scol the first column (in the root matrix) of the left edge of the submatrix
  \param nrows number of rows in the submatrix
  \param ncols number of columns in the submatrix
- \return An automatically-allocated view of type c \gsl_matrix.
+ \return An automatically-allocated view of type \c gsl_matrix.
 */
 
 /** \def Apop_row_t(m, row_name, v)
@@ -1040,7 +1045,7 @@ to model \c m, so you can easily put it in a conditional like
   \endcode
 
 \param m An \ref apop_model
-\param type A string giving the type of the settings group you are retrieving. E.g., for an \ref apop_mle_settings group, use \c apop_mle.
+\param type A string giving the type of the settings group you are retrieving. E.g., for an \ref apop_mle_settings group, use only \c apop_mle.
 \return A void pointer to the desired struct (or \c NULL if not found).
 */
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')

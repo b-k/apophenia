@@ -297,7 +297,7 @@ static apop_data* apop_anova_one_way(char *table, char *data, char *grouping){
 }
 
 /** This function produces a traditional one- or two-way ANOVA table. It
-  works from data in an SQL table, using queries of the form <tt>select
+  works from data in an SQL table, using queries of a form like <tt>select
   data from table group by grouping1, grouping2</tt>.
 
   \param table The table to be queried. Anything that can go in an SQL <tt>from</tt> clause is OK, so this can be a plain table name or a temp table specification like <tt>(select ... )</tt>, with parens.

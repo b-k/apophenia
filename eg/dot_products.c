@@ -12,9 +12,7 @@ int main(){
     for (double i=0; i< len; i++) gsl_vector_set(v, i, 1./(i+1));
     double square;
     gsl_blas_ddot(v, v, &square);
-    #ifndef Testing
     printf("1 + (1/2)^2 + (1/3)^2 + ...= %g\n", square);
-    #endif
 
     double pi_over_six = gsl_pow_2(M_PI)/6.;
     Diff(square, pi_over_six);

@@ -30,8 +30,6 @@ long double apop_vector_sum(const gsl_vector *in){
 \param v A \ref gsl_vector.
 */
 
-
-
 /** \def apop_var(in)
 An alias for \ref apop_vector_var.
 Returns the variance of the data in the given vector.
@@ -306,7 +304,8 @@ APOP_VAR_END_HEAD
 }
 
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
-  \param m	the matrix to be summed. 
+
+\param m	the matrix to be summed. 
 */
 long double apop_matrix_sum(const gsl_matrix *m){
     Apop_stopif(!m, return 0, 1, "You just asked me to sum a NULL. Returning zero.");

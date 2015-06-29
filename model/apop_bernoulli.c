@@ -23,8 +23,8 @@ static long double bernoulli_log_likelihood(apop_data *d, apop_model *params){
 
 static double nonzero (double in) { return in !=0; }
 
-/* \adoc estimated_parameters \f$p\f$ is the only element in the vector (e.g., <tt>double
-p = apop_data_get(outmodel->parameters);</tt>). A
+/* \adoc estimated_parameters \f$p\f$ is the only element in the vector (e.g., get its
+value via <tt>double p = apop_data_get(outmodel->parameters);</tt>). A
 <tt>\<Covariance\></tt> page has the variance of \f$p\f$ in the (0,0)th element of the matrix.
 \adoc estimated_info   Reports <tt>log likelihood</tt>.
 */

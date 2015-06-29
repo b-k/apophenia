@@ -1208,7 +1208,7 @@ void test_ols_offset(gsl_rng *r){
 int main(int argc, char **argv){
     int  slow_tests = 0;
 #ifdef _OPENMP
-    if (omp_get_num_threads()==1) omp_set_num_threads(2); //always at least 2 threads.
+    if (omp_get_num_procs()==1) omp_set_num_threads(2); //always at least 2 threads.
 #endif
     int c;
     char opts[]  = "sqt:";

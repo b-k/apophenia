@@ -975,6 +975,8 @@ then I display an error rather than reallocating the text matrix.
   \li If there had been a string at the grid point you are writing to,
 the old one is freed to prevent leaks. Remember this if you had other pointers aliasing
 that string.
+  \li If an element is \c NULL, write <tt>apop_opts.nan_string</tt> at that point. You
+may prefer to use <tt>""</tt> to express a blank.
   \li \ref apop_text_alloc will reallocate to a new size if you need. For example,
 this code will fill the diagonals of the text array with a message, resizing as it goes:
 

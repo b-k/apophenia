@@ -96,7 +96,7 @@ If 'v' (as in void), return \c NULL.  (Default = 'n')
 
 \exception out->error='p' missing or mismatched parts error, such as \c NULL matrix when you sent a function acting on the matrix element.
 
-  \li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
+\li The function forms with <tt>r</tt> in them, like \c fn_ri, are row-by-row. I'll use
 \ref Apop_r to get each row in turn, and send it to the function. The first
 implication is that your function should be expecting a \ref apop_data set with
 exactly one row in it. The second is that \c part is ignored: it only makes sense to go
@@ -473,7 +473,7 @@ elements. Thus, this function returns a \c double. See the \ref apop_map page fo
 details of the inputs, which are the same here, except that \c inplace doesn't make
 sense---this function will always just add up the input function outputs.
 
-  \li I don't copy the input data to send to your input function. Therefore, if your
+\li I don't copy the input data to send to your input function. Therefore, if your
 function modifies its inputs as a side-effect, your data set will be modified as this
 function runs.
   \li The sum of zero elements is zero, so that is what is returned if the input \ref

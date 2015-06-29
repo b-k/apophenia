@@ -104,6 +104,7 @@ space. Each column of the returned matrix will be another eigenvector; the colum
 will be ordered by the eigenvalues.
 
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
+
 \exception out->error=='a'  Allocation error.
 */
 APOP_VAR_HEAD apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want) {
@@ -346,7 +347,7 @@ It makes use of the semi-overloading of the \ref apop_data structure. \c d1 may 
 \exception out->error='a'  Allocation error.
 \exception out->error='d'  dimension-matching error.
 \exception out->error='m'  GSL math error.
-\exception NULL If you ask me to take the dot product of NULL, I return NULL. [May some day change.]
+\exception NULL If you ask me to take the dot product of NULL, I return NULL.
 
 \li Some systems auto-transpose non-conforming matrices. You input a \f$3 \times 5\f$ and
 a \f$3 \times 5\f$ matrix, and the system assumes that you meant to transpose the second,

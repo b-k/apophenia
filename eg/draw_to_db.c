@@ -10,8 +10,6 @@ double process_two(gsl_rng *r){
 }
 
 int main(){
-    double p1, p2;
-    int i;
     gsl_rng *r = apop_rng_alloc(123);
 
     //create the database and the data table.
@@ -20,9 +18,9 @@ int main(){
     apop_query("create table samples(iteration, process, value); begin;");
 
     //populate the data table with runs.
-    for (i=0; i<1000; i++){
-        p1 = process_one(r);
-        p2 = process_two(r);
+    for (int i=0; i<1000; i++){
+        double p1 = process_one(r);
+        double p2 = process_two(r);
         apop_query("insert into samples values(%i, %i, %g);", i, 1, p1);
         apop_query("insert into samples values(%i, %i, %g);", i, 2, p2);
     }

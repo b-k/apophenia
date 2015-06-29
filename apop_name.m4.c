@@ -77,6 +77,7 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 }
 
 /** Prints the given list of names to stdout. Useful for debugging.
+
 \param n  The \ref apop_name structure
 */
 void apop_name_print(apop_name * n){

@@ -320,8 +320,8 @@ Use this function to reduce this to a set of distinct values, with their weights
 <table frame=box>
 <tr>
 <td>Vector value</td><td> Text name</td><td>Weights</td>
-</tr><tr valign=bottom<td></td>
 </tr>
+<tr valign=bottom><td></td></tr>
 <tr><td>12</td><td>Dozen</td><td>1</td></tr>
 <tr><td>1</td><td>Single</td><td>3</td></tr>
 <tr><td>2</td><td>Pair</td><td>4</td></tr>

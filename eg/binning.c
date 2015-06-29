@@ -1,13 +1,9 @@
 #define _GNU_SOURCE
 #include <apop.h>
 
-#ifdef Testing
-    #define printdata(dataset)  ;
-#else
-    #define printdata(dataset)           \
-            printf("\n-----------\n\n"); \
-            apop_data_print(dataset);   
-#endif
+#define printdata(dataset)           \
+        printf("\n-----------\n\n"); \
+        apop_data_print(dataset);   
 
 int main(){
     apop_data *d = apop_text_alloc(apop_data_alloc(6), 6, 1);

@@ -356,9 +356,10 @@ APOP_VAR_ENDHEAD
 }
 
 /** Return a new vector that is the moving average of the input vector.
- \param v The input vector, unsmoothed
- \param bandwidth An integer \f$\geq 1\f$ giving the number of elements to be averaged to produce one number.
- \return A smoothed vector of size <tt>v->size - (bandwidth/2)*2</tt>.
+
+\param v The input vector, unsmoothed
+\param bandwidth An integer \f$\geq 1\f$ giving the number of elements to be averaged to produce one number.
+\return A smoothed vector of size <tt>v->size - (bandwidth/2)*2</tt>.
  */
 gsl_vector *apop_vector_moving_average(gsl_vector *v, size_t bandwidth){
     Apop_stopif(!v, return NULL, 0, "You asked me to smooth a NULL vector; returning NULL.");
