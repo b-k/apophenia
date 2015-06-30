@@ -434,8 +434,8 @@ APOP_VAR_HEAD double apop_test(double statistic, char *distribution, double p1, 
     char*  apop_varad_var(distribution, NULL);
     double apop_varad_var(p1, 0);
     double apop_varad_var(p2, 0);
-    int is_chi = strcasecmp(distribution, "chi squared")|| strcasecmp(distribution, "chi")
-                     || strcasecmp(distribution, "chisq");
+    int is_chi = !strcasecmp(distribution, "chi squared")|| !strcasecmp(distribution, "chi")
+                     || !strcasecmp(distribution, "chisq");
      Apop_stopif(!strcasecmp(distribution, "f") && (!p1 || !p2), return NAN, 0, "I need both a p1 and p2 parameter specifying the degrees of freedom.");
      Apop_stopif((!strcasecmp(distribution, "t") || !strcasecmp(distribution, "f") || is_chi)
              && !p1, return NAN, 0, "I need a p1 parameter specifying the degrees of freedom.");
