@@ -155,9 +155,10 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     apop_model *mm = settings->base_model;
     apop_score_type ms = apop_score_vtable_get(mm);
     if (ms){
-        if (!v || v->size != mm->parameters->vector->size){
+        Get_vmsizes(mm->parameters); //tsize
+        if (!v || v->size != tsize){
             if (v) gsl_vector_free(v);
-            v = gsl_vector_alloc(mm->parameters->vector->size);
+            v = gsl_vector_alloc(tsize);
         }
         ms(d, v, mm);
         return gsl_vector_get(v, *settings->current_index);
