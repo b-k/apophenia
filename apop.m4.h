@@ -426,7 +426,7 @@ void apop_estimate_parameter_tests (apop_model *est);
 
 //Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model *model);
-Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) )
+Apop_var_declare( apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans, apop_data **boot_store) )
 gsl_rng *apop_rng_alloc(int seed);
 double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 
@@ -869,7 +869,7 @@ The view is automatically allocated, and disappears as soon as the program leave
 \see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
 */
 #define Apop_cs(d, colnum, len) ( \
-            (!(d)||!(d)->matrix || (d)->matrix->size2 <= (colnum)+(len)-1        \
+            (!(d)||!(d)->matrix || (d)->matrix->size2 <= (colnum)+(len)-1)       \
              ? NULL                                                              \
              : &(apop_data){                                                     \
                 .vector= NULL,                                                   \

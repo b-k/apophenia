@@ -32,6 +32,7 @@ check_PROGRAMS= \
 	test_apop \
 	$(top_builddir)/eg/apop_map_row \
 	$(top_builddir)/eg/binning \
+	$(top_builddir)/eg/boot_clt \
 	$(top_builddir)/eg/data_fill \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
