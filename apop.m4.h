@@ -36,12 +36,10 @@ extern "C" {
 
 /* A means of providing more script-like means of sending arguments to a function.
 
-These macros are intended as internal. Grep docs/documentation.h for optionaldetails
-to find notes on how these are used (Doxygen doesn't use that page), if you are
-interested in using this mechanism in out-of-Apophenia work.
-
+These macros are intended as internal. If you are interested in using this mechanism
+in out-of-Apophenia work, grep docs/documentation.h for optionaldetails to find notes
+on how these are used (Doxygen doesn't use that page),
 */
-
 #define apop_varad_head(type, name) type variadic_##name(variadic_type_##name varad_in)
 
 #define apop_varad_declare(type, name, ...) \
@@ -56,8 +54,7 @@ interested in using this mechanism in out-of-Apophenia work.
 /** \endcond */ //End of Doxygen ignore.
 
 
-            //////The types
-
+            //////The types and functions that act on them
 
 /** This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operations on \ref apop_data sets will take care of the names for you.
 */
@@ -249,14 +246,13 @@ Apop_var_declare( void apop_data_unpack(const gsl_vector *in, apop_data *d, char
 #define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})
 #define apop_data_fill(adfin, ...) apop_data_fill_base((adfin), (double []) {__VA_ARGS__})
 #define apop_text_fill(dataset, ...)   apop_text_fill_base((dataset), (char* []) {__VA_ARGS__, NULL})
-
 #define apop_data_falloc(sizes, ...) apop_data_fill(apop_data_alloc sizes, __VA_ARGS__)
     
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
-// Models and model support functions
+            //// Models and model support functions
 
 extern apop_model *apop_beta;
 extern apop_model *apop_bernoulli;
@@ -335,6 +331,8 @@ apop_model *apop_model_mixture_base(apop_model **inlist);
 apop_model *apop_model_cross_base(apop_model *mlist[]);
 #define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
 
+        ////More functions
+
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
 Apop_var_declare( apop_data * apop_map(apop_data *in, double (*fn_d)(double), double (*fn_v)(gsl_vector*),
@@ -364,7 +362,6 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
 
 
         // Some output routines
-
 Apop_var_declare( void apop_matrix_print(const gsl_matrix *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
 Apop_var_declare( void apop_vector_print(gsl_vector *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
 Apop_var_declare( void apop_data_print(const apop_data *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) )
@@ -461,8 +458,7 @@ apop_model * apop_model_fix_params_get_base(apop_model *model_in);
             //////vtables
 /** \cond doxy_ignore */
 
-/*
-This declares the vtable macros for each procedure that uses the mechanism.
+/* This declares the vtable macros for each procedure that uses the mechanism.
 
 --We want to have type-checking on the functions put into the vtables. Type checking
 happens only with functions, not macros, so we need a type_check function for every
@@ -476,7 +472,7 @@ declared.
 of inputs to the hash.
 
 --We want to have such a macro for every vtable. That means that we need a macro
-to write macros. We can't do that with C macros.  Thus, this file uses m4 macros to
+to write macros. We can't do that with C macros, so this file uses m4 macros to
 generate C macros.
 
 --After the m4 definition of make_vtab_fns, each new vtable requires a typedef, a hash
@@ -665,7 +661,7 @@ Apop_var_declare( apop_data * apop_rake(char const *margin_table, char * const*v
 #include <gsl/gsl_statistics_double.h>
 
 
-    //First, some linear algebra utilities
+    //Some linear algebra utilities
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 Apop_var_declare( apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2) )
@@ -680,6 +676,8 @@ Apop_var_declare( gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix cons
 void apop_vector_log(gsl_vector *v);
 void apop_vector_log10(gsl_vector *v);
 void apop_vector_exp(gsl_vector *v);
+
+                ////Subsetting macros
 
 /** \cond doxy_ignore */
 /** These are all deprecated.*/
@@ -696,20 +694,51 @@ gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );                  
 #define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len); // Use \ref Apop_cs.
 /** \endcond */ //End of Doxygen ignore.
 
-
+/** \def Apop_row_tv(m, row_name, v)
+ After this call, \c v will hold a \c gsl_vector view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_mrv
+*/
 #define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+/** \def Apop_col_tv(m, col_name, v)
+After this call, \c v will hold a \c gsl_vector view of the \ref apop_data set \c m.
+The view will consist only of the column with name \c col_name.
+Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_mcv
+*/
 #define Apop_col_tv(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, apop_name_find((m)->names, col, 'c')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+/** \def Apop_row_t(m, row_name, v)
+ After this call, \c v will hold an \ref apop_data view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_mrv
+*/
 #define Apop_row_t(d, rowname, outd) int apop_row_##outd = apop_name_find((d)->names, rowname, 'r'); Apop_rows(d, apop_row_##outd, 1, outd)
 
+/** \def Apop_col_t(m, col_name, v)
+ After this call, \c v will hold a view of the \ref apop_data set \c m. The view will consist only of a \c gsl_vector view of the column of the \ref apop_data set \c m with name \c col_name.
+ Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_mcv
+*/
 #define Apop_col_t(d, colname, outd) int apop_col_##outd = apop_name_find((d)->names, colname, 'c'); Apop_cols(d, apop_col_##outd, 1, outd)
 
 // The above versions relied on gsl_views, which stick to C as of 1989 CE.
 // Better to just create the views via designated initializers.
 
+
+/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
+Generate a view of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
+
+\param data_to_view The root matrix
+\param srow the first row (in the root matrix) of the top of the submatrix
+\param scol the first column (in the root matrix) of the left edge of the submatrix
+\param nrows number of rows in the submatrix
+\param ncols number of columns in the submatrix
+\return An automatically-allocated view of type \c gsl_matrix.
+*/
 #define Apop_subm(matrix_to_view, srow, scol, nrows, ncols)(                  \
         (!(matrix_to_view)                                                   \
             || (matrix_to_view)->size1 < (srow)+(nrows) || (srow) < 0        \
@@ -726,6 +755,7 @@ gsl_vector * v = &( apop_vv_##v );
 \return A \c gsl_vector view of the given row. The view is automatically allocated,
   and disappears as soon as the program leaves the scope in which it is declared.
 
+See \ref apop_vector_correlation for an example of use.
 \see Apop_r, Apop_rv
 */
 #define Apop_mrv(matrix_to_view, row) Apop_rv(&(apop_data){.matrix=matrix_to_view}, row)
@@ -737,10 +767,30 @@ gsl_vector * v = &( apop_vv_##v );
 \return A \c gsl_vector view of the given column. The view is automatically allocated,
   and disappears as soon as the program leaves the scope in which it is declared.
 
-  \see Apop_r, Apop_cv
+\code 
+gsl_matrix *m = apop_query_to_data("select col1, col2, col3 from data")->matrix;
+printf("The correlation coefficient between columns two "
+       "and three is %g.\n", apop_vector_correlation(Apop_mcv(m, 2), Apop_mcv(m, 3)));
+\endcode 
+
+\see Apop_r, Apop_cv
 */
 #define Apop_mcv(matrix_to_view, col) Apop_cv(&(apop_data){.matrix=matrix_to_view}, col)
 
+/** \def Apop_rv(d, row)
+A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
+row \c row. The view is a \c gsl_vector set.
+
+\code
+gsl_vector *v = Apop_rv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size1; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_r(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
 #define Apop_rv(data_to_view, row) (                                            \
         ((data_to_view) == NULL || (data_to_view)->matrix == NULL               \
             || (data_to_view)->matrix->size1 <= (row) || (row) < 0) ? NULL        \
@@ -748,6 +798,24 @@ gsl_vector * v = &( apop_vv_##v );
              .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, (row), 0)} \
         )
 
+/** \def Apop_cv(d, col)
+A macro to generate a temporary one-column view of the matrix in an \ref apop_data
+set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
+
+As usual, column -1 is the vector element of the \ref apop_data set.
+
+\code
+gsl_vector *v = Apop_cv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size2; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_c(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
+
+\see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
 #define Apop_cv(data_to_view, col) (                                           \
           !(data_to_view) ? NULL                                               \
         : (col)==-1       ? (data_to_view)->vector                             \
@@ -764,8 +832,15 @@ gsl_vector * v = &( apop_vv_##v );
         : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
 /** \endcond */
 
-#define Apop_rs(d, rownum, len)(                                                      \
-        (!(d) || (rownum) < 0) ? NULL                                       \
+/** \def Apop_rs(d, row, len)
+A macro to generate a temporary view of \ref apop_data set \c d pulling only certain rows, beginning at row \c row
+and having height \c len. 
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
+#define Apop_rs(d, rownum, len)(                                                 \
+        (!(d) || (rownum) < 0) ? NULL                                            \
         : &(apop_data){                                                          \
          .names= ( !((d)->names) ? NULL :                                        \
             &(apop_name){                                                        \
@@ -786,6 +861,13 @@ gsl_vector * v = &( apop_vv_##v );
         .text = (d)->text ? &((d)->text[rownum]) : NULL,                         \
         })
 
+
+/** \def Apop_cs(d, col, len)
+A macro to generate a temporary view of \ref apop_data set \c d including only certain columns, beginning at column \c col and having length \c len. 
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
 #define Apop_cs(d, colnum, len) ( \
             (!(d)||!(d)->matrix || (d)->matrix->size2 <= (colnum)+(len)-1        \
              ? NULL                                                              \
@@ -808,7 +890,33 @@ gsl_vector * v = &( apop_vv_##v );
                     .textct = (d)->names->textct } : NULL \
             })
 
+/** \def Apop_r(d, row)
+A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
+row \c row. The view is also an \ref apop_data set, with names and other decorations.
+\code
+//pull a single row
+apop_data *v = Apop_r(your_data, 7);
+
+//or loop through a sequence of one-row data sets.
+apop_model *std = apop_model_set_parameters(apop_normal, 0, 1);
+for (int i=0; i< your_data->matrix->size1; i++)
+    printf("Std Normal CDF up to observation %i is %g\n",
+                       i, apop_cdf(Apop_r(your_data, i), std));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
+\see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
 #define Apop_r(d, rownum) Apop_rs(d, rownum, 1)
+
+/** \def Apop_c(d, col)
+A macro to generate a temporary one-column view of \ref apop_data set \c d, pulling out only
+column \c col. 
+After this call, \c outd will be a pointer to this temporary
+view, that you can use as you would any \ref apop_data set.
+\see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
 #define Apop_c(d, col) Apop_cs(d, col, 1)
 
 /** \cond doxy_ignore */
@@ -835,39 +943,11 @@ gsl_vector * v = &( apop_vv_##v );
 #define APOP_ROW_TV Apop_row_tv
 #define apop_row_tv Apop_row_tv
 
-/** Deprecated. Use Apop_mr
- * View a single row of a \c gsl_matrix as a \c gsl_vector. This 
- is a convenience macro wrapping \c gsl_matrix_row. 
- 
-\param m The \c gsl_matrix
-\param row The number of the desired row. 
-\param v The name of the vector view that will be created.
-
-See \ref apop_vector_correlation for an example of use.
-
-\see Apop_rs, Apop_r, Apop_row_v, Apop_row_tv, Apop_row_t
-*/
+/** Deprecated. Use Apop_mrv */
 #define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
-/* Deprecated. Use Apop_mc
- * View a single column of a \c gsl_matrix as a \c gsl_vector. This 
- is a convenience macro wrapping \c gsl_matrix_column. 
- 
-\param m The \c gsl_matrix
-\param col The number of the desired column.
-\param v The name of the vector view that will be created.
-
-An: example
-\code 
-gsl_matrix *m = [fill matrix here];
-Apop_matrix_col(m, 2, coltwo);
-Apop_matrix_col(m, 3, colthree);
-printf("The correlation coefficient between columns two "
-       "and three is %g.\n", apop_vector_correlation(coltwo, colthree));
-\endcode 
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_col_t
-*/
+/* Deprecated. Use Apop_mcv */
 #define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
@@ -887,123 +967,6 @@ double apop_vector_skew(const gsl_vector *in);
 #define apop_sum apop_vector_sum
 #define apop_var apop_vector_var
 #define apop_mean apop_vector_mean
-
-/** Find the mean of the input vector.
-
-*/
-
-/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
-Generate a view of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
-
- \param data_to_view The root matrix
- \param srow the first row (in the root matrix) of the top of the submatrix
- \param scol the first column (in the root matrix) of the left edge of the submatrix
- \param nrows number of rows in the submatrix
- \param ncols number of columns in the submatrix
- \return An automatically-allocated view of type \c gsl_matrix.
-*/
-
-/** \def Apop_row_t(m, row_name, v)
- After this call, \c v will hold an \ref apop_data view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
- Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
-\see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_mrv
-*/
-
-/** \def Apop_col_t(m, col_name, v)
- After this call, \c v will hold a view of the \ref apop_data set \c m. The view will consist only of a \c gsl_vector view of the column of the \ref apop_data set \c m with name \c col_name.
- Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_mcv
-*/
-
-/** \def Apop_row_tv(m, row_name, v)
- After this call, \c v will hold a \c gsl_vector view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
- Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
-\see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_mrv
-*/
-
-/** \def Apop_col_tv(m, col_name, v)
-After this call, \c v will hold a \c gsl_vector view of the \ref apop_data set \c m.
-The view will consist only of the column with name \c col_name.
-Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_mcv
-*/
-
-/** \def Apop_cs(d, col, len)
-A macro to generate a temporary view of \ref apop_data set \c d, beginning at column \c col and having length \c len. 
-
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
-*/
-
-/** \def Apop_c(d, col)
-A macro to generate a temporary one-column view of \ref apop_data set \c d, pulling out only
-column \c col. 
-After this call, \c outd will be a pointer to this temporary
-view, that you can use as you would any \ref apop_data set.
-\see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
-*/
-
-/** \def Apop_rs(d, row, len)
-A macro to generate a temporary view of \ref apop_data set \c d, beginning at row \c row
-and having length \c len. 
-
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
-*/
-
-/** \def Apop_rv(d, row)
-A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
-row \c row. The view is a \c gsl_vector set.
-
-\code
-gsl_vector *v = Apop_rv(your_data, i);
-
-for (int i=0; i< your_data->matrix->size1; i++)
-    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_r(your_data, i)));
-\endcode
-
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
-*/
-
-/** \def Apop_cv(d, col)
-A macro to generate a temporary one-column view of the matrix in an \ref apop_data
-set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
-
-As usual, column -1 is the vector element of the \ref apop_data set.
-
-\code
-gsl_vector *v = Apop_cv(your_data, i);
-
-for (int i=0; i< your_data->matrix->size2; i++)
-    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_c(your_data, i)));
-\endcode
-
-The view is automatically allocated, and disappears as soon as the program leaves the
-scope in which it is declared.
-
-\see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_mcv
-*/
-
-/** \def Apop_r(d, row)
-A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
-row \c row. The view is also an \ref apop_data set, with names and other decorations.
-\code
-//pull a single row
-apop_data *v = Apop_r(your_data, 7);
-
-//or loop through a sequence of one-row data sets.
-apop_model *std = apop_model_set_parameters(apop_normal, 0, 1);
-for (int i=0; i< your_data->matrix->size1; i++)
-    printf("Std Normal CDF up to observation %i is %g\n",
-                       i, apop_cdf(Apop_r(your_data, i), std));
-\endcode
-
-The view is automatically allocated, and disappears as soon as the program leaves the
-scope in which it is declared.
-\see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_mrv
-*/
-
 
         //////database utilities
 
@@ -1093,9 +1056,10 @@ apop_model *k2 = apop_model_set_settings(apop_kernel_density,
 The name of the model and the settings group to be built must match, which is the case
 for many model transformations, including \ref apop_dconstrain and \ref apop_cross. If the names do not match, use \ref apop_model_copy_set.
 */
-#define apop_model_set_settings(model, ...)  \
+#define Apop_model_set_settings(model, ...)  \
     apop_settings_group_alloc_wm(apop_model_copy(model), #model, model ## _settings_free, model ## _settings_copy, model ##_settings_init ((model ## _settings) {__VA_ARGS__}))
 
+#define apop_model_set_settings Apop_model_set_settings
 
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
 
@@ -1617,7 +1581,7 @@ typedef struct {
     apop_data *(*transformed_to_base)(apop_data*); /**< The function to transform from post-transform space back to pre-transform space. If this function does not exist, using a Jacobian-based transformation is probably not mathematically correct. */
     double (*jacobian_to_base)(apop_data*); /**< The derivative of the \c transformed_to_base function. */
     apop_model *base_model;  /**< The pre-transformation model. */
-} apop_ct_settings;/**< Settings for an \ref apop_coordinate_transform model; see its documentation for notes and an example.
+} apop_coordinate_transform_settings;/**< Settings for an \ref apop_coordinate_transform model; see its documentation for notes and an example.
 */
 
 /** For use with the \ref apop_dconstrain model. See its documentation for an example. 
@@ -1652,12 +1616,11 @@ typedef struct {
 
     //Models built via call to apop_model_copy_set.
 
-#define apop_model_coordinate_transform(...) Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__)
-#define apop_model_dcompose(...) Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__)
-#define apop_model_dconstrain(...) Apop_model_copy_set(apop_dconstrain, apop_dconstrain, __VA_ARGS__)
+#define apop_model_dcompose(...) Apop_model_set_settings(apop_composition, __VA_ARGS__)
+#define apop_model_dconstrain(...) Apop_model_set_settings(apop_dconstrain, __VA_ARGS__)
+#define apop_model_coordinate_transform(...) Apop_model_set_settings(apop_coordinate_transform, __VA_ARGS__)
 
 //Doxygen drops whatever is after these declarations, so I put them last.
-Apop_settings_declarations(apop_ct)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_pmf)
@@ -1672,6 +1635,7 @@ Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_kernel_density)
+Apop_settings_declarations(apop_coordinate_transform)
 
 #ifdef	__cplusplus
 }

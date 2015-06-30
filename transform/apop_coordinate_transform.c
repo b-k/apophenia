@@ -9,23 +9,23 @@ apop_model_copy_set to set up a model with the given settings.
 \include jacobian.c
 
 \adoc Input_format The input data is sent to the first model, so use the input format for that model.
-\adoc Settings   \ref apop_ct_settings
+\adoc Settings   \ref apop_coordinate_transform_settings
 */
 
-Apop_settings_init(apop_ct,
+Apop_settings_init(apop_coordinate_transform,
     Apop_stopif(!in.base_model, , 0, "I need a .base_model.");
 )
-Apop_settings_copy(apop_ct,)
-Apop_settings_free(apop_ct,)
+Apop_settings_copy(apop_coordinate_transform,)
+Apop_settings_free(apop_coordinate_transform,)
 
 #define Get_cs(inmodel, outval) \
-    apop_ct_settings *cs = Apop_settings_get_group(inmodel, apop_ct); \
+    apop_coordinate_transform_settings *cs = Apop_settings_get_group(inmodel, apop_coordinate_transform); \
     Apop_stopif(!cs, return outval, 0, "At this point, I expect your model to" \
-            "have an apop_ct_settings group.");
+            "have an apop_coordinate_transform_settings group.");
 
 static void jacobian_prep(apop_data *d, apop_model *m){
-    apop_ct_settings *cs = Apop_settings_get_group(m, apop_ct); 
-    Apop_stopif(!cs, m->error='s', 0, "missing apop_ct_settings group. "
+    apop_coordinate_transform_settings *cs = Apop_settings_get_group(m, apop_coordinate_transform); 
+    Apop_stopif(!cs, m->error='s', 0, "missing apop_coordinate_transform_settings group. "
             "Maybe initialize this with apop_model_coordinate_transform?");
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;

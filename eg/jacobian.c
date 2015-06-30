@@ -22,9 +22,9 @@ double inv(double in){return 1./in;}
 double rev_j(apop_data *in){ return fabs(apop_map_sum(in, .fn_d=inv, .part='a')); }
 
 int main(){
-    apop_model *ct = apop_model_copy_set(apop_coordinate_transform, apop_ct,
-            .transformed_to_base= rev, .jacobian_to_base=rev_j,
-            .base_model=apop_normal);
+    apop_model *ct = apop_model_coordinate_transform(
+                        .transformed_to_base= rev, .jacobian_to_base=rev_j,
+                        .base_model=apop_normal);
     //Apop_model_add_group(ct, apop_parts_wanted);//Speed up the MLE.
 
     //make fake data
