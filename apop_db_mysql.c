@@ -79,7 +79,7 @@ static double apop_mysql_table_exists(char const *table, int delme){
 
 static int get_name_row(unsigned int *num_fields, MYSQL_FIELD *fields){
     for(size_t i = 0; i < *num_fields; i++)
-        if (!strcasecmp(fields[i].name, apop_opts.db_name_column)){
+        if (apop_opts.db_name_column && !strcasecmp(fields[i].name, apop_opts.db_name_column)){
             (*num_fields)--;
             return i;
         }

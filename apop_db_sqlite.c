@@ -189,7 +189,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
     if (qi->firstcall){
         qi->firstcall = 0;
         for(int i=0; i<argc; i++)
-            if (!strcasecmp(column[i], apop_opts.db_name_column)){
+            if (apop_opts.db_name_column && !strcasecmp(column[i], apop_opts.db_name_column)){
                 qi->namecol = i;
                 break;
             }

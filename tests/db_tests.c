@@ -150,7 +150,7 @@ void test_nan_data(){
     apop_table_exists("fw", 'd');
     apop_table_exists("fww", 'd');
     apop_text_to_db( DATADIR "/" "test_data_nans" , "nandata");
-    strcpy(apop_opts.db_name_column, "head");
+    apop_opts.db_name_column = "head";
     apop_opts.nan_string = "nan";
     apop_data *d = apop_query_to_data("select * from nandata");
     apop_data_print(d, "nantest", .output_type='d');
@@ -187,7 +187,7 @@ static void test_printing(){
 
     if (!apop_table_exists("nandata"))
         test_nan_data();
-    strcpy(apop_opts.db_name_column, "head");
+    apop_opts.db_name_column = "head";
     apop_data *m  = apop_query_to_data("select * from nandata");
     apop_matrix_print(m->matrix, .output_name=outfile, .output_append='w');
 

@@ -248,7 +248,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
     if (data->names && data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
     if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct)){
-        if (*apop_opts.db_name_column=='\0' || 
+        if ((apop_opts.db_name_column || *apop_opts.db_name_column=='\0') || 
                 !strcmp(apop_opts.db_name_column, "row_names"))
             fprintf(f, "%*s  ", L+2, " ");
         else { fprintf(f, "%s", apop_opts.db_name_column); a_pipe(f, displaytype); }

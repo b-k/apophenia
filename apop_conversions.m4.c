@@ -122,8 +122,8 @@ APOP_VAR_ENDHEAD
     apop_data *pre_d1=NULL, *pre_d2=NULL, *datachars=NULL;
     apop_data *outdata = apop_data_alloc();
 
-    char p = apop_opts.db_name_column[0];
-    apop_opts.db_name_column[0]= '\0';//we put this back at the end.
+    char* p = apop_opts.db_name_column;
+    apop_opts.db_name_column = NULL;//we put this back at the end.
     char *Q;
 
     Asprintf(&Q, "select %s, %s, %s from %s %s %s %s %s", row, col, data, tabname,
@@ -160,7 +160,7 @@ APOP_VAR_ENDHEAD
     apop_data_free(pre_d2);
     apop_data_free(datachars);
     outdata->matrix = out;
-    apop_opts.db_name_column[0]= p;
+    apop_opts.db_name_column = p;
 	return outdata;
 }
 

@@ -120,7 +120,7 @@ typedef struct{
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
-    char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. Max length is currently 300 chars.*/
+    char *db_name_column; /**< If not NULL or <tt>""</tt>, the name of the column in your tables that holds row names.*/
     char *nan_string; /**< The string used to indicate NaN. Default: <tt>"NaN</tt>. Comparisons are case-insensitive.*/
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */

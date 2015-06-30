@@ -271,7 +271,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
     if (qi->firstcall){
         qi->firstcall--;
         for(i=0; i<argc; i++)
-            if (!strcasecmp(column[i], apop_opts.db_name_column)){
+            if (apop_opts.db_name_column && !strcasecmp(column[i], apop_opts.db_name_column)){
                 qi->namecol = i;
                 ncfound = 1;
                 break;
@@ -544,7 +544,7 @@ int apop_data_to_db(const apop_data *set, const char *tabname, const char output
     int	i,j; 
     char *q;
     char comma = ' ';
-    int use_row = strlen(apop_opts.db_name_column)  && set->names
+    int use_row = (apop_opts.db_name_column && strlen(apop_opts.db_name_column))  && set->names
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 
