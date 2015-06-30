@@ -251,11 +251,11 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
         if ((apop_opts.db_name_column || *apop_opts.db_name_column=='\0') || 
                 !strcmp(apop_opts.db_name_column, "row_names"))
             fprintf(f, "%*s  ", L+2, " ");
-        else { fprintf(f, "%s", apop_opts.db_name_column); a_pipe(f, displaytype); }
+        else { fprintf(f, "%s", apop_opts.db_name_column);; }
+        a_pipe(f, displaytype);
     }
-    if (data->vector && data->names && data->names->vector){
-        fprintf(f, "%s", data->names->vector);
-    }
+    if (data->vector)
+        fprintf(f, "%s", (data->names && data->names->vector)?data->names->vector:"\t");
     if (data->matrix){
         if (data->vector && data->names && data->names->colct){
             fprintf(f, "%c ", data->names->vector ? ' ' : '\t' );
