@@ -82,8 +82,7 @@ static int compare_strings(const void *a, const void *b) {
 
 static void rearrange(apop_data *data, size_t height, size_t *perm){
     size_t i, start=0;
-    size_t sorted[height];
-    memset(sorted, 0, sizeof(size_t)*height);
+    size_t *sorted = calloc(height, sizeof(size_t));
     while (1){
         i     =
         start = find_min_unsorted(sorted, height, start);
@@ -99,6 +98,7 @@ static void rearrange(apop_data *data, size_t height, size_t *perm){
         apop_data_memcpy(Apop_r(data, i), first_row_storage);
         apop_data_free(first_row_storage);
     }
+    free(sorted);
 }
 
 /** Sort an \ref apop_data set on an arbitrary sequence of columns. 

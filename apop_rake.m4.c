@@ -523,11 +523,6 @@ apop_query("update data_table set count_col = 1e-3 where count_col = 0");
 \li This function uses the \ref designated syntax for inputs.
 */
 APOP_VAR_HEAD apop_data * apop_rake(char const *margin_table, char * const*var_list, int var_ct, char * const *contrasts, int contrast_ct, char const *structural_zeros, int max_iterations, double tolerance, char const *count_col, char const *init_table, char const *init_count_col, double nudge){
-    #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
-        static _Atomic(int) defaultrun = 0;
-    #else
-        static int defaultrun = 0;
-    #endif
     char const * apop_varad_var(margin_table, NULL);
     Apop_stopif(!margin_table, apop_return_data_error(i), 0,  
                         "I need the name of a table in the database that will be the data source.");

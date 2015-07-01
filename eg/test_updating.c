@@ -35,7 +35,7 @@ int main(){
     //a batch of draws, so the draw method for out_h is apop_model_metropolis_draw.
     //So, here we make more draws using metropolis, and compare the beta
     //distribution that fits to those draws to the beta distribution output above.
-    int i, draws = 1.3e5;
+    int draws = 1.3e5;
     apop_data *d = apop_model_draws(out_h, draws);
     apop_model *drawn = apop_estimate(d, apop_beta);
     distances(updated->parameters->vector, drawn->parameters->vector, 0.02);

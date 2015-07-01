@@ -1355,12 +1355,12 @@ APOP_VAR_HEAD apop_data* apop_data_rm_page(apop_data * data, const char *title, 
     const char *apop_varad_var(title, "<Info>");
     const char apop_varad_var(free_p, 'y');
     apop_data *apop_varad_var(data, NULL);
-    Apop_stopif(!data, return NULL, free_p=='y'? 2: 1, "You are removing a "
+    Apop_stopif(!data, return NULL, (free_p=='y'? 2: 1), "You are removing a "
                                "page from a NULL a data set. Doing nothing.");
 APOP_VAR_ENDHEAD
     while (data->more && strcasecmp(data->more->names->title, title))
         data = data->more;
-    Apop_stopif(!data->more, return NULL, free_p=='y'?2:1, "You asked me to "
+    Apop_stopif(!data->more, return NULL, (free_p=='y'?2:1), "You asked me to "
                 "remove '%s' but I couldn't find a page matching that.", title);
     if (data->more){
         apop_data *tmp = data->more;
