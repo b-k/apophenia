@@ -228,6 +228,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
     }
     if (in->names){
         if (!out->names) out->names = apop_name_alloc();
+        Asprintf(&out->names->title, "%s", in->names->title);
         if (out->names->vector && in->names->vector) {Asprintf(&out->names->vector, "%s", in->names->vector);}
         for (int i=0; i< in->names->rowct; i++)
             if (i< out->names->rowct) {Asprintf(out->names->row+i, "%s", in->names->row[i]);}
