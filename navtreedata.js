@@ -4,6 +4,9 @@ var NAVTREE =
     [ "Welcome", "index.html", null ],
     [ "Getting started", "preliminaries.html", "preliminaries" ],
     [ "An outline of the library", "outline.html", "outline" ],
+    [ "Empirical distributions and PMFs (probability mass functions)", "histosec.html", [
+      [ "Comparing histograms", "histosec.html#histocompare", null ]
+    ] ],
     [ "Writing new models", "modeldetails.html", [
       [ "A walkthrough", "modeldetails.html#write_likelihoods", [
         [ "Threading", "modeldetails.html#On", null ]
@@ -39,9 +42,9 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"Histosec.html",
-"group__all__public.html#gafc7707d44884aa63c298510a0662956a",
-"modules.html"
+"annotated.html",
+"group__models.html#ga3199e483f340d6cedaa6488565c42c78",
+"structapop__cdf__settings.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

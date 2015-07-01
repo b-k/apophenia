@@ -172,20 +172,20 @@ $(document).ready(function(){initNavTree('dataoverview.html','');});
 <div class="line">    printf(<span class="stringliteral">&quot;\n&quot;</span>);</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>Most functions assume that each row represents one observation, so the data vector, data matrix, and text have the same row count: <code>data-&gt;vector-&gt;size==data-&gt;matrix-&gt;size1</code> and <code>data-&gt;vector-&gt;size==*data-&gt;textsize</code>. This means that the <a class="el" href="structapop__name.html">apop_name</a> structure doesn't have separate <code>vector_names</code>, <code>row_names</code>, or <code>text_row_names</code> elements: the <code>rownames</code> are assumed to apply for all.</p>
-<p>See below for notes on easily managing the <code>text</code> element and the row/column names.</p>
+<p>See below for notes on managing the <code>text</code> element and the row/column names.</p>
 <h1><a class="anchor" id="pps"></a>
 Pages</h1>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set includes a <code>more</code> pointer, which will typically be <code>NULL</code>, but may point to another <a class="el" href="gentle.html#apop_data">apop_data</a> set. This is intended for a main data set and a second or third page with auxiliary information, such as estimated parameters on the front page and their covariance matrix on page two, or predicted data on the front page and a set of prediction intervals on page two.</p>
-<p>The <code>more</code> pointer is not intended as a linked list for millions of data points. In such situations, you can often improve efficiency by restructuring your data to use a single table (perhaps via <a class="el" href="group__all__public.html#ga90feb5dd661cfe0f0b53a85295b8b56e">apop_data_pack</a> and <a class="el" href="group__all__public.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>).</p>
+<p>The <code>more</code> pointer is not intended for a linked list for millions of data points. In such situations, you can often improve efficiency by restructuring your data to use a single table (perhaps via <a class="el" href="group__all__public.html#ga90feb5dd661cfe0f0b53a85295b8b56e">apop_data_pack</a> and <a class="el" href="group__all__public.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>).</p>
 <p>Most functions, such as <a class="el" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> and <a class="el" href="group__all__public.html#ga459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>, will handle all the pages of information. For example, an optimization search over multi-page parameter sets would search the space given by all pages.</p>
-<p>But pages may also be appended as output or auxiliary information, such as covariances, and an MLE would not search over these elements. Any page with a name in XML-ish brackets, such as <code>&lt;Covariance&gt;</code>, is considered information about the data, not data itself, and therefore ignored by search routines, missing data routines, et cetera. This is achieved by a rule in <a class="el" href="group__all__public.html#ga90feb5dd661cfe0f0b53a85295b8b56e">apop_data_pack</a> and <a class="el" href="group__all__public.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>.</p>
+<p>Pages may also be appended as output or auxiliary information, such as covariances, and an MLE would not search over these elements. Any page with a name in XML-ish brackets, such as <code>&lt;Covariance&gt;</code>, is considered information about the data, not data itself, and therefore ignored by search routines, missing data routines, et cetera. This is achieved by a rule in <a class="el" href="group__all__public.html#ga90feb5dd661cfe0f0b53a85295b8b56e">apop_data_pack</a> and <a class="el" href="group__all__public.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a>.</p>
 <p>Here is a toy example that establishes a baseline data set, adds a page, modifies it, and then later retrieves it. </p><div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#gac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 10, 10); <span class="comment">//the base data set, a 10-item vector + 10x10 matrix</span></div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *a_new_page = <a class="code" href="group__all__public.html#ga7e7e530a692571a403e5837fda5e0f12">apop_data_add_page</a>(d, <a class="code" href="group__all__public.html#gac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(2,2), <span class="stringliteral">&quot;new 2 x 2 page&quot;</span>);</div>
 <div class="line">gsl_vector_set_all(a_new_page-&gt;matrix, 3);</div>
 <div class="line"></div>
 <div class="line"><span class="comment">//later:</span></div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *retrieved = <a class="code" href="group__all__public.html#ga044771db76f0afb410a8d4f05ac51ca3">apop_data_get_page</a>(d, <span class="stringliteral">&quot;new&quot;</span>, <span class="charliteral">&#39;r&#39;</span>); <span class="comment">//&#39;r&#39;=search via regex, not literal match.</span></div>
-<div class="line">apop_data_show(retrieved); <span class="comment">//print a 2x2 grid of 3s.</span></div>
+<div class="line"><a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(retrieved); <span class="comment">//print a 2x2 grid of 3s.</span></div>
 </div><!-- fragment --><h1><a class="anchor" id="datafns"></a>
 Functions for using apop_data sets</h1>
 <p>There are a great many functions to collate, copy, merge, sort, prune, and otherwise manipulate the <a class="el" href="gentle.html#apop_data">apop_data</a> structure and its components.</p>
@@ -210,7 +210,8 @@ Functions for using apop_data sets</h1>
 <li><a class="el" href="group__all__public.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a> </li>
 <li><a class="el" href="group__all__public.html#gaf9b051e2fbe0e473dddeabfe4932ce0c">apop_vector_fill</a> </li>
 <li><a class="el" href="group__all__public.html#ga294d0269c4cbe36709130bebd893938d">apop_vector_stack</a> </li>
-<li><a class="el" href="group__all__public.html#gaf4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a></li>
+<li><a class="el" href="group__all__public.html#gaf4658a3ecc0acfd17f610bc162fa5556">apop_vector_realloc</a> </li>
+<li><a class="el" href="group__all__public.html#ga6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a></li>
 </ul>
 <p>Apophenia builds upon the GSL, but it would be inappropriate to redundantly replicate the <a href="http://www.gnu.org/software/gsl/manual/html_node/index.html">GSL's documentation</a> here. Meanwhile, here are prototypes for a few common functions. The GSL's naming scheme is very consistent, so a simple reminder of the function name may be sufficient to indicate how they are used.</p>
 <ul>
@@ -218,7 +219,7 @@ Functions for using apop_data sets</h1>
 <li><code>gsl_matrix_swap_columns (gsl_matrix * m, size_t i, size_t j)</code> </li>
 <li><code>gsl_matrix_swap_rowcol (gsl_matrix * m, size_t i, size_t j)</code> </li>
 <li><code>gsl_matrix_transpose_memcpy (gsl_matrix * dest, const gsl_matrix * src)</code> </li>
-<li><code>gsl_matrix_transpose (gsl_matrix * m) : square matrices only</code> </li>
+<li><code>gsl_matrix_transpose (gsl_matrix * m)</code> : square matrices only </li>
 <li><code>gsl_matrix_set_all (gsl_matrix * m, double x)</code> </li>
 <li><code>gsl_matrix_set_zero (gsl_matrix * m)</code> </li>
 <li><code>gsl_matrix_set_identity (gsl_matrix * m)</code> </li>
@@ -245,9 +246,9 @@ Alloc/free</h1>
 <li><a class="el" href="group__all__public.html#ga0460790f2d21f03856ed4a212a4132ec">apop_data_calloc</a> </li>
 <li><a class="el" href="group__all__public.html#ga459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> </li>
 <li><a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> : allocate or resize the text part of an <a class="el" href="gentle.html#apop_data">apop_data</a> set. </li>
-<li><a class="el" href="group__all__public.html#ga65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> <pre class="fragment">See also:
-</pre></li>
+<li><a class="el" href="group__all__public.html#ga65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a></li>
 </ul>
+<p>See also:</p>
 <ul>
 <li><code>gsl_matrix * gsl_matrix_alloc (size_t n1, size_t n2)</code> </li>
 <li><code>gsl_matrix * gsl_matrix_calloc (size_t n1, size_t n2)</code> </li>
@@ -274,7 +275,7 @@ Using views</h1>
 <div class="line"></div>
 <div class="line"><span class="comment">//ten rows starting at row 3:</span></div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d10 = <a class="code" href="group__all__public.html#ga585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a>(d, 3, 10);</div>
-<div class="line">apop_data_show(d10);</div>
+<div class="line"><a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(d10);</div>
 <div class="line"></div>
 <div class="line"><span class="comment">//Column zero&#39;s sum</span></div>
 <div class="line">gsl_vector *cv = <a class="code" href="group__all__public.html#ga825321182fbaa7471069f13447170810">Apop_cv</a>(d, 0);</div>
@@ -285,42 +286,40 @@ Using views</h1>
 <div class="line"><span class="comment">//Pull a 10x5 submatrix, whose origin element is the (2,3)rd</span></div>
 <div class="line"><span class="comment">//element of the parent data set&#39;s matrix</span></div>
 <div class="line"></div>
-<div class="line"><span class="keywordtype">double</span> sub_sum = <a class="code" href="group__all__public.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<a class="code" href="group__all__public.html#gad0375e20079df9652337e39c1317a14d">Apop_subm</a>(d, 2,3, 10,5));</div>
+<div class="line"><span class="keywordtype">double</span> sub_sum = <a class="code" href="group__all__public.html#ga369c774aac917e56d8e32f9c66d9c2a0">apop_matrix_sum</a>(<a class="code" href="group__all__public.html#ga108c002cae1ff18f74ba331b1ea41ce3">Apop_subm</a>(d, 2,3, 10,5));</div>
 </div><!-- fragment --><p>Because these macros can be used as arguments to a function, these macros have abbreviated names to save line space.</p>
 <ul>
-<li><a class="el" href="group__all__public.html#gadabbf2a1717d5c76a834e090ddfcfeaa">Apop_c</a> </li>
-<li><a class="el" href="group__all__public.html#ga401dbc60c9915be8e4c4def68b22d755">Apop_r</a> </li>
-<li><a class="el" href="group__all__public.html#ga825321182fbaa7471069f13447170810">Apop_cv</a> </li>
-<li><a class="el" href="group__all__public.html#ga314f28de914dfe6e45170e09d71d5429">Apop_rv</a> </li>
-<li><a class="el" href="group__all__public.html#gafc073d46416446dc4f0cdb9e4f1b9a03">Apop_cs</a> </li>
-<li><a class="el" href="group__all__public.html#ga585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a> </li>
-<li><a class="el" href="group__all__public.html#gad0375e20079df9652337e39c1317a14d">Apop_subm</a></li>
+<li><a class="el" href="group__all__public.html#ga401dbc60c9915be8e4c4def68b22d755">Apop_r</a> : get row as one-observation <a class="el" href="gentle.html#apop_data">apop_data</a> set </li>
+<li><a class="el" href="group__all__public.html#gadabbf2a1717d5c76a834e090ddfcfeaa">Apop_c</a> : get column as <a class="el" href="gentle.html#apop_data">apop_data</a> set </li>
+<li><a class="el" href="group__all__public.html#ga825321182fbaa7471069f13447170810">Apop_cv</a> : get column as gsl_vector </li>
+<li><a class="el" href="group__all__public.html#ga314f28de914dfe6e45170e09d71d5429">Apop_rv</a> : get row as gsl_vector </li>
+<li><a class="el" href="group__all__public.html#gafc073d46416446dc4f0cdb9e4f1b9a03">Apop_cs</a> : get columns as <a class="el" href="gentle.html#apop_data">apop_data</a> set </li>
+<li><a class="el" href="group__all__public.html#ga585f5cf3125fb5fc875dea85980eabd1">Apop_rs</a> : get rows as <a class="el" href="gentle.html#apop_data">apop_data</a> set </li>
+<li><a class="el" href="group__all__public.html#ga71451e1e94fcaade7180948dcb87da34">Apop_mcv</a> : matrix column as vector </li>
+<li><a class="el" href="group__all__public.html#ga6821b819c9bb58d2285d13b8987963d5">Apop_mrv</a> : matrix row as vector </li>
+<li><a class="el" href="group__all__public.html#ga108c002cae1ff18f74ba331b1ea41ce3">Apop_subm</a> : get submatrix of a gsl_matrix</li>
 </ul>
 <p>A second set of macros have a slightly different syntax, taking the name of the object to be declared as the last argument. These can not be used as expressions such as function arguments.</p>
 <ul>
 <li><a class="el" href="group__all__public.html#gaaaf15101ec60ce66e80737375baa7391">Apop_col_t</a> </li>
 <li><a class="el" href="group__all__public.html#ga7d87af4e65acbf6982a34cf3dc33eae6">Apop_row_t</a> </li>
 <li><a class="el" href="group__all__public.html#gad56ce572c7489820777290153ab7d87b">Apop_col_tv</a> </li>
-<li><a class="el" href="group__all__public.html#ga6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a> </li>
-<li><a class="el" href="group__all__public.html#ga9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a> </li>
-<li><a class="el" href="group__all__public.html#ga3e7f99e26eb4d5d5438fd5fa16fcadde">Apop_matrix_col</a></li>
+<li><a class="el" href="group__all__public.html#ga6396c26f1d47cced2be3a761185d3b35">Apop_row_tv</a></li>
 </ul>
 <p>The view is an automatic variable, not a pointer, and therefore disappears at the end of the scope in which it is declared. If you want to retain the data after the function exits, copy it to another vector:</p>
-<div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga9abee86763f92d505fd4fb792f06fd7c">Apop_matrix_row</a>(d-&gt;matrix, 2, rowtwo);</div>
-<div class="line"><span class="keywordflow">return</span> <a class="code" href="group__all__public.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a>(rowtwo);</div>
-</div><!-- fragment --><p>Curly braces always delimit scope, not just at the end of a function. These macros work by generating a number of local variables, which you may be able to see in your debugger. When program evaluation exits a given block, all variables in that block are erased. Here is some sample code that won't work:</p>
+<div class="fragment"><div class="line"><span class="keywordflow">return</span> <a class="code" href="group__all__public.html#ga5baf0e8717a30fdcfba350da904c1825">apop_vector_copy</a>(<a class="code" href="group__all__public.html#ga314f28de914dfe6e45170e09d71d5429">Apop_rv</a>(d, 2)); <span class="comment">//return a gsl_vector copy of row 2</span></div>
+</div><!-- fragment --><p>Curly braces always delimit scope, not just at the end of a function. When program evaluation exits a given block, all variables in that block are erased. Here is some sample code that won't work:</p>
 <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *outdata;</div>
 <div class="line"><span class="keywordflow">if</span> (get_odd){</div>
 <div class="line">    outdata = <a class="code" href="group__all__public.html#ga401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, 1);</div>
 <div class="line">} <span class="keywordflow">else</span> {</div>
 <div class="line">    outdata = <a class="code" href="group__all__public.html#ga401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, 0);</div>
 <div class="line">}</div>
-<div class="line">apop_data_show(outdata); <span class="comment">//breaks: outdata points to out-of-scope variables.</span></div>
+<div class="line"><a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(outdata); <span class="comment">//breaks: outdata points to out-of-scope variables.</span></div>
 </div><!-- fragment --><p>For this if/then statement, there are two sets of local variables generated: one for the <code>if</code> block, and one for the <code>else</code> block. By the last line, neither exists. You can get around the problem here by making sure to not put the macro declaring new variables in a block. E.g.:</p>
 <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *outdata = <a class="code" href="group__all__public.html#ga401dbc60c9915be8e4c4def68b22d755">Apop_r</a>(data, get_odd ? 1 : 0);</div>
-<div class="line">apop_data_show(outdata);</div>
-</div><!-- fragment --><p>This is a general rule about how variables declared in blocks will behave, but because the macros obscure the variable declarations, it is worth watching out for here.</p>
-<h1><a class="anchor" id="data_set_get"></a>
+<div class="line"><a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(outdata);</div>
+</div><!-- fragment --><h1><a class="anchor" id="data_set_get"></a>
 Set/get</h1>
 <p>First, some examples:</p>
 <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#gac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(10, 10, 10);</div>
@@ -337,7 +336,7 @@ Set/get</h1>
 <div class="line"><span class="comment">// This is invalid---the value doesn&#39;t follow the colname. Use .val=5.</span></div>
 <div class="line"><span class="comment">// apop_data_set(d, .row = 3, .colname=&quot;Column 8&quot;, 5);  </span></div>
 <div class="line"></div>
-<div class="line"><span class="comment">// OK, to set (3, 8) to 5:</span></div>
+<div class="line"><span class="comment">// This is OK, to set (3, 8) to 5:</span></div>
 <div class="line"><a class="code" href="group__all__public.html#ga5bdc618669b9ddc8239595d7b50bec9e">apop_data_set</a>(d, 3, 8, 5);</div>
 <div class="line"></div>
 <div class="line"></div>
@@ -354,23 +353,20 @@ Set/get</h1>
 <div class="line"><span class="comment">//This is a common form from pulling from a list of named scalars, </span></div>
 <div class="line"><span class="comment">//produced via apop_data_add_named_elmt</span></div>
 <div class="line"><span class="keywordtype">double</span> AIC = <a class="code" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(your_model-&gt;info, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>);</div>
-</div><!-- fragment --><p>Some additional notes:</p>
-<ul>
+</div><!-- fragment --><ul>
 <li>The versions that take a column/row name use <a class="el" href="group__all__public.html#gadb1398925a93b7c2c502af8fb2abc49e">apop_name_find</a> for the search; see notes there on the name matching rules. </li>
 <li>For those that take a column number, column -1 is the vector element. </li>
 <li>For those that take a column name, I will search the vector last&mdash;if I don't find the name among the matrix columns, but the name matches the vector name, I return column -1. </li>
-<li>If you give me both a <code></code>.row and a <code></code>.rowname, I go with the name; similarly for <code></code>.col and <code></code>.colname. </li>
-<li>You can give me the name of a page, e.g. <div class="fragment"><div class="line"><span class="keywordtype">double</span> AIC = <a class="code" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;&lt;Info&gt;&quot;</span>);</div>
+<li>If you give me both a <code>.row</code> and a <code>.rowname</code>, I go with the name; similarly for <code>.col</code> and <code>.colname</code>. </li>
+<li>You can give the name of a page, e.g. <div class="fragment"><div class="line"><span class="keywordtype">double</span> AIC = <a class="code" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(data, .rowname=<span class="stringliteral">&quot;AIC&quot;</span>, .col=-1, .page=<span class="stringliteral">&quot;&lt;Info&gt;&quot;</span>);</div>
 </div><!-- fragment --></li>
 </ul>
 <ul>
-<li>Numeric values default to zero, which is how the examples above that treated the <a class="el" href="gentle.html#apop_data">apop_data</a> set as a vector or scalar could do so relatively gracefully.</li>
+<li>Numeric values default to zero, which is how the examples above that treated the <a class="el" href="gentle.html#apop_data">apop_data</a> set as a vector or scalar could do so relatively gracefully. So <code>apop_data_get(dataset, 1)</code> gets item (1, 0) from the matrix element of <code>dataset</code>. But as a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit and use <code>apop_data_get(dataset, 1, -1)</code>.</li>
 </ul>
-<ul>
-<li>Thus, so <code>apop_data_get(dataset, 1)</code> gets item (1, 0) from the matrix element of <code>dataset</code>. But as a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit and use <code>apop_data_get(dataset, 1, -1)</code>.</li>
-</ul>
-<p>The <a class="el" href="group__all__public.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> function follows the lead of <code>gsl_vector_ptr</code> and <code>gsl_matrix_ptr</code>, and like those functions, returns a pointer to the appropriate <code>double</code>.</p>
-<ul>
+<p>The <a class="el" href="group__all__public.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> function follows the lead of <code>gsl_vector_ptr</code> and <code>gsl_matrix_ptr</code>, and like those functions, returns a pointer to the appropriate <code>double</code>. For example, to increment the (3,7)th element of an <a class="el" href="gentle.html#apop_data">apop_data</a> set:</p>
+<div class="fragment"><div class="line">(*<a class="code" href="group__all__public.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a>(dataset, 3, 7))++;</div>
+</div><!-- fragment --><ul>
 <li><a class="el" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> </li>
 <li><a class="el" href="group__all__public.html#ga5bdc618669b9ddc8239595d7b50bec9e">apop_data_set</a> </li>
 <li><a class="el" href="group__all__public.html#ga59d1c0299c7eb87224bc6c60555784fe">apop_data_ptr</a> : returns a pointer to the element. </li>
@@ -400,7 +396,7 @@ Map/apply</h1>
 <div class="fragment"><div class="line">  <span class="comment">//given apop_data *dataset and gsl_vector *v:</span></div>
 <div class="line"><span class="keywordtype">double</span> sum_of_squares = <a class="code" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(dataset, gsl_pow_2);</div>
 <div class="line"><span class="keywordtype">double</span> sum_of_sqvares = <a class="code" href="group__all__public.html#gaa1a135fcdd8ea6f9cbc0d518773d6c3c">apop_vector_map_sum</a>(v, gsl_pow_2);</div>
-</div><!-- fragment --><p>Here, we create an index vector [ <img class="formulaInl" alt="$0, 1, 2, ...$" src="form_100.png"/>].</p>
+</div><!-- fragment --><p>Create an index vector [ <img class="formulaInl" alt="$0, 1, 2, ...$" src="form_102.png"/>].</p>
 <div class="fragment"><div class="line"><span class="keywordtype">double</span> index(<span class="keywordtype">double</span> in, <span class="keywordtype">int</span> index){<span class="keywordflow">return</span> index;}</div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(<a class="code" href="group__all__public.html#gac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(100), .fn_di=index, .inplace=<span class="charliteral">&#39;y&#39;</span>);</div>
 </div><!-- fragment --><p>Given your log likelihood function, which acts on a <a class="el" href="gentle.html#apop_data">apop_data</a> set with only one row, and a data set where each row of the matrix is an observation, find the total log likelihood via:</p>
@@ -419,7 +415,7 @@ Map/apply</h1>
 <div class="line"><span class="keyword">static</span> <span class="keywordtype">double</span> apop_mean_no_nans(<a class="code" href="structapop__data.html">apop_data</a> *in){</div>
 <div class="line">    <span class="keywordflow">return</span> <a class="code" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(in, no_nan_val)/<a class="code" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(in, not_nan_check);</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>The following program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the <img class="formulaInl" alt="$t$" src="form_43.png"/> statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.</p>
+</div><!-- fragment --><p>The following program randomly generates a data set where each row is a list of numbers with a different mean. It then finds the <img class="formulaInl" alt="$t$" src="form_45.png"/> statistic for each row, and the confidence with which we reject the claim that the statistic is less than or equal to zero.</p>
 <p>Notice how the older <a class="el" href="group__all__public.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a> uses file-global variables to pass information into the functions, while the <a class="el" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> uses a pointer to send parameters to the functions.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
@@ -437,8 +433,7 @@ Map/apply</h1>
 <div class="line">    gsl_rng *r = <a class="code" href="group__all__public.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);</div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){</div>
 <div class="line">        row_offset = gsl_rng_uniform(r)*2 -1; <span class="comment">//declared and used above.</span></div>
-<div class="line">        Apop_row_v(d, i, onerow);</div>
-<div class="line">        <a class="code" href="group__all__public.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(onerow, offset_rng);</div>
+<div class="line">        <a class="code" href="group__all__public.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(<a class="code" href="group__all__public.html#ga314f28de914dfe6e45170e09d71d5429">Apop_rv</a>(d, i), offset_rng);</div>
 <div class="line">    }</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordtype">size_t</span> df = d-&gt;matrix-&gt;size2-1;</div>
@@ -446,11 +441,9 @@ Map/apply</h1>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *tstats = <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = find_tstat, .part =<span class="charliteral">&#39;r&#39;</span>);</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *confidences = <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(tstats, .fn_dp = conf, .param = &amp;df);</div>
 <div class="line"></div>
-<div class="line"><span class="preprocessor">#ifndef Testing</span></div>
 <div class="line">    printf(<span class="stringliteral">&quot;means:\n&quot;</span>); apop_data_show(means);</div>
 <div class="line">    printf(<span class="stringliteral">&quot;\nt stats:\n&quot;</span>); apop_data_show(tstats);</div>
 <div class="line">    printf(<span class="stringliteral">&quot;\nconfidences:\n&quot;</span>); apop_data_show(confidences);</div>
-<div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line"></div>
 <div class="line">    <span class="comment">//Some sanity checks, for Apophenia&#39;s test suite.</span></div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){</div>
@@ -462,7 +455,7 @@ Map/apply</h1>
 <div class="line">                    - <a class="code" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(tstats, i, -1) &lt; 1e-3));</div>
 <div class="line">    }</div>
 <div class="line">}</div>
-</div><!-- fragment --><p>One more toy example, demonstrating the use of <a class="el" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and <a class="el" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> :</p>
+</div><!-- fragment --><p>One more toy example demonstrating the use of <a class="el" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and <a class="el" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a> :</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"><span class="comment">/* This sample code sets the elements of a data set&#39;s vector to one</span></div>
 <div class="line"><span class="comment">   if the index is even.  Then, via the weights vector, it adds up</span></div>
@@ -489,13 +482,13 @@ Map/apply</h1>
 <div class="line"><span class="keywordtype">int</span> main(){</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#gac39d6a56933b6f084328ec5ecd5090d8">apop_data_alloc</a>(100);</div>
 <div class="line">    d-&gt;weights = gsl_vector_alloc(100);</div>
-<div class="line">    <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_ri=set_vector_to_even, .inplace=<span class="charliteral">&#39;v&#39;</span>);</div>
+<div class="line">    <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_ri=set_vector_to_even, .inplace=<span class="charliteral">&#39;v&#39;</span>); <span class="comment">//&#39;v=void. Throw out return values.</span></div>
 <div class="line">    <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_ri=set_weight_to_index, .inplace=<span class="charliteral">&#39;v&#39;</span>);</div>
 <div class="line">    <span class="keywordtype">double</span> sum = <a class="code" href="group__all__public.html#ga30601e357a1e21648f8d8db3c9ed6f3a">apop_map_sum</a>(d, .fn_r = weight_given_even);</div>
 <div class="line">    assert(sum == 49*25*2);</div>
 <div class="line">}</div>
 </div><!-- fragment --><ul>
-<li>If <code>apop_opts.thread_count</code> is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation. See <a class="el" href="group__all__public.html#ga1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread()</a> to use the GSL's RNGs in a threaded environment.</li>
+<li>If the number of threads is greater than one, then the matrix will be broken into chunks and each sent to a different thread. Notice that the GSL is generally threadsafe, and SQLite is threadsafe conditional on several commonsense caveats that you'll find in the SQLite documentation. See <a class="el" href="group__all__public.html#ga1e829ce2396bf05ab10460bcc37aeeab">apop_rng_get_thread()</a> to use the GSL's RNGs in a threaded environment.</li>
 </ul>
 <ul>
 <li>The <code></code>...sum functions are convenience functions that call <code></code>...map and then add up the contents. Thus, you will need to have adequate memory for the allocation of the temp matrix/vector.</li>
@@ -518,10 +511,10 @@ Basic Math</h1>
 <li><a class="el" href="group__all__public.html#ga5a622b8360eba63795a6049c30ac54a2">apop_vector_log</a> : take the natural log of every element of a vector </li>
 <li><a class="el" href="group__all__public.html#ga1a4a67e0b0bec8205cfe75bd3786c30e">apop_vector_log10</a> : take the log (base 10) of every element of a vector </li>
 <li><a class="el" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a> : find the distance between two vectors via various metrics </li>
-<li><a class="el" href="group__all__public.html#ga194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> : scale/shift a matrix to have mean zero, sum to one, have a range of exactly $[0, 1]$, et cetera </li>
-<li><a class="el" href="group__all__public.html#gabd5c77978dc6972e4ba52f77fb8dfef0">apop_vector_entropy</a> : calculate the entropy of a vector of frequencies or probabilities <pre class="fragment">See also:
-</pre></li>
+<li><a class="el" href="group__all__public.html#ga194ad92b1bc632ba1d13d9958c7b5b4d">apop_vector_normalize</a> : scale/shift a matrix to have mean zero, sum to one, have a range of exactly <img class="formulaInl" alt="$[0, 1]$" src="form_103.png"/>, et cetera </li>
+<li><a class="el" href="group__all__public.html#gabd5c77978dc6972e4ba52f77fb8dfef0">apop_vector_entropy</a> : calculate the entropy of a vector of frequencies or probabilities</li>
 </ul>
+<p>See also:</p>
 <ul>
 <li><code>int gsl_matrix_add (gsl_matrix * a, const gsl_matrix * b)</code> </li>
 <li><code>int gsl_matrix_sub (gsl_matrix * a, const gsl_matrix * b)</code> </li>
@@ -539,21 +532,21 @@ Basic Math</h1>
 <h1><a class="anchor" id="matrixmath"></a>
 Matrix math</h1>
 <ul>
-<li><a class="el" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_28.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_28.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_28.png"/> matrix </li>
+<li><a class="el" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a> : matrix <img class="formulaInl" alt="$\cdot$" src="form_29.png"/> matrix, matrix <img class="formulaInl" alt="$\cdot$" src="form_29.png"/> vector, or vector <img class="formulaInl" alt="$\cdot$" src="form_29.png"/> matrix </li>
 <li><a class="el" href="group__all__public.html#ga03038130e4ba55228f9e164dba513961">apop_matrix_determinant</a> </li>
 <li><a class="el" href="group__all__public.html#ga185243be2d8a93686c68263cc3318f47">apop_matrix_inverse</a> </li>
 <li><a class="el" href="group__all__public.html#ga6984006ab44fa7c9c2e99463f7d4081b">apop_det_and_inv</a> : find determinant and inverse at the same time</li>
 </ul>
-<p>See the GSL documentation for voluminous further options.</p>
+<p>See the GSL documentation for myriad further options.</p>
 <h1><a class="anchor" id="sumstats"></a>
 Summary stats</h1>
 <ul>
 <li><a class="el" href="group__all__public.html#ga253dba4ed7f5c03107d38c1268b46c01">apop_data_summarize</a> </li>
 <li><a class="el" href="group__all__public.html#ga61185af7877b709c8b257b342c24edbc">apop_vector_moving_average</a> </li>
 <li><a class="el" href="group__all__public.html#gafb838084f967543fa8a03e460180d53b">apop_vector_percentiles</a> </li>
-<li><a class="el" href="group__all__public.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a> <pre class="fragment">    See also:
-</pre></li>
+<li><a class="el" href="group__all__public.html#ga136ded2b6d190739deca064701cf5ca1">apop_vector_bounded</a></li>
 </ul>
+<p>See also:</p>
 <ul>
 <li><code>double gsl_matrix_max (const gsl_matrix * m)</code> </li>
 <li><code>double gsl_matrix_min (const gsl_matrix * m)</code> </li>
@@ -604,12 +597,10 @@ Conversion among types</h1>
 <div class="line">gsl_vector *v;</div>
 <div class="line">gsl_matrix *m;</div>
 <div class="line"></div>
-<div class="line"><span class="comment">// Then this form wraps the elements into apop_data structs. Note that</span></div>
-<div class="line"><span class="comment">// these are not pointers: they&#39;re automatically allocated and therefore</span></div>
-<div class="line"><span class="comment">// the extra memory use for the wrapper is cleaned up on exit from scope.</span></div>
+<div class="line"><span class="comment">// Then this form wraps the elements into automatically-allocated apop_data structs.</span></div>
 <div class="line"></div>
-<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dv = &amp;(<a class="code" href="group__all__public.html#ga0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.vector=v}; </div>
-<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dm = &amp;(<a class="code" href="group__all__public.html#ga0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=m};</div>
+<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dv = &amp;(<a class="code" href="structapop__data.html">apop_data</a>){.vector=v}; </div>
+<div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dm = &amp;(<a class="code" href="structapop__data.html">apop_data</a>){.matrix=m};</div>
 <div class="line"></div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *v_dot_m = <a class="code" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(dv, dm);</div>
 <div class="line"></div>
@@ -623,11 +614,11 @@ Conversion among types</h1>
 <div class="line"><span class="comment">//make a copy:</span></div>
 <div class="line"><a class="code" href="structapop__data.html">apop_data</a> *dm_copy = <a class="code" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(As_data(.vector=v, .matrix=m));</div>
 </div><!-- fragment --><ul>
-<li><a class="el" href="group__all__public.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_40.png"/> <code>gsl_vector</code> </li>
-<li><a class="el" href="group__all__public.html#gad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_40.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a>. </li>
-<li><a class="el" href="group__all__public.html#gacb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> : macro to allocate and fill a <a class="el" href="gentle.html#apop_data">apop_data</a> set. </li>
-<li><a class="el" href="group__all__public.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_40.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
-<li><a class="el" href="group__all__public.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_40.png"/> database </li>
+<li><a class="el" href="group__all__public.html#ga8abdcdbaceaaf0dd3882a164bc2565de">apop_array_to_vector</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_41.png"/> <code>gsl_vector</code> </li>
+<li><a class="el" href="group__all__public.html#gad6be56d710a63aa1ceadf2242c553905">apop_data_fill</a> : <code>double*</code> <img class="formulaInl" alt="$\to$" src="form_41.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
+<li><a class="el" href="group__all__public.html#gacb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a> : macro to allocate and fill a <a class="el" href="gentle.html#apop_data">apop_data</a> set </li>
+<li><a class="el" href="group__all__public.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_41.png"/> <a class="el" href="gentle.html#apop_data">apop_data</a> </li>
+<li><a class="el" href="group__all__public.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> : delimited text file <img class="formulaInl" alt="$\to$" src="form_41.png"/> database table </li>
 <li><a class="el" href="group__all__public.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a></li>
 </ul>
 <h1><a class="anchor" id="names"></a>
@@ -667,16 +658,19 @@ Name handling</h1>
 </ul>
 <h1><a class="anchor" id="textsec"></a>
 Text data</h1>
-<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set includes a grid of strings, <code>text</code>, for holding text data.</p>
+<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set includes a grid of strings, named <code>text</code>, for holding text data.</p>
 <p>Text should be encoded in UTF-8. ASCII is a subset of UTF-8, so that's OK too.</p>
-<p>There are a few simple forms for handling the <code>text</code> element of an <code><a class="el" href="structapop__data.html">apop_data</a></code> set, which handle the tedium of memory-handling for you.</p>
+<p>There are a few simple forms for handling the <code>text</code> element of an <code><a class="el" href="structapop__data.html">apop_data</a></code> set.</p>
 <ul>
-<li>Use <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> to allocate the block of text. It is actually a realloc function, which you can use to resize an existing block without leaks. </li>
+<li>Use <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a> to allocate the block of text. It is actually a realloc function, which you can use to resize an existing block without leaks. See the example below. </li>
 <li>Use <a class="el" href="group__all__public.html#gae987ac014cda5e483f8c16bfd59147ae">apop_text_set</a> to write text elements. It replaces any existing text in the given slot without memory leaks. </li>
 <li>The number of rows of text data in <code>tdata</code> is <code>tdata-&gt;textsize[0]</code>; the number of columns is <code>tdata-&gt;textsize[1]</code>. </li>
 <li>Refer to individual elements using the usual 2-D array notation, <code>tdata-&gt;text[row][col]</code>. </li>
 <li><code>x[0]</code> can always be written as <code>*x</code>, which may save some typing. The number of rows is <code>*tdata-&gt;textsize</code>. If you have a single column of text data (i.e., all data is in column zero), then item <code>i</code> is <code>*tdata-&gt;text[i]</code>. If you know you have exactly one cell of text, then its value is <code>**tdata-&gt;text</code>. </li>
-<li>After <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>, all elements are the empty string <code>""</code>, which you can check via <code>if (!strlen(dataset-&gt;text[i][j])) printf("&lt;blank&gt;")</code> or <code>if (!*dataset-&gt;text[i][j]) printf("&lt;blank&gt;")</code>. For the sake of efficiency when dealing with large, sparse data sets, all blank cells point to <em>the same</em> static empty string, meaning that freeing cells must be done with care. Your best bet is to rely on <a class="el" href="group__all__public.html#gae987ac014cda5e483f8c16bfd59147ae">apop_text_set</a>, <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>, and <a class="el" href="group__all__public.html#ga65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> to do the memory management for you.</li>
+<li>After <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>, all elements are the empty string <code>""</code>, which you can check via <div class="fragment"><div class="line"><span class="keywordflow">if</span> (!strlen(dataset-&gt;text[i][j])) printf(<span class="stringliteral">&quot;&lt;blank&gt;&quot;</span>)</div>
+<div class="line"><span class="comment">//or</span></div>
+<div class="line">if (!*dataset-&gt;text[i][j]) printf(&quot;&lt;blank&gt;&quot;)</div>
+</div><!-- fragment --> For the sake of efficiency when dealing with large, sparse data sets, all blank cells point to <em>the same</em> static empty string, meaning that freeing cells must be done with care. Your best bet is to rely on <a class="el" href="group__all__public.html#gae987ac014cda5e483f8c16bfd59147ae">apop_text_set</a>, <a class="el" href="group__all__public.html#ga9fba0f07c262a433133f6f3362617da3">apop_text_alloc</a>, and <a class="el" href="group__all__public.html#ga65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> to do the memory management for you.</li>
 </ul>
 <p>Here is a sample program that uses these forms, plus a few text-handling functions.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
@@ -719,7 +713,8 @@ Text data</h1>
 <li><a class="el" href="group__all__public.html#ga6270ad55c566140e0d7962cb4d5daacc">apop_text_paste</a> : convert a table of strings into one long string. </li>
 <li><a class="el" href="group__all__public.html#ga77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> : get a sorted list of unique elements for one column of text. </li>
 <li><a class="el" href="group__all__public.html#ga65386d7b37c2eaf37d1eb4e3ae7a7554">apop_text_free</a> : you may never need this, because <a class="el" href="group__all__public.html#ga459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a> calls it. </li>
-<li><a class="el" href="group__all__public.html#gaa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> : friendlier front-end for POSIX-standard regular expression searching and pulling matches into an <a class="el" href="gentle.html#apop_data">apop_data</a> set.</li>
+<li><a class="el" href="group__all__public.html#gaa9ec5e7ed223c09bec044ced54f24fad">apop_regex</a> : friendlier front-end for POSIX-standard regular expression searching; pulls matches into an <a class="el" href="gentle.html#apop_data">apop_data</a> set. </li>
+<li><a class="el" href="group__all__public.html#ga77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a></li>
 </ul>
 <h2><a class="anchor" id="fact"></a>
 Generating factors</h2>
@@ -730,12 +725,11 @@ Generating factors</h2>
 <div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d1);</div>
 <div class="line">d2-&gt;more = <a class="code" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(<a class="code" href="group__all__public.html#gadec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a>(d1));</div>
 <div class="line"><a class="code" href="group__all__public.html#ga27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a>(d2);</div>
-</div><!-- fragment --><ul>
+</div><!-- fragment --><p>See the documentation for <a class="el" href="group__models.html#gaa88a402cf7d02c25c4613a74ace1b0c1">apop_logit</a> for a sample linear model using a factor dependent variable and dummy independent variable.</p>
+<ul>
 <li><a class="el" href="group__all__public.html#gae0c28224e10f8aacdaa2d130f96f6ba2">apop_data_to_dummies</a> </li>
 <li><a class="el" href="group__all__public.html#ga27405bd5fdf48d93c8918ca4c07ee260">apop_data_to_factors</a> </li>
 <li><a class="el" href="group__all__public.html#gadec9170cf1382f6cd549a5819472eb51">apop_data_get_factor_names</a> </li>
-<li><a class="el" href="group__all__public.html#ga77c937ea4764d3da2ed9968273fa4544">apop_text_unique_elements</a> </li>
-<li><a class="el" href="group__all__public.html#ga6d68bacc086420a382366f9118cf5bc7">apop_vector_unique_elements</a> </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- doc-content -->

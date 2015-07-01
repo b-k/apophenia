@@ -97,9 +97,9 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="title">Some examples </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Here are a few pieces of sample code, many gathered from elsewhere in the documentation, for testing your installation or to give you a sense of what code with Apophenia's tools looks like. If you'd like more context or explanation, please click through to the page from which the example was taken.</p>
+<div class="textblock"><p>Here are a few pieces of sample code for testing your installation or to give you a sense of what code with Apophenia's tools looks like.</p>
 <p><em> Two data streams</em></p>
-<p>The sample program here is intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. You need to gather the data in an organized form, and then ask questions of the resulting data set. Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program. This program will compile cleanly with the sample <a class="el" href="makefile.html">Makefile</a>.</p>
+<p>The sample program here is intended to show how one would integrate Apophenia into an existing program. For example, say that you are running a simulation of two different treatments, or say that two sensors are posting data at regular intervals. The goal is to gather the data in an organized form, and then ask questions of the resulting data set. Below, a thousand draws are made from the two processes and put into a database. Then, the data is pulled out, some simple statistics are compiled, and the data is written to a text file for inspection outside of the program. This program will compile cleanly with the sample <a class="el" href="makefile.html">Makefile</a>.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
 <div class="line"><span class="comment">//Your processes are probably a bit more complex.</span></div>
@@ -112,8 +112,6 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">}</div>
 <div class="line"></div>
 <div class="line"><span class="keywordtype">int</span> main(){</div>
-<div class="line">    <span class="keywordtype">double</span> p1, p2;</div>
-<div class="line">    <span class="keywordtype">int</span> i;</div>
 <div class="line">    gsl_rng *r = <a class="code" href="group__all__public.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(123);</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">//create the database and the data table.</span></div>
@@ -122,9 +120,9 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    <a class="code" href="group__all__public.html#ga02cf6319da103f9bfe55dfbbc7675536">apop_query</a>(<span class="stringliteral">&quot;create table samples(iteration, process, value); begin;&quot;</span>);</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">//populate the data table with runs.</span></div>
-<div class="line">    <span class="keywordflow">for</span> (i=0; i&lt;1000; i++){</div>
-<div class="line">        p1 = process_one(r);</div>
-<div class="line">        p2 = process_two(r);</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;1000; i++){</div>
+<div class="line">        <span class="keywordtype">double</span> p1 = process_one(r);</div>
+<div class="line">        <span class="keywordtype">double</span> p2 = process_two(r);</div>
 <div class="line">        <a class="code" href="group__all__public.html#ga02cf6319da103f9bfe55dfbbc7675536">apop_query</a>(<span class="stringliteral">&quot;insert into samples values(%i, %i, %g);&quot;</span>, i, 1, p1);</div>
 <div class="line">        <a class="code" href="group__all__public.html#ga02cf6319da103f9bfe55dfbbc7675536">apop_query</a>(<span class="stringliteral">&quot;insert into samples values(%i, %i, %g);&quot;</span>, i, 2, p2);</div>
 <div class="line">    }</div>
@@ -145,9 +143,9 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    <a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(m, <span class="stringliteral">&quot;the_data.txt&quot;</span>);</div>
 <div class="line">}</div>
 </div><!-- fragment --><p><em> Run a regression</em></p>
-<p>The documentation for the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> model provides a program to read in data and run a regression.</p>
+<p>See <a class="el" href="gentle.html">A quick overview</a> for an example of loading a data set and running a simple regression.</p>
 <p><em> A sequence of t-tests</em></p>
-<p>In <a class="el" href="dataoverview.html#mapply">The section on map/apply</a>, a new <img class="formulaInl" alt="$t$" src="form_43.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
+<p>In <a class="el" href="dataoverview.html#mapply">The section on map/apply</a>, a new <img class="formulaInl" alt="$t$" src="form_45.png"/>-test on every row, with all operations acting on entire rows rather than individual data points:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
 <div class="line"><span class="keywordtype">double</span> row_offset;</div>
@@ -164,8 +162,7 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    gsl_rng *r = <a class="code" href="group__all__public.html#gada044cf02135422a9f9292b6054c86dd">apop_rng_alloc</a>(3242);</div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){</div>
 <div class="line">        row_offset = gsl_rng_uniform(r)*2 -1; <span class="comment">//declared and used above.</span></div>
-<div class="line">        Apop_row_v(d, i, onerow);</div>
-<div class="line">        <a class="code" href="group__all__public.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(onerow, offset_rng);</div>
+<div class="line">        <a class="code" href="group__all__public.html#ga51964750c64d327e52e2230019e44f66">apop_vector_apply</a>(<a class="code" href="group__all__public.html#ga314f28de914dfe6e45170e09d71d5429">Apop_rv</a>(d, i), offset_rng);</div>
 <div class="line">    }</div>
 <div class="line"></div>
 <div class="line">    <span class="keywordtype">size_t</span> df = d-&gt;matrix-&gt;size2-1;</div>
@@ -173,11 +170,9 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *tstats = <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(d, .fn_v = find_tstat, .part =<span class="charliteral">&#39;r&#39;</span>);</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *confidences = <a class="code" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>(tstats, .fn_dp = conf, .param = &amp;df);</div>
 <div class="line"></div>
-<div class="line"><span class="preprocessor">#ifndef Testing</span></div>
 <div class="line">    printf(<span class="stringliteral">&quot;means:\n&quot;</span>); apop_data_show(means);</div>
 <div class="line">    printf(<span class="stringliteral">&quot;\nt stats:\n&quot;</span>); apop_data_show(tstats);</div>
 <div class="line">    printf(<span class="stringliteral">&quot;\nconfidences:\n&quot;</span>); apop_data_show(confidences);</div>
-<div class="line"><span class="preprocessor">#endif</span></div>
 <div class="line"></div>
 <div class="line">    <span class="comment">//Some sanity checks, for Apophenia&#39;s test suite.</span></div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt; 10; i++){</div>
@@ -207,7 +202,7 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    }</div>
 <div class="line">    print_table_list(argv[1]);</div>
 <div class="line">}</div>
-</div><!-- fragment --><dl class="section user"><dt>Marginal distribution</dt><dd></dd></dl>
+</div><!-- fragment --><p><em>Marginal distribution</em></p>
 <p>A demonstration of fixing parameters to create a marginal distribution, via <a class="el" href="group__all__public.html#gab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a> </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
 <div class="line"><span class="keywordtype">int</span> main(){</div>
@@ -217,81 +212,21 @@ $(document).ready(function(){initNavTree('eg.html','');});
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *params = <a class="code" href="group__all__public.html#gacb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((2,2,2), 8,  1, 0.5,</div>
 <div class="line">                                                  2,  0.5, 1);</div>
 <div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *pvm = <a class="code" href="group__all__public.html#ga87d3a65f43071b9d61d9edd59249c629">apop_model_copy</a>(<a class="code" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a>);</div>
-<div class="line">    pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a> = <a class="code" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);</div>
-<div class="line">    pvm-&gt;<a class="code" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">dsize</a> = 2;</div>
+<div class="line">    pvm-&gt;parameters = <a class="code" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a>(params);</div>
+<div class="line">    pvm-&gt;dsize = 2;</div>
 <div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#ga4e204cdc7429bef3ca2efb83453fe77a">apop_model_draws</a>(pvm, ct);</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">//set up and estimate a model with fixed covariance matrix but free means</span></div>
-<div class="line">    gsl_vector_set_all(pvm-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, GSL_NAN);</div>
+<div class="line">    gsl_vector_set_all(pvm-&gt;parameters-&gt;vector, GSL_NAN);</div>
 <div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *mep1 = <a class="code" href="group__all__public.html#gab4f6ca7e042ac7c09c3c01d29702a739">apop_model_fix_params</a>(pvm);</div>
 <div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *e1 = <a class="code" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(d, mep1);</div>
 <div class="line">    </div>
-<div class="line">    <span class="comment">//compare results, via assert for the test suite, or on-screen for human use.</span></div>
-<div class="line"><span class="preprocessor">#ifdef Testing</span></div>
-<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(params-&gt;vector, e1-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector)&lt;1e-2);</div>
-<div class="line"><span class="preprocessor">#else</span></div>
+<div class="line">    <span class="comment">//compare results</span></div>
 <div class="line">    printf(<span class="stringliteral">&quot;original params: &quot;</span>);</div>
-<div class="line">    apop_vector_show(params-&gt;vector);</div>
+<div class="line">    <a class="code" href="group__all__public.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a>(params-&gt;vector);</div>
 <div class="line">    printf(<span class="stringliteral">&quot;estimated params: &quot;</span>);</div>
-<div class="line">    apop_vector_show(e1-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector);</div>
-<div class="line"><span class="preprocessor">#endif</span></div>
-<div class="line">}</div>
-</div><!-- fragment --><dl class="section user"><dt>Several uses of the  apop_dot function</dt><dd></dd></dl>
-<div class="fragment"><div class="line"><span class="comment">/* A demonstration of dot products and various useful </span></div>
-<div class="line"><span class="comment">   transformations among types. */</span></div>
-<div class="line"></div>
-<div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
-<div class="line"></div>
-<div class="line"><span class="keywordtype">double</span> eps=1e-3;<span class="comment">//slow to converge series--&gt;large tolerance.</span></div>
-<div class="line"><span class="preprocessor">#define Diff(L, R) Apop_assert(fabs((L)-(R)&lt;(eps)), &quot;%g is too different from %g (abitrary limit=%g).&quot;, (double)(L), (double)(R), eps);</span></div>
-<div class="line"></div>
-<div class="line"><span class="keywordtype">int</span> main(){</div>
-<div class="line">    <span class="keywordtype">int</span> len = 3000;</div>
-<div class="line">    gsl_vector *v = gsl_vector_alloc(len);</div>
-<div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">double</span> i=0; i&lt; len; i++) gsl_vector_set(v, i, 1./(i+1));</div>
-<div class="line">    <span class="keywordtype">double</span> square;</div>
-<div class="line">    gsl_blas_ddot(v, v, &amp;square);</div>
-<div class="line"><span class="preprocessor">    #ifndef Testing</span></div>
-<div class="line">    printf(<span class="stringliteral">&quot;1 + (1/2)^2 + (1/3)^2 + ...= %g\n&quot;</span>, square);</div>
-<div class="line"><span class="preprocessor">    #endif</span></div>
-<div class="line"></div>
-<div class="line">    <span class="keywordtype">double</span> pi_over_six = gsl_pow_2(M_PI)/6.;</div>
-<div class="line">    Diff(square, pi_over_six);</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">/* Now using apop_dot, in a few forms.</span></div>
-<div class="line"><span class="comment">       First, vector-as-data dot itself.</span></div>
-<div class="line"><span class="comment">       If one of the inputs is a vector,</span></div>
-<div class="line"><span class="comment">       apop_dot puts the output in a vector-as-data:*/</span></div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *v_as_data = &amp;(<a class="code" href="group__all__public.html#ga0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.vector=v};</div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *vdotv = <a class="code" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, v_as_data);</div>
-<div class="line">    Diff(gsl_vector_get(vdotv-&gt;vector, 0), pi_over_six);</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">/* Wrap matrix in an apop_data set. */</span></div>
-<div class="line">    gsl_matrix *v_as_matrix = <a class="code" href="group__all__public.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v);</div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> dm = (<a class="code" href="group__all__public.html#ga0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=v_as_matrix};</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">// (1 X len) vector dot (len X 1) matrix --- produce a scalar (one item vector).</span></div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *mdotv = <a class="code" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(v_as_data, &amp;dm);</div>
-<div class="line">    <span class="keywordtype">double</span> scalarval = <a class="code" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a>(mdotv);</div>
-<div class="line">    Diff(scalarval, pi_over_six);</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">//(len X 1) dot (len X 1) --- bad dimensions.</span></div>
-<div class="line">    <a class="code" href="group__all__public.html#ga7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=-1; <span class="comment">//don&#39;t print an error.</span></div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *mdotv2 = <a class="code" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, v_as_data);</div>
-<div class="line">    <a class="code" href="group__all__public.html#ga7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a>=0; <span class="comment">//back to safety.</span></div>
-<div class="line">    assert(mdotv2-&gt;error);</div>
-<div class="line"></div>
-<div class="line">    <span class="comment">// If we want (len X 1) dot (1 X len) --&gt; (len X len),</span></div>
-<div class="line">    <span class="comment">// use apop_vector_to_matrix.</span></div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> dmr = (<a class="code" href="group__all__public.html#ga0c8c2a99fb8c6ec54822aca08591545e">apop_data</a>){.matrix=<a class="code" href="group__all__public.html#ga604388dc6d7d08d95bbaa4422085db9c">apop_vector_to_matrix</a>(v, .row_col=<span class="charliteral">&#39;r&#39;</span>)};</div>
-<div class="line">    <a class="code" href="structapop__data.html">apop_data</a> *product_matrix = <a class="code" href="group__all__public.html#gaf2d13e1b1f20f97e0772a0be41dc430e">apop_dot</a>(&amp;dm, &amp;dmr);</div>
-<div class="line">    <span class="comment">//The trace is the sum of squares:</span></div>
-<div class="line">    gsl_vector_view trace = gsl_matrix_diagonal(product_matrix-&gt;matrix);</div>
-<div class="line">    <span class="keywordtype">double</span> tracesum = <a class="code" href="group__all__public.html#ga9b05181ceec857e9eb9ed6a8ea7423d3">apop_sum</a>(&amp;trace.vector);</div>
-<div class="line">    Diff(tracesum, pi_over_six);</div>
-<div class="line"></div>
-<div class="line">    <a class="code" href="group__all__public.html#ga459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(product_matrix);</div>
-<div class="line">    gsl_matrix_free(dmr.matrix);</div>
+<div class="line">    <a class="code" href="group__all__public.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a>(e1-&gt;parameters-&gt;vector);</div>
+<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(params-&gt;vector, e1-&gt;parameters-&gt;vector)&lt;1e-2); </div>
 <div class="line">}</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- doc-content -->

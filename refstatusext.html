@@ -94,13 +94,12 @@ $(document).ready(function(){initNavTree('refstatusext.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">References, status, and extensions </div>  </div>
+<div class="title">References and extensions </div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h1><a class="anchor" id="mwd"></a>
 The book version</h1>
 <p>Apophenia co-evolved with <em>Modeling with Data: Tools and Techniques for Statistical Computing</em>. You can read about the book, or download a free PDF copy of the full text, at <a href="http://modelingwithdata.org">modelingwithdata.org</a>.</p>
-<p>If you are at this site, there is probably something there for you, including a tutorial on C and general computing form, SQL for data-handing, several chapters of statistics from various perspectives, and more details on working Apophenia.</p>
 <p>As with many computer programs, the preferred manner of citing Apophenia is to cite its related book. Here is a BibTeX-formatted entry giving the relevant information:</p>
 <div class="fragment"><div class="line">@book{klemens:modeling,</div>
 <div class="line">    title = <span class="stringliteral">&quot;Modeling with Data: Tools and Techniques for Statistical Computing&quot;</span>,</div>
@@ -117,15 +116,7 @@ The book version</h1>
 <div class="line">    institution=<span class="stringliteral">&quot;U.S.\ Census Bureau&quot;</span>,</div>
 <div class="line">    number=<span class="stringliteral">&quot;06&quot;</span></div>
 <div class="line">}</div>
-</div><!-- fragment --> <h1><a class="anchor" id="status"></a>
-What is the status of the code?</h1>
-<p>[This section last updated 11 May 2015.]</p>
-<p>Apophenia was first posted to SourceForge in February 2005, which means that we've had several years to develop and test the code in real-world applications.</p>
-<p>The test suite, including the sample code and solution set for <em>Modeling with Data</em>, is about 5,500 lines over 135 files. gprof reports that it covers over 90% of the 7,700 lines in Apophenia's code base. A broad rule of thumb for any code base is that the well-worn parts, in this case functions like <a class="el" href="group__all__public.html#ga06107779e4a3eb229715ceca24352b89">apop_data_get</a> and <a class="el" href="group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466">apop_normal</a>'s <code>log_likelihood</code>, are likely to be entirely reliable, while the out-of-the-way functions (maybe the score for the Beta distribution) will always be worth a bit of caution. Close to all of the code has been used in production, so all of it was at least initially tested against real-world data.</p>
-<p>It is currently at version 0.999, which is intended to indicate that it is substantially complete. Of course, a library for scientific computing, or even for that small subset that is statistics, will never cover all needs and all methods. But as it stands Apophenia's framework, based on the <a class="el" href="gentle.html#apop_data">apop_data</a> and <a class="el" href="structapop__model.html">apop_model</a>, is basically internally consistent, has enough tools that you can get common work done quickly, and is reasonably fleshed out with a good number of models out of the box.</p>
-<p>The <a class="el" href="gentle.html#apop_data">apop_data</a> structure is set, and there are enough functions there that you could use it as a subpackage by itself (especially in tandem with the database functions) for nontrivial dealings with data.</p>
-<p>The <a class="el" href="structapop__model.html">apop_model</a> structure is much more ambitious&mdash;Apophenia is intended to be a novel system for developing models. The promise underlying the structure is that you can provide just one item, such as an RNG or a likelihood function, and the structure will do all of the work to fill in computationally-intensive methods for everything else; see <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> for the details. Some directions aren't quite there yet (such as RNG -&gt; most other things), the PMF model needs an internal index for faster lookups, and so on. Readers are invited to contribute better methods (such as an alternate means of estimating mixture models), or filling in more of existing models (write a dlog likelihood function for a model that does not currently have one), or submit new standard models not yet included.</p>
-<h1><a class="anchor" id="ext"></a>
+</div><!-- fragment --><h1><a class="anchor" id="ext"></a>
 How do I write extensions?</h1>
 <p>The system is written to not require a registration or initialization step to add a new model or other such parts. Just write your code and <code>include</code> it like any other C code. A new <a class="el" href="structapop__model.html">apop_model</a> has to conform to some rules if it is to play well with <a class="el" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>, <a class="el" href="group__all__public.html#ga87f15cd1923ed7b5b46e52a77ca1dfef">apop_draw</a>, and so forth. See the notes at <a class="el" href="modeldetails.html">Writing new models</a>. Once your new model or function is working, please post the code or a link to the code on the <a href="https://github.com/b-k/apophenia/wiki">Apophenia wiki</a>.</p>
 <p><a class="el" href="c.html">C, SQL and coding utilities</a></p>

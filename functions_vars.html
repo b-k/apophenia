@@ -113,7 +113,8 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 : <a class="el" href="structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e">apop_kernel_density_settings</a>
 </li>
 <li>base_model
-: <a class="el" href="structapop__dconstrain__settings.html#a3b1ea1c653efb95bfe8f4a85978ebe7f">apop_dconstrain_settings</a>
+: <a class="el" href="structapop__coordinate__transform__settings.html#a04b14a5c9e8eeef681e0c70d7ba2a2ad">apop_coordinate_transform_settings</a>
+, <a class="el" href="structapop__dconstrain__settings.html#a3b1ea1c653efb95bfe8f4a85978ebe7f">apop_dconstrain_settings</a>
 , <a class="el" href="structapop__mcmc__settings.html#a1ea0ccb424a1ac6c69bf647ab6ad656a">apop_mcmc_settings</a>
 </li>
 <li>base_pmf
@@ -121,6 +122,9 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 </li>
 <li>base_step_fn
 : <a class="el" href="structapop__mcmc__settings.html#ae612a4cf6595e634927dbc7dd9cdb107">apop_mcmc_settings</a>
+</li>
+<li>base_to_transformed
+: <a class="el" href="structapop__coordinate__transform__settings.html#a824a84919e0b39c482349d5f466601eb">apop_coordinate_transform_settings</a>
 </li>
 <li>block_starts
 : <a class="el" href="structapop__mcmc__settings.html#a3aaab8b4555be99e0d8673035856c0f3">apop_mcmc_settings</a>
@@ -132,12 +136,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 
 <h3><a class="anchor" id="index_c"></a>- c -</h3><ul>
-<li>cdf
-: <a class="el" href="structapop__model.html#ac72b67b999bbd537732625da8f91ed6b">apop_model</a>
-</li>
-<li>cdf_model
-: <a class="el" href="structapop__cdf__settings.html#a71fd055ef4265fd462a95594ba427261">apop_cdf_settings</a>
-</li>
 <li>ci_level
 : <a class="el" href="structapop__loess__settings.html#ace7009d9ce26d3af9d7bd9c12baa7bcf">apop_loess_settings</a>
 </li>
@@ -159,14 +157,11 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 
 <h3><a class="anchor" id="index_d"></a>- d -</h3><ul>
-<li>data
-: <a class="el" href="structapop__model.html#a076635fcdacf54e685c4715c07c1183c">apop_model</a>
-</li>
 <li>db_engine
 : <a class="el" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">apop_opts_type</a>
 </li>
 <li>db_name_column
-: <a class="el" href="structapop__opts__type.html#a22ca3471ab0a3ee9fcf7a590fe40e8ee">apop_opts_type</a>
+: <a class="el" href="structapop__opts__type.html#a7cbed9987a0cc3da6322c9e59d7a77a5">apop_opts_type</a>
 </li>
 <li>db_pass
 : <a class="el" href="structapop__opts__type.html#a3faefc9c9e0459168da0ed35be8d8e06">apop_opts_type</a>
@@ -183,9 +178,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <li>do_metro
 : <a class="el" href="structapop__arms__settings.html#aedd47a0a4ff37b0b371d3731b1938f9c">apop_arms_settings</a>
 </li>
-<li>draw
-: <a class="el" href="structapop__model.html#ac4bb99c163990b92c33f303247bcc7d5">apop_model</a>
-</li>
 <li>draw_ct
 : <a class="el" href="structapop__dconstrain__settings.html#aa0b65f2e67e9446526415ce0692bb3ba">apop_dconstrain_settings</a>
 </li>
@@ -200,16 +192,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 </li>
 <li>draws_refcount
 : <a class="el" href="structapop__cdf__settings.html#a3aa9f7101b8216c3fc8077abe0987d0d">apop_cdf_settings</a>
-</li>
-<li>dsize
-: <a class="el" href="structapop__model.html#a5e31343782fe36a70e60e6d0808c64b5">apop_model</a>
-</li>
-</ul>
-
-
-<h3><a class="anchor" id="index_e"></a>- e -</h3><ul>
-<li>estimate
-: <a class="el" href="structapop__model.html#adaf4fc23338fff1ef67bce3ccac667b6">apop_model</a>
 </li>
 </ul>
 
@@ -229,9 +211,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 
 <h3><a class="anchor" id="index_i"></a>- i -</h3><ul>
-<li>info
-: <a class="el" href="structapop__model.html#aeba2b05a99d67db4ba658115ee5f9780">apop_model</a>
-</li>
 <li>input_delimiters
 : <a class="el" href="structapop__opts__type.html#a21be8294c9e437dc7ef257546e69cc3b">apop_opts_type</a>
 </li>
@@ -240,6 +219,13 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 </li>
 <li>instruments
 : <a class="el" href="structapop__lm__settings.html#a4141ad9117a847a4a78911a2360d0fbf">apop_lm_settings</a>
+</li>
+</ul>
+
+
+<h3><a class="anchor" id="index_j"></a>- j -</h3><ul>
+<li>jacobian_to_base
+: <a class="el" href="structapop__coordinate__transform__settings.html#a83536118440207603d60629025a4308e">apop_coordinate_transform_settings</a>
 </li>
 </ul>
 
@@ -260,9 +246,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 </li>
 <li>log_file
 : <a class="el" href="structapop__opts__type.html#a27e596063680b5b56ba5bf39fc2b6647">apop_opts_type</a>
-</li>
-<li>log_likelihood
-: <a class="el" href="structapop__model.html#a25bf144576642b48097e764318a6ce28">apop_model</a>
 </li>
 </ul>
 
@@ -285,12 +268,6 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 </li>
 <li>model_list
 : <a class="el" href="structapop__mixture__settings.html#a0d7afaf00df6805d7a2cddd8a192888c">apop_mixture_settings</a>
-</li>
-<li>more
-: <a class="el" href="structapop__model.html#ac6ae82f82cf5dbc3ae21919f9978cb7b">apop_model</a>
-</li>
-<li>more_size
-: <a class="el" href="structapop__model.html#aa0a6e874b1f1b8941bfc5e26fe697a57">apop_model</a>
 </li>
 </ul>
 
@@ -322,14 +299,8 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 
 
 <h3><a class="anchor" id="index_p"></a>- p -</h3><ul>
-<li>p
-: <a class="el" href="structapop__model.html#aa0f40bb58127842e401ff03dceb29604">apop_model</a>
-</li>
 <li>param_sizes
 : <a class="el" href="structapop__mixture__settings.html#a4035a16c0723f7d9b1605e8cbd7fe248">apop_mixture_settings</a>
-</li>
-<li>parameters
-: <a class="el" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">apop_model</a>
 </li>
 <li>path
 : <a class="el" href="structapop__mle__settings.html#a7be6b998e762a4285db911eb6c86bd9d">apop_mle_settings</a>
@@ -399,14 +370,14 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <li>target_accept_rate
 : <a class="el" href="structapop__mcmc__settings.html#a73b0c05c15cb9d17da372650e3caa1ff">apop_mcmc_settings</a>
 </li>
-<li>thread_count
-: <a class="el" href="structapop__opts__type.html#adef51879aa01c0ee5d51e21c7a8fe7ba">apop_opts_type</a>
-</li>
 <li>tolerance
 : <a class="el" href="structapop__mle__settings.html#a2e4e980f322071b0bd01a8041f8bb139">apop_mle_settings</a>
 </li>
 <li>total_weight
 : <a class="el" href="structapop__pmf__settings.html#a94c6f1dfbd4096ad2bef8f1676595e0f">apop_pmf_settings</a>
+</li>
+<li>transformed_to_base
+: <a class="el" href="structapop__coordinate__transform__settings.html#aaa44509200b4261456ac4369fa299feb">apop_coordinate_transform_settings</a>
 </li>
 </ul>
 

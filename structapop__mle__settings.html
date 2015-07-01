@@ -155,7 +155,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If zero (the default), the usual procedure. If <img class="formulaInl" alt="$>0$" src="form_0.png"/>, cycle across dimensions: fix all but the first dimension at the starting point, optimize only the first dim. Then fix the all but the second dim, and optimize the second dim. Continue through all dims, until the log likelihood at the outset of one cycle through the dimensions is within this amount of the previous cycle's log likelihood. There will be at least two cycles. </p>
+<p>If zero (the default), the usual procedure. If <img class="formulaInl" alt="$>0$" src="form_1.png"/>, cycle across dimensions: fix all but the first dimension at the starting point, optimize only the first dim. Then fix the all but the second dim, and optimize the second dim. Continue through all dims, until the log likelihood at the outset of one cycle through the dimensions is within this amount of the previous cycle's log likelihood. There will be at least two cycles. </p>
 
 </div>
 </div>
@@ -168,7 +168,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Ignored by simulated annealing. Other methods halt if they do this many iterations without finding an optimum. </p>
+<p>Ignored by simulated annealing. Other methods halt (and set the <code>"status"</code> element of the output estimate's info page) if they do this many iterations without finding an optimum. </p>
 
 </div>
 </div>
@@ -230,12 +230,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If not <code>NULL</code>, record each vector tried by the optimizer as one row of this <a class="el" href="gentle.html#apop_data">apop_data</a> set. Each row of the <code>matrix</code> element holds the vector tried; the corresponding element in the <code>vector</code> is the evaluated value at that vector (after out-of-constraints penalties have been subtracted). A new <a class="el" href="gentle.html#apop_data">apop_data</a> set is allocated at the pointer you send in. This data set has no names; add them as desired. Sample use: </p><div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *mypath;</div>
-<div class="line">Apop_model_add_group(mymodel, apop_mle, .<a class="code" href="structapop__mle__settings.html#a7be6b998e762a4285db911eb6c86bd9d">path</a>=&amp;mypath);</div>
-<div class="line"><a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(mydata, mymodel);</div>
-<div class="line"><a class="code" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a>(mypath, .output_name=<span class="stringliteral">&quot;search&quot;</span>);</div>
-<div class="line"><a class="code" href="group__all__public.html#ga459acfde11f2c39f5c32cff377f85b9e">apop_data_free</a>(mypath);</div>
-</div><!-- fragment --> 
+<p>If not <code>NULL</code>, record each vector tried by the optimizer as one row of this <a class="el" href="gentle.html#apop_data">apop_data</a> set. Each row of the <code>matrix</code> element holds the vector tried; the corresponding element in the <code>vector</code> is the evaluated value at that vector (after out-of-constraints penalties have been subtracted). A new <a class="el" href="gentle.html#apop_data">apop_data</a> set is allocated at the pointer you send in. This data set has no names; add them as desired. For a sample use, see <a class="el" href="maxipage.html">Optimization</a>. </p>
+
 </div>
 </div>
 <a class="anchor" id="a9e18f9094305ad82fc9ba0e1a96a368a"></a>
@@ -247,7 +243,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>An array of doubles (i.e., <code>double*</code>) suggesting a starting point. If NULL, use an all-ones vector. Note that if <code>v</code> is a <code>gsl_vector</code>, then <code>v-&gt;data</code> is of the right form (provided <code>v</code> is not a slice of a matrix). </p>
+<p>An array of doubles (e.g., <code>(double*){2,4,6,8}</code>) suggesting a starting point. If NULL, use an all-ones vector. Note that if <code>v</code> is a <code>gsl_vector</code>, then <code>v-&gt;data</code> is of the right form (provided <code>v</code> is not a slice of a matrix). </p>
 
 </div>
 </div>
@@ -260,7 +256,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>the initial step size. </p>
+<p>The initial step size. </p>
 
 </div>
 </div>
@@ -273,7 +269,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>t_min</b></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>the precision the minimizer uses. Only vaguely related to the precision of the actual variables. </p>
+<p>The precision the minimizer uses in its stopping rule. Only vaguely related to the precision of the actual MLE. </p>
 
 </div>
 </div>

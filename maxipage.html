@@ -103,36 +103,12 @@ $(document).ready(function(){initNavTree('maxipage.html','');});
 <li>Physicists, pure mathematicians, and the GSL minimize; economists, statisticians, and Apophenia maximize. If you are doing a minimization, be sure that your function returns minus the objective function's value.</li>
 </ul>
 <ul>
-<li>The overall setup is about estimating the parameters of a model with data. The user provides a data set and an unparameterized model, and the system tries parameterized models until one of them is found to be optimal. The data is fixed. The optimization tries a series of parameterized models, searching for the one that is most likely. In a non-stats setting, you will probably have <code>NULL</code> data, and will be optimizing the parameters internal to the model.</li>
+<li>The overall setup is about estimating the parameters of a model with data. The user provides a data set and an unparameterized model, and the system tries parameterized models until one of them is found to be optimal. The data is fixed. The optimization tries a series of parameterized models, searching for the one that is most likely. In a non-stats setting, you may have <code>NULL</code> data.</li>
 </ul>
 <ul>
-<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function. Here is a typical sort of function that one would maximize; it is Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_121.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_122.png"/> is fixed ahead of time, say at 100.</li>
+<li>Because the unit of analysis is a parameterized model, not just parameters, you need to have an <a class="el" href="structapop__model.html">apop_model</a> wrapping your objective function.</li>
 </ul>
-<div class="fragment"><div class="line"><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line">        <span class="keywordtype">double</span> scaling;</div>
-<div class="line">} <a class="code" href="structcoeff__struct.html">coeff_struct</a>;</div>
-<div class="line"></div>
-<div class="line"><span class="keywordtype">double</span> banana (<span class="keywordtype">double</span> *params, <a class="code" href="structcoeff__struct.html">coeff_struct</a> *in){</div>
-<div class="line">        <span class="keywordflow">return</span> (gsl_pow_2(1-params[0]) +</div>
-<div class="line">                in-&gt;scaling*gsl_pow_2(params[1]-gsl_pow_2(params[0])));</div>
-<div class="line">}</div>
-</div><!-- fragment --><p>The function returns a single number to be minimized. You will need to write an <a class="el" href="structapop__model.html">apop_model</a> to send to the optimizer, which is a two step process: write a log likelihood function wrapping the real objective function, and a model that uses that log likelihood. Here they are:</p>
-<div class="fragment"><div class="line"><span class="keywordtype">double</span> ll (<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *in){</div>
-<div class="line">    <span class="keywordflow">return</span> - banana(in-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector-&gt;data, in-&gt;<a class="code" href="structapop__model.html#ac6ae82f82cf5dbc3ae21919f9978cb7b">more</a>);</div>
-<div class="line">}</div>
-<div class="line"></div>
-<div class="line"><span class="keywordtype">int</span> main(){</div>
-<div class="line">    <a class="code" href="structcoeff__struct.html">coeff_struct</a> co = {.scaling=100};</div>
-<div class="line">    <a class="code" href="structapop__model.html">apop_model</a> b = {<span class="stringliteral">&quot;Bananas!&quot;</span>, .<a class="code" href="structapop__model.html#a25bf144576642b48097e764318a6ce28">log_likelihood</a>= ll, .vsize=2,</div>
-<div class="line">                                .more = &amp;co, .more_size=<span class="keyword">sizeof</span>(<a class="code" href="structcoeff__struct.html">coeff_struct</a>)};</div>
-</div><!-- fragment --><p>The <code>vsize=2</code> specified that your parameters are a vector of size two. That is, the list of <code>double</code>s to send to <code>banana</code> is set in <code>in-&gt;parameters-&gt;vector-&gt;data</code>. The <code>more</code> element of the <a class="el" href="structapop__model.html">apop_model</a> structure is designed to hold any arbitrary structure of size <code>more_size</code>, which is useful for models that require additional constants or other settings. See <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> for more on handling model settings.</p>
-<ul>
-<li>Statisticians want the covariance and basic tests about the parameters. If you only want the optimal value, then adding this line will shut off all auxiliary calculations: <div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(your_model, apop_parts_wanted);</div>
-</div><!-- fragment --> See the documentation for <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> for details about how this works. It can also offer quite the speedup: especially for high-dimensional problems, finding the covariance matrix without any information can take dozens of evaluations of the objective function for each evaluation that is part of the search itself. </li>
-<li>MLEs have an especially large number of parameter tweaks that could be made; see the <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> page. </li>
-<li>As a useful diagnostic, you can add a <code>NULL</code> <a class="el" href="gentle.html#apop_data">apop_data</a> set to the MLE settings in the <code>.path</code> slot, and it will be allocated and filled with the sequence of points tried by the optimizer. </li>
-<li>Putting it all together, here is a full program to minimize Rosenbrock's banana function. There are some extras: it uses two methods (notice how easy it is to re-run an estimation with an alternate method, but the syntax for modifying a setting differs from the initialization syntax) and checks that the results are accurate.</li>
-</ul>
+<p>This example, to be discussed in detail below, optimizes Rosenbrock's banana function, <img class="formulaInl" alt="$(1-x)^2+ s(y - x^2)^2$" src="form_129.png"/>, where the scaling factor <img class="formulaInl" alt="$s$" src="form_130.png"/> is fixed ahead of time, say at 100.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
 <div class="line"></div>
 <div class="line"><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
@@ -145,12 +121,12 @@ $(document).ready(function(){initNavTree('maxipage.html','');});
 <div class="line">}</div>
 <div class="line"></div>
 <div class="line"><span class="keywordtype">long</span> <span class="keywordtype">double</span> ll (<a class="code" href="structapop__data.html">apop_data</a> *d, <a class="code" href="structapop__model.html">apop_model</a> *in){</div>
-<div class="line">    <span class="keywordflow">return</span> - banana(in-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector-&gt;data, in-&gt;<a class="code" href="structapop__model.html#ac6ae82f82cf5dbc3ae21919f9978cb7b">more</a>);</div>
+<div class="line">    <span class="keywordflow">return</span> - banana(in-&gt;parameters-&gt;vector-&gt;data, in-&gt;more);</div>
 <div class="line">}</div>
 <div class="line"></div>
 <div class="line"><span class="keywordtype">int</span> main(){</div>
 <div class="line">    <a class="code" href="structcoeff__struct.html">coeff_struct</a> co = {.scaling=100};</div>
-<div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *b = &amp;(<a class="code" href="group__all__public.html#gafe86ae10fc82d219906211e4f88e4cf9">apop_model</a>) {<span class="stringliteral">&quot;¡Bananas!&quot;</span>, .<a class="code" href="structapop__model.html#a25bf144576642b48097e764318a6ce28">log_likelihood</a>= ll,</div>
+<div class="line">    <a class="code" href="structapop__model.html">apop_model</a> *b = &amp;(<a class="code" href="structapop__model.html">apop_model</a>) {<span class="stringliteral">&quot;¡Bananas!&quot;</span>, .log_likelihood= ll,</div>
 <div class="line">                     .vsize=2, .more = &amp;co, .more_size=<span class="keyword">sizeof</span>(<a class="code" href="structcoeff__struct.html">coeff_struct</a>)};</div>
 <div class="line">    Apop_model_add_group(b, apop_mle, .verbose=<span class="charliteral">&#39;y&#39;</span>, .method=<span class="stringliteral">&quot;NM simplex&quot;</span>);</div>
 <div class="line">    Apop_model_add_group(b, apop_parts_wanted);</div>
@@ -168,41 +144,48 @@ $(document).ready(function(){initNavTree('maxipage.html','');});
 <div class="line">    apop_data_show(bfgs_path);</div>
 <div class="line"></div>
 <div class="line">    gsl_vector *one = <a class="code" href="group__all__public.html#gaf9b051e2fbe0e473dddeabfe4932ce0c">apop_vector_fill</a>(gsl_vector_alloc(2), 1, 1);</div>
-<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(e1-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, one) &lt; 1e-2);</div>
-<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(e2-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, one) &lt; 1e-2);</div>
+<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(e1-&gt;parameters-&gt;vector, one) &lt; 1e-2);</div>
+<div class="line">    assert(<a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(e2-&gt;parameters-&gt;vector, one) &lt; 1e-2);</div>
 <div class="line">}</div>
-</div><!-- fragment --><div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(your_model, apop_mle, .want_path=<span class="charliteral">&#39;y&#39;</span>);</div>
-<div class="line"><a class="code" href="structapop__model.html">apop_model</a> *out = <a class="code" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a>(your_data, your_model);</div>
-<div class="line">apop_data_show(<a class="code" href="group__all__public.html#ga4ba53402807c9e6b82254fb552029501">Apop_settings_get</a>(out, apop_mle, path));</div>
-</div><!-- fragment --><h1><a class="anchor" id="constr"></a>
+</div><!-- fragment --><p>The <code>banana</code> function returns a single number to be minimized. You will need to write an <a class="el" href="structapop__model.html">apop_model</a> to send to the optimizer, which is a two step process: write a log likelihood function wrapping the real objective function (<code>ll</code>), and a model that uses that log likelihood (<code>b</code>).</p>
+<ul>
+<li>The <code>.vsize=2</code> part of the declaration of <code>b</code> on the second line of <code>main()</code> specified that the model's parameters are a vector of size two. That is, the list of <code>double</code>s to send to <code>banana</code> is set in <code>in-&gt;parameters-&gt;vector-&gt;data</code>. </li>
+<li>The <code>more</code> element of the <a class="el" href="structapop__model.html">apop_model</a> structure is designed to hold any arbitrary structure of size <code>more_size</code>, which is useful for models that require additional constants or other settings, like the <code><a class="el" href="structcoeff__struct.html">coeff_struct</a></code> here. See <a class="el" href="modeldetails.html#settingswriting">Writing new settings groups</a> for more on handling model settings. </li>
+<li>Statisticians want the covariance and basic tests about the parameters. This line shuts off all auxiliary calculations: <div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga8fb1877a3cc29edd685a68dd6b4a35dc">Apop_settings_add_group</a>(your_model, apop_parts_wanted);</div>
+</div><!-- fragment --> See the documentation for <a class="el" href="structapop__parts__wanted__settings.html">apop_parts_wanted_settings</a> for details about how this works. It can also offer quite the speedup: especially for high-dimensional problems, finding the covariance matrix without any additional information can take dozens of evaluations of the objective function for each evaluation that is part of the search itself. </li>
+<li>MLEs have an especially large number of parameter tweaks that could be made; see the <a class="el" href="structapop__mle__settings.html">apop_mle_settings</a> page. </li>
+<li>As a useful diagnostic, you can add a <code>NULL</code> <a class="el" href="gentle.html#apop_data">apop_data</a> set to the MLE settings in the <code>.path</code> slot, and it will be allocated and filled with the sequence of points tried by the optimizer. </li>
+<li>The program has some extras above and beyond the necessary: it uses two methods (notice how easy it is to re-run an estimation with an alternate method, but the syntax for modifying a setting differs from the initialization syntax) and checks that the results are accurate.</li>
+</ul>
+<h1><a class="anchor" id="constr"></a>
 Setting Constraints</h1>
 <p>The problem is that the parameters of a function must not take on certain values, either because the function is undefined for those values or because parameters with certain values would not fit the real-world problem.</p>
-<p>The solution is to rewrite the function being maximized such that the function is continuous at the constraint boundary but takes a steep downward slope. The unconstrained maximization routines will be able to search a continuous function but will never return a solution that falls beyond the parameter limits.</p>
-<p>If you give it an unconstrained likelihood function plus a separate constraint function, <a class="el" href="group__all__public.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> will combine them to a function that fits the above description and search accordingly.</p>
+<p>If you give the optimizer an unconstrained likelihood function plus a separate constraint function, <a class="el" href="group__all__public.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> will combine them to a function that is continuous at the constraint boundary, but which is guaranteed to never have an optimum outside of the constraint.</p>
 <p>A constraint function must do three things: </p><ul>
-<li>It must check the constraint, and if the constraint does not bind (i.e. the parameter values are OK), then it must return zero. </li>
+<li>If the constraint does not bind (i.e. the parameter values are OK), then it must return zero. </li>
 <li>If the constraint does bind, it must return a penalty, that indicates how far off the parameter is from meeting the constraint. </li>
 <li>If the constraint does bind, it must set a return vector that the likelihood function can take as a valid input. The penalty at this returned value must be zero.</li>
 </ul>
 <p>The idea is that if the constraint returns zero, the log likelihood function will return the log likelihood as usual, and if not, it will return the log likelihood at the constraint's return vector minus the penalty. To give a concrete example, here is a constraint function that will ensure that both parameters of a two-dimensional input are both greater than zero, and that their sum is greater than two. As with the constraints for many of the models that ship with Apophenia, it is a wrapper for <a class="el" href="group__all__public.html#gad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>.</p>
 <div class="fragment"><div class="line"><span class="keyword">static</span> <span class="keywordtype">long</span> <span class="keywordtype">double</span> greater_than_zero_constraint(<a class="code" href="structapop__data.html">apop_data</a> *data, <a class="code" href="structapop__model.html">apop_model</a> *v){</div>
 <div class="line">    <span class="keyword">static</span> <a class="code" href="structapop__data.html">apop_data</a> *constraint = NULL;</div>
-<div class="line">    <span class="keywordflow">if</span> (!constraint) constraint= <a class="code" href="group__all__public.html#gacb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3,3,2), 0,  1, 0,</div>
-<div class="line">                                                           0,  0, 1,</div>
-<div class="line">                                                           2,  1, 1);</div>
-<div class="line">    <span class="keywordflow">return</span> <a class="code" href="group__all__public.html#gad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>(v-&gt;<a class="code" href="structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45">parameters</a>-&gt;vector, constraint, 1e-3);</div>
+<div class="line">    <span class="keywordflow">if</span> (!constraint) constraint= <a class="code" href="group__all__public.html#gacb6b2c53478f9db902ba0340ba499819">apop_data_falloc</a>((3,3,2), 0,  1, 0,   <span class="comment">//0 &lt; 1x + 0y</span></div>
+<div class="line">                                                           0,  0, 1,   <span class="comment">//0 &lt; 0x + 1y</span></div>
+<div class="line">                                                           2,  1, 1);  <span class="comment">//2 &lt; 1x + 1y</span></div>
+<div class="line">    <span class="keywordflow">return</span> <a class="code" href="group__all__public.html#gad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint</a>(v-&gt;parameters-&gt;vector, constraint, 1e-3);</div>
 <div class="line">}</div>
 </div><!-- fragment --><ul>
 <li><a class="el" href="group__all__public.html#gad490e5b31d1bbc99223c2cbfac7c1782">apop_linear_constraint()</a></li>
 </ul>
 <h1><a class="anchor" id="simanneal"></a>
 Notes on simulated annealing</h1>
+<p>For convex optimizations, methods like conjugate gradient search work well, and for relatively smooth optimizations, the Nelder-Mead simplex algorithm is a good choice. For situations where the surface being searched may have several local optima and be otherwise badly behaved, there is simulated annealing.</p>
 <p>Simulated annealing is a controlled random walk. As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is less likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is determined by the parameters of the simulated colling program, not the values returned by the likelihood function. If you know your function is globally convex (as are most standard probability functions), then this method is overkill.</p>
 <h1><a class="anchor" id="mlfns"></a>
 Useful functions</h1>
 <ul>
 <li><a class="el" href="group__all__public.html#ga6d5e39c00012de5b51cd49ce1ffd31fe">apop_estimate_restart</a> : Restarting an MLE with different settings can improve results. </li>
-<li><a class="el" href="group__all__public.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> : Rarely used. If a model has no <code>estimate</code> element, call <a class="el" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> to run an MLE. </li>
+<li><a class="el" href="group__all__public.html#gae9f092d1786034dd2ab22c63de5c955c">apop_maximum_likelihood</a> : Rarely called directly. If a model has no <code>estimate</code> element, call <a class="el" href="group__all__public.html#ga2c0598e5aca68949939a189bd4ce24ca">apop_estimate</a> to prep the model and run an MLE. </li>
 <li><a class="el" href="group__all__public.html#ga0f2784b69175d1ecd3833d228d2294e7">apop_model_numerical_covariance</a> </li>
 <li><a class="el" href="group__all__public.html#ga1b6ecb8702153658c29369dc2e7cfba9">apop_numerical_gradient</a> </li>
 </ul>

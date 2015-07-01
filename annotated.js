@@ -3,11 +3,10 @@ var annotated =
     [ "apop_arms_settings", "structapop__arms__settings.html", "structapop__arms__settings" ],
     [ "apop_cdf_settings", "structapop__cdf__settings.html", "structapop__cdf__settings" ],
     [ "apop_composition_settings", "structapop__composition__settings.html", "structapop__composition__settings" ],
+    [ "apop_coordinate_transform_settings", "structapop__coordinate__transform__settings.html", "structapop__coordinate__transform__settings" ],
     [ "apop_cross_settings", "structapop__cross__settings.html", "structapop__cross__settings" ],
-    [ "apop_ct_settings", "structapop__ct__settings.html", "structapop__ct__settings" ],
     [ "apop_data", "structapop__data.html", "structapop__data" ],
     [ "apop_dconstrain_settings", "structapop__dconstrain__settings.html", "structapop__dconstrain__settings" ],
-    [ "apop_fix_params_settings", "structapop__fix__params__settings.html", "structapop__fix__params__settings" ],
     [ "apop_kernel_density_settings", "structapop__kernel__density__settings.html", "structapop__kernel__density__settings" ],
     [ "apop_lm_settings", "structapop__lm__settings.html", "structapop__lm__settings" ],
     [ "apop_loess_settings", "structapop__loess__settings.html", "structapop__loess__settings" ],
@@ -22,7 +21,5 @@ var annotated =
     [ "apop_pm_settings", "structapop__pm__settings.html", "structapop__pm__settings" ],
     [ "apop_pmf_settings", "structapop__pmf__settings.html", "structapop__pmf__settings" ],
     [ "apop_settings_type", "structapop__settings__type.html", "structapop__settings__type" ],
-    [ "coeff_struct", "structcoeff__struct.html", "structcoeff__struct" ],
-    [ "loess_struct", "structloess__struct.html", "structloess__struct" ],
-    [ "pred_struct", "structpred__struct.html", "structpred__struct" ]
+    [ "coeff_struct", "structcoeff__struct.html", "structcoeff__struct" ]
 ];

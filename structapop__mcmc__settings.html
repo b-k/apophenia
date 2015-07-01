@@ -155,7 +155,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>After calling apop_mcmc, this will have the number of accepted proposals. </p>
+<p>After calling <a class="el" href="group__all__public.html#ga733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>, this will have the number of accepted proposals. </p>
 
 </div>
 </div>
@@ -194,7 +194,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If a <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> has <code>NULL</code> <code>step_fn</code>, use this. If you don't want a step function, set this to a do-nothing function. </p>
+<p>If an <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> struct has <code>NULL</code> <code>step_fn</code>, use this. If you don't want a step function, set this to a do-nothing function. </p>
 
 </div>
 </div>
@@ -233,11 +233,12 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>'a': One step draws and accepts/rejects all parameters as a unit<br />
+<p>See the <a class="el" href="group__all__public.html#ga733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a> documentation for discussion.</p>
+<p><code>'a'</code>: One step draws and accepts/rejects all parameters as a unit<br />
 </p>
-<p>'b': draw in blocks: the vector is a block, the matrix is a separate block, the weights are a separate block, and so on through every page of the model parameters. Each block of parameters is drawn and accepted/rejected as a unit. <br />
+<p><code>'b'</code>: draw in blocks: the vector is a block, the matrix is a separate block, the weights are a separate block, and so on through every page of the model parameters. Each block of parameters is drawn and accepted/rejected as a unit. <br />
 </p>
-<p>'1': draw each parameter and accept/reject separately. One MCMC step consists of a set of draws for every parameter.<br />
+<p><code>'1'</code>: draw each parameter and accept/reject separately. One MCMC step consists of a set of draws for every parameter.<br />
  </p>
 
 </div>
@@ -264,7 +265,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If you have already run mcmc, the last log likelihood in the chain. </p>
+<p>If you have already run MCMC, the last log likelihood in the chain. </p>
 
 </div>
 </div>
@@ -290,7 +291,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If you have already run mcmc, I keep a pointer to the model so far here. Use <a class="el" href="group__all__public.html#gaa28fc59f2675fd5bcd530cb7325b6c60">apop_model_metropolis_draw</a> to get one more draw. </p>
+<p>If you have already run MCMC, I keep a pointer to the model so far here. Use <a class="el" href="group__all__public.html#gaa28fc59f2675fd5bcd530cb7325b6c60">apop_model_metropolis_draw</a> to get one more draw. </p>
 
 </div>
 </div>
@@ -342,7 +343,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>After calling apop_mcmc, this will have the number of rejected proposals. </p>
+<p>After calling <a class="el" href="group__all__public.html#ga733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>, this will have the number of rejected proposals. </p>
 
 </div>
 </div>
@@ -356,7 +357,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>block_count</b></td></
       </table>
 </div><div class="memdoc">
 <p>If <code>'1'</code> (the default), start with a first proposal of all 1s. Even when this is a far-from-useful starting point, MCMC typically does a good job of crawling to better spots early in the chain.<br />
- If <code>'p'</code>, start at the <code>parameters</code> of the <a class="el" href="structapop__model.html">apop_model</a> sent in to <a class="el" href="group__all__public.html#ga733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>. </p>
+ The default when this is unset is to start at the <code>parameters</code> of the <a class="el" href="structapop__model.html">apop_model</a> sent in to <a class="el" href="group__all__public.html#ga733c60eab5b69d89729565a3aeeb15d9">apop_model_metropolis</a>. </p>
 
 </div>
 </div>

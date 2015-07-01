@@ -5,7 +5,6 @@ var searchData=
   ['apop_5fbinomial',['apop_binomial',['../group__models.html#ga20017e88fda3695f093279c8191f48e3',1,'model_doc.h']]],
   ['apop_5fcoordinate_5ftransform',['apop_coordinate_transform',['../group__models.html#ga80caa743557a86dffa2dd1db64421d82',1,'model_doc.h']]],
   ['apop_5fcross',['apop_cross',['../group__models.html#ga7d33309b547d525c7325c062f4bc774f',1,'model_doc.h']]],
-  ['apop_5fdcomposition',['apop_dcomposition',['../group__models.html#gaedd07c678027bea683f48aa8617c4b89',1,'model_doc.h']]],
   ['apop_5fdconstrain',['apop_dconstrain',['../group__models.html#gaa58cece77dea73979ea15d64ea11b049',1,'model_doc.h']]],
   ['apop_5fdirichlet',['apop_dirichlet',['../group__models.html#ga3199e483f340d6cedaa6488565c42c78',1,'model_doc.h']]],
   ['apop_5fexponential',['apop_exponential',['../group__models.html#ga76b45a5681d30906572263eeef35aeff',1,'model_doc.h']]],
@@ -18,7 +17,6 @@ var searchData=
   ['apop_5flognormal',['apop_lognormal',['../group__models.html#ga4a917e02f41e9c6a0ad5e084e3ca42d2',1,'model_doc.h']]],
   ['apop_5fmixture',['apop_mixture',['../group__models.html#gaf085564a8adc67ba156c4cd1db8145e3',1,'model_doc.h']]],
   ['apop_5fmultinomial',['apop_multinomial',['../group__models.html#gacd7823e794194d3646d586484833882a',1,'model_doc.h']]],
-  ['apop_5fmultinomial_5fprobit',['apop_multinomial_probit',['../group__models.html#gaca327fbed9216d183a5673adbf831f34',1,'model_doc.h']]],
   ['apop_5fmultivariate_5fnormal',['apop_multivariate_normal',['../group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3',1,'model_doc.h']]],
   ['apop_5fnormal',['apop_normal',['../group__models.html#ga297c2dc8dbdf4ae93fc7e10860400466',1,'model_doc.h']]],
   ['apop_5fols',['apop_ols',['../group__models.html#ga85524b1deabd5829227888fd91740cc3',1,'model_doc.h']]],
@@ -27,8 +25,6 @@ var searchData=
   ['apop_5fprobit',['apop_probit',['../group__models.html#ga319b8e3d5025a6fc94829a978273eb8b',1,'model_doc.h']]],
   ['apop_5ft_5fdistribution',['apop_t_distribution',['../group__models.html#ga45ce986bd5ea79c39877792bec39a304',1,'model_doc.h']]],
   ['apop_5funiform',['apop_uniform',['../group__models.html#ga95be4cc3931072118a7c8ffece73fbe1',1,'model_doc.h']]],
-  ['apop_5fwishart',['apop_wishart',['../group__models.html#ga79148851aa36fdad05fdb197778a583e',1,'model_doc.h']]],
-  ['apop_5fwls',['apop_wls',['../group__models.html#gaa030af2c41ac564c3a9ccce14b06f13c',1,'model_doc.h']]],
   ['apop_5fyule',['apop_yule',['../group__models.html#ga1ddf478052543e1d801dfc64c99bcbe3',1,'model_doc.h']]],
   ['apop_5fzipf',['apop_zipf',['../group__models.html#ga32e7ca1164025cbb53a9e0ecee9d4cea',1,'model_doc.h']]]
 ];

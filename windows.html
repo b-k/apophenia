@@ -115,17 +115,16 @@ $(document).ready(function(){initNavTree('windows.html','');});
 </ul>
 <p>If you are missing anything else, the program will probably tell you. The following are not necessary but are good to have on hand as long as you are going to be using Unix and programming.</p>
 <ul>
-<li>svn &ndash; to partake in the versioning system </li>
+<li>git &ndash; to partake in the versioning system </li>
 <li>emacs &ndash; steep learning curve, but people love it </li>
 <li>ghostscript (for reading .ps/.pdf files) </li>
-<li>openssh &ndash; needed for cvs </li>
+<li>openssh &ndash; needed for git </li>
 <li>perl, python, ruby &ndash; these are other languages that you might also be interested in </li>
 <li>tetex &ndash; write up your documentation using the nicest-looking formatter around </li>
 <li>X11 &ndash; a windowing system</li>
 </ul>
 <p>X-Window will give you a nicer environment in which to work. After you start Cygwin, type <code>startx</code> to bring up a more usable, nice-looking terminal (and the ability to do a few thousand other things which are beyond the scope of this documentation). Once you have Cygwin installed and a good terminal running, you can follow along with the remainder of the discussion without modification.</p>
-<p>Sqlite3 is difficult to build from scratch, but you can get a packaged version by pointing Cygwin's install program to the Cygwin Ports site: <a href="http://cygwinports.dotsrc.org/">http://cygwinports.dotsrc.org/</a> .</p>
-<p>Second, some older versions of Cygwin have a search.h file which doesn't include the function lsearch(). If this is the case on your system, you will have to update your Cygwin installation.</p>
+<p>Some older versions of Cygwin have a <code>search.h</code> file which doesn't include the function <code>lsearch()</code>. If this is the case on your system, you will have to update your Cygwin installation.</p>
 <p>Finally, windows compilers often spit out lines like: </p><div class="fragment"><div class="line">Info: resolving _gsl_rng_taus by linking to __imp__gsl_rng_taus (<span class="keyword">auto</span>-<span class="keyword">import</span>)</div>
 </div><!-- fragment --><p> These lines are indeed just information, and not errors. Feel free to ignore them.</p>
 <p>[Thanks to Andrew Felton and Derrick Higgins for their Cygwin debugging efforts.]</p>

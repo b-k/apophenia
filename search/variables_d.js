@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['p',['p',['../structapop__model.html#aa0f40bb58127842e401ff03dceb29604',1,'apop_model']]],
   ['param_5fsizes',['param_sizes',['../structapop__mixture__settings.html#a4035a16c0723f7d9b1605e8cbd7fe248',1,'apop_mixture_settings']]],
-  ['parameters',['parameters',['../structapop__model.html#ae016a9e13725e84a1188bc81c8f09e45',1,'apop_model']]],
   ['path',['path',['../structapop__mle__settings.html#a7be6b998e762a4285db911eb6c86bd9d',1,'apop_mle_settings']]],
   ['periods',['periods',['../structapop__mcmc__settings.html#a2d45abb2f9ece60029b4f6d11511d41e',1,'apop_mcmc_settings']]],
   ['pmf',['pmf',['../structapop__mcmc__settings.html#af68073a090c2db68596d19fc5ab6996c',1,'apop_mcmc_settings']]],

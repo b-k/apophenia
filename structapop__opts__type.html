@@ -104,8 +104,8 @@ $(document).ready(function(){initNavTree('structapop__opts__type.html','');});
 Data Fields</h2></td></tr>
 <tr class="memitem:a9c128a43c2e53c7639ce4ddb0cef92f6"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">db_engine</a></td></tr>
 <tr class="separator:a9c128a43c2e53c7639ce4ddb0cef92f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a22ca3471ab0a3ee9fcf7a590fe40e8ee"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a22ca3471ab0a3ee9fcf7a590fe40e8ee">db_name_column</a> [300]</td></tr>
-<tr class="separator:a22ca3471ab0a3ee9fcf7a590fe40e8ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7cbed9987a0cc3da6322c9e59d7a77a5"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a7cbed9987a0cc3da6322c9e59d7a77a5">db_name_column</a></td></tr>
+<tr class="separator:a7cbed9987a0cc3da6322c9e59d7a77a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3faefc9c9e0459168da0ed35be8d8e06"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a3faefc9c9e0459168da0ed35be8d8e06">db_pass</a> [101]</td></tr>
 <tr class="separator:a3faefc9c9e0459168da0ed35be8d8e06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2941a01de414636a2adbfbc430eecbe4"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a2941a01de414636a2adbfbc430eecbe4">db_user</a> [101]</td></tr>
@@ -123,8 +123,6 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>rng_seed</b></td></tr>
 <tr class="separator:a3946960c4345bd9bdc96642952d1009c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b3c6c9e58241b7e69db4fdfc6ee96a2"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#a7b3c6c9e58241b7e69db4fdfc6ee96a2">stop_on_warning</a></td></tr>
 <tr class="separator:a7b3c6c9e58241b7e69db4fdfc6ee96a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adef51879aa01c0ee5d51e21c7a8fe7ba"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#adef51879aa01c0ee5d51e21c7a8fe7ba">thread_count</a></td></tr>
-<tr class="separator:adef51879aa01c0ee5d51e21c7a8fe7ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa76e9237ed45c77bc883b428c3217a66"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__opts__type.html#aa76e9237ed45c77bc883b428c3217a66">verbose</a></td></tr>
 <tr class="separator:aa76e9237ed45c77bc883b428c3217a66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab14468fa780adff742623a2b148101f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aab14468fa780adff742623a2b148101f"></a>
@@ -147,16 +145,16 @@ float&#160;</td><td class="memItemRight" valign="bottom"><b>version</b></td></tr
 
 </div>
 </div>
-<a class="anchor" id="a22ca3471ab0a3ee9fcf7a590fe40e8ee"></a>
+<a class="anchor" id="a7cbed9987a0cc3da6322c9e59d7a77a5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char apop_opts_type::db_name_column[300]</td>
+          <td class="memname">char* apop_opts_type::db_name_column</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If set, the name of the column in your tables that holds row names. </p>
+<p>If not NULL or <code>""</code>, the name of the column in your tables that holds row names. </p>
 
 </div>
 </div>
@@ -221,7 +219,7 @@ float&#160;</td><td class="memItemRight" valign="bottom"><b>version</b></td></tr
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The string used to indicate NaN. </p>
+<p>The string used to indicate NaN. Default: <code>"NaN</code>. Comparisons are case-insensitive. </p>
 
 </div>
 </div>
@@ -248,19 +246,6 @@ float&#160;</td><td class="memItemRight" valign="bottom"><b>version</b></td></tr
       </table>
 </div><div class="memdoc">
 <p>See <a class="el" href="c.html#debugging">Errors, logging, debugging and stopping</a> . </p>
-
-</div>
-</div>
-<a class="anchor" id="adef51879aa01c0ee5d51e21c7a8fe7ba"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int apop_opts_type::thread_count</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Deprecated. Use <code>omp_set_num_threads(n)</code>. </p>
 
 </div>
 </div>

@@ -97,25 +97,21 @@ $(document).ready(function(){initNavTree('c.html','');});
 <div class="title">C, SQL and coding utilities </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="section user"><dt>Learning C</dt><dd></dd></dl>
+<div class="textblock"><p><em>Learning C</em></p>
 <p><a href="http://modelingwithdata.org">Modeling with Data</a> has a full tutorial for C, oriented at users of standard stats packages. More nuts-and-bolts tutorials are <a href="http://www.google.com/search?hl=es&amp;amp;c2coff=1&amp;amp;q=c+tutorial">in abundance</a>. Some people find pointers to be especially difficult; fortunately, there's a <a href="http://www.youtube.com/watch?v=6pmWojisM_E">claymation cartoon</a> which clarifies everything.</p>
-<dl class="section user"><dt>Header aggregation</dt><dd></dd></dl>
+<p><em>Header aggregation</em></p>
 <p>There is only one header. Put </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;apop.h&gt;</span></div>
-</div><!-- fragment --><p> at the top of your file, and you're done. Everything declared in that file starts with <code>apop_</code> (or <code>Apop_</code>).</p>
-<dl class="section user"><dt>Linking</dt><dd></dd></dl>
+</div><!-- fragment --><p> at the top of your file, and you're done. Everything declared in that file starts with <code>apop_</code> or <code>Apop_</code>. It also includes <code>assert.h</code>, <code>math.h</code>, <code>signal.h</code>, and <code>string.h</code>.</p>
+<p><em>Linking</em></p>
 <p>You will need to link to the Apophenia library, which involves adding the <code>-lapophenia</code> flag to your compiler. Apophenia depends on SQLite3 and the GNU Scientific Library (which depends on a BLAS), so you will probably need something like:</p>
 <div class="fragment"><div class="line">gcc sample.c -lapophenia -lsqlite3 -lgsl -lgslcblas -o run_me -g -Wall -O3</div>
 </div><!-- fragment --><p>Your best bet is to encapsulate this mess in a <a class="el" href="makefile.html">Makefile</a>. Even if you are using an IDE and its command-line management tools, see the Makefile page for notes on useful flags.</p>
-<dl class="section user"><dt>Standards compliance</dt><dd></dd></dl>
+<p><em>Standards compliance</em></p>
 <p>To the best of our abilities, Apophenia complies to the C standard (ISO/IEC 9899:2011). As well as relying on the GSL and SQLite, it uses some POSIX function calls, such as <code>strcasecmp</code> and <code>popen</code>.</p>
-<dl class="section user"><dt>Easier calling syntax</dt><dd></dd></dl>
-<p>Many functions allow optional named arguments to functions. For example: </p><div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1, v2); <span class="comment">//assumes Euclidean distance</span></div>
-<div class="line"><a class="code" href="group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8">apop_vector_distance</a>(v1, .metric=<span class="charliteral">&#39;M&#39;</span>); <span class="comment">//assumes v2=0, uses Manhattan metric.</span></div>
-</div><!-- fragment --><p>See the <a class="el" href="designated.html">Designated initializers</a> page for details of this syntax.</p>
 <p><a class="el" href="designated.html">Designated initializers</a></p>
 <h1><a class="anchor" id="debugging"></a>
 Errors, logging, debugging and stopping</h1>
-<h5>The <code>error</code> element</h5>
+<p><em>The <code>error</code> element</em></p>
 <p>The <a class="el" href="gentle.html#apop_data">apop_data</a> set and the <a class="el" href="structapop__model.html">apop_model</a> both include an element named <code>error</code>. It is normally <code>0</code>, indicating no (known) error.</p>
 <p>For example, <a class="el" href="group__all__public.html#gadd67e6838ce2521a1d756894dc9b5ccf">apop_data_copy</a> detects allocation errors and some circular links (when <code>Data-&gt;more == Data</code>) and fails in those cases. You could thus use the function with a form like</p>
 <div class="fragment"><div class="line"><a class="code" href="structapop__data.html">apop_data</a> *d = <a class="code" href="group__all__public.html#ga630de5d4fcbe9ef13373029f5d813a97">apop_text_to_data</a>(<span class="stringliteral">&quot;indata&quot;</span>);</div>
@@ -142,7 +138,7 @@ Verbosity level and logging</h1>
 <p>As well as the error and warning messages, some functions can also print diagnostics, using the <a class="el" href="group__all__public.html#ga674b73c9b8813f35e41009428cbc80f9">Apop_notify</a> macro. For example, <a class="el" href="group__all__public.html#ga02cf6319da103f9bfe55dfbbc7675536">apop_query</a> and friends will print the query sent to the database engine iff <code>apop_opts.verbose &gt;=2</code> (which is useful when building complex queries). The diagnostics attempt to follow the same verbosity scale as the warning messages.</p>
 <h1><a class="anchor" id="Stopping"></a>
 Stopping</h1>
-<p>Warnings and errors never halt processing. It is up to the calling function to decide whether to stop.</p>
+<p>By default, warnings and errors never halt processing. It is up to the calling function to decide whether to stop.</p>
 <p>When running the program under a debugger, this is an annoyance: we want to stop as soon as a problem turns up.</p>
 <p>The global variable <code>apop_opts.stop_on_warning</code> changes when the system halts:</p>
 <p><code>'n'</code>: never halt. If you were using Apophenia to support a user-friendly GUI, for example, you would use this mode.<br />
@@ -178,14 +174,13 @@ Legible output</h1>
 <ul>
 <li><a class="el" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> </li>
 <li><a class="el" href="group__all__public.html#ga50915e9992a7cc880807cc266e9f5166">apop_matrix_print</a> </li>
-<li><a class="el" href="group__all__public.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a> </li>
-<li>apop_data_show : alias for <a class="el" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> limited to <code>stdout</code>.</li>
+<li><a class="el" href="group__all__public.html#ga6e68deb42339cf6068ab6e741237918d">apop_vector_print</a></li>
 </ul>
 <h1><a class="anchor" id="sqlsec"></a>
 About SQL, the syntax for querying databases</h1>
 <p>For a reference, your best bet is the <a href="http://www.sqlite.org/lang.html">Structured Query Language reference</a> for SQLite. For a tutorial; there is an abundance of <a href="http://www.google.com/search?q=sql+tutorial">tutorials online</a>. Here is a nice blog <a href="http://fluff.info/blog/arch/00000118.htm">entry</a> about complementaries between SQL and matrix manipulation packages.</p>
 <p>Apophenia currently supports two database engines: SQLite and mySQL/mariaDB. SQLite is the default, because it is simpler and generally more easygoing than mySQL, and supports in-memory databases.</p>
-<p>The global <code>apop_opts.db_engine</code> is initially <code>NUL</code>, indicating no preference for a database engine. You can explicitly set it:</p>
+<p>The global <code>apop_opts.db_engine</code> is initially <code>NULL</code>, indicating no preference for a database engine. You can explicitly set it:</p>
 <div class="fragment"><div class="line"><a class="code" href="group__all__public.html#ga7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">db_engine</a>=<span class="charliteral">&#39;s&#39;</span> <span class="comment">//use SQLite</span></div>
 <div class="line"><a class="code" href="group__all__public.html#ga7975faa07196cf463ec261ff0ddc3ccc">apop_opts</a>.<a class="code" href="structapop__opts__type.html#a9c128a43c2e53c7639ce4ddb0cef92f6">db_engine</a>=<span class="charliteral">&#39;m&#39;</span> <span class="comment">//use mySQL/mariaDB</span></div>
 </div><!-- fragment --><p>If <code>apop_opts.db_engine</code> is still <code>NUL</code> on your first database operation, then I will check for an environment variable <code>APOP_DB_ENGINE</code>, and set <code>apop_opts.db_engine='m'</code> if it is found and matches (case insensitive) <code>mariadb</code> or <code>mysql</code>.</p>
@@ -199,8 +194,9 @@ About SQL, the syntax for querying databases</h1>
 <li>Column names are inserted if there are any. If there are, all dots are converted to underscores. Otherwise, the columns will be named <code>c1</code>, <code>c2</code>, <code>c3</code>, &amp;c. </li>
 <li>If <a class="el" href="structapop__opts__type.html">apop_opts.db_name_column</a> is not blank (the default is <code>"row_name"</code>), then a so-named column is created, and the row names are placed there. </li>
 <li>If there are weights, they will be the last column of the table, and the column will be named <code>weights</code>. </li>
-<li>If the table exists; append to. If the table does not exist, create. So perhaps call <a class="el" href="group__all__public.html#ga01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> <code>("tabname", 'd')</code> to ensure that the table is removed ahead of time. </li>
-<li>Use <a class="el" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> <code>(data, "tabname", .output_type='d', .output_append='w')</code> to overwrite a new table or with <code>.output_append='a'</code> to append. </li>
+<li>If the table does not exist, create it. Use <a class="el" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> <code>(data, "tabname", .output_type='d', .output_append='w')</code> to overwrite an existing table or with <code>.output_append='a'</code> to append. Appending is the default. Or, call <a class="el" href="group__all__public.html#ga01d501ca84ade92bc72fd4f67a617f64">apop_table_exists</a> <code>("tabname", 'd')</code> to ensure that the table is removed ahead of time.</li>
+</ul>
+<ul>
 <li>If your data set has zero data (i.e., is just a list of column names or is entirely blank), <a class="el" href="group__all__public.html#gab45a848e5dbcaf82b5b95cd03f7b396a">apop_data_print</a> returns without creating anything in the database. </li>
 <li>Especially if you are using a pre-2007 version of SQLite, there may be a speed gain to wrapping the call to this function in a begin/commit pair:</li>
 </ul>
@@ -218,7 +214,7 @@ Threading</h1>
 <li>Some functions modify their inputs. It is up to you to use those functions in a thread-safe manner. The <a class="el" href="group__all__public.html#gaa06b6ab6ec9f78f305b1dacc8ec2efd3">apop_matrix_realloc</a> handles states and global variables correctly in a threaded environment, but if you have two threads resizing the same <code>gsl_matrix</code> at the same time, you're going to have problems.</li>
 </ul>
 <ul>
-<li>There are few compilers that don't support OpenMP. Clang on MacOS may be the only current mainstream example as of this writing, and they are hard at work on implementing it. In the mean time, when compiling on such a system all work will be single-threaded.</li>
+<li>There are few compilers that don't support OpenMP. When compiling on such a system all work will be single-threaded.</li>
 </ul>
 <ul>
 <li>Set the maximum number of threads to <code>N</code> with the environment variable</li>

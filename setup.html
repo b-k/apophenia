@@ -101,7 +101,7 @@ $(document).ready(function(){initNavTree('setup.html','');});
 The supporting cast</h1>
 <p>To use Apophenia, you will need to have a working C compiler, the GSL (v1.7 or higher) and SQLite installed. mySQL/mariaDB is optional.</p>
 <ul>
-<li>Some readers are unfamiliar with modern package managers and common methods for setting up a C development environment; see <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em> for an introduction.</li>
+<li>Some readers may be unfamiliar with modern package managers and common methods for setting up a C development environment; see <a href="http://modelingwithdata.org/appendix_o.html">Appendix O</a> of <em> Modeling with Data</em> for an introduction.</li>
 </ul>
 <ul>
 <li>Other pages in this documentation have a few more notes for <a class="el" href="windows.html">Windows</a> users, including <a class="el" href="mingw.html">MinGW</a> users.</li>
@@ -119,7 +119,7 @@ The supporting cast</h1>
 <li>Once you have the library downloaded, compile it using</li>
 </ul>
 <div class="fragment"><div class="line">tar xvzf apop*tgz &amp;&amp; cd apophenia-0.999</div>
-<div class="line">./configure &amp;&amp; make &amp;&amp; sudo make install &amp;&amp; make check</div>
+<div class="line">./configure &amp;&amp; make &amp;&amp; make check &amp;&amp; sudo make install</div>
 </div><!-- fragment --><p>If you decide not to keep the library on your system, run <code>sudo make uninstall</code> from the source directory to remove it.</p>
 <ul>
 <li>If you need to install packages in your home directory because you don't have root permissions, see the <a class="el" href="notroot.html">Not root?</a> page.</li>

@@ -114,7 +114,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:ae6b8c6ca335b895ee91c182c8b9ed6e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Settings for least-squares type models </p>
+<div class="textblock"><p>Settings for least-squares type models such as <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> or <a class="el" href="group__models.html#ga1efcbbe0410c89401354c762363a909f">apop_iv</a> </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a class="anchor" id="a6ecfd91942cfb4965dba9382f5947ef5"></a>
 <div class="memitem">
@@ -125,7 +125,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If 'y', then the input data set may be normalized or otherwise mangled </p>
+<p>If <code>'y'</code>, then the input data set may be normalized or otherwise mangled. </p>
 
 </div>
 </div>
@@ -138,7 +138,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The distribution of <img class="formulaInl" alt="$P(Y|X)$" src="form_1.png"/> is specified by the model, but the distribution of <img class="formulaInl" alt="$X$" src="form_2.png"/> is not. </p>
+<p>The distribution of <img class="formulaInl" alt="$P(Y|X)$" src="form_2.png"/> is specified by the model holding this struct, but the distribution of <img class="formulaInl" alt="$X$" src="form_3.png"/> needs to be specified as well for any calculation of <img class="formulaInl" alt="$P(Y)$" src="form_4.png"/>. See the notes in the RNG section of the <a class="el" href="group__models.html#ga85524b1deabd5829227888fd91740cc3">apop_ols</a> documentation. </p>
 
 </div>
 </div>

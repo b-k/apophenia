@@ -103,9 +103,9 @@ $(document).ready(function(){initNavTree('text_format.html','');});
 <p>The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. If your data is in another encoding, try the POSIX-standard <code>iconv</code> program to filter the data to UTF-8.</p>
 <ul>
 <li>The character after a backslash is read as a normal character, even if it is a delimiter, <code>#</code>, or <code>".
-  \li If a field contains several such special characters, surround it by \c "s</code>. The surrounding marks are stripped and the text read verbatim. </li>
+\li If a field contains several such special characters, surround it by \c "s</code>. The surrounding marks are stripped and the text read verbatim. </li>
 <li>Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them. E.g., "Males, 30-40", is an OK column name, as is "Males named \"Joe\"". </li>
-<li>Everything after an unprotected # is taken to be comments and ignored. </li>
+<li>Everything after an unprotected <code>#</code> is taken to be comments and ignored. </li>
 <li>Blank lines (empty or consisting only of white space) are also ignored. </li>
 <li>If you are reading into the <code>gsl_matrix</code> element of an <a class="el" href="gentle.html#apop_data">apop_data</a> set, all text fields are taken as zeros. You will be warned of such substitutions unless you set <code>apop_opts.verbose==0</code> beforehand. For mixed text/numeric data, try using <a class="el" href="group__all__public.html#gabd00e16791a970631c3ed4ac3487da46">apop_text_to_db</a> and then <a class="el" href="group__all__public.html#ga1f06db34e05b5afb63112f83ad2317b8">apop_query_to_mixed_data</a>. </li>
 <li>There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas like this, the user typically means that there is a missing value and the system should insert a NAN; when it is two tabs in a row, this is typically just a formatting glitch. Thus, if there are multiple delimiters in a row, I check whether the second (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any other delimiter (including the end of the line) then a NaN is inserted.</li>
@@ -129,7 +129,7 @@ $(document).ready(function(){initNavTree('text_format.html','');});
 <li>Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given <div class="fragment"><div class="line">NUMLEOL</div>
 <div class="line">123AABB</div>
 <div class="line">456CCDD</div>
-</div><!-- fragment --> we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7. </li>
+</div><!-- fragment --> and <code>.field_ends=(int[]){3, 5, 7}</code>, we have three columns, named NUM, LE, and OL. The names can be read from the first row by setting <code>.has_row_names='y'</code>. </li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- doc-content -->

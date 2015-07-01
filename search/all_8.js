@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['kernel',['kernel',['../structapop__kernel__density__settings.html#a3aa105f6ca87b95f942c1301651d56c2',1,'apop_kernel_density_settings']]]
+  ['jacobian_5fto_5fbase',['jacobian_to_base',['../structapop__coordinate__transform__settings.html#a83536118440207603d60629025a4308e',1,'apop_coordinate_transform_settings']]]
 ];

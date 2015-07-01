@@ -128,7 +128,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For use with <a class="el" href="group__all__public.html#ga0492d6f5ae8a73a60b651cadb113d643">apop_arms_draw</a>, to perform derivative-free adaptive rejection sampling with metropolis step.</p>
-<p>That function generates default values for this if you do not attach one to the model beforehand, via a form like <code>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</code>. The <code>model</code> element is mandatory; you'll get a run-time complaint if you forget it. </p>
+<p>That function generates default values for this struct if you do not attach one to the model beforehand, via a form like <code>apop_model_add_group(your_model, apop_arms, .model=your_model, .xl=8, .xr =14);</code>. If you initialize it manually via apop_settings_add_group, the <code>model</code> element is mandatory; you'll get a run-time complaint if you forget it. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a class="anchor" id="a85e13f4fb666d93db985a9dd4c904be4"></a>
 <div class="memitem">
@@ -152,7 +152,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether metropolis step is required. (I.e., set to one if you're not sure if the function is log-concave). Set to <code>'y'</code>es or <code>'n'</code>o </p>
+<p>Set to <code>'y'</code> if the metropolis step is required (i.e., if you're not sure if the function is log-concave). </p>
 
 </div>
 </div>
@@ -165,7 +165,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The model from which I will draw. Mandatory. Must have either a <code>log_likelihood</code> or <code>p</code> method. </p>
+<p>The model from which to draw. Mandatory. Must have either a <code>log_likelihood</code> or <code>p</code> method. </p>
 
 </div>
 </div>
@@ -191,7 +191,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Number of starting values supplied (i.e. number of elements in <code>xinit</code>) </p>
+<p>The length of <code>xinit</code>. </p>
 
 </div>
 </div>
@@ -217,7 +217,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A <code>double*</code> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't <code>NULL</code>, I need at least three items. </p>
+<p>A <code>double*</code> giving starting values for x in ascending order, e.g., <code>(double *){1, 10, 100}</code>. . Default: -1, 0, 1. If this isn't <code>NULL</code>, I need at least three items, and the length in <code>ninit</code>. </p>
 
 </div>
 </div>
@@ -243,7 +243,7 @@ arms_state *&#160;</td><td class="memItemRight" valign="bottom"><b>state</b></td
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Previous value from Markov chain </p>
+<p>For internal use; please ignore. Previous value from Markov chain. </p>
 
 </div>
 </div>

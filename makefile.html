@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('makefile.html','');});
 <div class="contents">
 <div class="textblock"><p>Instead of giving lengthy compiler commands at the command prompt, you can use a Makefile to do most of the work. How to: </p><ul>
 <li>Copy and paste the following into a file named <code>makefile</code>. </li>
-<li>Change the first line to the name of your program (e.g., if you have written <code>sample.c</code>, then the first line will read <code>PROGNAME=sample</code>). </li>
+<li>Change the first line to the name of your program (e.g., if you have written <code>census.c</code>, then the first line will read <code>PROGNAME=census</code>). </li>
 <li>If your program has multiple <code>.c</code> files, add a corresponding <code>.o</code> to the currently blank <code>objects</code> variable, e.g. <code>objects=sample2.o sample3.o</code> </li>
 <li>One you have a Makefile in the directory, simply type <code>make</code> at the command prompt to generate the executable.</li>
 </ul>
@@ -115,7 +115,7 @@ $(document).ready(function(){initNavTree('makefile.html','');});
 </div><!-- fragment --> The <code>pkg-config</code> program will then fill in the appropriate directories and libraries. Pkg-config knows Apophenia depends on the GSL and database libraries, so you need only list the most-dependent library.</li>
 </ul>
 <ul>
-<li>The -O3 flag is optional, asking the compiler to run its highest level of optimization (for speed).</li>
+<li>The <code>-O3</code> flag is optional, asking the compiler to run its highest level of optimization (for speed).</li>
 </ul>
 <ul>
 <li>GCC users may need the <code>&ndash;std=gnu99</code> or <code>&ndash;std=gnu11</code> flag to use post-1989 C standards.</li>

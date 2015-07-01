@@ -8,9 +8,6 @@ var outline =
       [ "Database moments (plus pow()!)", "dbs.html#db_moments", null ]
     ] ],
     [ "Models", "modelsec.html", "modelsec" ],
-    [ "Empirical distributions and PMFs (probability mass functions)", "Histosec.html", [
-      [ "Comparing histograms", "Histosec.html#histocompare", null ]
-    ] ],
     [ "Tests & diagnostics", "testpage.html", null ],
     [ "Optimization", "maxipage.html", [
       [ "Setting Constraints", "maxipage.html#constr", null ],

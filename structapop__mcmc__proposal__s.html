@@ -115,9 +115,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>accept_count</b></td><
 <tr class="separator:ac0133b0007a5c030713a3463c5c90d31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A proposal distribution for <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> and its accompanying functions and information. By default, these will be <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> models. The <code>step_fn</code> and <code>adapt_fn</code> have to be written around the model and your preferences. For the defaults, the step function recenters the mean of the distribution around the last accepted proposal, and the adapt function widens the Σ for the Normal if the accept rate is too low; narrows it if the accept rate is too large.</p>
-<p>You may provide an array of proposals. The length of the list of proposals must match the number of chunks, as per the <code>gibbs_chunks</code> setting in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group that the array of proposals is a part of. Each proposal must be initialized to include all elements, and the step and adapt functions probably have to be written anew for each type of model.</p>
-<p>This segment of the interface is in beta. A future revision may make it easier to design new proposals. </p>
+<div class="textblock"><p>A proposal distribution for <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> and its accompanying functions and information. By default, these will be <a class="el" href="group__models.html#ga3a4389e6e2a1a2ea606f89d55ec558d3">apop_multivariate_normal</a> models. The <code>step_fn</code> and <code>adapt_fn</code> have to be written around the model and your preferences. For the defaults, the step function recenters the mean of the distribution around the last accepted proposal, and the adapt function widens <img class="formulaInl" alt="$\Sigma$" src="form_0.png"/> for the Normal if the accept rate is too low; narrows it if the accept rate is too large.</p>
+<p>You may provide an array of proposals. The length of the list of proposals must match the number of chunks, as per the <code>gibbs_chunks</code> setting in the <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group that the array of proposals is a part of. Each proposal must be initialized to include all elements, and the step and adapt functions probably have to be written anew for each type of model. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a class="anchor" id="a8bc6898a1489949f5a7063b15765dc3d"></a>
 <div class="memitem">
@@ -154,7 +153,7 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>accept_count</b></td><
         </tr>
       </table>
 </div><div class="memdoc">
-<p>These are about this chunk. The <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group has a total for the aggregate across all chunks. </p>
+<p>If there are multiple <a class="el" href="structapop__mcmc__proposal__s.html">apop_mcmc_proposal_s</a> structs for multiple chunks, These count accepts/rejects for this chunk. The <a class="el" href="structapop__mcmc__settings.html">apop_mcmc_settings</a> group has a total for the aggregate across all chunks. </p>
 
 </div>
 </div>

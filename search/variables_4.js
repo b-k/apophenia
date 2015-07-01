@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['estimate',['estimate',['../structapop__model.html#adaf4fc23338fff1ef67bce3ccac667b6',1,'apop_model']]]
+  ['gibbs_5fchunks',['gibbs_chunks',['../structapop__mcmc__settings.html#a3b1ce772db565366881f6dadcfc79e4b',1,'apop_mcmc_settings']]]
 ];

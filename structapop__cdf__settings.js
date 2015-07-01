@@ -1,6 +1,5 @@
 var structapop__cdf__settings =
 [
-    [ "cdf_model", "structapop__cdf__settings.html#a71fd055ef4265fd462a95594ba427261", null ],
     [ "draws", "structapop__cdf__settings.html#afeb0823350485ca80fe0e094e58ff8ce", null ],
     [ "draws_made", "structapop__cdf__settings.html#a0aac5cbd13f62177895786ab36492aa9", null ],
     [ "draws_refcount", "structapop__cdf__settings.html#a3aa9f7101b8216c3fc8077abe0987d0d", null ],

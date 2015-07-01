@@ -107,13 +107,13 @@ Data Fields</h2></td></tr>
 <tr class="memitem:ad64f4a7d66c18f064b028901276b79af"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad64f4a7d66c18f064b028901276b79af"></a>
 <a class="el" href="structapop__data.html">apop_data</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>data</b></td></tr>
 <tr class="separator:ad64f4a7d66c18f064b028901276b79af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab59e07d7477389bc90a8fe727acf9a3c"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structloess__struct.html">loess_struct</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__loess__settings.html#ab59e07d7477389bc90a8fe727acf9a3c">lo_s</a></td></tr>
+<tr class="memitem:ab59e07d7477389bc90a8fe727acf9a3c"><td class="memItemLeft" align="right" valign="top">struct loess_struct&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__loess__settings.html#ab59e07d7477389bc90a8fe727acf9a3c">lo_s</a></td></tr>
 <tr class="separator:ab59e07d7477389bc90a8fe727acf9a3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0c8cc70a4be852404cc7cf1bd54e6008"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structapop__loess__settings.html#a0c8cc70a4be852404cc7cf1bd54e6008">want_predict_ci</a></td></tr>
 <tr class="separator:a0c8cc70a4be852404cc7cf1bd54e6008"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The code for the loess system is based on FORTRAN code from 1988, overhauled in 1992, linked in to Apophenia in 2009. The structure that does all the work, then, is a <code><a class="el" href="structloess__struct.html">loess_struct</a></code> that you should basically take as opaque.</p>
+<div class="textblock"><p>The code for the loess system is based on FORTRAN code from 1988, overhauled in 1992, linked in to Apophenia in 2009. The structure that does all the work, then, is a <code>loess_struct</code> that you should basically take as opaque.</p>
 <p>The useful settings from that struct re-appear in the <a class="el" href="structapop__loess__settings.html">apop_loess_settings</a> struct so you can set them directly, and then the settings init function will copy your preferences into the working struct.</p>
 <p>The documentation for the elements is cut/pasted/modified from Cleveland, Grosse, and Shyu. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
@@ -135,17 +135,17 @@ Data Fields</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">struct <a class="el" href="structloess__struct.html">loess_struct</a> apop_loess_settings::lo_s</td>
+          <td class="memname">struct loess_struct apop_loess_settings::lo_s</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p><code>.data</code>: Mandatory. Your input data set.</p>
 <p><code>.lo_s.model.span</code>: smoothing parameter. Default is 0.75.</p>
 <p><code>.lo_s.model.degree</code>: overall degree of locally-fitted polynomial. 1 is locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.</p>
-<p><code>.lo_s.normalize</code>: Should numeric predictors be normalized? If 'y' - the default - the standard normalization is used. If 'n', no normalization is carried out.</p>
-<p><code></code>.lo_s.model.parametric: for two or more numeric predictors, this argument specifies those variables that should be conditionally-parametric. The argument should be a logical vector of length p, specified in the order of the predictor group ordered in x. Default is a vector of 0's of length p.</p>
+<p><code>.lo_s.normalize</code>: Should numeric predictors be normalized? If <code>'y'</code> - the default - the standard normalization is used. If <code>'n'</code>, no normalization is carried out.</p>
+<p><code></code>.lo_s.model.parametric: for two or more numeric predictors, this argument specifies those variables that should be conditionally-parametric. The argument should be a logical vector of length <code>p</code>, specified in the order of the predictor group ordered in <code>x</code>. Default is a vector of 0's of length <code>p</code>.</p>
 <p><code></code>.lo_s.model.drop_square: for cases with degree = 2, and with two or more numeric predictors, this argument specifies those numeric predictors whose squares should be dropped from the set of fitting variables. The method of specification is the same as for parametric. Default is a vector of 0's of length p.</p>
-<p><code></code>.lo_s.model.family: the assumed distribution of the errors. The values are <code>"gaussian"</code> or <code>"symmetric"</code>. The first value is the default. If the second value is specified, a robust fitting procedure is used.</p>
+<p><code></code>.lo_s.model.family: the assumed distribution of the errors. The values may be <code>"gaussian"</code> or <code>"symmetric"</code>. The first value is the default. If the second value is specified, a robust fitting procedure is used.</p>
 <p><code>lo_s.control.surface</code>: determines whether the fitted surface is computed <code>"directly"</code> at all points or whether an <code>"interpolation"</code> method is used. The default, interpolation, is what most users should use unless special circumstances warrant.</p>
 <p><code>lo_s.control.statistics</code>: determines whether the statistical quantities are computed <code>"exactly"</code> or approximately, where <code>"approximate"</code> is the default. The former should only be used for testing the approximation in statistical development and is not meant for routine usage because computation time can be horrendous.</p>
 <p><code>lo_s.control.cell</code>: if interpolation is used to compute the surface, this argument specifies the maximum cell size of the k-d tree. Suppose k = floor(n*cell*span) where n is the number of observations. Then a cell is further divided if the number of observations within it is greater than or equal to k. default=0.2</p>
@@ -175,7 +175,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If 'y' (the default), calculate the confidence bands for predicted values </p>
+<p>If <code>'y'</code> (the default), calculate the confidence bands for predicted values </p>
 
 </div>
 </div>
