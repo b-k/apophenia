@@ -1410,6 +1410,7 @@ d2->more = apop_data_copy(apop_data_get_factor_names(d1));
 apop_data_to_factors(d2);
 \endcode
 
+See the documentation for \ref apop_logit for a sample linear model using a factor dependent variable and dummy independent variable.
 
 \li\ref apop_data_to_dummies
 \li\ref apop_data_to_factors

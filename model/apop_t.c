@@ -69,7 +69,7 @@ static long double apop_t_dist_constraint(apop_data *beta, apop_model *m){
 If you want to test a hypothesis, you probably don't need this, and should instead
 use \ref apop_test.
 
-In that world, those three distributions are actually parameter free. The data are
+In that world, the \f$t\f$ distribution is parameter free. The data are
 assumed to be normalized to be based on a mean zero, variance one process, you get
 the degrees of freedom from the size of the data, and the distribution is thus fixed.
 

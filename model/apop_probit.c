@@ -375,9 +375,15 @@ must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
 -->
 
-Here is an artifical example:
+Here is an artifical example which clarifies the simplest use of the model:
 
 \include fake_logit.c
+
+Here is an example using data from a U.S. Congressional vote, including one text
+variable that has to be converted to factors, and one to convert to dummies.
+A loop then calculates the customary p-values.
+
+\include logit.c
 */
 apop_model *apop_logit = &(apop_model){.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
 /*.score = logit_dlog_likelihood,*/ .prep = logit_prep, .draw=logit_rng

@@ -9,7 +9,7 @@ expressing a uniform distribution over [a, b].
 The MLE of this distribution is simply a = min(your data); b = max(your data).
 Often useful for the RNG, such as when you have a Uniform prior model.
 
-\adoc    Input_format  An unordered set of numbers in the data set's vector, matrix, or both.
+\adoc    Input_format     One scalar observation per row (in the \c matrix or \c vector).  
 \adoc    Parameter_format  Zeroth vector element is \f$a\f$, the min;
                           element one is \f$b\f$, the max. 
 \adoc    settings  None.    

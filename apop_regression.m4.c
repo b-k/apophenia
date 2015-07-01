@@ -191,14 +191,12 @@ apop_data * create_factor_list(apop_data *d, int col, char type){
 /* Producing dummies consists of finding the index of element i, for all i, then
  setting (i, index) to one.
  Producing factors consists of finding the index and then setting (i, datacol) to index.
- Otherwise the work is basically identical.  
+ Otherwise the work is basically identical.
  Also, add a ->more page to the input data giving the translation.
  */
-static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, 
-                            int keep_first, int datacol, char dummyfactor, 
+static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
+                            int keep_first, int datacol, char dummyfactor,
                             apop_data **factor_list){
-    size_t index;
-
     if (!(*factor_list=apop_data_get_factor_names(d, col, type)))
         *factor_list = create_factor_list(d, col, type);
     Get_vmsizes((*factor_list)); //maxsize
@@ -217,12 +215,39 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
     apop_data *out = (dummyfactor == 'd')
                 ? apop_data_calloc(0, s, (keep_first!='n' ? elmt_ctr : elmt_ctr-1))
                 : d;
+    size_t index;
     for (size_t i=0; i< s; i++){
         if (type == 'd'){
             double val = apop_data_get(d, i, col);
-            index = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (size_t)delmts->data)/sizeof(double);
-        } else 
-            index = ((size_t)bsearch(&(d->text[i][col]), *telmts->text, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)*telmts->text)/sizeof(char**);
+            size_t posn = (size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles);
+            if (posn )
+                index = (posn - (size_t)delmts->data)/sizeof(double);
+            else {
+                index = elmt_ctr++;
+                (*factor_list)->vector = apop_vector_realloc((*factor_list)->vector, elmt_ctr);
+                gsl_vector_set((*factor_list)->vector, index, val);
+                out->matrix = apop_matrix_realloc(out->matrix, out->matrix->size1, elmt_ctr);
+                gsl_vector_set_zero(Apop_cv(out, index));
+            }
+        } else {
+            size_t posn = (size_t)bsearch(&(d->text[i][col]), *telmts->text, elmt_ctr, sizeof(char**), strcmpwrap);
+            if (posn)
+                index = (posn - (size_t)*telmts->text)/sizeof(char**);
+            else {
+                index = elmt_ctr++;
+                *factor_list = apop_text_alloc(*factor_list, elmt_ctr, 1);
+                apop_text_set(*factor_list, index, 0, d->text[i][col]);
+                (*factor_list)->vector = apop_vector_realloc((*factor_list)->vector, elmt_ctr);
+                apop_data_set(*factor_list, index, -1, index);
+
+                telmts = apop_text_alloc(telmts, 1, elmt_ctr);
+                apop_text_set(telmts, 0, index, d->text[i][col]);
+                if (dummyfactor == 'd'){
+                    out->matrix = apop_matrix_realloc(out->matrix, out->matrix->size1, out->matrix->size2+1);
+                    gsl_vector_set_zero(Apop_cv(out, out->matrix->size2-1));
+                }
+            }
+        }
         if (dummyfactor == 'd'){
             if (keep_first!='n')
                 gsl_matrix_set(out->matrix, i, index,1); 
@@ -293,6 +318,7 @@ Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a referen
 \li Use \ref apop_data_get_factor_names to get the list of category names.
 \li NaNs (if any) appear at the end of the sort order.
 \li See \ref fact for further discussion.
+\li See the documentation for \ref apop_logit for a sample linear model using this function.
 \li This function uses the \ref designated syntax for inputs.
 
 \see \ref apop_data_to_factors
@@ -389,6 +415,7 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 
 \li If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
 \li See \ref fact for further discussion.
+\li See the documentation for \ref apop_logit for a sample linear model using this function.
 \li This function uses the \ref designated syntax for inputs.
 
 \see \ref apop_data_to_dummies
