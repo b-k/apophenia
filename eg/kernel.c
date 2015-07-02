@@ -26,10 +26,10 @@ void set_uniform_edges(apop_data * r, apop_model *unif){
 }
 
 void plot(apop_model *k, apop_model *k2){
-    apop_data *onept = apop_data_alloc(0,1,1);
+    apop_data *onept = apop_data_alloc(1,1);
     FILE *outtab = fopen("kerneldata", "w");
     for (double i=0; i<20; i+=0.01){
-        apop_data_set(onept,0,0, i);
+        apop_data_set(onept, .val=i);
         fprintf(outtab, "%g %g %g\n", i, apop_p(onept, k), apop_p(onept, k2));
     }
     fclose(outtab);
@@ -47,8 +47,8 @@ apop_data *draw_some_data(){
 int main(){
     apop_data *d = draw_some_data();    
     apop_model *k = apop_estimate(d, apop_kernel_density);
-    apop_model *k2 = apop_model_copy_set(apop_kernel_density,
-                    apop_kernel_density, .base_data=d,
+    apop_model *k2 = apop_model_set_settings(apop_kernel_density,
+                                         .base_data=d,
                                          .set_fn = set_uniform_edges,
                                          .kernel = apop_uniform);
     plot(k, k2);

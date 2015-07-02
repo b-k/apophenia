@@ -74,20 +74,6 @@ static void setup_normal_proposals(apop_mcmc_proposal_s *s, int tsize, apop_mcmc
     s->adapt_fn = settings->base_adapt_fn;
 }
 
-apop_model *maybe_prep(apop_data *d, apop_model *m, bool *is_a_copy){
-    if (!m->parameters){
-        if ( m->vsize  >= 0 &&     // A hackish indication that
-             m->msize1 >= 0 &&     // there is still prep to do.
-             m->msize2 >= 0 && m->prep){
-                *is_a_copy = true;
-                m = apop_model_copy(m);
-                apop_prep(d, m);
-        }
-        m->parameters = apop_data_alloc(m->vsize, m->msize1, m->msize2);
-    }
-    return m;
-}
-
 static void set_block_count_and_block_starts(apop_data *in, 
                                   apop_mcmc_settings *s, size_t total_len){
     if (s->gibbs_chunks =='a') {
@@ -173,9 +159,11 @@ can be reported to you. That run is done using \c model->data as input.
 \return On return, \c out is filled with the next step in the Markov chain. The <tt>->data</tt> element of the PMF model is extended to include the additional steps in the chain.
 If a proposal failed the model constraints, then return 1; else return 0. See the notes in the documentation for \ref apop_model_metropolis.
 
-\li After pulling the attached settings group, the parent model is ignored. One expects that \c base_model in the mcmc settings group == the parent model.
-
-\li If your settings break the model parameters into several chunks, this function returns after stepping through all chunks.
+  \li After pulling the attached settings group, the parent model is ignored. One expects
+that \c base_model in the mcmc settings group == the parent model.
+  \li If your settings break the model parameters into several chunks, this function
+returns after stepping through all chunks.
+\ingroup all_public
 */
 int apop_model_metropolis_draw(double *out, gsl_rng* rng, apop_model *model){
     apop_mcmc_settings *s = apop_settings_get_group(model, apop_mcmc);
@@ -226,13 +214,24 @@ Markov chain Monte Carlo</a> to make draws from the given model.
 
 The basic storyline is that draws are made from a proposal distribution, and the
 likelihood of your model given your data and the drawn parameters evaluated. At each
-step, a new set of proposal parameters are drawn, and if either they are more likely
+step, a new set of proposal parameters are drawn, and if they are more likely
 than the previous set the new proposal is accepted as the next step, else with probability (prob of new params)/(prob of old params),
 they are accepted as the next step anyway. Otherwise the last accepted proposal is repeated.
 
 The output is an \ref apop_pmf model with a data set listing the draws that were
 accepted, including those repetitions. The output model is modified so that subsequent
 draws are one more step from the Markov chain, via \ref apop_model_metropolis_draw.
+
+\param d The \ref apop_data set used for evaluating the likelihood of a proposed parameter set.
+
+\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
+
+\param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
+
+\return A modified \ref apop_pmf model representing the results of the search. It has
+a specialized \c draw method that returns another step from the Markov chain with each draw.
+
+\exception out->error='c'  Proposal was outside of a constraint; see below.
 
 \li If a proposal fails to meet the \c constraint element of the model you input, then
 the proposal is thrown out and a new one selected. By the default proposal
@@ -246,14 +245,14 @@ Attach an \ref apop_mcmc_settings group to your model to specify the proposal
 distribution, burnin, and other details of the search. See the \ref apop_mcmc_settings
 documentation for details.
 
-\li The default proposal includes an adaptive step: you specify a target accept rate
+  \li The default proposal includes an adaptive step: you specify a target accept rate
 (default: .35), and if the accept rate is currently higher the variance of the proposals
 is widened to explore more of the space; if the accept rate is currently lower the
 variance is narrowed to stay closer to the last accepted proposal. Technically, this
 breaks ergodicity of the Markov chain, but the consensus seems to be that this is
 not a serious problem. If it does concern you, you can set the \c base_adapt_fn in the \ref apop_mcmc_settings group to a do-nothing function, or one that damps its adaptation as \f$n\to\infty\f$.
-
-\li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
+  \li If you have a univariate model, \ref apop_arms_draw may be a suitable simpler alternative.
+  \li Note the \c gibbs_chunks element of the \ref apop_mcmc_settings group. If you set \c
 gibbs_chunks='a', all parameters are drawn as a set, and accepted/rejected as a set. The
 variances are adapted at an identical rate. If you set \c gibbs_chunks='i',
 then each scalar parameter is assigned its own proposal distribution, which is adapted
@@ -261,29 +260,21 @@ at its own pace. With \c gibbs_chunks='b' (the default), then each of the vector
 and weights of your model's parameters are drawn/accepted/adapted as a block (and so
 on to additional chunks if your model has <tt>->more</tt> pages). This works well for
 complex models which naturally break down into subsets of parameters.
-
-Each chunk counts as a step in the Markov chain. Therefore, if there are several chunks,
-you can expect chunks to repeat from step to step. If you want a draw after cycling through all chunks, try using \ref apop_model_metropolis_draw, which has that behavior.
-
-\param d The \ref apop_data set used for evaluating the likelihood of a proposed parameter set.
-
-\param rng A \c gsl_rng, probably allocated via \ref apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
-
-\param m The \ref apop_model from which parameters are being drawn. (No default; must not be \c NULL)
-
-\li If the likelihood model has \c NULL parameters, I will allocate them. That means you can use
-one of the stock models that ship with Apophenia. If I need to run the model's prep
-routine to get the size of the parameters, then I will make a copy of the likelihood
-model, run prep, and then allocate parameters for that copy of a model.
-
-\li On exit, the \c parameters element of your likelihood model has the last accepted parameter proposal.
-
-\li If you set <tt>apop_opts.verbose=2</tt> or greater, I will report the accept rate of the M-H sampler. It is a common rule of thumb to select a proposal so that this is between 20% and 50%. Set <tt>apop_opts.verbose=3</tt> to see the stream of proposal points, their likelihoods, and the acceptance odds. You may want to set <tt>apop_opts.log_file=fopen("yourlog", "w")</tt> first.
-
-\return A modified \ref apop_pmf model representing the results of the search. It has
-a specialized \c draw method that returns another step from the Markov chain with each draw.
-
-\exception out->error='c'  Proposal was outside of a constraint; see above.
+  \li Each chunk counts as a step in the Markov chain. Therefore, if there are
+several chunks, you can expect chunks to repeat from step to step. If you want a
+draw after cycling through all chunks, try using \ref apop_model_metropolis_draw,
+which has that behavior.
+  \li If the likelihood model has \c NULL parameters, I will allocate them. That
+means you can use one of the stock models that ship with Apophenia. If I need
+to run the model's prep routine to get the size of the parameters, then I will
+make a copy of the likelihood model, run prep, and then allocate parameters
+for that copy of a model.
+  \li On exit, the \c parameters element of your likelihood model has the last accepted parameter proposal.
+  \li If you set <tt>apop_opts.verbose=2</tt> or greater, I will report the accept
+rate of the M-H sampler. It is a common rule of thumb to select a proposal so that
+this is between 20% and 50%. Set <tt>apop_opts.verbose=3</tt> to see the stream
+of proposal points, their likelihoods, and the acceptance odds. You may want to
+set <tt>apop_opts.log_file=fopen("yourlog", "w")</tt> first.
 
 \li This function uses the \ref designated syntax for inputs.
 */
@@ -294,7 +285,7 @@ apop_varad_head(apop_model *, apop_model_metropolis){
     apop_data *apop_varad_var(d, NULL);
     apop_model *apop_varad_var(m, NULL);
     Apop_stopif(!m, return NULL, 0, "NULL model input.");
-    gsl_rng *apop_varad_var(rng, apop_rng_get_thread());
+    gsl_rng *apop_varad_var(rng, apop_rng_get_thread(-1));
     return apop_model_metropolis_base(d, rng, m);
 }
 
@@ -306,8 +297,7 @@ apop_varad_head(apop_model *, apop_model_metropolis){
     apop_mcmc_settings *s = apop_settings_get_group(m, apop_mcmc);
     if (!s)
         s = Apop_model_add_group(m, apop_mcmc);
-    bool m_is_a_copy = 0;
-    m = maybe_prep(d, m, &m_is_a_copy);
+    apop_prep(d, m); //typically a no-op
     s->last_ll = GSL_NEGINF;
     gsl_vector * drawv = apop_data_pack(m->parameters);
     Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
@@ -349,7 +339,6 @@ apop_varad_head(apop_model *, apop_model_metropolis){
     apop_settings_copy_group(outp, m, "apop_mcmc");
 
     gsl_vector_free(drawv);
-    if (m_is_a_copy) apop_model_free(m);
     }
     return outp;
 }

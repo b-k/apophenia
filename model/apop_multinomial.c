@@ -1,17 +1,19 @@
 /* The binomial distribution as an \c apop_model.
 Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
- \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
-This differs from the \ref apop_multinomial only in the input data format.
+ \amodel apop_binomial The multi-draw generalization of the Bernoulli, or the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 
-It is implemented as an alias of the \ref apop_multinomial model, except that it has
-a CDF, <tt>.vsize==2</tt> and <tt>.dsize==1</tt> (i.e., we know it has two parameters
-and a draw returns a scalar).
+It is implemented as an alias of the \ref apop_multinomial model, except that
+it has an explicit CDF, we know it has two parameters, and its draw method returns a scalar. I.e., 
+<tt>.vsize==2</tt> and <tt>.dsize==1</tt>.
 
 \adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$p_1\f$. Thus, \f$p_0\f$
         isn't written down; see \ref apop_multinomial for further discussion.
         If you input \f$v[1]>1\f$ and <tt>apop_opts.verbose >=1</tt>, the log likelihood
         function will throw a warning.
+        Post-estimate, will have a <tt>\<Covariance\></tt> page with the covariance
+        matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).
+
 
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
   The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, 
@@ -20,7 +22,7 @@ and a draw returns a scalar).
 \adoc    RNG The RNG returns a single number representing the success count, not a
     vector of length two giving both the failure bin and success bin. This is notable
     because it differs from the input data format, but it tends to be what people expect
-    from a Binomial RNG. For draws with both dimensions, use a \ref apop_multinomial model
+    from a Binomial RNG. For draws with both dimensions (or situations where draws are fed back into the model), use an \ref apop_multinomial model
     with <tt>.vsize =2</tt>.
 */
 
@@ -167,8 +169,7 @@ double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 
 /* \amodel apop_multinomial The \f$n\f$--option generalization of the \ref apop_binomial "Binomial distribution".
 
-\adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).  */
-/* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
+\adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void multinomial_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
     Get_vmsizes(data); //vsize, msize1
@@ -196,8 +197,10 @@ static void multinom_prep(apop_data *data, apop_model *params){
 /* \adoc    Input_format Each row of the matrix is one observation: a set of draws from a single bin.
   The number of draws of type zero are in column zero, the number of draws of type one in column one, et cetera.
 
-\li You may have a set of several Bernoulli-type draws, which could be summed together to form a single Binomial draw.
-See \ref apop_data_to_dummies to do the aggregation (using the <tt>.keep_first='y'</tt> option).
+   \li You may have a set of several Bernoulli-type draws, which could be summed together
+to form a single Binomial draw.  The \ref apop_data_to_dummies function (using the
+<tt>.keep_first='y'</tt> option), to split a single column of numbers into a sequence
+of columns, may help with this.
 
 \adoc    Parameter_format
         The parameters are kept in the vector element of the \c apop_model parameters element. \c parameters->vector->data[0]==n;
@@ -206,10 +209,11 @@ See \ref apop_data_to_dummies to do the aggregation (using the <tt>.keep_first='
 The numeraire is bin zero, meaning that \f$p_0\f$ is not explicitly listed, but is
 \f$p_0=1-\sum_{i=1}^{k-1} p_i\f$, where \f$k\f$ is the number of bins. Conveniently enough,
 the zeroth element of the parameters vector holds \f$n\f$, and so a full probability vector can
-easily be produced by overwriting that first element. Continuing the above example: 
+easily be produced by overwriting that first element. For example:
 \code 
-int n = apop_data_get(estimated->parameters, 0, -1); 
-apop_data_set(estimated->parameters, 0, 1 - (apop_sum(estimated->parameters)-n)); 
+apop_model *estimated = apop_estimate(your_data, apop_multinomial);
+int n = apop_data_get(estimated->parameters); 
+apop_data_set(estimated->parameters, .val=1 - (apop_sum(estimated->parameters)-n)); 
 \endcode
 And now the parameter vector is a proper list of probabilities.
 

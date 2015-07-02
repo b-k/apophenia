@@ -4,18 +4,18 @@ Copyright (c) 2005--2009, 2011 by Ben Klemens.  Licensed under the GPLv2; see CO
 
 \amodel apop_zipf
 Wikipedia has notes on the <a href="http://en.wikipedia.org/wiki/Zipf_distribution">Zipf distribution</a>. 
+
 \f$Z(a)   = {1\over \zeta(a) * i^a}        \f$
 
 \f$lnZ(a) = -(\log(\zeta(a)) + a \log(i))    \f$
 
-apop_zipf.estimate() is an MLE, so feed it appropriate \ref apop_mle_settings.
-
-\adoc    Input_format    Ignores the matrix structure of the input data, so send in a 1 x N, an N x 1, or an N x M.
+\adoc    Input_format     One scalar observation per row (in the \c matrix or \c vector).  
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
 See also \ref apop_data_rank_compress for means of dealing with one more input data format.
 
 \adoc    Parameter_format One item in the parameter set's vector.    
-\adoc    settings  \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+\adoc    Settings  \ref apop_mle_settings
 */
 
 #include "apop_internal.h"
@@ -39,11 +39,9 @@ static long double zipf_log_likelihood(apop_data *d, apop_model *m){
     return like;
 }    
 
-/*  \adoc RNG Returns a ranking: If the population were Zipf distributed, you're most
-likely to get the 1st most common item, so this produces a lot of ones,
-a great deal of twos, and so on.
+/*  \adoc RNG Returns an ordinal ranking, starting from 1.
 
-Cribbed from <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html>Devroye (1986)</a>, Chapter 10, p 551.  */
+From <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html">Devroye (1986)</a>, Chapter 10, p 551.  */
 static int zipf_rng(double *out, gsl_rng* r, apop_model *param){
     Nullcheck_mp(param, 1);
     double a = apop_data_get(param->parameters, 0, -1);

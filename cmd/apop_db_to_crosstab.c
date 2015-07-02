@@ -13,6 +13,10 @@ int main(int argc, char **argv){
 "\n"
 "A command-line wrapper for the apop_db_to_crosstab function.\n"
 "See Apophenia's online documentation for that function for details and tricks.\n"
+"The default for the data column is a count [count(*)]\n"
+"The column is optional; leave it out if you want a single-dimensional crosstab.\n"
+"If you need a non-default data column but want a 1-D crosstab, use 1 as your column.\n"
+"\n"
 " -d\tdelimiter (default: <tab>)\n"
 " -v\tverbose: prints status info on stderr\n"
 " -v -v\tvery verbose: also print queries executed on stderr\n"
@@ -29,12 +33,19 @@ int main(int argc, char **argv){
             apop_opts.verbose++;
         }
 
-    Apop_stopif(optind+4 > argc, return 1, 0, "I need five arguments past the options: database, table, row col, column col, data col");
+    Apop_stopif(optind+2 > argc, return 1, 0, "I need at least two arguments past the options: database table [optional rowcol] [optional columncol] [optional datacol]");
+    _Bool no_rowcol = optind+2 > argc;
+    _Bool no_columncol = optind+3 > argc;
+    _Bool no_datacol = optind+4 > argc;
+    char *rowcol = no_rowcol    ? "1" : argv[optind+2];
+    char *colcol = no_columncol ? "1" : argv[optind+3];
+    char *datacol = no_datacol  ? NULL: argv[optind+4];
     if (verbose){
-        fprintf(stderr, "database:%s\ntable: %s\nrow col: %s\ncol col:%s\ndata col:%s\n---------\n",
-            argv[optind], argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
+        fprintf(stderr, "database:%s\ntable: %s\nrow col: %s\ncol col:%s%s%s\n---------\n",
+            argv[optind], argv[optind +1], rowcol, colcol,
+            no_datacol ?"":"\ndata col:", datacol);
     }
 	apop_db_open(argv[optind]);
-	apop_data *m = apop_db_to_crosstab(argv[optind +1], argv[optind+2], argv[optind+3], argv[optind+4]);
+	apop_data *m = apop_db_to_crosstab(argv[optind +1], rowcol, colcol, datacol);
 	apop_data_print(m);
 }

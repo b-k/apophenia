@@ -1,7 +1,6 @@
 #include <apop.h>
 
-/* This sample produces a dummy times table, gets a summary, and prunes the summary table.
-If you are not a test script, uncomment the last line to display the pruned table.  */
+// This sample produces a dummy times table, gets a summary, and prunes the summary table.
 int main(){
     int i, j;
     apop_data *d = apop_data_alloc(0, 10, 4);
@@ -17,5 +16,5 @@ int main(){
     assert(apop_data_get(summary, .row=0, .colname="mean")==0);
     assert(apop_data_get(summary, .row=1, .colname="median")==4);
     assert(apop_data_get(summary, .row=2, .colname="median")==8);
-    //apop_data_show(summary);
+    apop_data_show(summary);
 }

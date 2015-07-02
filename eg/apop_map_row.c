@@ -24,7 +24,7 @@ double weight_given_even(apop_data *r){
 int main(){
     apop_data *d = apop_data_alloc(100);
     d->weights = gsl_vector_alloc(100);
-    apop_map(d, .fn_ri=set_vector_to_even, .inplace='v');
+    apop_map(d, .fn_ri=set_vector_to_even, .inplace='v'); //'v=void. Throw out return values.
     apop_map(d, .fn_ri=set_weight_to_index, .inplace='v');
     double sum = apop_map_sum(d, .fn_r = weight_given_even);
     assert(sum == 49*25*2);

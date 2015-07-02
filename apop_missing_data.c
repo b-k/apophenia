@@ -8,14 +8,19 @@
 
 /** If there is an NaN anywhere in the row of data (including the matrix, the vector, the weights, and the text) then delete the row from the data set.
 
-\li If every row has an NaN, then this returns \c NULL.
+\li If every row has a NaN, then this returns \c NULL.
 \li If \c apop_opts.nan_string is not \c NULL, then I will make case-insensitive comparisons to the text elements to check for bad data as well.
 \li If \c inplace = 'y', then I'll free each element of the input data
     set and refill it with the pruned elements. I'll still take up (up to)
     twice the size of the data set in memory during the function. If
-    every row has an NaN, then your \c apop_data set will end up with
-    \c NULL vector, matrix, .... if \c inplace = 'n', then the original data set is left unmolested.
+    every row has a NaN, then your \c apop_data set will end up with
+    \c NULL vector, matrix, .... if \c inplace = 'n', then the original data set is
+    left where it was, though internal elements may be moved.
 \li I only look at the first page of data (i.e. the \c more element is ignored).
+\li Listwise deletion is often not a statistically valid means of dealing with missing data.
+    It is typically better to impute the data (preferably multiple times). See \ref
+    apop_ml_impute for a less-invalid means, or <a href="https://github.com/rodri363/tea">Tea
+    for survey imputation</a> for heavy-duty survey editing and imputation.
 \li This function uses the \ref designated syntax for inputs.
 
 \param d       The data, with NaNs
@@ -24,6 +29,7 @@ you sent in and refill with the pruned data. If \c 'n', leave the
 set alone and return a new data set. Default=\c 'n'.
 \return        A (potentially shorter) copy of the data set, without
 NaNs. If <tt>inplace=='y'</tt>, a pointer to the input, which was shortened in place. If the entire data set is cleared out, then this will be \c NULL.
+\see apop_data_rm_rows
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_listwise_delete(apop_data *d, char inplace){
@@ -129,7 +135,7 @@ necessary data-parameter switching to make that happen.
 \param  mvn A parametrized \ref apop_model from which you expect the data was derived.
 if \c NULL, then I'll use the Multivariate Normal that best fits the data after listwise deletion.
 
-\return An estimated <tt>apop_ml_impute_model</tt>. Also, the data input will be filled in and ready to use.
+\return An estimated \ref apop_model. Also, the data input will be filled in and ready to use.
 */
 apop_model * apop_ml_impute(apop_data *d,  apop_model* mvn){
     if (!mvn){

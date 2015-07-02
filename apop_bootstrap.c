@@ -15,8 +15,6 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 \li If you are confident that your code is debugged and would like a new stream of values every time your program runs (provided your runs are more than a second apart), seed with the time:
 
 \include draw_some_normals.c
-
-\ingroup convenience_fns
 */
 gsl_rng *apop_rng_alloc(int seed){
     static int first_use = 1;
@@ -32,24 +30,24 @@ gsl_rng *apop_rng_alloc(int seed){
 
 /** Give me a data set and a model, and I'll give you the jackknifed covariance matrix of the model parameters.
 
-The basic algorithm for the jackknife (with many details glossed over): create a sequence of data
+The basic algorithm for the jackknife (glossing over the details): create a sequence of data
 sets, each with exactly one observation removed, and then produce a new set of parameter estimates 
 using that slightly shortened data set. Then, find the covariance matrix of the derived parameters.
 
-Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models that are closer to linear. The worse a linear approximation does (at the given data), the worse the jackknife approximates the variance.
+\li Jackknife or bootstrap? As a broad rule of thumb, the jackknife works best on models
+    that are closer to linear. The worse a linear approximation does (at the given data),
+    the worse the jackknife approximates the variance.
 
-Sample usage:
-\code
-apop_data_show(apop_jackknife_cov(your_data, your_model));
-\endcode
- 
 \param in	    The data set. An \ref apop_data set where each row is a single data point.
 \param model    An \ref apop_model, that will be used internally by \ref apop_estimate.
             
 \exception out->error=='n'   \c NULL input data.
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \see apop_bootstrap_cov
- */
+
+For example:
+\include jack.c
+*/
 apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
     Apop_stopif(!in, apop_return_data_error(n), 0, "The data input can't be NULL.");
     Get_vmsizes(in); //msize1, msize2, vsize
@@ -98,40 +96,49 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
 \param model    An \ref apop_model, whose \c estimate method will be used here. (No default)
 \param iterations How many bootstrap draws should I make? (default: 1,000) 
 \param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
-\param keep_boots  If 'y', then add a page to the output \ref apop_data set with the statistics calculated for each bootstrap iteration.
+\param keep_boots  Deprecated; use \c boot_store.
+\param boot_store  If not \c NULL, put the list of drawn parameter values here, with one parameter set per row. Sample use: <tt>apop_data *boots; apop_bootstrap_cov(data, model, .boot_store=&boots); apop_data_print(boots);</tt>
 They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed. (Default: 'n')
 \code
 apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
 apop_data *boot_stats = apop_data_get_page(boot_output, "<bootstrapped statistics>");
 
-Apop_matrix_row(boot_stats->matrix, 27, row_27)
-//If the output statistic is not just a vector, you'll need to use apop_data_unpack to put
-//it into the right shape. Let's assume for now that it's just a vector:
 printf("The statistics calculated on the 28th iteration:\n");
-apop_vector_print(row_27);
+gsl_vector *row_27 = Apop_rv(boot_stats, 27);
+apop_data_print(apop_data_unpack(row_27));
 \endcode
 \param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \exception out->error=='n'   \c NULL input data.
-\exception out->error=='N'   \c too many Nans.
+\exception out->error=='N'   \c too many NaNs.
+
 \li This function uses the \ref designated syntax for inputs.
+
+This example is a sort of demonstration of the Central Limit Theorem. The model is
+a simulation, where each call to the estimation routine produces the mean/std dev of
+a set of draws from a Uniform Distribution. Because the simulation takes no inputs,
+\ref apop_bootstrap_cov simply re-runs the simulation and calculates a sequence of
+mean/std dev pairs, and reports the covariance of that generated data set.
+
+\include boot_clt.c
+
 \see apop_jackknife_cov
  */
 #ifdef APOP_NO_VARIADIC
-apop_data * apop_bootstrap_cov(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans){
+apop_data * apop_bootstrap_cov(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans, apop_data **boot_store){
 #else
 apop_varad_head(apop_data *, apop_bootstrap_cov) {
     apop_data * apop_varad_var(data, NULL);
     apop_model *model = varad_in.model;
     int apop_varad_var(iterations, 1000);
-    Apop_stopif(!data, apop_return_data_error(n), 0, "The data input can't be NULL.");
     gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
     char apop_varad_var(keep_boots, 'n');
+    apop_data** apop_varad_var(boot_store, NULL);
     char apop_varad_var(ignore_nans, 'n');
-    return apop_bootstrap_cov_base(data, model, rng, iterations, keep_boots, ignore_nans);
+    return apop_bootstrap_cov_base(data, model, rng, iterations, keep_boots, ignore_nans, boot_store);
 }
 
- apop_data * apop_bootstrap_cov_base(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans){
+ apop_data * apop_bootstrap_cov_base(apop_data * data, apop_model *model, gsl_rng *rng, int iterations, char keep_boots, char ignore_nans, apop_data **boot_store){
 #endif
     Get_vmsizes(data); //vsize, msize1, msize2
     apop_model *e = apop_model_copy(model);
@@ -140,11 +147,11 @@ apop_varad_head(apop_data *, apop_bootstrap_cov) {
               *summary;
     //prevent and infinite regression of covariance calculation.
     Apop_model_add_group(e, apop_parts_wanted); //default wants for nothing.
-    size_t	   i, nan_draws=0;
-    apop_name *tmpnames = data->names; //save on some copying below.
-    data->names = NULL;  
+    size_t i, nan_draws=0;
+    apop_name *tmpnames = (data && data->names) ? data->names : NULL; //save on some copying below.
+    if (data && data->names) data->names = NULL;
 
-    int height = GSL_MAX(msize1, GSL_MAX(vsize, data->textsize[0]));
+    int height = GSL_MAX(msize1, GSL_MAX(vsize, (data?(*data->textsize):0)));
 	for (i=0; i<iterations && nan_draws < iterations; i++){
 		for (size_t j=0; j< height; j++){       //create the data set
 			size_t randrow	= gsl_rng_uniform_int(rng, height);
@@ -168,7 +175,7 @@ apop_varad_head(apop_data *, apop_bootstrap_cov) {
         apop_model_free(est);
         gsl_vector_free(estp);
 	}
-    data->names = tmpnames;
+    if(data) data->names = tmpnames;
     apop_data_free(subset);
     apop_model_free(e);
     int set_error=0;
@@ -180,11 +187,11 @@ apop_varad_head(apop_data *, apop_bootstrap_cov) {
                 1, "I ran into %i NaNs, and so stopped. Returning results based "
                        "on %zu bootstrap iterations.", iterations, i);
 	summary	= apop_data_covariance(array_of_boots);
-    gsl_matrix_scale(summary->matrix, 1./i);
-    if (keep_boots == 'n' || keep_boots == 'N')
+    if (!boot_store && (keep_boots == 'n' || keep_boots == 'N'))
         apop_data_free(array_of_boots);
-    else
+    if (keep_boots != 'n' && keep_boots != 'N') //deprecated version
         apop_data_add_page(summary, array_of_boots, "<Bootstrapped statistics>");
+    if (boot_store) *boot_store = array_of_boots;
     if (set_error) summary->error = 'N';
 	return summary;
 }

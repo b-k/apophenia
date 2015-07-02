@@ -1865,7 +1865,6 @@ static double gammds(double *y, double *p, int *ifault) {
 /** Convert from an \ref apop_data set to a table of integers.
 
 Not too necessary, but I needed it for the Fisher exact test.
-\ingroup conversions
 */
 static int *apop_data_to_int_array(apop_data *intab){
   int rowct = intab->matrix->size1,
@@ -1883,9 +1882,11 @@ static int *apop_data_to_int_array(apop_data *intab){
     "probability of table": Probability of the observed table for fixed marginal totals.	<br>
     "p value":  Table p-value.	The probability of a more extreme table,
 	      where `extreme' is in a probabilistic sense.
-\exception out->error=='p' Processing error in the test.
 
 \li If there are processing errors, these values will be NaN.
+
+\exception out->error=='p' Processing error in the test.
+
 For example: 
 
 \include test_fisher.c

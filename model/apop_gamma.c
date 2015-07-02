@@ -1,7 +1,7 @@
 /* The gamma distribution.
 Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
-\amodel apop_gamma The Gamma distribution
+\amodel apop_gamma 
 
 \f$G(x, a, b)     = {1\over (\Gamma(a) b^a)}  x^{a-1} e^{-x/b}\f$
 
@@ -11,11 +11,10 @@ Copyright (c) 2005--2007, 2009 by Ben Klemens.  Licensed under the GPLv2; see CO
 
 \f$d ln G/ db    =  -a/b + x/(b^2) \f$
 
-\adoc    Input_format     
-Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.     
+\adoc    Input_format A scalar, in the \c vector or \c matrix elements of the input \ref apop_data set.
 
-\li See also \ref apop_data_rank_compress for means of dealing with one more input data format.
-\adoc    Parameter_format   First two elements of the vector.   
+See also \ref apop_data_rank_compress for means of dealing with one more input data format.
+\adoc    Parameter_format   First two elements of the vector are $\fa\f$  and $\fb\f$.
 \adoc    settings    MLE-type: \ref apop_mle_settings, \ref apop_parts_wanted_settings  
   */
 
@@ -26,7 +25,9 @@ static long double gamma_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-5);
 }
 
+/** \cond doxy_ignore */
 typedef struct {double a, b, ln_ga_plus_a_ln_b;} abstruct;
+/** \endcond */ //End of Doxygen ignore.
 
 static double apply_for_gamma(double x, void *abin) { 
     abstruct *ab = abin;
@@ -64,7 +65,7 @@ static void gamma_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_model
     gsl_vector_set(gradient, 1, apop_map_sum(d, .fn_dp = b_callback, .param=&b_and_ab));
 }
 
-/* \adoc RNG Just a wrapper for \c gsl_ran_gamma.
+/* \adoc RNG A wrapper for \c gsl_ran_gamma, which returns a scalar.
 
 See the notes for \ref apop_exponential on a popular alternate form.  */
 static int gamma_rng( double *out, gsl_rng* r, apop_model *p){

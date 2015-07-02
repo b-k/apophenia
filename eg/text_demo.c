@@ -13,9 +13,9 @@ int main(){
 
     //the text alloc can be used as a text realloc:
     apop_text_alloc(tdata, 1+tdata->textsize[0], tdata->textsize[1]);
-    apop_text_add(tdata, *tdata->textsize-1, 0, "Peter Buck");
-    apop_text_add(tdata, *tdata->textsize-1, 1, "Berkeley");
-    apop_text_add(tdata, *tdata->textsize-1, 2, "CA");
+    apop_text_set(tdata, *tdata->textsize-1, 0, "Peter Buck");
+    apop_text_set(tdata, *tdata->textsize-1, 1, "Berkeley");
+    apop_text_set(tdata, *tdata->textsize-1, 2, "CA");
 
     printf("\n\nAugmented data, printed via for loop:\n");
     for (int i=0; i< tdata->textsize[0]; i++){

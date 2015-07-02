@@ -8,7 +8,6 @@ void distances(gsl_vector *v1, gsl_vector *v2, double tol){
 }
 
 int main(){
-    gsl_rng *r = apop_rng_alloc(2468);
     double binom_start = 0.6;
     double beta_start_a = 0.3;
     double beta_start_b = 0.5;
@@ -16,7 +15,7 @@ int main(){
     //First, the easy estimation using the conjugate distribution table.
     apop_model *bin = apop_model_set_parameters(apop_binomial, n, binom_start);
     apop_model *beta = apop_model_set_parameters(apop_beta, beta_start_a, beta_start_b);
-    apop_model *updated = apop_update(.prior= beta, .likelihood=bin,.rng=r);
+    apop_model *updated = apop_update(.prior= beta, .likelihood=bin);
 
     //Now estimate via MCMC. 
     //Requires a one-parameter binomial, with n fixed,
@@ -33,11 +32,11 @@ int main(){
     distances(updated->parameters->vector, out_beta->parameters->vector, 0.01);
 
     //The apop_update function used apop_model_metropolis to generate
-    //a batch of draws. Let's use apop_model_metropolis_draw to get draws.
-    int i, draws = 1.3e5;
-    apop_data *d = apop_data_alloc(draws, 1);
-    for(i=0; i < draws; i ++)
-        apop_draw(apop_data_ptr(d, i, 0), r, out_h);
+    //a batch of draws, so the draw method for out_h is apop_model_metropolis_draw.
+    //So, here we make more draws using metropolis, and compare the beta
+    //distribution that fits to those draws to the beta distribution output above.
+    int draws = 1.3e5;
+    apop_data *d = apop_model_draws(out_h, draws);
     apop_model *drawn = apop_estimate(d, apop_beta);
     distances(updated->parameters->vector, drawn->parameters->vector, 0.02);
 }

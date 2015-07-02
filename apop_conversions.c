@@ -21,22 +21,19 @@ void xprintf(char **q, char *format, ...){
     free(r);
 }
 
-/** \defgroup conversions Conversion functions
-The functions to shunt data between text files, database tables, GSL matrices, and plain old arrays.*/
-
-/** Just copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
+/** Copies a one-dimensional array to a <tt>gsl_vector</tt>. The input array is undisturbed.
 
 \param in     An array of <tt>double</tt>s. (No default. Must not be \c NULL);
 \param size 	How long \c line is. If this is zero or omitted, I'll
 guess using the <tt>sizeof(line)/sizeof(line[0])</tt> trick, which will
 work for most arrays allocated using <tt>double []</tt> and won't work
 for those allocated using <tt>double *</tt>. (default = auto-guess)
-\return         A <tt>gsl_vector</tt> (which I will allocate for you).
+\return   A <tt>gsl_vector</tt>, allocated and filled with a copy of (not a pointer to) the input data.
 
 \li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
 
-\ingroup conversions
 \li This function uses the \ref designated syntax for inputs.
+\see \ref apop_data_falloc
 */ 
 #ifdef APOP_NO_VARIADIC
 gsl_vector * apop_array_to_vector(double *in, int size){
@@ -56,7 +53,8 @@ apop_varad_head(gsl_vector *, apop_array_to_vector){
     return out;
 }
 
-/** Mathematically, a vector of size \f$N\f$ and a matrix of size \f$N \times 1 \f$ are equivalent, but they're two different types to the GSL. This function copies the data in a vector to a new one-column (or one-row) matrix and returns the newly-allocated and filled matrix.
+/** This function copies the data in a vector to a new one-column (or one-row) matrix
+and returns the newly-allocated and filled matrix.
 
   For the reverse, try \ref apop_data_pack.
 
@@ -64,17 +62,16 @@ apop_varad_head(gsl_vector *, apop_array_to_vector){
 \param row_col If \c 'r', then this will be a row (1 x N) instead of the default, a column (N x 1). (default: \c 'c')
 \return a newly-allocated <tt>gsl_matrix</tt> with one column (or row).
 
-\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=1 </tt>.
-\li If \c gsl_matrix_alloc fails and <tt>apop_opts.stop_on_warn=='n'</tt>, you get a \c NULL pointer in return.
+\li If you send in a \c NULL vector, you get a \c NULL pointer in return. I warn you of this if <tt>apop_opts.verbosity >=2 </tt>.
+\li If \c gsl_matrix_alloc fails you get a \c NULL pointer in return.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 #ifdef APOP_NO_VARIADIC
 gsl_matrix * apop_vector_to_matrix(const gsl_vector *in, char row_col){
 #else
 apop_varad_head(gsl_matrix *, apop_vector_to_matrix){
     const gsl_vector * apop_varad_var(in, NULL);
-    Apop_assert_c(in, NULL, 1, "Converting NULL vector to NULL matrix.");
+    Apop_assert_c(in, NULL, 2, "Converting NULL vector to NULL matrix.");
     char apop_varad_var(row_col, 'c');
     return apop_vector_to_matrix_base(in, row_col);
 }
@@ -101,59 +98,74 @@ static int find_cat_index(char **d, char * r, int start_from, int size){
     Apop_assert_c(0, -2, 0, "Something went wrong in the crosstabbing; couldn't find %s.", r);
 }
 
-/**Give the name of a table in the database, and names of three of its
-columns: the x-dimension, the y-dimension, and the data.
-the output is a 2D matrix with rows indexed by r1 and cols by
-r2.
+/**Give the name of a table in the database, and optional names of three of its columns:
+the x-dimension, the y-dimension, and the data. The output is a 2D matrix with rows
+indexed by 'row' and cols by 'col' and the cells filled with the entry in the 'data' column.
 
-\param tabname The database table I'm querying. Anything that will work inside a \c from clause is OK, such as a subquery in parens.
-\param r1 The column of the data set that will indicate the rows of the output crosstab
-\param r2 The column of the data set that will indicate the columns of the output crosstab
-\param datacol The column of the data set holding the data for the cells of the crosstab
+\param tabname The database table I'm querying. Anything that will work inside a \c from clause is OK, such as a subquery in parens. (no default; must not be \c NULL)
+\param row The column of the data set that will indicate the rows of the output crosstab (no default; must not be \c NULL)
+\param col The column of the data set that will indicate the columns of the output crosstab (no default; must not be \c NULL)
+\param data The column of the data set holding the data for the cells of the crosstab (default: <tt>count(*)</tt>)
+\param is_aggregate Set to \c 'y' if the \c data is a function like <tt>count(*)</tt>
+    or <tt>sum(col)</tt>. That is, set to \c 'y' if querying this would require a <tt>group
+    by</tt> clause. (default: if I find an end-paren in \c datacol, \c 'y'; else \c 'n'.)
 
-\li  If the query to get data to fill the table (select r1, r2, datacol from tabname) returns an empty data set, then I will return a \c NULL data set and if <tt>apop_opts.verbosity >= 1</tt> print a warning.
-
-\li This setup presumes that there is one value for each (row, col) coordinate in the data. You may want an aggregate instead. There are two ways to do this, both of which hack the fact that this function runs a simple \c select query to generate the data. One is to specify an ad hoc table to pull from:
-
-\code
-apop_data * out = apop_db_to_crosstab("(select row, col, count(*) ct from base_data group by row, col)", "row", "col",  "ct");
-\endcode
-
-The other is to use the fact that the table name will be at the end of the query, so you can add conditions to the table:
-
-\code
-apop_data * out = apop_db_to_crosstab("base_data group by row, col", "row", "col", "count(*)");
-//which will expand to "select row, col, count(*) from base_data group by row, col"
-\endcode
-
-\see \ref apop_crosstab_to_db
+\li  If the query to get data to fill the table (select row, col, data from
+    tabname) returns an empty data set, then I will return a \c NULL data set and if
+    <tt>apop_opts.verbosity >= 1</tt> print a warning.
 
 \exception out->error='n' Name not found error.
 \exception out->error='q' Query returned an empty table (which might mean that it just failed).
 
-\ingroup db
+\li The simplest use is to get a tally of how often (r1, r2) appears in the data via <tt>apop_db_to_crosstab("datatab", "r1", "r2")</tt>.
+\li If you want a 1-D crosstab, omit the other dimension. Or omit both to get a grand tally of your statistic for the entire table.
+\li There is a commnad-line tool, <tt>apop_db_to_crosstab</tt> that calls this function.
+\li This function uses the \ref designated syntax for inputs.
 */
-apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol){
+#ifdef APOP_NO_VARIADIC
+apop_data * apop_db_to_crosstab(char const*tabname, char const*row, char const* col, char const*data, char is_aggregate){
+#else
+apop_varad_head(apop_data *, apop_db_to_crosstab){
+    char const* apop_varad_var(tabname, NULL);
+    Apop_stopif(!tabname, return NULL, 1, "Missing tabname. Returning NULL.");
+    char const* apop_varad_var(row, "1");
+    char const* apop_varad_var(col, "1");
+    char const* apop_varad_var(data, "count(*)");
+    //This '(' balances the end-paren below, keeping m4 from losing the thread.
+    //Note the transitional check for "group by", which we should one day remove.
+    char apop_varad_var(is_aggregate, (strchr(data, ')') && !strstr(data, "group by"))?'y':'n');
+    return apop_db_to_crosstab_base(tabname, row, col, data, is_aggregate);
+}
+
+ apop_data * apop_db_to_crosstab_base(char const*tabname, char const*row, char const* col, char const*data, char is_aggregate){
+#endif
     gsl_matrix *out=NULL;
     int	i, j=0;
     apop_data *pre_d1=NULL, *pre_d2=NULL, *datachars=NULL;
     apop_data *outdata = apop_data_alloc();
 
-    char p = apop_opts.db_name_column[0];
-    apop_opts.db_name_column[0]= '\0';//we put this back at the end.
-    datachars = apop_query_to_text("select %s, %s, %s from %s", r1, r2, datacol, tabname);
-    Apop_stopif(!datachars, return NULL, 1, "selecting %s, %s, %s from %s returned an empty table.",  r1, r2, datacol, tabname);
-    Apop_stopif(datachars->error, goto bailout, 0, "error selecting %s, %s, %s from %s.",  r1, r2, datacol, tabname);
+    char* p = apop_opts.db_name_column;
+    apop_opts.db_name_column = NULL;//we put this back at the end.
+    char *Q;
+
+    Asprintf(&Q, "select %s, %s, %s from %s %s %s %s %s", row, col, data, tabname,
+                                    is_aggregate!='n' ? "group by" : "",
+                                    is_aggregate!='n' ? row : "",
+                                    is_aggregate!='n' ? "," : "",
+                                    is_aggregate!='n' ? col : "");
+    datachars = apop_query_to_text("%s", Q);
+    Apop_stopif(!datachars, free(Q); return NULL, 2, "[%s] returned an empty table.", Q);
+    Apop_stopif(datachars->error, free(Q); goto bailout, 0, "error from [%s].", Q);
 
     //A bit inefficient, but well-encapsulated.
     //Pull the distinct (sorted) list of headers, copy into outdata->names.
-    pre_d1 = apop_query_to_text("select distinct %s, 1 from %s order by %s", r1, tabname, r1);
-    Apop_stopif(!pre_d1||pre_d1->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
+    pre_d1 = apop_query_to_text("select distinct %s, 1 from %s order by %s", row, tabname, row);
+    Apop_stopif(!pre_d1||pre_d1->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", row, tabname);
     for (i=0; i < pre_d1->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d1->text[i][0], 'r');
 
-	pre_d2 = apop_query_to_text("select distinct %s from %s order by %s", r2, tabname, r2);
-    Apop_stopif(!pre_d2||pre_d2->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", r1, tabname);
+	pre_d2 = apop_query_to_text("select distinct %s from %s order by %s", col, tabname, col);
+    Apop_stopif(!pre_d2||pre_d2->error, outdata->error='q'; goto bailout, 0, "Error querying %s from %s.", row, tabname);
     for (i=0; i < pre_d2->textsize[0]; i++)
         apop_name_add(outdata->names, pre_d2->text[i][0], 'c');
 
@@ -170,7 +182,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
     apop_data_free(pre_d2);
     apop_data_free(datachars);
     outdata->matrix = out;
-    apop_opts.db_name_column[0]= p;
+    apop_opts.db_name_column = p;
 	return outdata;
 }
 
@@ -179,10 +191,7 @@ apop_data *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol)
 
 For example, I would take
 <table frame=box>                                                                                                              
-<tr>                                                                                                                           
-<td> </td><td> c0</td><td>c1</td>
-</tr><tr valign=bottom>
-<td align=center> </td></tr> 
+<tr><td> </td><td> c0</td><td>c1</td></tr>
 <tr><td>r0</td><td>2</td><td>3</td></tr> 
 <tr><td>r1</td><td>0</td><td>4</td></tr> 
 </table> 
@@ -197,10 +206,9 @@ insert into your_table values ('r1', 'c1', 4);
 \endcode
 
 
-\li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own numbering system, <tt>t0</tt>, <tt>t1</tt>, ..., which is a little more robust than continuing the column count from the matrix.
+\li If your data set does not have names (or not enough names), I will use the scheme above, filling in names of the form <tt>r0</tt>, <tt>r1</tt>, ... <tt>c0</tt>, <tt>c1</tt>, .... Text columns get their own names, <tt>t0</tt>, <tt>t1</tt>.
 
-\li I handle only the matrix and text. 
- \ingroup db
+\li This function handles only the matrix and text. 
  */
 void apop_crosstab_to_db(apop_data *in,  char *tabname, char *row_col_name, 
 						char *col_col_name, char *data_col_name){
@@ -258,19 +266,34 @@ This function takes in a list of observations, and aggregates them into a single
 
 \li For the complement, see \ref apop_data_rank_expand.
 
-\li You may be interested in \ref apop_data_to_factors to convert real numbers or text into a
+\li See also \ref apop_data_to_factors to convert real numbers or text into a
 matrix of categories.
 
-\li The number of bins is simply the largest number found. So if there
-are bins {0, 1, 2} and your data set happens to consist of <tt>0 0 1 1 0</tt>, then
-I won't know to generate results with three bins where the last bin has probability zero.
+\param in The input \ref apop_data set. If \c NULL, return \c NULL.
+\param min_bins If this is omitted, the number of bins is simply the largest number
+found. So if there are bins {0, 1, 2} and your data set happens to consist of <tt>0 0
+1 1 0</tt>, then I won't know to generate results with three bins where the last bin
+has a count of zero. Set <tt>.min_bins=2</tt> to ensure that bin is included.
 
 \include test_ranks.c
+
+\li This function uses the \ref designated syntax for inputs.
 */
-apop_data *apop_data_rank_compress (apop_data *in){
+#ifdef APOP_NO_VARIADIC
+apop_data * apop_data_rank_compress(apop_data *in, int min_bins){
+#else
+apop_varad_head(apop_data *, apop_data_rank_compress){
+    apop_data * apop_varad_var(in, NULL);
+    if (!in) return NULL;
+    int apop_varad_var(min_bins, 0);
+    return apop_data_rank_compress_base(in, min_bins);
+}
+
+ apop_data * apop_data_rank_compress_base(apop_data *in, int min_bins){
+#endif
     Get_vmsizes(in);
-    int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : 0, 
-                              in->vector ? gsl_vector_max(in->vector) : 0);
+    int upper_bound = GSL_MAX(in->matrix ? gsl_matrix_max(in->matrix) : min_bins,
+                              in->vector ? gsl_vector_max(in->vector) : min_bins);
     apop_data *out = apop_data_calloc(1, upper_bound+1);
     for (int i=0; i< msize1; i++)
         for (int j=0; j< msize2; j++) 
@@ -302,25 +325,16 @@ apop_data *apop_data_rank_expand (apop_data *in){
     return out;
 }
 
-/** \page dbtomatrix Converting from database table to <tt>gsl_matrix</tt> or \ref apop_data
-
-Use <tt>fill_me = apop_query_to_matrix("select * from table_name;");</tt>
-or <tt>fill_me = apop_query_to_data("select * from table_name;");</tt>. [See \ref apop_query_to_matrix; \ref apop_query_to_data.]
-\ingroup conversions
-*/
-
-
 /** Copy one  <tt>gsl_vector</tt> to another. That is, all data is duplicated.
- Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
+Unlike <tt>gsl_vector_memcpy</tt>, this function allocates and returns the destination,
+so you can use it like this:
+\code
+gsl_vector *a_copy = apop_vector_copy(original);
+\endcode
 
- \code
- gsl_vector *a_copy = apop_vector_copy(original);
- \endcode
-
-  \param in    the input data
-  \return       a structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL.
-\ingroup convenience_fns
-  */
+\param in   The input vector
+\return     A structure that this function will allocate and fill. If \c gsl_vector_alloc fails, returns \c NULL and print a warning.
+*/
 gsl_vector *apop_vector_copy(const gsl_vector *in){
     if (!in) return NULL;
     gsl_vector *out = gsl_vector_alloc(in->size);
@@ -329,17 +343,16 @@ gsl_vector *apop_vector_copy(const gsl_vector *in){
     return out;
 }
 
-/** Copy one  <tt>gsl_matrix</tt> to another. That is, all data is duplicated.
-Unlike <tt>gsl_matrix_memcpy</tt>, this function allocates and returns the destination, so you can use it like this:
-
+/** Copy one <tt>gsl_matrix</tt> to another. That is, all data are duplicated.
+Unlike <tt>gsl_matrix_memcpy</tt>, this function allocates and returns the destination,
+so you can use it like this:
 \code
 gsl_matrix *a_copy = apop_matrix_copy(original);
 \endcode
 
 \param in  the input data
-\return    a structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
-\ingroup convenience_fns
-  */
+\return  A structure that this function will allocate and fill. If \c gsl_matrix_alloc fails, returns \c NULL.
+*/
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
     if (!in) return NULL;
     gsl_matrix *out = gsl_matrix_alloc(in->size1, in->size2);
@@ -351,34 +364,36 @@ gsl_matrix *apop_matrix_copy(const gsl_matrix *in){
 
 ///////////////The text processing section
 
-/** \page text_format Notes on input text file formatting
+/** \page text_format Input text file formatting
 
-Each row of the file will be converted to one record in the database or one row in the matrix. Values on one row are separated by delimiters. Fixed-width input is also OK; see below.
+This reference section describes the assumptions made by \ref apop_text_to_db and \ref apop_text_to_data.
+
+Each row of the file will be converted to one record in the database or one row in the
+matrix. Values on one row are separated by delimiters. Fixed-width input is also OK;
+see below.
 
 By default, the delimiters are set to "|,\t", meaning that a pipe, comma, or tab
-will delimit separate entries.  To change the default, please use an argument to
+will delimit separate entries.  To change the default, use an argument to
 \ref apop_text_to_db or \ref apop_text_to_data like <tt>.delimiters=" \t"</tt> or
-<tt>.delimiters="|"</tt>. \c apop_opts.input_delimiters is deprecated.
+<tt>.delimiters="|"</tt>.
 
 The input text file must be UTF-8 or traditional ASCII encoding. Delimiters must be ASCII characters. 
 If your data is in another encoding, try the POSIX-standard \c iconv program to filter the data to UTF-8.
 
-\li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, \c ', or \c ".
-
-\li If a field contains several such special characters, surround it by \c 's or \c "s. The surrounding marks are stripped and the text read verbatim.
-
-\li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
-E.g., "Males, 30-40", is an OK column name, as is "Males named \\"Joe\\"".
-
-\li Everything after a # is taken to be comments and ignored. 
-
-\li Blank lines (empty or consisting only of white space) are also ignored.
-
-\li If you are reading into an array or <tt>gsl_matrix</tt> or \ref apop_data set, all text fields are taken as zeros. You will be warned of such substitutions unless you set \code apop_opts.verbose==0\endcode beforehand.
-
-\li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
+  \li The character after a backslash is read as a normal character, even if it is a delimiter, \c #, or \c ".
+\li If a field contains several such special characters, surround it by \c "s. The
+surrounding marks are stripped and the text read verbatim.
+  \li Text does not need to be delimited by quotes (unless there are special characters). If a text field is quote-delimited, I'll strip them.
+E.g., "Males, 30-40", is an OK column name, as is "Males named \"Joe\\"".
+  \li Everything after an unprotected \c # is taken to be comments and ignored. 
+  \li Blank lines (empty or consisting only of white space) are also ignored.
+  \li If you are reading into the <tt>gsl_matrix</tt> element of an \ref apop_data set,
+all text fields are taken as zeros. You will be warned of such substitutions unless
+you set <tt>apop_opts.verbose==0</tt> beforehand. For mixed text/numeric data,
+try using \ref apop_text_to_db and then \ref apop_query_to_mixed_data.
+  \li There are often two delimiters in a row, e.g., "23, 32,, 12". When it's two commas
 like this, the user typically means that there is a missing value and the system should
-insert an NAN; when it is two tabs in a row, this is typically just a formatting
+insert a NAN; when it is two tabs in a row, this is typically just a formatting
 glitch. Thus, if there are multiple delimiters in a row, I check whether the second
 (and subsequent) is a space or a tab; if it is, then it is ignored, and if it is any
 other delimiter (including the end of the line) then a NaN is inserted.
@@ -394,6 +409,7 @@ If you have missing data delimiters, you will need to set \ref apop_opts_type
 \code
 //Apophenia's default NaN string, matching NaN, nan, or NAN, but not Nancy:
 apop_opts.nan_string = "NaN";
+//Popular alternatives:
 apop_opts.nan_string = "Missing";
 apop_opts.nan_string = ".";
 
@@ -402,26 +418,25 @@ apop_opts.nan_string = NULL;
 \endcode
 
 SQLite stores these NaN-type values internally as \c NULL; that means that functions like
-\ref apop_query_to_data will convert both your nan_string string and \c NULL to an \c NaN value.
+\ref apop_query_to_data will convert both your \c nan_string string and \c NULL to \c NaN.
 
-\li The system uses the standards for C's \c atof() function for
+  \li The system uses the standards for C's \c atof() function for
 floating-point numbers: INFINITY, -INFINITY, and NaN work as expected.
-I use some tricks to get SQLite to accept these values, but they work.
-
-\li If there are row names and column names, then the input will not be perfectly square: there should be no first entry in the row with column names like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
-
-\li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
+  \li If there are row names and column names, then the input will not be perfectly square:
+there should be no first entry in the sequence of column names like <tt>row names</tt>. That is,
+for a 100x100 data set with row and column names, there are 100 names in the top row,
+and 101 entries in each subsequent row (name plus 100 data points).
+  \li White space before or after a field is ignored. So <tt>1, 2,3, 4 , 5, " six ",7 </tt>
 is eqivalent to <tt>1,2,3,4,5," six ",7</tt>.
-
-\li NUL characters are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string will probably break.
-
-\li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
+  \li NUL characters (<tt>'\0'</tt>) are treated as white space, so if your fields have NULs as padding, you should have no problem. NULs inside of a string terminates the string as it always does in C.
+  \li Fixed-width formats are supported (for plain ASCII encoding only), but you have to provide a list of field ending positions. For example, given
 \code
 NUMLEOL
 123AABB
 456CCDD
 \endcode
-we have three columns, named NUM, LE, and OL. The names can be read from the first row if you so specify. You will have to provide a list of integers giving the end of each field: 3, 5, 7.
+and <tt>.field_ends=(int[]){3, 5, 7}</tt>, we have three columns, named NUM, LE,
+and OL. The names can be read from the first row by setting <tt>.has_row_names='y'</tt>.
 */
 
 static int prep_text_reading(char const *text_file, FILE **infile){
@@ -433,6 +448,7 @@ static int prep_text_reading(char const *text_file, FILE **infile){
 }
 
 /////New text file reading
+/** \cond doxy_ignore */
 extern char *apop_nul_string;
 
 #define Textrealloc(str, len) (str) =         \
@@ -441,6 +457,7 @@ extern char *apop_nul_string;
                 : (((len) > 0) ? malloc(len) : apop_nul_string);
 
 typedef struct {int ct; int eof;} line_parse_t;
+/** \endcond */
 
 static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *field_ends){
     int c = fgetc(infile);
@@ -475,9 +492,11 @@ static line_parse_t parse_a_fixed_line(FILE *infile, apop_data *fn, int const *f
     return (line_parse_t) {.ct=ct, .eof= (c == EOF)};
 }
 
+/** \cond doxy_ignore */
 typedef struct{
     char c, type;
 } apop_char_info;
+/** \endcond */
 
 static const size_t bs=1e5;
 static int get_next(char *buffer, size_t *ptr, FILE *infile){
@@ -499,7 +518,6 @@ static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char c
                     :is_delimiter    ? 'd'
                     :(c == '\n')     ? 'n'
                     :(c == '"')      ? '"'
-                    :(c == '\'')     ? '\''
                     :(c == '\\')     ? '\\'
                     :(c == EOF)      ? 'E'
                     :(c == '#')      ? '#'
@@ -511,29 +529,28 @@ static apop_char_info parse_next_char(char *buffer, size_t *ptr, FILE *f, char c
 //returns the count of elements. Negate the count if we're at EOF.
 //fn must already be allocated via apop_data_alloc() [no args].
 static line_parse_t parse_a_line(FILE *infile, char *buffer, size_t *ptr, apop_data *fn, int const *field_ends, char const *delimiters){
-    int ct=0, thisflen=0, inq=0, inqq=0, infield=0, mlen=5,
+    int ct=0, thisflen=0, inqq=0, infield=0, mlen=5,
             lastwhite=0, lastnonwhite=0; 
     if (field_ends) return parse_a_fixed_line(infile, fn, field_ends);
     apop_char_info ci;
     do {
         ci = parse_next_char(buffer, ptr, infile, delimiters);
         //comments are to end of line, so they're basically a newline.
-        if (ci.type=='#' && !(inq||inqq)){
+        if (ci.type=='#' && !inqq){
             for(int c='x'; (c!='\n' && c!=EOF); )
                 c = get_next(buffer, ptr, infile);
             ci.type='n';
         }
 
-        //The escape-type cases: \\ and '' and "".
+        //The escape-type cases: \\ and "".
         //If one applies, set the type to regular
         if (ci.type=='\\'){
             ci=parse_next_char(buffer, ptr, infile, delimiters);
             if (ci.type!='E')
                 ci.type='r';
         }
-        if (((inq && ci.type !='\'') ||(inqq && ci.type !='"')) && ci.type !='E')
+        if ((inqq && ci.type !='"') && ci.type !='E')
             ci.type='r';
-        if (ci.type=='\'') inq = !inq;
         else if (ci.type=='"') inqq = !inqq;
 
         if (ci.type=='W' && lastwhite==1) 
@@ -584,20 +601,22 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
             parse_a_line(infile, buffer, ptr, add_this_line, field_ends, delimiters);
         fn	= apop_text_alloc(fn, add_this_line->textsize[0], 1);
         for (int i=0; i< fn->textsize[0]; i++)
-            if (field_names) apop_text_add(fn, i, 0, field_names[i]);
-            else             apop_text_add(fn, i, 0, "col_%i", i);
+            if (field_names) apop_text_set(fn, i, 0, field_names[i]);
+            else             apop_text_set(fn, i, 0, "col_%i", i);
     }
 }
 
-/** Read a delimited text file into the matrix element of an \ref apop_data set.
+/** Read a delimited or fixed-wisdth text file into the matrix element of an \ref apop_data set.
 
-  See \ref text_format.
+See \ref text_format.
+
+See also \ref apop_text_to_db, which handles text data, and may othewise be a perferable approach to data management.
 
 \param text_file  = "-"  The name of the text file to be read in. If "-" (the default), use stdin.
-\param has_row_names = 'n'. Does the lines of data have row names?
-\param has_col_names = 'y'. Is the top line a list of column names? If there are row names, then there should be no first entry in this line like 'row names'. That is, for a 100x100 data set with row and column names, there are 100 names in the top row, and 101 entries in each subsequent row (name plus 100 data points).
-\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
-\param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
+\param has_row_names Does the lines of data have row names? \c 'y' =yes; \c 'n' =no (default: 'n')
+\param has_col_names  Is the top line a list of column names? See \ref text_format for notes on dimension (default: 'y')
+\param field_ends If fields have a fixed size, give the end of each field, e.g. <tt>.field_ends=(int[]){3, 8 11}</tt>. (default: \c NULL, indicating not fixed width)
+\param delimiters A string listing the characters that delimit fields. (default: <tt>"|,\t"</tt>)
 \return 	Returns an apop_data set.
 \exception out->error=='a' allocation error
 \exception out->error=='t' text-reading error
@@ -605,7 +624,7 @@ static void get_field_names(int has_col_names, char **field_names, FILE *infile,
 <b>example:</b> See \ref apop_ols.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions	*/
+*/
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_text_to_data(char const*text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters){
 #else
@@ -688,20 +707,21 @@ apop_varad_head(apop_data *, apop_text_to_data){
 	return set;
 }
 
-/** This is the complement to \c apop_data_pack, qv. It writes the \c gsl_vector produced by that function back
-    to the \c apop_data set you provide. It overwrites the data in the vector and matrix elements and, if present, the \c weights (and that's it, so names or text are as before).
+/** This is the complement to \ref apop_data_pack, qv. It writes the \c gsl_vector
+    produced by that function back to the \ref apop_data set you provide. It overwrites
+    the data in the vector and matrix elements and, if present, the \c weights (and
+    that's it, so names or text are as before).
 
-\param in A \c gsl_vector of the form produced by \c apop_data_pack. No default; must not be \c NULL.
+\param in A \c gsl_vector of the form produced by \ref apop_data_pack. No default; must not be \c NULL.
 \param d  That data set to be filled. Must be allocated to the correct size. No default; must not be \c NULL.
 \param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
-same thing when you both pack and unpack. Default: <tt>'n'</tt>.
+same thing when you both pack and unpack. (Default: \c 'n').
 
-\li If I get to the end of the first page and have more vector to unpack, and the data to
-fill has a \c more element, then I will continue into subsequent pages.
-
+\li If I get to the end of the first page of the \c apop_data set and have more
+    entries in the vector to unpack, and the data to fill has a \c more element,
+    then I will continue into subsequent pages.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 #ifdef APOP_NO_VARIADIC
 void apop_data_unpack(const gsl_vector *in, apop_data *d, char use_info_pages){
@@ -770,38 +790,38 @@ will return the original data set (stripped of text and names).
 
  \param in an \c apop_data set. No default; if \c NULL, return \c NULL.
  \param out If this is not \c NULL, then put the output here. The dimensions must match exactly. If \c NULL, then allocate a new data set. Default = \c NULL. 
-  \param all_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
+  \param more_pages If \c 'y', then follow the <tt> ->more</tt> pointer to fill subsequent
 pages; else fill only the first page. Informational pages will still be ignored, unless you set <tt>.use_info_pages='y'</tt> as well.  Default = \c 'y'. 
 \param use_info_pages Pages in XML-style brackets, such as <tt>\<Covariance\></tt> will
 be ignored unless you set <tt>.use_info_pages='y'</tt>. Be sure that this is set to the
 same thing when you both pack and unpack. Default: <tt>'n'</tt>.
 
- \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .all_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
+ \return A \c gsl_vector with the vector data (if any), then each row of data (if any), then the weights (if any), then the same for subsequent pages (if any <tt>&& .more_pages=='y'</tt>). If \c out is not \c NULL, then this is \c out.
 \exception NULL If you give me a vector as input, and its size is not correct, returns \c NULL.
+
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
- */
+*/
 #ifdef APOP_NO_VARIADIC
-gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
+gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages){
 #else
 apop_varad_head(gsl_vector *, apop_data_pack){
     const apop_data * apop_varad_var(in, NULL);
     if (!in) return NULL;
     gsl_vector * apop_varad_var(out, NULL);
-    char apop_varad_var(all_pages, 'y');
+    char apop_varad_var(more_pages, 'y');
     char apop_varad_var(use_info_pages, 'n');
     if (out) {
-        size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
+        size_t total_size = sizecount(in, (more_pages == 'y' || more_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
         Apop_stopif(out->size != total_size, return NULL, 0, "The input data set has %zu elements, "
                "but the output vector you want to fill has size %zu. Please make "
                "these sizes equal.", total_size, out->size);
     }
-    return apop_data_pack_base(in, out, all_pages, use_info_pages);
+    return apop_data_pack_base(in, out, more_pages, use_info_pages);
 }
 
- gsl_vector * apop_data_pack_base(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages){
+ gsl_vector * apop_data_pack_base(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages){
 #endif
-    size_t total_size = sizecount(in, (all_pages == 'y' || all_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
+    size_t total_size = sizecount(in, (more_pages == 'y' || more_pages == 'Y'), (use_info_pages =='y' || use_info_pages =='Y'));
     if (!total_size) return NULL;
     int offset = 0;
     if (!out) out = gsl_vector_alloc(total_size);
@@ -823,7 +843,7 @@ apop_varad_head(gsl_vector *, apop_data_pack){
         gsl_vector_memcpy(&vout, in->weights);
         offset  += in->weights->size;
     }
-    if ((all_pages == 'y' ||all_pages =='Y') && in->more){
+    if ((more_pages == 'y' ||more_pages =='Y') && in->more){
         while (use_info_pages=='n' && in->more && apop_regex(in->more->names->title, "^<.*>$"))
             in = in->more;
         if (in->more){
@@ -848,7 +868,7 @@ apop_data *count_vector = apop_data_falloc((5), 0, 1, 2, 3, 4);
 
 If you forget the parens, you will get an obscure error during compilation.
 
-\li This is a pretty simple macro wrapping \ref apop_data_fill and \ref apop_data_alloc,
+\li This is a simple macro wrapping \ref apop_data_fill and \ref apop_data_alloc,
 because they appear together so often.  The second example expands to:
 \code
 apop_data *count_vector = apop_data_fill(apop_data_alloc(5), 0, 1, 2, 3, 4);
@@ -858,47 +878,29 @@ apop_data *count_vector = apop_data_fill(apop_data_alloc(5), 0, 1, 2, 3, 4);
 /** \def apop_data_fill
 Fill a pre-allocated data set with values.
 
-For example:
-\code
-#include <apop.h>
-
-int main(){
-    apop_data *a =apop_data_alloc(2,2,2);
-    double    eight   = 8.0;
-    apop_data_fill(a, 8, 2.2, eight/2,
-                      0, 6.0, eight);
-    apop_data_show(a);
-}
-\endcode
-
-Warning: I need as many arguments as the size of the data set, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your matrix with garbage or a simple segfault.
-
-Underlying this function is a base function that takes a single list, as opposed to a set of unassociated numbers as above:
-
-\code
-#include <apop.h>
-
-int main(){
-  apop_data *a =apop_data_alloc(2,2,2);
-  double    eight   = 8.0;
-  double list[] = {8, 2.2, eight/2, 
-                   0, 6.0, eight};
-    apop_data_fill_base(a, list);
-    apop_data_show(a);
-}
-\endcode
-
 \param adfin  An \c apop_data set (that you have already allocated).
 \param ...  A series of at least as many floating-point values as there are blanks in the data set.
 \return     A pointer to the same data set that was input.
 
-\li I assume that <tt>vector->size==matrix->size1</tt>; otherwise I just use \c matrix->size1.
+\li I need as many arguments as the size of the data set, and can't count them for
+you. Too many will be ignored; too few will produce unpredictable results, which may
+include padding your matrix with garbage or a simple segfault.
+
+\li Underlying this function is a base function that takes a single list, as opposed
+to the set of unassociated numbers sent to \ref apop_data_fill. See the example below for a comparison.
+
+\li This function assumes that if the \ref apop_data set has both \c vector and \c
+matrix, then <tt>vector->size==matrix->size1</tt>.
 
 \li See also \ref apop_data_falloc to allocate and fill on one line. E.g., to
 generate a unit vector for three dimensions:
 \code
 apop_data *unit_vector = apop_data_falloc((3), 1, 1, 1);
 \endcode
+
+An example, using both a loose list of numbers and an array.
+
+\include data_fill.c
 
 \see apop_text_fill, apop_data_falloc, apop_data_unpack
 */
@@ -926,7 +928,7 @@ apop_data *apop_data_fill_base(apop_data *in, double ap[]){
 /** \def apop_vector_fill
  Fill a pre-allocated \c gsl_vector with values.
 
-  See \c apop_data_alloc for a relevant example. See also \c apop_matrix_alloc.
+  See \ref apop_data_alloc for a relevant example. See also \ref apop_matrix_alloc.
 
 Warning: I need as many arguments as the size of the vector, and can't count them for you. Too many will be ignored; too few will produce unpredictable results, which may include padding your vector with garbage or a simple segfault.
 
@@ -948,7 +950,7 @@ Fill the text part of an already-allocated \ref apop_data set with a list of str
 \param dataset A data set that you already prepared with \ref apop_text_alloc.
 \param ... A list of strings. The first row is filled first, then the second, and so on to the end of the text grid.
 
-\li No \c NULL strings. A blank string, <tt>""</tt> is OK.
+\li If an element is \c NULL, write <tt>apop_opts.nan_string</tt> at that point. You may prefer to use <tt>""</tt> to express a blank.
 \li If you provide more or fewer strings than are needed to fill the text grid and
      <tt>apop_opts.verbose >=1</tt>, I print a warning and continue to 
      the end of the text grid or data set, whichever is shorter.
@@ -979,7 +981,7 @@ apop_data *apop_text_fill_base(apop_data *data, char* text[]){
     int ctr=0;
     for (int i=0; i< data->textsize[0]; i++)
         for (int j=0; j< data->textsize[1]; j++)
-            apop_text_add(data, i, j, text[ctr++]);
+            apop_text_set(data, i, j, text[ctr++]);
     return data;
 }
 
@@ -1125,28 +1127,30 @@ char *cut_at_dot(char const *infile){
     return out;
 }
 
-/** Read a text file into a database table.
+/** Read a delimited or fixed-width text file into a database table.
+  See \ref text_format. 
 
-  See \ref text_format.
+For purely numeric data, you may be able to bypass the database by using \ref apop_text_to_data.
 
 See the \ref apop_ols page for an example that uses this function to read in sample data (also listed on that page).
 
-Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:
+Apophenia ships with an \c apop_text_to_db command-line utility, which is a wrapper for this function.
 
+Especially if you are using a pre-2007 version of SQLite, there may be a speedup to putting this function in a begin/commit wrapper:
 \code
 apop_query("begin;");
 apop_data_print(dataset, .output_name="dbtab", .output_type='d');
 apop_query("commit;");
 \endcode
 
-\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default = "-")
-\param tabname      The name to give the table in the database (default
-= \c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>; default in Python/R interfaces="t")
-\param has_row_names Does the lines of data have row names? (default = 0)
-\param has_col_names Is the top line a list of column names? (default = 1)
-\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default = NULL)
-\param field_ends If fields have a fixed size, give the end of each field, e.g. {3, 8 11}.
-\param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching.
+\param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default: "-")
+\param tabname      The name to give the table in the database (default:
+\c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>)
+\param has_row_names Does the lines of data have row names? (default: 0)
+\param has_col_names Is the top line a list of column names? (default: 1)
+\param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default: NULL)
+\param field_ends If fields have a fixed size, give the end of each field, e.g.  <tt>.field_ends=(int[]){3, 8 11}</tt>. (default: \c NULL, indicating not fixed width)
+\param field_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a type, constraint, or key, put that here. The relevant part of the input \ref apop_data set is the \c text grid, which should be \f$N \times 2\f$. The first item in each row (<tt>your_params->text[n][0]</tt>, for each \f$n\f$) is a regular expression to match against the variable names; the second item (<tt>your_params->text[n][1]</tt>) is the type, constraint, and/or key (i.e., what comes after the name in the \c create query). Not all variables need be mentioned; the default type if nothing matches is <tt>numeric</tt>. I go in order until I find a regex that matches the given field, so if you don't like the default, then set the last row to have name <tt>.*</tt>, which is a regex guaranteed to match anything that wasn't matched by an earlier row, and then set the associated type to your preferred default. See \ref apop_regex on details of matching. (default: NULL)
 \param table_params There is an implicit <tt>create table</tt> in setting up the database. If you want to add a table constraint or key, such as <tt>not null primary key (age, sex)</tt>, put that here.
 \param delimiters A string listing the characters that delimit fields. default = <tt>"|,\t"</tt>
 \param if_table_exists What should I do if the table exists?<br>
@@ -1158,7 +1162,6 @@ apop_query("commit;");
 \return Returns the number of rows on success, -1 on error.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup conversions
 */
 #ifdef APOP_NO_VARIADIC
 int apop_text_to_db(char const *text_file, char *tabname, int has_row_names, int has_col_names, char **field_names, int const *field_ends, apop_data *field_params, char *table_params, char const *delimiters, char if_table_exists){

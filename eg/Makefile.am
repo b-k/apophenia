@@ -18,7 +18,6 @@ EXTRA_DIST = \
 	kernel.c \
 	ks_tests.c \
 	ls_tables.c \
-	normalizations.c \
 	ols2.c \
 	ols.c \
 	parameterization.c \
@@ -35,4 +34,5 @@ EXTRA_DIST = \
 	test_ranks.c \
 	test_regex.c \
 	test_updating.c \
-	text_demo.c
+	text_demo.c \
+	transform.c

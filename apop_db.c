@@ -6,13 +6,15 @@ features like a variance, skew, and kurtosis aggregator for SQL. */
 #include "apop_internal.h"
 
 /** Here are where the options are initially set. See the \ref apop_opts_type
-    documentation for details.*/
+    documentation for details.
+\ingroup all_public
+*/
 apop_opts_type apop_opts	= 
           { .verbose=1,
             .output_delimiter ="\t",       .input_delimiters = "|,\t", 
             .db_name_column = "row_names", .nan_string = "NaN", 
             .db_engine = '\0',             .db_user = "\0", 
-            .db_pass = "\0",               .thread_count = 1,
+            .db_pass = "\0",               .stop_on_warning = 'n',
             .log_file = NULL,
             .rng_seed = 479901,            .version = 0.999 };
 
@@ -55,15 +57,20 @@ static void get_db_type(){
 /** If you want to use a database on the hard drive instead of memory, then call this
 once and only once before using any other database utilities.
 
-If you want a disposable database which you won't use after the program ends, don't bother with this function.
+With SQLite, if you want a disposable database which you won't use after the program
+ends, don't bother with this function.
 
-The trade-offs between an on-disk database and an in-memory db are as one would expect: memory is faster, but is destroyed when the program exits. SQLite includes a command line utility (<tt>sqlite3</tt>) which let you ask queries of a database on disk, which may be useful for debugging. There are also some graphical front-ends; just ask your favorite search engine for <a href="http://www.google.com/search?&q=sqlite+gui">SQLite GUI</a>.
+The trade-offs between an on-disk database and an in-memory db are as one would expect:
+memory is faster, but the database is destroyed when the program exits.
 
 MySQL users: either set the environment variable APOP_DB_ENGINE=mysql or set \c apop_opts.db_engine = 'm'.
 
-The Apophenia package assumes you are only using a single SQLite database at a time. You can use the SQL <tt>attach</tt> function to load other databases, or see <a href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further suggestions and sample code.
+The Apophenia package assumes you are only using a single database at a time. You
+can use the SQL <tt>attach</tt> function to load other databases, or see <a
+href="http://modelingwithdata.org/arch/00000142.htm">this blog post</a> for further
+suggestions and sample code.
 
-When you are done doing your database manipulations, be sure to call \ref apop_db_close if writing to disk.
+When you are done doing your database manipulations, call \ref apop_db_close if writing to disk.
 
 \param filename
 The name of a file on the hard drive on which to store the database. If
@@ -71,10 +78,10 @@ The name of a file on the hard drive on which to store the database. If
 the other database functions will call this function for you and you
 don't need to bother).
 
+\li See \ref sqlsec for mroe notes on using databases.
+
 \return 0: everything OK<br>
         1: database did not open.
-
-\ingroup db
 */
 int apop_db_open(char const *filename){
     if (!apop_opts.db_engine) get_db_type();
@@ -92,10 +99,12 @@ int apop_db_open(char const *filename){
         return apop_sqlite_db_open(filename);
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     char const *name;
     int isthere;
 } tab_exists_t;
+/** \endcond */
 
 static int tab_exists_callback(void *in, int argc, char **argv, char **whatever){
     tab_exists_t *te = in;
@@ -114,13 +123,10 @@ Recreating a table which already exists can cause errors, so it is good practice
 \return
 0 = table does not exist<br>
 1 = table was found, and if remove=='d', has been deleted
+-1 = processing error
 
 \li In the SQLite engine, this function considers table views to be tables.
-
-\li If <tt>apop_opts.stop_on_warn='n'</tt>, returns -1 on errors.
-
 \li This function uses the \ref designated syntax for inputs.
-\ingroup db
 */
 #ifdef APOP_NO_VARIADIC
 int apop_table_exists(char const *name, char remove){
@@ -201,26 +207,11 @@ apop_varad_head(int, apop_db_close){
     return 0;
 }
 
-/** \defgroup queries Queries
- 
-These functions query the database, and most return a value for use on the C-side.
-
-In all cases, your query may be in <tt>printf</tt> form. For example:
-\code
-char tabname[] = "demographics";
-char colname[] = "heights";
-int min_height = 175;
-apop_query("select %s from %s where %s > %i", colname, tabname, colname, min_height);
-\endcode
-
-\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
-
-  \{
-  */
-
 /** Send a query to the database that returns no data.
 
-\li As with the \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query("create table %s(id, name, age);", tablename)</tt>.
+\li As with functions like the \c apop_query_to_data, the query can include
+printf-style format specifiers, such as <tt>apop_query("create table %s(id, name,
+age);", tablename)</tt>.
 
 \param fmt A <tt>printf</tt>-style SQL query.
 \return 0 on success, 1 on failure.
@@ -251,21 +242,25 @@ int apop_query(const char *fmt, ...){
 
 \param fmt A <tt>printf</tt>-style SQL query.
 
-\li If <tt>apop_opts.db_name_column</tt> matches a column of the output table, then that column is used for row names, and therefore will not be included in the <tt>text</tt>.
+\exception out->error=='q' The database engine was unable to run the query (e.g.,  invalid SQL syntax). Again, a valid query that returns zero rows is not an error, and \c NULL is returned.
+\exception out->error=='d' Database error.
 
-\li <tt>query_output->text</tt> is always a 2-D array of strings, even if the query returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
-
-\li If an element in the database is \c NULL, the corresponding cell in the output table will be filled with the text given by \c apop_opts.nan_string. The default is \c "NaN", but you can set <tt>apop_opts.nan_string = "whatever you like"</tt> to change the text to whatever you like.
-
+\li If <tt>apop_opts.db_name_column</tt> matches a column of the output table, then that
+    column is used for row names, and therefore will not be included in the <tt>text</tt>.
+\li <tt>query_output->text</tt> is always a 2-D array of strings, even if the query
+    returns a single column. In that case, use <tt>returned_tab->text[i][0]</tt> (or
+    equivalently, <tt>*returned_tab->text[i]</tt>) to refer to row <tt>i</tt>.
+\li If an element in the database is \c NULL, the corresponding cell in the output
+    table will be filled with the text given by \c apop_opts.nan_string. The default
+    is \c "NaN", but you can set <tt>apop_opts.nan_string = "whatever you like"</tt>
+    to change the text to whatever you like.
 \li Returns \c NULL if your query is valid but returns zero rows.
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_text("select name from %s where id=%i;", tablename, id_number)</tt>.
+\li The query can include printf-style format specifiers, such as
+    <tt>apop_query_to_text("select name from %s where id=%i;", tablename, id_number)</tt>.
 
 For example, the following function will list the tables in an SQLite database (much like you
 could do from the command line using <tt>sqlite3 dbname.db ".table"</tt>).
 
-\exception out->error=='q' The database engine was unable to run the query (e.g.,  invalid SQL syntax). Again, a valid query that returns zero rows is not an error, and \c NULL is returned.
-\exception out->error=='d' Database error.
 \include ls_tables.c
 */
 apop_data * apop_query_to_text(const char * fmt, ...){
@@ -291,7 +286,7 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
     if (qi->firstcall){
         qi->firstcall--;
         for(i=0; i<argc; i++)
-            if (!strcasecmp(column[i], apop_opts.db_name_column)){
+            if (apop_opts.db_name_column && !strcasecmp(column[i], apop_opts.db_name_column)){
                 qi->namecol = i;
                 ncfound = 1;
                 break;
@@ -319,16 +314,23 @@ static int db_to_table(void *qinfo, int argc, char **argv, char **column){
 	return 0;
 }
 
-/** Queries the database, and dumps the result into an \ref apop_data set.
-
-\li If \ref apop_opts_type "apop_opts.db_name_column" is set (it defaults to being "row_names"), and the name of a column matches the name, then the row names are read from that column.
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_data("select age from %s where id=%i;", tablename, id_number)</tt>.
-
-\return If no rows are returned, \c NULL; else an \ref apop_data set with the data in place. Most data will be in the \c matrix element of the output. Column names are appropriately placed. If <tt>apop_opts.db_name_column</tt> matches one of the fields in your query's output, then that column will be used for row names (and therefore will not appear in the \c matrix).
+/** Queries the database and dumps the result into an \ref apop_data set.
 
 \param fmt A <tt>printf</tt>-style SQL query.
+
+\return If no rows are returned, \c NULL; else an \ref apop_data set with the data
+in place. Most data will be in the \c matrix element of the output. Column names are
+appropriately placed. If \ref apop_opts_type "apop_opts.db_name_column" matches one
+of the fields in your query's output (default: \c row_names), then that column will
+be used for row names (and therefore will not appear in the \c matrix).
+
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
+
+\li The query can include printf-style
+    format specifiers, such as <tt>apop_query_to_data("select age from %s where id=%i;",
+    tablename, id_number)</tt>.
+\li Blanks in the database (i.e., <tt> NULL</tt>s) and elements that match \ref
+    apop_opts_type "apop_opts.nan_string" are filled with <tt>NAN</tt>s in the matrix.
 */ 
 apop_data * apop_query_to_data(const char * fmt, ...){
     Fillin(query, fmt)
@@ -360,48 +362,20 @@ apop_data * apop_query_to_data(const char * fmt, ...){
     apop_opts.verbose=v;
     /** \endcond */
 
-/** Queries the database, and dumps the result into a matrix.
+/** Queries the database and dumps the first column of the result into a \c gsl_vector.
 
-  Uses \ref apop_query_to_data and returns just the matrix part; see that function for notes.
-
-\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I return only the \c gsl_matrix part of that set. 
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_matrix("select age from %s where id=%i;", tablename, id_number)</tt>.
- 
-\deprecated Use \ref apop_query_to_data
 \param fmt A <tt>printf</tt>-style SQL query.
-\return A \c gsl_matrix.
-\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
- */
-gsl_matrix * apop_query_to_matrix(const char * fmt, ...){
-    Fillin(query, fmt)
-    Store_settings
-    apop_data * outd = apop_query_to_data("%s", query);
-    Restore_settings
-    gsl_matrix *outm = NULL;
-    if (outd){
-        outm = outd->matrix;
-        outd->matrix = NULL;
-        apop_data_free(outd);
-    }
-    free(query);
-    return outm;
-}
-
-/** Queries the database, and dumps the first column of the result into a \c gsl_vector.
-
-\li Uses \ref apop_query_to_data internally, then throws away all but the first column of the matrix.
-
-\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix part of that set. 
-
-\li If the query returns zero rows of data or no columns, the function returns \c NULL.  
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_vector("select age from %s where id=%i;", tablename, id_number)</tt>.
-
 \return	 A <tt>gsl_vector</tt> holding the first column of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list.
+\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
 
-\param fmt A <tt>printf</tt>-style SQL query.
-\exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL. */
+\li Uses \ref apop_query_to_data internally, then throws away all but the first column
+    of the matrix.
+\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put
+    into the names of the \ref apop_data set, and then thrown away when I look at only
+    the \c gsl_matrix part of that set.
+\li If the query returns zero rows of data or no columns, the function returns \c NULL.
+\li The query can include printf-style format specifiers, such as <tt>apop_query_to_vector("select age from %s where id=%i;", tablename, id_number)</tt>.
+*/
 gsl_vector * apop_query_to_vector(const char * fmt, ...){
     Fillin(query, fmt)
     if (!apop_opts.db_engine) get_db_type();
@@ -430,18 +404,20 @@ gsl_vector * apop_query_to_vector(const char * fmt, ...){
 
 \li This calls \ref apop_query_to_data and returns the (0,0)th element of the returned matrix. Thus, if your query returns multiple lines, you will get no warning, and the function will return the first in the list (which is not always well-defined; maybe use an <tt>order by</tt> clause in your query if you expect multiple lines).
 
-\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put into the names of the \ref apop_data set, and then thrown away when I look at only the \c gsl_matrix element of that set. 
-
-\li If the query returns no rows at all, the function returns <tt>NAN</tt>.
-
-\li If the query produces a blank table, returns \c NAN, and if <tt>apop_opts.verbose>=2</tt>, prints an error.
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_float("select age from %s where id=%i;", tablename, id_number)</tt>.
-
-\li If the query produces an error, returns \c NAN, and if <tt>apop_opts.verbose>=0</tt>, prints an error. If you need to distinguish between blank tables, NaNs in the data, and query errors, use \ref apop_query_to_data.
+\li If \c apop_opts.db_name_column is set, then I'll ignore that column. It gets put
+    into the names of the \ref apop_data set, and then thrown away when I look at only
+    the \c gsl_matrix element of that set.
+\li If the query produces a blank table, returns \c NAN, and if
+    <tt>apop_opts.verbose>=2</tt>, prints an error.
+\li The query can include printf-style format specifiers, such as
+    <tt>apop_query_to_float("select age from %s where id=%i;", tablename, id_number)</tt>.
+\li If the query produces an error, returns \c NAN, and if <tt>apop_opts.verbose>=0</tt>,
+    prints an error. If you need to distinguish between blank tables, NaNs in the data,
+    and query errors, use \ref apop_query_to_data.
 
 \param fmt A <tt>printf</tt>-style SQL query.
-\return		A \c double, actually.*/
+\return		A \c double, actually.
+*/
 double apop_query_to_float(const char * fmt, ...){
     double out;
     Fillin(query, fmt)
@@ -470,21 +446,24 @@ double apop_query_to_float(const char * fmt, ...){
 /** Query data to an \c apop_data set, but a mix of names, vectors, matrix elements, and text.
 
 If you are querying to a matrix and maybe a name, use \c
-apop_query_to_data (and set \ref apop_opts_type "apop_opts.db_name_column" if desired). But
+apop_query_to_data (and set \ref apop_opts_type "apop_opts.db_name_column" if desired). If querying only text, use \ref apop_query_to_text. But
 if your data is a mix of text and numbers, use this.
 
-The first argument is a character string consisting of the letters \c nvmtw, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one n, v, and w. 
+The first argument is a character string consisting of the letters \c nvmtw, one for each column of the SQL output, indicating whether the column is a name, vector, matrix column, text column, or weight vector. You can have only one \c n, one \c v, and one \c w. 
 
 If the query produces more columns than there are elements in the column specification, then the remainder are dumped into the text section. If there are fewer columns produced than given in the spec, the additional elements will be allocated but not filled (i.e., they are uninitialized and will have garbage).
 
-\li \ref apop_opts_type "apop_opts.db_name_column" is ignored.  Use the \c 'n' character to indicate the output column with row names.
-
-\li As with the other \c apop_query_to_... functions, the query can include printf-style format specifiers, such as <tt>apop_query_to_mixed_data("tv", "select name, age from %s where id=%i", tablename, id_number)</tt>.
 
 \param typelist A string consisting of the letters \c nvmtw. For example, if your query columns should go into a text column, the vector, the weights, and two matrix columns, this would be "tvwmm".
 \param fmt A <tt>printf</tt>-style SQL query.
 \exception out->error=='d' Dimension error. Your count of matrix parts didn't match what the query returned.
 \exception out->error=='q' Query error. A valid query that returns no rows is not an error; in that case, you get \c NULL.
+
+\li \ref apop_opts_type "apop_opts.db_name_column" is ignored.  Use the \c 'n' character
+    to indicate the output column with row names.
+\li As with the other \c apop_query_to_... functions, the query can include printf-style
+    format specifiers, such as <tt>apop_query_to_mixed_data("tv", "select name, age from
+
 */
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...){
     Fillin(query, fmt)
@@ -503,8 +482,6 @@ apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...
     free(query);
     return out;
 }
-
-/** \} end query group. */
 
 /* Convenience function for extending a string. 
  asprintf(%q, "%s and stuff", q);
@@ -555,10 +532,11 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
                     "Something wrong with the matrix element %zu on line %zu, [%g].\n" ,col, row,  apop_data_get(set, row, col));
         if (*set->textsize > row)
             for (size_t col=0; col < set->textsize[1]; col++){
-                if (!strlen(set->text[row][col])) field++; //leave NULL and cleared
+                if (!strlen(set->text[row][col]) || (apop_opts.nan_string && !strcasecmp(apop_opts.nan_string, set->text[row][col])))
+                    {field++; continue;} //leave NULL and cleared
                 Apop_stopif(sqlite3_bind_text(p_stmt, field++, set->text[row][col], -1, SQLITE_TRANSIENT),
                     return -1, apop_errorlevel, 
-                    "Something wrong with the row name for line %zu, [%s].\n" , row, set->text[row][col]);
+                    "Something wrong with a text element at row %zu, col %zu [%s].\n" , row, col, set->text[row][col]);
             }
         if (set->weights && set->weights->size > row)
                 Apop_stopif(sqlite3_bind_double(p_stmt, field++, gsl_vector_get(set->weights, row)),
@@ -575,44 +553,13 @@ static int run_prepared_statements(apop_data const *set, sqlite3_stmt *p_stmt){
 #endif
 }
 
-/** Dump an \ref apop_data set into the database.
-
-This function is basically preempted by \ref apop_data_print. Use that one; this may soon no longer be available.
-
-Column names are inserted if there are any. If there are, all dots are converted to underscores.  Otherwise, the columns will be named \c c1, \c c2, \c c3, &c.
-
-\li If \ref apop_opts_type "apop_opts.db_name_column" is not blank (the default is "row_name"), then a so-named column is created, and the row names are placed there.
-
-\li If there are weights, they will be the last column of the table, and the column will be named "weights".
-
-\li If the table exists; append to. If the table does not exist, create. So perhaps call \ref apop_table_exists <tt>("tabname", 'd')</tt> to ensure that the table is removed ahead of time.
-
-\li You can also call this via \ref apop_data_print <tt>(data, "tabname", .output_type='d', .output_append='w')</tt> to overwrite a new table or with <tt>.output_append='a'</tt> to append.
-
-\li If your data set has zero data (i.e., is just a list of column names or is entirely blank), I return -1 without creating anything in the database.
-
-\li Especially if you are using a pre-2007 version of SQLite, there may be a speed gain to wrapping the call to this function in a begin/commit pair:
-
-\code
-apop_query("begin;");
-apop_data_print(dataset, .output_name="dbtab", .output_type='d');
-apop_query("commit;");
-\endcode
-
-
-\param set 	         The name of the matrix
-\param tabname	     The name of the db table to be created
-\param output_append See \ref apop_prep_output.
-\return 0=OK, -1=error
-\ingroup apop_data
-\ingroup conversions
-*/
+//users are expected to call apop_data_print.
 int apop_data_to_db(const apop_data *set, const char *tabname, const char output_append){
     Apop_stopif(!set, return -1, 1, "you sent me a NULL data set. Database table %s will not be created.", tabname);
     int	i,j; 
     char *q;
     char comma = ' ';
-    int use_row = strlen(apop_opts.db_name_column)  && set->names
+    int use_row = (apop_opts.db_name_column && strlen(apop_opts.db_name_column))  && set->names
                 && ((set->matrix && set->names->rowct == set->matrix->size1)
                     || (set->vector && set->names->rowct == set->vector->size));
 

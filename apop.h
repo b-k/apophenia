@@ -9,14 +9,19 @@ There used to be a series of sub-headers, but they never provided any serious
 benefit. Please use your text editor's word-search feature to find any elements you
 may be looking for. About a third of the file is comments and doxygen documentation,
 so syntax highlighting that distinguishes code from comments will also help to make
-this more navigable.
+this more navigable.*/
 
+/** \defgroup all_public Public functions, structs, and types
+\addtogroup all_public
+@{
 */
+
 #pragma once
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
+/** \cond doxy_ignore */
 #ifndef _GNU_SOURCE
 #define  _GNU_SOURCE //for asprintf
 #endif
@@ -32,10 +37,10 @@ extern "C" {
 
 /* A means of providing more script-like means of sending arguments to a function.
 
-These macros are intended as internal.  See the documentation if you're interested in
-using this mechanism in out-of-Apophenia work.
+These macros are intended as internal. If you are interested in using this mechanism
+in out-of-Apophenia work, grep docs/documentation.h for optionaldetails to find notes
+on how these are used (Doxygen doesn't use that page),
 */
-
 #define apop_varad_head(type, name) type variadic_##name(variadic_type_##name varad_in)
 
 #define apop_varad_declare(type, name, ...) \
@@ -47,13 +52,12 @@ using this mechanism in out-of-Apophenia work.
 #define apop_varad_var(name, value) name = varad_in.name ? varad_in.name : (value);
 #define apop_varad_link(name,...) variadic_##name((variadic_type_##name) {__VA_ARGS__})
 
+/** \endcond */ //End of Doxygen ignore.
 
 
-            //////The types
-
+            //////The types and functions that act on them
 
 /** This structure holds the names of the components of the \ref apop_data set. You may never have to worry about it directly, because most operations on \ref apop_data sets will take care of the names for you.
-\ingroup names
 */
 typedef struct{
     char *title;
@@ -64,16 +68,7 @@ typedef struct{
 	int colct, rowct, textct;
 } apop_name;
 
-/** The \ref apop_data structure represents a data set. It primarily joins together a gsl_vector, a gsl_matrix, and a table of strings, then gives them all row and column names. It tries to be minimally intrusive, so you can use it everywhere you would use a \c gsl_matrix or a \c gsl_vector.
-
-If you are viewing the HTML documentation, here is a diagram showing a sample data set with all of the elements in place. Together, they represet a data set where each row is an observation, which includes both numeric and text values, and where each row/column is named.
-
-\htmlinclude apop_data_fig.html
-
-Allocate using \c apop_data_alloc, free via \c apop_data_free, or more generally, see the \c apop_data_... section of the index (in the header links) for the many other functions that operate on this struct.
-
-See also the Data Sets section of the outline page (also in the header links) for further notes on getting and manipulating the elements of an \ref apop_data set.
-*/
+/** The \ref apop_data structure represents a data set. See \ref dataoverview.*/
 typedef struct apop_data{
     gsl_vector  *vector;
     gsl_matrix  *matrix;
@@ -95,60 +90,44 @@ typedef struct {
     void *free;
 } apop_settings_type;
 
-/** A statistical model. */
+/** A statistical model. See \ref modelsec for details. */
 typedef struct apop_model apop_model;
 
-/** The elements of the \ref apop_model type, representing a statistical model. */
+/** The elements of the \ref apop_model type, representing a statistical model. See \ref
+ modelsec and \ref modeldetails for use and details.  */
 struct apop_model{
     char name[101]; 
-    int vsize, msize1, msize2, dsize; /**< The size of the parameter set.
-                     If a dimension is -1, then use yourdata->matrix->size2. For
-                    anything more complex, allocate the parameter set in the prep
-                    method. \c dsize is for the canonical form, and is
-                    the size of the data the RNG will return. */
-    apop_data *data; /**< The input data. Typically a link to what you sent to \ref apop_estimate */
-    apop_data *parameters; /**< The coefficients or parameters estimated by the model. */
-    apop_data *info; /**< Several pages of assorted info, perhaps including the log likelihood, AIC, BIC,
-                        covariance matrix, confidence intervals, expected score. See your
-                        specific model's documentation for what it puts here.
-                        */
+    int vsize, msize1, msize2, dsize;
+    apop_data *data;
+    apop_data *parameters;
+    apop_data *info;
     void (*estimate)(apop_data * data, apop_model *params); 
-                /**< The estimation routine. Call via \ref apop_estimate */
     long double (*p)(apop_data *d, apop_model *params);
-                /**< Probability of the given data and parameterized model. Call via \ref apop_p */
     long double (*log_likelihood)(apop_data *d, apop_model *params);
-                /**< Log likelihood of the given data and parameterized model. Call via \ref apop_log_likelihood */
-    long double (*cdf)(apop_data *d, apop_model *params); /**< Cumulative distribution function: 
-                            the integral up to the single data point you provide.  Call via \ref apop_cdf */
+    long double (*cdf)(apop_data *d, apop_model *params);
     long double (*constraint)(apop_data *data, apop_model *params);
     int (*draw)(double *out, gsl_rng* r, apop_model *params);
-                /**< Random draw from a parametrized model. Call via \ref apop_draw */
     void (*prep)(apop_data *data, apop_model *params);
     apop_settings_type *settings;
-    void *more; /**< This element is copied and freed as necessary by Apophenia's
-                     model-handling functions, but is otherwise untouched. Put whatever
-                     information you want here. */
-    size_t more_size; /**< If setting \c more, set this to \c sizeof(your_more_type) so
-                         \ref apop_model_copy can do the \c memcpy as necessary. */
+    void *more;
+    size_t more_size;
     char error;
 };
 
-/** The global options.
-  \ingroup global_vars */
+/** The global options. */
 typedef struct{
     int verbose; /**< Set this to zero for silent mode, one for errors and warnings. default = 0. */
-    char stop_on_warning; /**< See outline page on error handling. */
+    char stop_on_warning; /**< See \ref debugging . */
     char output_delimiter[100]; /**< The separator between elements of output tables. The default is "\t", but 
                                 for LaTeX, use "&\t", or use "|" to get pipe-delimited output. */
     char input_delimiters[100]; /**< Deprecated. Please use per-function inputs to \ref apop_text_to_db and \ref apop_text_to_data. Default = "|,\t" */
-    char db_name_column[300]; /**< If set, the name of the column in your tables that holds row names. */
-    char *nan_string; /**< The string used to indicate NaN. */
+    char *db_name_column; /**< If not NULL or <tt>""</tt>, the name of the column in your tables that holds row names.*/
+    char *nan_string; /**< The string used to indicate NaN. Default: <tt>"NaN</tt>. Comparisons are case-insensitive.*/
     char db_engine; /**< If this is 'm', use mySQL, else use SQLite. */
     char db_user[101]; /**< Username for database login. Max 100 chars.  */
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
     FILE *log_file;  /**< The file handle for the log. Defaults to \c stderr, but change it with, e.g.,
                            <tt>apop_opts.log_file = fopen("outlog", "w");</tt> */
-    int  thread_count; /**< Deprecated. Use \c omp_set_num_threads(n).  */
     #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
         _Atomic(int) rng_seed;
     #else
@@ -191,28 +170,22 @@ call the base function:
 char **[] colnames = {"age", "sex", "height", NULL};
 apop_data_add_names_base(mydata, 'c', colnames);
 \endcode
-If you forget the \c NULL marker, this has good odds of segfaulting. You may prefer to use a \c for loop that inserts each name in turn using \ref apop_name_add.
+But if you forget the \c NULL marker, this has good odds of segfaulting. You may prefer to use a \c for loop that inserts each name in turn using \ref apop_name_add.
 
 \see \ref apop_name_add, although \ref apop_data_add_names will be more useful in most cases. 
-
- \ingroup data_struct 
 */
 #define apop_data_add_names(dataset, type, ...) apop_data_add_names_base((dataset), (type), (char const*[]) {__VA_ARGS__, NULL}) 
 
 
 /** Free an \ref apop_data structure.
  
-As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
-
-If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
+\li As with \c free(), it is safe to send in a \c NULL pointer (in which case the function does nothing).
+\li If the \c more pointer is not \c NULL, I will free the pointed-to data set first.
 If you don't want to free data sets down the chain, set <tt>more=NULL</tt> before calling this.
-
-\li This is actually a macro (that calls \ref apop_data_free_base to do the real work). It
+\li This is actually a macro (that calls \ref apop_data_free_base). It
 sets \c freeme to \c NULL when it's done, because there's nothing safe you can do with the
 freed location, and you can later safely test conditions like <tt>if (data) ...</tt>.
-
- \ingroup data_struct
-  */
+*/
 #define apop_data_free(freeme) (apop_data_free_base(freeme) ? 0 : ((freeme)= NULL))
 
 char        apop_data_free_base(apop_data *freeme);
@@ -269,7 +242,7 @@ void apop_data_memcpy(apop_data *out, const apop_data *in);
 #endif
 
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
-int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
+int apop_text_set(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
 #ifdef APOP_NO_VARIADIC
@@ -339,7 +312,14 @@ gsl_vector *apop_vector_copy(const gsl_vector *in);
 
 //From matrix
 gsl_matrix *apop_matrix_copy(const gsl_matrix *in);
-apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol);
+#ifdef APOP_NO_VARIADIC
+ apop_data *apop_db_to_crosstab(char const*tabname, char const*row, char const*col, char const*data, char is_aggregate) ;
+#else
+ apop_data * apop_db_to_crosstab_base(char const*tabname, char const*row, char const*col, char const*data, char is_aggregate) ;
+ apop_varad_declare(apop_data *, apop_db_to_crosstab, char const*tabname; char const*row; char const*col; char const*data; char is_aggregate);
+#define apop_db_to_crosstab(...) apop_varad_link(apop_db_to_crosstab, __VA_ARGS__)
+#endif
+
 
 //From array
 #ifdef APOP_NO_VARIADIC
@@ -350,7 +330,10 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 #define apop_array_to_vector(...) apop_varad_link(apop_array_to_vector, __VA_ARGS__)
 #endif
 
+/** \cond doxy_ignore */   //Deprecated
+#define apop_text_add apop_text_set
 #define apop_line_to_vector apop_array_to_vector
+/** \endcond */
 
 //From text
 #ifdef APOP_NO_VARIADIC
@@ -372,7 +355,14 @@ apop_data  *apop_db_to_crosstab(char *tabname, char *r1, char *r2, char *datacol
 
 //rank data
 apop_data *apop_data_rank_expand (apop_data *in);
-apop_data *apop_data_rank_compress (apop_data *in);
+#ifdef APOP_NO_VARIADIC
+ apop_data *apop_data_rank_compress (apop_data *in, int min_bins) ;
+#else
+ apop_data * apop_data_rank_compress_base(apop_data *in, int min_bins) ;
+ apop_varad_declare(apop_data *, apop_data_rank_compress, apop_data *in; int min_bins);
+#define apop_data_rank_compress(...) apop_varad_link(apop_data_rank_compress, __VA_ARGS__)
+#endif
+
 
 //From crosstabs
 void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name, 
@@ -380,10 +370,10 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 
 //packing data into a vector
 #ifdef APOP_NO_VARIADIC
- gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages) ;
+ gsl_vector * apop_data_pack(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages) ;
 #else
- gsl_vector * apop_data_pack_base(const apop_data *in, gsl_vector *out, char all_pages, char use_info_pages) ;
- apop_varad_declare(gsl_vector *, apop_data_pack, const apop_data *in; gsl_vector *out; char all_pages; char use_info_pages);
+ gsl_vector * apop_data_pack_base(const apop_data *in, gsl_vector *out, char more_pages, char use_info_pages) ;
+ apop_varad_declare(gsl_vector *, apop_data_pack, const apop_data *in; gsl_vector *out; char more_pages; char use_info_pages);
 #define apop_data_pack(...) apop_varad_link(apop_data_pack, __VA_ARGS__)
 #endif
 
@@ -399,16 +389,13 @@ void apop_crosstab_to_db(apop_data *in, char *tabname, char *row_col_name,
 #define apop_vector_fill(avfin, ...) apop_vector_fill_base((avfin), (double []) {__VA_ARGS__})
 #define apop_data_fill(adfin, ...) apop_data_fill_base((adfin), (double []) {__VA_ARGS__})
 #define apop_text_fill(dataset, ...)   apop_text_fill_base((dataset), (char* []) {__VA_ARGS__, NULL})
-
 #define apop_data_falloc(sizes, ...) apop_data_fill(apop_data_alloc sizes, __VA_ARGS__)
     
 apop_data *apop_data_fill_base(apop_data *in, double []);
 gsl_vector *apop_vector_fill_base(gsl_vector *in, double []);
 apop_data *apop_text_fill_base(apop_data *data, char* text[]);
 
-int apop_data_set_row(apop_data * row, apop_data *d, int row_number);
-
-// Models and model support functions
+            //// Models and model support functions
 
 extern apop_model *apop_beta;
 extern apop_model *apop_bernoulli;
@@ -445,18 +432,23 @@ extern apop_model *apop_dconstrain;
 extern apop_model *apop_mixture;
 extern apop_model *apop_cross;
 
-/** Alias for the \ref apop_normal distribution, qv.
-\hideinitializer */
+/** Alias for the \ref apop_normal distribution, qv. */
 #define apop_gaussian apop_normal
 #define apop_OLS apop_ols
 #define apop_PMF apop_pmf
 #define apop_F_distribution apop_f_distribution
-#define apop_WLS apop_wls
 #define apop_IV apop_iv
 
 
 void apop_model_free (apop_model * free_me);
-void apop_model_print (apop_model * print_me, FILE *out);
+#ifdef APOP_NO_VARIADIC
+ void apop_model_print (apop_model * model, FILE *output_pipe) ;
+#else
+ void apop_model_print_base(apop_model * model, FILE *output_pipe) ;
+ apop_varad_declare(void, apop_model_print, apop_model * model; FILE *output_pipe);
+#define apop_model_print(...) apop_varad_link(apop_model_print, __VA_ARGS__)
+#endif
+
 void apop_model_show (apop_model * print_me); //deprecated
 apop_model * apop_model_copy(apop_model *in); //in apop_model.c
 apop_model * apop_model_clear(apop_data * data, apop_model *model);
@@ -478,14 +470,18 @@ apop_model *apop_model_set_parameters_base(apop_model *in, double ap[]);
 
 //apop_mixture.c
 /** Produce a model as a linear combination of other models. See the documentation for the \ref apop_mixture model. 
-\param ... A list of models, either all parameterized or all unparameterized. See examples in the \ref apop_mixture documentation.
- */
+
+\param ... A list of models, either all parameterized or all unparameterized. See
+examples in the \ref apop_mixture documentation.
+*/
 #define apop_model_mixture(...) apop_model_mixture_base((apop_model *[]){__VA_ARGS__, NULL})
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
-//transform/apop_model_cross.c.
+//transform/apop_cross.c.
 apop_model *apop_model_cross_base(apop_model *mlist[]);
 #define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
+
+        ////More functions
 
     //The variadic versions, with lots of options to input extra parameters to the
     //function being mapped/applied
@@ -550,16 +546,6 @@ double apop_matrix_map_all_sum(const gsl_matrix *in, double (*fn)(double));
 
 
         // Some output routines
-
-#ifdef APOP_NO_VARIADIC
- void apop_plot_histogram(gsl_vector *data, size_t bin_count, char *with, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
-#else
- void apop_plot_histogram_base(gsl_vector *data, size_t bin_count, char *with, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
- apop_varad_declare(void, apop_plot_histogram, gsl_vector *data; size_t bin_count; char *with; char const *output_name; FILE *output_pipe; char output_type; char output_append);
-#define apop_plot_histogram(...) apop_varad_link(apop_plot_histogram, __VA_ARGS__)
-#endif
-
-
 #ifdef APOP_NO_VARIADIC
  void apop_matrix_print(const gsl_matrix *data, char const *output_name, FILE *output_pipe, char output_type, char output_append) ;
 #else
@@ -652,7 +638,6 @@ void apop_data_show(const apop_data *data);
 #define apop_vector_normalize(...) apop_varad_link(apop_vector_normalize, __VA_ARGS__)
 #endif
 
-void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization);
 
 apop_data * apop_data_covariance(const apop_data *in);
 apop_data * apop_data_correlation(const apop_data *in);
@@ -661,6 +646,14 @@ long double apop_matrix_sum(const gsl_matrix *m);
 double apop_matrix_mean(const gsl_matrix *data);
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var);
 apop_data * apop_data_summarize(apop_data *data);
+#ifdef APOP_NO_VARIADIC
+ double * apop_vector_percentiles(gsl_vector *data, char rounding)  ;
+#else
+ double * apop_vector_percentiles_base(gsl_vector *data, char rounding)  ;
+ apop_varad_declare(double *, apop_vector_percentiles, gsl_vector *data; char rounding);
+#define apop_vector_percentiles(...) apop_varad_link(apop_vector_percentiles, __VA_ARGS__)
+#endif
+
 
 apop_data *apop_test_fisher_exact(apop_data *intab); //in apop_fisher.c
 
@@ -739,10 +732,10 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 #endif
 
 #ifdef APOP_NO_VARIADIC
- double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
+ long double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
 #else
- double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
- apop_varad_declare(double, apop_kl_divergence, apop_model *from; apop_model *to; int draw_ct; gsl_rng *rng);
+ long double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng) ;
+ apop_varad_declare(long double, apop_kl_divergence, apop_model *from; apop_model *to; int draw_ct; gsl_rng *rng);
 #define apop_kl_divergence(...) apop_varad_link(apop_kl_divergence, __VA_ARGS__)
 #endif
 
@@ -750,14 +743,13 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v);
 apop_data *apop_estimate_coefficient_of_determination (apop_model *);
 void apop_estimate_parameter_tests (apop_model *est);
 
-
 //Bootstrapping & RNG
 apop_data * apop_jackknife_cov(apop_data *data, apop_model *model);
 #ifdef APOP_NO_VARIADIC
- apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) ;
+ apop_data * apop_bootstrap_cov(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans, apop_data **boot_store) ;
 #else
- apop_data * apop_bootstrap_cov_base(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans) ;
- apop_varad_declare(apop_data *, apop_bootstrap_cov, apop_data *data; apop_model *model; gsl_rng* rng; int iterations; char keep_boots; char ignore_nans);
+ apop_data * apop_bootstrap_cov_base(apop_data *data, apop_model *model, gsl_rng* rng, int iterations, char keep_boots, char ignore_nans, apop_data **boot_store) ;
+ apop_varad_declare(apop_data *, apop_bootstrap_cov, apop_data *data; apop_model *model; gsl_rng* rng; int iterations; char keep_boots; char ignore_nans; apop_data **boot_store);
 #define apop_bootstrap_cov(...) apop_varad_link(apop_bootstrap_cov, __VA_ARGS__)
 #endif
 
@@ -767,7 +759,7 @@ double apop_rng_GHgB3(gsl_rng * r, double* a); //in apop_asst.c
 #define apop_rng_get_thread(thread_in) apop_rng_get_thread_base(#thread_in[0]=='\0' ? -1: (thread_in+0))
 gsl_rng *apop_rng_get_thread_base(int thread);
 
-int apop_arms_draw (double *out, gsl_rng *r, apop_model *m); //apop_arms.h
+int apop_arms_draw (double *out, gsl_rng *r, apop_model *m);
 
 
     // maximum likelihod estimation related functions
@@ -824,13 +816,10 @@ apop_model * apop_model_fix_params_get_base(apop_model *model_in);
 
 
 
-
-
-
             //////vtables
+/** \cond doxy_ignore */
 
-/*
-This declares the vtable macros for each procedure that uses the mechanism.
+/* This declares the vtable macros for each procedure that uses the mechanism.
 
 --We want to have type-checking on the functions put into the vtables. Type checking
 happens only with functions, not macros, so we need a type_check function for every
@@ -844,7 +833,7 @@ declared.
 of inputs to the hash.
 
 --We want to have such a macro for every vtable. That means that we need a macro
-to write macros. We can't do that with C macros.  Thus, this file uses m4 macros to
+to write macros. We can't do that with C macros, so this file uses m4 macros to
 generate C macros.
 
 --After the m4 definition of make_vtab_fns, each new vtable requires a typedef, a hash
@@ -936,14 +925,12 @@ void apop_model_print_type_check(apop_model_print_type in);
 #define apop_model_print_vtable_get(...) apop_vtable_get("apop_model_print", apop_model_print_hash(__VA_ARGS__))
 #define apop_model_print_vtable_drop(...) apop_vtable_drop("apop_model_print", apop_model_print_hash(__VA_ARGS__))
 
-
-
+/** \endcond */ //End of Doxygen ignore.
 
 
         //////Asst
 
-
-double apop_generalized_harmonic(int N, double s) __attribute__ ((__pure__));
+long double apop_generalized_harmonic(int N, double s) __attribute__ ((__pure__));
 
 apop_data * apop_test_anova_independence(apop_data *d);
 #define apop_test_ANOVA_independence(d) apop_test_anova_independence(d)
@@ -965,18 +952,18 @@ apop_data * apop_histograms_test_goodness_of_fit(apop_model *h0, apop_model *h1)
 apop_data * apop_test_kolmogorov(apop_model *m1, apop_model *m2);
 apop_data *apop_data_pmf_compress(apop_data *in);
 #ifdef APOP_NO_VARIADIC
- apop_data * apop_data_to_bins(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin) ;
+ apop_data * apop_data_to_bins(apop_data const *indata, apop_data const *binspec, int bin_count, char close_top_bin) ;
 #else
- apop_data * apop_data_to_bins_base(apop_data *indata, apop_data *binspec, int bin_count, char close_top_bin) ;
- apop_varad_declare(apop_data *, apop_data_to_bins, apop_data *indata; apop_data *binspec; int bin_count; char close_top_bin);
+ apop_data * apop_data_to_bins_base(apop_data const *indata, apop_data const *binspec, int bin_count, char close_top_bin) ;
+ apop_varad_declare(apop_data *, apop_data_to_bins, apop_data const *indata; apop_data const *binspec; int bin_count; char close_top_bin);
 #define apop_data_to_bins(...) apop_varad_link(apop_data_to_bins, __VA_ARGS__)
 #endif
 
 #ifdef APOP_NO_VARIADIC
- apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) ;
+ apop_model * apop_model_to_pmf(apop_model *model, apop_data *binspec, long int draws, int bin_count) ;
 #else
- apop_model * apop_model_to_pmf_base(apop_model *model, apop_data *binspec, long int draws, int bin_count, gsl_rng *rng) ;
- apop_varad_declare(apop_model *, apop_model_to_pmf, apop_model *model; apop_data *binspec; long int draws; int bin_count; gsl_rng *rng);
+ apop_model * apop_model_to_pmf_base(apop_model *model, apop_data *binspec, long int draws, int bin_count) ;
+ apop_varad_declare(apop_model *, apop_model_to_pmf, apop_model *model; apop_data *binspec; long int draws; int bin_count);
 #define apop_model_to_pmf(...) apop_varad_link(apop_model_to_pmf, __VA_ARGS__)
 #endif
 
@@ -992,8 +979,13 @@ apop_data *apop_data_pmf_compress(apop_data *in);
 
 /** Notify the user of errors, warning, or debug info. 
 
+writes to \ref apop_opts.log_file, which is a \c FILE handle. The default is \c stderr,
+but use \c fopen to attach to a file.
+
  \param verbosity   At what verbosity level should the user be warned? E.g., if level==2, then print iff apop_opts.verbosity >= 2.
- \param ... The message to write to STDERR (presuming the verbosity level is high enough). This can be a printf-style format with following arguments. You can produce much more informative error messages this way, e.g., \c apop_notify(0, "Beta is %g but should be greater than zero.", beta);.
+ \param ... The message to write to the log (presuming the verbosity level is high
+enough). This can be a printf-style format with following arguments, 
+e.g., <tt>apop_notify(0, "Beta is currently %g", beta)</tt>.
 */
 #define Apop_notify(verbosity, ...) {\
     if (apop_opts.verbose != -1 && apop_opts.verbose >= verbosity) {  \
@@ -1002,19 +994,32 @@ apop_data *apop_data_pmf_compress(apop_data *in);
         fflush(apop_opts.log_file); \
 } }
 
+/** \cond doxy_ignore */
 #define Apop_maybe_abort(level) \
-            {if ((level == -5 && apop_opts.stop_on_warning!='n')                \
-            || (apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
-            || (apop_opts.stop_on_warning=='w') ) \
+            {if ((apop_opts.verbose >= level && apop_opts.stop_on_warning == 'v') \
+                 || (apop_opts.stop_on_warning=='w') ) \
                 raise(SIGTRAP);}
+/** \endcond */
 
-/** Execute an action and print a message to \c stderr (or the current \c FILE handle held by <tt>apop_opts.log_file</tt>).
- Intended for leaving a function on failure.
+/** Execute an action and print a message to the current \c FILE handle held by <tt>apop_opts.log_file</tt> (default: \c stderr).
  
-\param test The expression that, if true, triggers all the action.
+\param test The expression that, if true, triggers the action.
 \param onfail If the assertion fails, do this. E.g., <tt>out->error='x'; return GSL_NAN</tt>. Notice that it is OK to include several lines of semicolon-separated code here, but if you have a lot to do, the most readable option may be <tt>goto outro</tt>, plus an appropriately-labeled section at the end of your function.
-\param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one.
+\param level Print the warning message only if \ref apop_opts_type "apop_opts.verbose" is greater than or equal to this. Zero usually works, but for minor infractions use one, or for more verbose debugging output use 2.
 \param ... The error message in printf form, plus any arguments to be inserted into the printf string. I'll provide the function name and a carriage return.
+
+Some examples:
+
+\code
+//the typical case, stopping function execution:
+Apop_stopif(isnan(x), return NAN, 0, "x is NAN; failing");
+
+//Mark a flag, go to a cleanup step
+Apop_stopif(x < 0, needs_cleanup=1; goto cleanup, 0, "x is %g; cleaning up and exiting.", x);
+
+//Print a diagnostic iff <tt>apop_opts.verbose>=1</tt> and continue
+Apop_stopif(x < 0,  , 1, "warning: x is %g.", x);
+\endcode
 
 \li If \c apop_opts.stop_on_warning is nonzero and not <tt>'v'</tt>, then a failed test halts via \c abort(), even if the <tt>apop_opts.verbose</tt> level is set so that the warning message doesn't print to screen. Use this when running via debugger.
 \li If \c apop_opts.stop_on_warning is <tt>'v'</tt>, then a failed test halts via \c abort() iff the verbosity level is high enough to print the error.
@@ -1028,6 +1033,7 @@ apop_data *apop_data_pmf_compress(apop_data *in);
 
 #define apop_errorlevel -5
 
+/** \cond doxy_ignore */
 //For use in stopif, to return a blank apop_data set with an error attached.
 #define apop_return_data_error(E) {apop_data *out=apop_data_alloc(); out->error='E'; return out;}
 
@@ -1041,8 +1047,8 @@ apop_data *apop_data_pmf_compress(apop_data *in);
 
 //For things that return void. Transitional and deprecated at birth.
 #define Apop_assert_n(test, ...) Apop_assert_c((test),  , apop_errorlevel, __VA_ARGS__)
-#define Apop_assert_nan(test, ...) Apop_assert_c((test), GSL_NAN, apop_errorlevel, __VA_ARGS__)
 #define Apop_assert_negone(test, ...) Apop_assert_c((test), -1, apop_errorlevel, __VA_ARGS__)
+/** \endcond */ //End of Doxygen ignore.
 
 //Missing data
 #ifdef APOP_NO_VARIADIC
@@ -1054,7 +1060,6 @@ apop_data *apop_data_pmf_compress(apop_data *in);
 #endif
 
 apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
-#define apop_ml_imputation(d, m) apop_ml_impute(d, m)
 
 #ifdef APOP_NO_VARIADIC
  apop_model *apop_model_metropolis(apop_data *d, gsl_rng* rng, apop_model *m);
@@ -1082,16 +1087,6 @@ apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
 #endif
 
 
-//Sorting (apop_asst.c)
-#ifdef APOP_NO_VARIADIC
- double * apop_vector_percentiles(gsl_vector *data, char rounding)  ;
-#else
- double * apop_vector_percentiles_base(gsl_vector *data, char rounding)  ;
- apop_varad_declare(double *, apop_vector_percentiles, gsl_vector *data; char rounding);
-#define apop_vector_percentiles(...) apop_varad_link(apop_vector_percentiles, __VA_ARGS__)
-#endif
-
-
 //apop_sort.c
 #ifdef APOP_NO_VARIADIC
  apop_data *apop_data_sort(apop_data *data, apop_data *sort_order, char asc, char inplace, double *col_order);
@@ -1105,21 +1100,21 @@ apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
 //raking
 #ifdef APOP_NO_VARIADIC
  apop_data * apop_rake(char const *margin_table, char * const*var_list, 
-                    int var_ct, char const *all_vars, char * const *contrasts, int contrast_ct, 
+                    int var_ct, char * const *contrasts, int contrast_ct, 
                     char const *structural_zeros, int max_iterations, double tolerance, 
-                    char const *count_col, int run_number, char const *init_table, 
-                    char const *init_count_col, double nudge, char const* table_name) ;
+                    char const *count_col, char const *init_table, 
+                    char const *init_count_col, double nudge) ;
 #else
  apop_data * apop_rake_base(char const *margin_table, char * const*var_list, 
-                    int var_ct, char const *all_vars, char * const *contrasts, int contrast_ct, 
+                    int var_ct, char * const *contrasts, int contrast_ct, 
                     char const *structural_zeros, int max_iterations, double tolerance, 
-                    char const *count_col, int run_number, char const *init_table, 
-                    char const *init_count_col, double nudge, char const* table_name) ;
+                    char const *count_col, char const *init_table, 
+                    char const *init_count_col, double nudge) ;
  apop_varad_declare(apop_data *, apop_rake, char const *margin_table; char * const*var_list; 
-                    int var_ct; char const *all_vars; char * const *contrasts; int contrast_ct; 
+                    int var_ct; char * const *contrasts; int contrast_ct; 
                     char const *structural_zeros; int max_iterations; double tolerance; 
-                    char const *count_col; int run_number; char const *init_table; 
-                    char const *init_count_col; double nudge; char const* table_name);
+                    char const *count_col; char const *init_table; 
+                    char const *init_count_col; double nudge);
 #define apop_rake(...) apop_varad_link(apop_rake, __VA_ARGS__)
 #endif
 
@@ -1137,7 +1132,7 @@ apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
 #include <gsl/gsl_statistics_double.h>
 
 
-    //First, some linear algebra utilities
+    //Some linear algebra utilities
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv);
 #ifdef APOP_NO_VARIADIC
@@ -1168,69 +1163,140 @@ double      apop_matrix_determinant(const gsl_matrix *in) ;
 #endif
 
 #ifdef APOP_NO_VARIADIC
- gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace) ;
+ gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector const * v2, char inplace) ;
 #else
- gsl_vector * apop_vector_stack_base(gsl_vector *v1, gsl_vector * v2, char inplace) ;
- apop_varad_declare(gsl_vector *, apop_vector_stack, gsl_vector *v1; gsl_vector * v2; char inplace);
+ gsl_vector * apop_vector_stack_base(gsl_vector *v1, gsl_vector const * v2, char inplace) ;
+ apop_varad_declare(gsl_vector *, apop_vector_stack, gsl_vector *v1; gsl_vector const * v2; char inplace);
 #define apop_vector_stack(...) apop_varad_link(apop_vector_stack, __VA_ARGS__)
 #endif
 
 #ifdef APOP_NO_VARIADIC
- gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace) ;
+ gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace) ;
 #else
- gsl_matrix * apop_matrix_stack_base(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace) ;
- apop_varad_declare(gsl_matrix *, apop_matrix_stack, gsl_matrix *m1; gsl_matrix * m2; char posn; char inplace);
+ gsl_matrix * apop_matrix_stack_base(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace) ;
+ apop_varad_declare(gsl_matrix *, apop_matrix_stack, gsl_matrix *m1; gsl_matrix const * m2; char posn; char inplace);
 #define apop_matrix_stack(...) apop_varad_link(apop_matrix_stack, __VA_ARGS__)
 #endif
 
-gsl_matrix * apop_matrix_rm_columns(gsl_matrix *in, int *drop);
 
 void apop_vector_log(gsl_vector *v);
 void apop_vector_log10(gsl_vector *v);
 void apop_vector_exp(gsl_vector *v);
 
-/** Deprecated. Use \ref Apop_subm.  \hideinitializer */
+                ////Subsetting macros
+
+/** \cond doxy_ignore */
+/** These are all deprecated.*/
 #define APOP_SUBMATRIX(m, srow, scol, nrows, ncols, o) gsl_matrix apop_mm_##o = gsl_matrix_submatrix((m), (srow), (scol), (nrows),(ncols)).matrix;\
-gsl_matrix * o = &( apop_mm_##o );
+gsl_matrix * o = &( apop_mm_##o );                                                  // Use \ref Apop_subm. 
+#define Apop_submatrix APOP_SUBMATRIX
 
-/** \def Deprecated. Use \ref Apop_rv.  \hideinitializer */
-#define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)
-
-/** Deprecated. Use \ref Apop_cv. \hideinitializer */
 #define Apop_col_v(m, col, v) gsl_vector apop_vv_##v = ((col) == -1) ? (gsl_vector){} : gsl_matrix_column((m)->matrix, (col)).vector;\
-gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );
+gsl_vector * v = ((col)==-1) ? (m)->vector : &( apop_vv_##v );                      // Use \ref Apop_cv.
 
-/** Deprecated. Use \ref Apop_rs.  \hideinitializer */ 
-#define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)
+#define Apop_row_v(m, row, v) Apop_matrix_row((m)->matrix, row, v)                  // Use \ref Apop_rv.
+#define Apop_rows(d, rownum, len, outd) apop_data *outd = Apop_rs(d, rownum, len)   // Use \ref Apop_rs.
+#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)                           // Use \ref Apop_r.
+#define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len); // Use \ref Apop_cs.
+/** \endcond */ //End of Doxygen ignore.
 
-/** Deprecated. Use \ref Apop_r.  \hideinitializer */ 
-#define Apop_row(d, row, outd) Apop_rows(d, row, 1, outd)
-
-/** Deprecated. Use \ref Apop_cs.  \hideinitializer */ 
-#define Apop_cols(d, colnum, len, outd) apop_data *outd =  Apop_cs(d, colnum, len);
-
+/** \def Apop_row_tv(m, row_name, v)
+ After this call, \c v will hold a \c gsl_vector view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_mrv
+*/
 #define Apop_row_tv(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m)->matrix, apop_name_find((m)->names, row, 'r')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+/** \def Apop_col_tv(m, col_name, v)
+After this call, \c v will hold a \c gsl_vector view of the \ref apop_data set \c m.
+The view will consist only of the column with name \c col_name.
+Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_mcv
+*/
 #define Apop_col_tv(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m)->matrix, apop_name_find((m)->names, col, 'c')).vector;\
 gsl_vector * v = &( apop_vv_##v );
 
+/** \def Apop_row_t(m, row_name, v)
+ After this call, \c v will hold an \ref apop_data view of an \ref apop_data set \c m. The view will consist only of the row with name \c row_name.
+ Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_mrv
+*/
 #define Apop_row_t(d, rowname, outd) int apop_row_##outd = apop_name_find((d)->names, rowname, 'r'); Apop_rows(d, apop_row_##outd, 1, outd)
 
+/** \def Apop_col_t(m, col_name, v)
+ After this call, \c v will hold a view of the \ref apop_data set \c m. The view will consist only of a \c gsl_vector view of the column of the \ref apop_data set \c m with name \c col_name.
+ Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find, and the third is the name of the view to be generated.
+\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_mcv
+*/
 #define Apop_col_t(d, colname, outd) int apop_col_##outd = apop_name_find((d)->names, colname, 'c'); Apop_cols(d, apop_col_##outd, 1, outd)
 
 // The above versions relied on gsl_views, which stick to C as of 1989 CE.
 // Better to just create the views via designated initializers.
 
-#define Apop_subm(data_to_view, srow, scol, nrows, ncols)(                  \
-        (!(data_to_view)                                                   \
-            || (data_to_view)->size1 < (srow)+(nrows) || (srow) < 0        \
-            || (data_to_view)->size2 < (scol)+(ncols) || (scol) < 0) ? NULL \
+
+/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
+Generate a view of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
+
+\param data_to_view The root matrix
+\param srow the first row (in the root matrix) of the top of the submatrix
+\param scol the first column (in the root matrix) of the left edge of the submatrix
+\param nrows number of rows in the submatrix
+\param ncols number of columns in the submatrix
+\return An automatically-allocated view of type \c gsl_matrix.
+*/
+#define Apop_subm(matrix_to_view, srow, scol, nrows, ncols)(                  \
+        (!(matrix_to_view)                                                   \
+            || (matrix_to_view)->size1 < (srow)+(nrows) || (srow) < 0        \
+            || (matrix_to_view)->size2 < (scol)+(ncols) || (scol) < 0) ? NULL \
         : &(gsl_matrix){.size1=(nrows), .size2=(ncols),                         \
-             .tda=(data_to_view)->tda,                                  \
-             .data=gsl_matrix_ptr((data_to_view), (srow), (scol))}      \
+             .tda=(matrix_to_view)->tda,                                  \
+             .data=gsl_matrix_ptr((matrix_to_view), (srow), (scol))}      \
         )
 
+/** Get a vector view of a single row of a \ref gsl_matrix.
+
+\param matrix_to_vew A \ref gsl_matrix.
+\param row An integer giving the row to be viewed.
+\return A \c gsl_vector view of the given row. The view is automatically allocated,
+  and disappears as soon as the program leaves the scope in which it is declared.
+
+See \ref apop_vector_correlation for an example of use.
+\see Apop_r, Apop_rv
+*/
+#define Apop_mrv(matrix_to_view, row) Apop_rv(&(apop_data){.matrix=matrix_to_view}, row)
+
+/** Get a vector view of a single column of a \ref gsl_matrix.
+
+\param matrix_to_vew A \ref gsl_matrix.
+\param row An integer giving the column to be viewed.
+\return A \c gsl_vector view of the given column. The view is automatically allocated,
+  and disappears as soon as the program leaves the scope in which it is declared.
+
+\code 
+gsl_matrix *m = apop_query_to_data("select col1, col2, col3 from data")->matrix;
+printf("The correlation coefficient between columns two "
+       "and three is %g.\n", apop_vector_correlation(Apop_mcv(m, 2), Apop_mcv(m, 3)));
+\endcode 
+
+\see Apop_r, Apop_cv
+*/
+#define Apop_mcv(matrix_to_view, col) Apop_cv(&(apop_data){.matrix=matrix_to_view}, col)
+
+/** \def Apop_rv(d, row)
+A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
+row \c row. The view is a \c gsl_vector set.
+
+\code
+gsl_vector *v = Apop_rv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size1; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_r(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
 #define Apop_rv(data_to_view, row) (                                            \
         ((data_to_view) == NULL || (data_to_view)->matrix == NULL               \
             || (data_to_view)->matrix->size1 <= (row) || (row) < 0) ? NULL        \
@@ -1238,6 +1304,24 @@ gsl_vector * v = &( apop_vv_##v );
              .stride=1, .data=gsl_matrix_ptr((data_to_view)->matrix, (row), 0)} \
         )
 
+/** \def Apop_cv(d, col)
+A macro to generate a temporary one-column view of the matrix in an \ref apop_data
+set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
+
+As usual, column -1 is the vector element of the \ref apop_data set.
+
+\code
+gsl_vector *v = Apop_cv(your_data, i);
+
+for (int i=0; i< your_data->matrix->size2; i++)
+    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_c(your_data, i)));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
+
+\see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
 #define Apop_cv(data_to_view, col) (                                           \
           !(data_to_view) ? NULL                                               \
         : (col)==-1       ? (data_to_view)->vector                             \
@@ -1247,20 +1331,22 @@ gsl_vector * v = &( apop_vv_##v );
              .stride=(data_to_view)->matrix->tda, .data=gsl_matrix_ptr((data_to_view)->matrix, 0, (col))} \
         )
 
-/* Not (yet) for public use. \hideinitializer */
-#define apop_subvector(v, start, len) (                                          \
+/** \cond doxy_ignore */
+/* Not (yet) for public use. */
+#define Apop_subvector(v, start, len) (                                          \
         ((v) == NULL || (v)->size < ((start)+(len)) || (start) < 0) ? NULL      \
         : &(gsl_vector){.size=(len), .stride=(v)->stride, .data=(v)->data+(start*(v)->stride)})
+/** \endcond */
 
-/* Not (yet) for public use. \hideinitializer */
-#define apop_mrow(m, row) (                                       \
-        ((m) == NULL || (m)->size1 <= (row) || (row) < 0) ? NULL    \
-        : &(gsl_matrix){.size1=1, .size2=(m)->size2, \
-             .tda=(m)->tda, .data=gsl_matrix_ptr((m), (row), 0)} \
-        )
+/** \def Apop_rs(d, row, len)
+A macro to generate a temporary view of \ref apop_data set \c d pulling only certain rows, beginning at row \c row
+and having height \c len. 
 
-#define Apop_rs(d, rownum, len)(                                                      \
-        (!(d) || (rownum) < 0) ? NULL                                       \
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
+#define Apop_rs(d, rownum, len)(                                                 \
+        (!(d) || (rownum) < 0) ? NULL                                            \
         : &(apop_data){                                                          \
          .names= ( !((d)->names) ? NULL :                                        \
             &(apop_name){                                                        \
@@ -1273,16 +1359,23 @@ gsl_vector * v = &( apop_vv_##v );
                 .rowct = (d)->names->row ? (GSL_MIN(1, GSL_MAX((d)->names->rowct - (int)(rownum), 0)))      \
                                           : 0,                                   \
                 .textct = (d)->names->textct }),                                 \
-        .vector= apop_subvector((d->vector), (rownum), (len)),                   \
+        .vector= Apop_subvector((d->vector), (rownum), (len)),                   \
         .matrix = Apop_subm(((d)->matrix), (rownum), 0,  (len), (d)->matrix?(d)->matrix->size2:0),    \
-        .weights =  apop_subvector(((d)->weights), (rownum), (len)),             \
+        .weights =  Apop_subvector(((d)->weights), (rownum), (len)),             \
         .textsize[0]=(d)->textsize[0]> (rownum)+(len)-1 ? (len) : 0,                                   \
         .textsize[1]=(d)->textsize[1],                                           \
         .text = (d)->text ? &((d)->text[rownum]) : NULL,                         \
         })
 
+
+/** \def Apop_cs(d, col, len)
+A macro to generate a temporary view of \ref apop_data set \c d including only certain columns, beginning at column \c col and having length \c len. 
+
+The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
+\see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
 #define Apop_cs(d, colnum, len) ( \
-            (!(d)||!(d)->matrix || (d)->matrix->size2 <= (colnum)+(len)-1        \
+            (!(d)||!(d)->matrix || (d)->matrix->size2 <= (colnum)+(len)-1)       \
              ? NULL                                                              \
              : &(apop_data){                                                     \
                 .vector= NULL,                                                   \
@@ -1303,201 +1396,90 @@ gsl_vector * v = &( apop_vv_##v );
                     .textct = (d)->names->textct } : NULL \
             })
 
+/** \def Apop_r(d, row)
+A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
+row \c row. The view is also an \ref apop_data set, with names and other decorations.
+\code
+//pull a single row
+apop_data *v = Apop_r(your_data, 7);
+
+//or loop through a sequence of one-row data sets.
+apop_model *std = apop_model_set_parameters(apop_normal, 0, 1);
+for (int i=0; i< your_data->matrix->size1; i++)
+    printf("Std Normal CDF up to observation %i is %g\n",
+                       i, apop_cdf(Apop_r(your_data, i), std));
+\endcode
+
+The view is automatically allocated, and disappears as soon as the program leaves the
+scope in which it is declared.
+\see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_mrv
+*/
 #define Apop_r(d, rownum) Apop_rs(d, rownum, 1)
-#define Apop_c(d, col) Apop_cs(d, col, 1)
-
-#define APOP_COL Apop_col
-#define apop_col Apop_col
-#define APOP_COLS Apop_cols
-#define apop_cols Apop_cols
-#define APOP_COL_T Apop_col_t
-#define apop_col_t Apop_col_t
-#define APOP_COL_TV Apop_col_tv
-#define apop_col_tv Apop_col_tv
-#define APOP_COL_V Apop_col_v
-#define apop_col_v Apop_col_v
-
-#define APOP_ROW Apop_row
-#define apop_row Apop_row
-#define Apop_data_row Apop_row   #deprecated
-#define APOP_ROWS Apop_rows
-#define apop_rows Apop_rows
-#define APOP_ROW_T Apop_row_t
-#define apop_row_t Apop_row_t
-#define APOP_ROW_TV Apop_row_tv
-#define apop_row_tv Apop_row_tv
-#define APOP_ROW_V Apop_row_v
-#define apop_row_v Apop_row_v
-
-/** View a single row of a \c gsl_matrix as a \c gsl_vector. This 
- is a convenience macro wrapping \c gsl_matrix_row. 
- 
-\param m The \c gsl_matrix
-\param row The number of the desired row. 
-\param v The name of the vector view that will be created.
-
-An: example
-\code 
-gsl_matrix *m = [fill matrix here];
-Apop_matrix_row(m, 2, rowtwo);
-Apop_matrix_row(m, 3, rowthree);
-printf("The correlation coefficient between rows two "
-       "and three is %g.\n", apop_vector_correlation(rowtwo, rowthree));
-\endcode 
-\see Apop_rs, Apop_r, Apop_row_v, Apop_row_tv, Apop_row_t
-*/
-#define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
-gsl_vector * v = &( apop_vv_##v );
-
-/** View a single column of a \c gsl_matrix as a \c gsl_vector. This 
- is a convenience macro wrapping \c gsl_matrix_column. 
- 
-\param m The \c gsl_matrix
-\param col The number of the desired column.
-\param v The name of the vector view that will be created.
-
-An: example
-\code 
-gsl_matrix *m = [fill matrix here];
-Apop_matrix_col(m, 2, coltwo);
-Apop_matrix_col(m, 3, colthree);
-printf("The correlation coefficient between columns two "
-       "and three is %g.\n", apop_vector_correlation(coltwo, colthree));
-\endcode 
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_col_t
-*/
-#define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
-gsl_vector * v = &( apop_vv_##v );
-
-#define Apop_submatrix APOP_SUBMATRIX
-#define APOP_MATRIX_ROW Apop_matrix_row 
-#define apop_matrix_row Apop_matrix_row 
-#define APOP_MATRIX_COL Apop_matrix_col 
-#define apop_matrix_col Apop_matrix_col 
-
-
-long double apop_vector_sum(const gsl_vector *in);
-double apop_vector_var_m(const gsl_vector *in, const double mean);
-double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb);
-double apop_vector_kurtosis(const gsl_vector *in);
-double apop_vector_skew(const gsl_vector *in);
-
-#define apop_sum(in) apop_vector_sum(in)
-#define apop_var(in) apop_vector_var(in) 
-#define apop_mean(in) apop_vector_mean(in)
-
-/** Find the mean of the input vector.
-
-*/
-
-/** \def Apop_subm(data_to_view, srow, scol, nrows, ncols)
-Generate a subview of a submatrix within a \c gsl_matrix. Like \ref Apop_r, et al., the view is an automatically-allocated variable that is lost once the program flow leaves the scope in which it is declared.
-
- \param data_to_view The root matrix
- \param srow the first row (in the root matrix) of the top of the submatrix
- \param scol the first column (in the root matrix) of the left edge of the submatrix
- \param nrows number of rows in the submatrix
- \param ncols number of columns in the submatrix
-\hideinitializer */
-
-/** \def Apop_row_t(m, row_name, v)
- After this call, \c v will hold a view of an \ref apop_data set consisting only of the <tt>row</tt>th row of the \ref apop_data set \c m.
- Unlike \ref Apop_r, the second argument is a row name, that I'll look up using \ref apop_name_find.
-\see Apop_rs, Apop_r, Apop_rv, Apop_row_tv, Apop_matrix_row
-\hideinitializer */
-
-/** \def Apop_col_t(m, col_name, v)
- After this call, \c v will hold a view of an \ref apop_data set consisting only of  vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_c, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_tv, Apop_matrix_col
-\hideinitializer */
-
-/** \def Apop_row_tv(m, row_name, v)
- After this call, \c v will hold a vector view of the <tt>row</tt>th row of the \ref apop_data set \c m.
- Unlike \ref Apop_rv, the second argument is a row name, that I'll look up using \ref apop_name_find.
-\see Apop_rs, Apop_r, Apop_rv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
-
-/** \def Apop_col_tv(m, col_name, v)
- After this call, \c v will hold a vector view of the <tt>col</tt>th column of the \ref apop_data set \c m.
- Unlike \ref Apop_cv, the second argument is a column name, that I'll look up using \ref apop_name_find.
-\see Apop_cs, Apop_c, Apop_cv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
-
-/** \def Apop_cs(d, col, len)
-A macro to generate a temporary view of \ref apop_data set \c d, beginning at column \c col and having length \c len. 
-It expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
-\see Apop_c, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
 
 /** \def Apop_c(d, col)
 A macro to generate a temporary one-column view of \ref apop_data set \c d, pulling out only
 column \c col. 
 After this call, \c outd will be a pointer to this temporary
 view, that you can use as you would any \ref apop_data set.
-\see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
+\see Apop_cs, Apop_cv, Apop_col_tv, Apop_col_t, Apop_mcv
+*/
+#define Apop_c(d, col) Apop_cs(d, col, 1)
 
-/** \def Apop_rs(d, row, len)
-A macro to generate a temporary view of \ref apop_data set \c d, beginning at row \c row
-and having length \c len. 
-The view expires as soon as the program leaves the current scope (like with the usual automatically declared vars). 
-\see Apop_r, Apop_rv, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
+/** \cond doxy_ignore */
+#define APOP_COL Apop_col
+#define apop_col Apop_col
+#define APOP_COL_T Apop_col_t
+#define apop_col_t Apop_col_t
+#define APOP_COL_TV Apop_col_tv
+#define apop_col_tv Apop_col_tv
 
-/** \def Apop_rv(d, row)
-A macro to generate a temporary one-row view of the matrix in an \ref apop_data set \c d, pulling out only
-row \c row. The view is a \c gsl_vector set.
+#define APOP_ROW Apop_row
+#define apop_row Apop_row
+#define APOP_COLS Apop_cols
+#define apop_cols Apop_cols
+#define APOP_COL_V Apop_col_v
+#define apop_col_v Apop_col_v
+#define APOP_ROW_V Apop_row_v
+#define apop_row_v Apop_row_v
+#define APOP_ROWS Apop_rows
+#define apop_rows Apop_rows
+#define Apop_data_row Apop_row   #deprecated
+#define APOP_ROW_T Apop_row_t
+#define apop_row_t Apop_row_t
+#define APOP_ROW_TV Apop_row_tv
+#define apop_row_tv Apop_row_tv
 
-\code
-gsl_vector *v = Apop_rv(your_data, i);
+/** Deprecated. Use Apop_mrv */
+#define Apop_matrix_row(m, row, v) gsl_vector apop_vv_##v = gsl_matrix_row((m), (row)).vector;\
+gsl_vector * v = &( apop_vv_##v );
 
-for (int i=0; i< your_data->matrix->size1; i++)
-    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_r(your_data, i)));
-\endcode
+/* Deprecated. Use Apop_mcv */
+#define Apop_matrix_col(m, col, v) gsl_vector apop_vv_##v = gsl_matrix_column((m), (col)).vector;\
+gsl_vector * v = &( apop_vv_##v );
 
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_rows, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
-
-/** \def Apop_cv(d, col)
-A macro to generate a temporary one-column view of the matrix in an \ref apop_data
-set \c d, pulling out only column \c col. The view is a \c gsl_vector set.
-
-As usual, column -1 is the vector element of the \ref apop_data set.
-
-\code
-gsl_vector *v = Apop_cv(your_data, i);
-
-for (int i=0; i< your_data->matrix->size2; i++)
-    printf("Σ_%i = %g\n", i, apop_vector_sum(Apop_c(your_data, i)));
-\endcode
-
-The view is automatically allocated, and disappears as soon as the program leaves the
-scope in which it is declared.
-
-\see Apop_cs, Apop_c, Apop_col_tv, Apop_col_t, Apop_matrix_col
-\hideinitializer */
-
-/** \def Apop_r(d, row)
-A macro to generate a temporary one-row view of \ref apop_data set \c d, pulling out only
-row \c row. The view is also an \ref apop_data set, with names and other decorations.
-\code
-apop_data *v = Apop_r(your_data, i);
-
-for (int i=0; i< your_data->matrix->size1; i++)
-    apop_data_print(Apop_r(your_data, i));
-\endcode
-
-The view is automatically allocated, and disappears as soon as the program leaves the scope in which it is declared.
-\see Apop_rs, Apop_row_v, Apop_row_tv, Apop_row_t, Apop_matrix_row
-\hideinitializer */
-
-/** \def apop_mean(v)
- Returns the mean of the elements of the vector \c v.
-\hideinitializer */
+#define APOP_MATRIX_ROW Apop_matrix_row 
+#define apop_matrix_row Apop_matrix_row 
+#define APOP_MATRIX_COL Apop_matrix_col 
+#define apop_matrix_col Apop_matrix_col 
+/** \endcond */
 
 
+long double apop_vector_sum(const gsl_vector *in);
+double apop_vector_var_m(const gsl_vector *in, const double mean);
+#ifdef APOP_NO_VARIADIC
+ double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights) ;
+#else
+ double apop_vector_correlation_base(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights) ;
+ apop_varad_declare(double, apop_vector_correlation, const gsl_vector *ina; const gsl_vector *inb; const gsl_vector *weights);
+#define apop_vector_correlation(...) apop_varad_link(apop_vector_correlation, __VA_ARGS__)
+#endif
+
+double apop_vector_kurtosis(const gsl_vector *in);
+double apop_vector_skew(const gsl_vector *in);
+
+#define apop_sum apop_vector_sum
+#define apop_var apop_vector_var
+#define apop_mean apop_vector_mean
 
         //////database utilities
 
@@ -1521,7 +1503,6 @@ int apop_db_open(char const *filename);
 
 
 int apop_query(const char *q, ...) __attribute__ ((format (printf,1,2)));
-gsl_matrix * apop_query_to_matrix(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_text(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_data(const char * fmt, ...) __attribute__ ((format (printf,1,2)));
 apop_data * apop_query_to_mixed_data(const char *typelist, const char * fmt, ...) __attribute__ ((format (printf,2,3)));
@@ -1535,56 +1516,84 @@ int apop_data_to_db(const apop_data *set, const char *tabname, char);
 
     //Part I: macros and fns for getting/setting settings groups and elements
 
+/** \cond doxy_ignore */
 void * apop_settings_get_grp(apop_model *m, char *type, char fail);
 void apop_settings_remove_group(apop_model *m, char *delme);
 void apop_settings_copy_group(apop_model *outm, apop_model *inm, char *copyme);
 void *apop_settings_group_alloc(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
 apop_model *apop_settings_group_alloc_wm(apop_model *model, char *type, void *free_fn, void *copy_fn, void *the_group);
+/** \endcond */ //End of Doxygen ignore.
 
 /** Retrieves a settings group from a model.  See \ref Apop_settings_get
- to just pull a single item from within the settings group.
+to just pull a single item from within the settings group.
 
-  If it isn't found, then it returns NULL, so you can easily put it in a conditional like 
+This macro returns NULL if a group of type \c type_settings isn't found attached
+to model \c m, so you can easily put it in a conditional like
   \code 
   if (!apop_settings_get_group(m, "apop_ols")) ...
   \endcode
-\hideinitializer \ingroup settings
- */
+
+\param m An \ref apop_model
+\param type A string giving the type of the settings group you are retrieving. E.g., for an \ref apop_mle_settings group, use only \c apop_mle.
+\return A void pointer to the desired struct (or \c NULL if not found).
+*/
 #define Apop_settings_get_group(m, type) apop_settings_get_grp(m, #type, 'c')
 
 /** Removes a settings group from a model's list. 
  
-  If the so-named group is not found, do nothing.
-\hideinitializer \ingroup settings
- */
+\li  If the so-named group is not found, do nothing.
+*/
 #define Apop_settings_rm_group(m, type) apop_settings_remove_group(m, #type)
 
 /** Add a settings group. The first two arguments (the model you are
- attaching to and the settings group name) are mandatory, and then you
- can use the \ref designated syntax to specify default values (if any).
- \return A pointer to the newly-prepped group.
+attaching to and the settings group name) are mandatory, and then you
+can use the \ref designated syntax to specify default values (if any).
+\return A pointer to the newly-prepped group.
+
+See \ref modelsettings or \ref maxipage for examples.
 
 \li If a settings group of the given type is already attached to the model, 
 the previous version is removed. Use \ref Apop_settings_get to check whether a group
 of the given type is already attached to a model, and \ref Apop_settings_set to modify
 an existing group.
-
-\hideinitializer \ingroup settings
- */
+*/
 #define Apop_settings_add_group(model, type, ...)  \
     apop_settings_group_alloc(model, #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
 /** Copy a model and add a settings group. Useful for models that require a settings group to function. See \ref Apop_settings_add_group.
 
- \return A pointer to the newly-prepped model.
-\hideinitializer \ingroup settings
- */
+\return A pointer to the newly-prepped model.
+*/
 #define apop_model_copy_set(model, type, ...)  \
     apop_settings_group_alloc_wm(apop_model_copy(model), #type, type ## _settings_free, type ## _settings_copy, type ##_settings_init ((type ## _settings) {__VA_ARGS__}))
 
+
+/** This is the complement to \ref apop_model_set_parameters, for those models that are
+ set up by adding settings group, rather than filling in a list of parameters.
+
+For example, the \ref apop_kernel_density model is built by adding a \ref apop_kernel_density_settings group. From the example on the \ref apop_kernel_density page:
+
+\code
+apop_model *k2 = apop_model_set_settings(apop_kernel_density,
+                    .base_data=d,
+                    .set_fn = set_uniform_edges,
+                    .kernel = apop_uniform);
+\endcode
+
+The name of the model and the settings group to be built must match, which is the case
+for many model transformations, including \ref apop_dconstrain and \ref apop_cross. If the names do not match, use \ref apop_model_copy_set.
+*/
+#define Apop_model_set_settings(model, ...)  \
+    apop_settings_group_alloc_wm(apop_model_copy(model), #model, model ## _settings_free, model ## _settings_copy, model ##_settings_init ((model ## _settings) {__VA_ARGS__}))
+
+#define apop_model_set_settings Apop_model_set_settings
+
 /** Retrieves a setting from a model.  See \ref Apop_settings_get_group to pull the entire group.
-\hideinitializer \ingroup settings
- */
+
+\param model An \ref apop_model.
+\param type A string giving the type of the settings group you are retrieving, without the \c _settings ending. E.g., for an \ref apop_mle_settings group, use \c apop_mle.
+\param setting The struct element you want to retrieve.
+*/
 #define Apop_settings_get(model, type, setting)  \
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
@@ -1592,8 +1601,7 @@ an existing group.
 
 \li If <tt>model==NULL</tt>, fails silently. 
 \li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
-\hideinitializer \ingroup settings
- */
+*/
 #define Apop_settings_set(model, type, setting, data)   \
     do {                                                \
         if (!(model)) continue; /* silent fail. */      \
@@ -1622,24 +1630,16 @@ an existing group.
 
 /** \endcond */ //End of Doxygen ignore.
 
+/** Put this in your header file to declare the init, copy, and
+free functions for ysg_settings. Of course, these functions will also have to be defined
+in a .c file using \ref Apop_settings_init, \ref Apop_settings_copy, and \ref Apop_settings_free. */
 #define Apop_settings_declarations(ysg) \
    ysg##_settings * ysg##_settings_init(ysg##_settings); \
    void * ysg##_settings_copy(ysg##_settings *); \
    void ysg##_settings_free(ysg##_settings *);
 
 /** A convenience macro for declaring the initialization function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
-
-  This sets the defaults for every element in the structure, so you will want a line for every element of your structure (except the ones that default to NULL, which have already been set as such).
-
-  \code
-  Apop_settings_init (ysg, 
-        Apop_varad_set(size1, 99);
-        Apop_varad_set(size2, 2.3);
-        Apop_varad_set(dataset, apop_data_alloc(out->size1, out->size2));
-    )
-  \endcode
-  If you need them, the input is a structure named \c in, and the output a pointer-to-struct named \c out.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_init(name, ...)   \
     name##_settings *name##_settings_init(name##_settings in) {       \
@@ -1649,26 +1649,12 @@ an existing group.
         return out; \
     }
 
+/** \cond doxy_ignore */
 #define Apop_varad_set(var, value) (out)->var = (in).var ? (in).var : (value);
+/** \endcond */
 
 /** A convenience macro for declaring the copy function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
-
-  To just do a direct copy, the default works; let your settings group be named \c ysg:
-  \code
-Apop_settings_copy (ysg, )
-  \endcode
-  generates a function that allocates space for a new settings group and copies all elements from the input group to the output group.
-
-  The space after the comma indicates that there is no new procedural code. If you want to add some, feel free. E.g.,
-  \code
-Apop_settings_copy (ysg, 
-    if (!in->score)
-        out->score = 1;
-    out->data_owner = 0;
-)
-  \endcode
-  The names \c in and \c out are built into the macro.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_copy(name, ...) \
     void * name##_settings_copy(name##_settings *in) {\
@@ -1679,21 +1665,7 @@ Apop_settings_copy (ysg,
     }
 
 /** A convenience macro for declaring the delete function for a new settings group.
- See the documentation outline -> models -> model settings -> writing new settings group for details.
-
-If you don't have internal structure elements to free, let your settings group be named \c ysg:
-  \code
-  Apop_settings_free (ysg, )
-  \endcode
-  generates a function that simply frees the input settings group.
-
-  If your structure is pointing to other structures that need to be freed first, then add them after that comma:
-  \code
-Apop_settings_copy (ysg, 
-    apop_data_free(in->dataset);
-)
-  \endcode
-  The name \c in is built into the macro.
+See \ref settingswriting for details and an example.
 */
 #define Apop_settings_free(name, ...) \
     void name##_settings_free(name##_settings *in) {\
@@ -1704,12 +1676,11 @@ Apop_settings_copy (ysg,
         //Part II: the details of extant settings groups.
 
 
-/** The settings for maximum likelihood estimation (including simulated annealing).
-\ingroup settings */
+/** The settings for maximum likelihood estimation (including simulated annealing). */
 typedef struct{
-    double      *starting_pt;   /**< An array of doubles (i.e., <tt>double*</tt>) suggesting a starting point. 
-                                  If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
-                                  \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
+    double      *starting_pt;   /**< An array of doubles (e.g., <tt>(double*){2,4,6,8}</tt>) suggesting a starting point. 
+                                  If NULL, use an all-ones vector.  If \c startv is a \c gsl_vector
+                                  and is not a view of a matrix, use <tt>.starting_pt=startv->data</tt>.*/
     char *method; /**< The method to be used for the optimization. All strings are case-insensitive.
 
         <table>
@@ -1733,10 +1704,10 @@ typedef struct{
 
 <tr><td> "Newton hybrid no scale"</td><td>  Newton's method/gradient descent hybrid with spherical scale</td><td>  As above, but use a simplified trust region. </td></tr>
 </table> */
-    double      step_size, /**< the initial step size. */
-                tolerance, /**< the precision the minimizer uses. Only vaguely related to the precision of the actual variables. */
+    double      step_size, /**< The initial step size. */
+                tolerance, /**< The precision the minimizer uses in its stopping rule. Only vaguely related to the precision of the actual MLE.*/
 delta;
-    int         max_iterations; /**< Ignored by simulated annealing. Other methods halt if
+    int         max_iterations; /**< Ignored by simulated annealing. Other methods halt (and set the \c "status" element of the output estimate's info page) if
                                  they do this many iterations without finding an optimum. */
     int         verbose; /**<	Give status updates as we go.  This is orthogonal to the 
                                 <tt>apop_opts.verbose</tt> setting. */
@@ -1753,26 +1724,17 @@ delta;
     gsl_rng     *rng;
     apop_data   **path;    /**< If not \c NULL, record each vector tried by the optimizer as one row of this \ref apop_data set.
                               Each row of the \c matrix element holds the vector tried; the corresponding element in the \c vector is the evaluated value at that vector (after out-of-constraints penalties have been subtracted).
-                              A new \ref apop_data set is allocated at the pointer you send in. This data set has no names; add them as desired. Sample use:
-\code                              
-apop_data *mypath;
-Apop_model_add_group(mymodel, apop_mle, .path=&mypath);
-apop_model *out = apop_estimate(mydata, mymodel);
-apop_data_print(mypath, .output_name="search");
-apop_data_free(mypath);
-\endcode                              
-                              
+                              A new \ref apop_data set is allocated at the pointer you send in. This data set has no names; add them as desired. For a sample use, see \ref maxipage.
 */
 } apop_mle_settings;
 
-/** Settings for least-squares type models 
-\ingroup settings */
+/** Settings for least-squares type models such as \ref apop_ols or \ref apop_iv */
 typedef struct {
-    int destroy_data; /**< If 'y', then the input data set may be normalized or otherwise mangled */
+    int destroy_data; /**< If \c 'y', then the input data set may be normalized or otherwise mangled. */
     apop_data *instruments; /**< Use for the \ref apop_iv regression, qv. */
     char want_cov; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
     char want_expected_value; /**< Deprecated. Please use \ref apop_parts_wanted_settings. */
-    apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model, but the distribution of \f$X\f$ is not.  */
+    apop_model *input_distribution; /**< The distribution of \f$P(Y|X)\f$ is specified by the model holding this struct, but the distribution of \f$X\f$ needs to be specified as well for any calculation of \f$P(Y)\f$. See the notes in the RNG section of the \ref apop_ols documentation. */
 } apop_lm_settings;
 
 /** The default is for the estimation routine to give some auxiliary information,
@@ -1780,7 +1742,7 @@ typedef struct {
   Some uses of a model depend on these items, but if they are a waste
   of time for your purposes, this settings group gives a quick way to bypass them all.
 
-  Simply adding this settings group to your model without changing any default values---
+  Adding this settings group to your model without changing any default values---
   \code
   Apop_model_add_group(your_model, apop_parts_wanted);
   \endcode
@@ -1797,7 +1759,6 @@ typedef struct {
 
   \li Tests may depend on covariance, so <tt>.covariance='n', .tests='y'</tt> may be 
   treated as <tt>.covariance='y', .tests='y'</tt>.
-\ingroup settings
 */
 typedef struct {
     //init/copy/free are in apop_mle.c
@@ -1808,19 +1769,16 @@ typedef struct {
     char info;/*< If 'y', add an info table with elements such as log likelihood or AIC. Default 'n'. */
 } apop_parts_wanted_settings;
 
-/** Some CDFs use random draws; some use closed-form models. 
-  \ingroup settings */
+/** For use by \ref apop_cdf when the CDF is generated via Monte Carlo methods. */
 typedef struct {
     int draws;  /**< For random draw methods, how many draws? Default: 10,000.*/
     gsl_rng *rng; /**< For random draw methods. See \ref apop_rng_get_thread on the default. */
-    apop_model *cdf_model; /**< For use by individual models as they see fit. Default=\c NULL. */
-    gsl_matrix *draws_made; /**< A store of random draws that I will count up to report the CDF. Need only be generated once, and so stored here. */
+    gsl_matrix *draws_made; /**< A store of random draws used to calcuate the CDF. Need only be generated once, and so stored here. */
     int *draws_refcount; /**< For internal use.*/
 } apop_cdf_settings;
 
 
-/** Settings for getting parameter models (i.e. the distribution of parameter estimates)
-  \ingroup settings */
+/** Settings for getting parameter models (i.e. the distribution of parameter estimates) */
 typedef struct {
     apop_model *base;
     int index;
@@ -1839,17 +1797,18 @@ typedef struct {
 } apop_pmf_settings;
 
 
-/** Settings for the \ref apop_kernel_density model. 
-
-  \ingroup settings */
+/** Settings for the \ref apop_kernel_density model. */
 typedef struct{
     apop_data *base_data; /**< The data that will be smoothed by the KDE. */
     apop_model *base_pmf; /**< I actually need the data in a \ref apop_pmf. You can give
-                            that to me explicitly, or I can wrap the .base_data in a PMF.  */
+                            that to me explicitly, or I can wrap the <tt>.base_data</tt> in a PMF.  */
     apop_model *kernel; /**< The distribution to be centered over each data point. Default, 
                                     \ref apop_normal with std dev 1. */
     void (*set_fn)(apop_data*, apop_model*); /**< The function I will use for each data
-                                                  point to center the kernel over each point.*/
+                                                  point to center the kernel over each point.
+            Default: set the upper-left element of the parameter set to the upper-left scalar in the data:
+            <tt>apop_data_set(m->parameters, .val= apop_data_get(in));</tt>.
+                                                  */
     int own_pmf, own_kernel; /**< For internal use only. */
 }apop_kernel_density_settings;
 
@@ -1859,7 +1818,7 @@ struct apop_mcmc_settings;
 information.  By default, these will be \ref apop_multivariate_normal models. The \c
 step_fn and \c adapt_fn have to be written around the model and your preferences.
 For the defaults, the step function recenters the mean of the distribution around the
-last accepted proposal, and the adapt function widens the Σ for the Normal if the
+last accepted proposal, and the adapt function widens \f$\Sigma\f$ for the Normal if the
 accept rate is too low; narrows it if the accept rate is too large.
 
 You may provide an array of proposals. The length of the list of proposals
@@ -1867,8 +1826,6 @@ must match the number of chunks, as per the \c gibbs_chunks setting in the \ref
 apop_mcmc_settings group that the array of proposals is a part of. Each proposal must
 be initialized to include all elements, and the step and adapt functions probably have
 to be written anew for each type of model.
-
-This segment of the interface is in beta. A future revision may make it easier to design new proposals.
 */
 typedef struct apop_mcmc_proposal_s {
     apop_model *proposal; /**< The distribution from which test parameters will be
@@ -1890,21 +1847,21 @@ typedef struct apop_mcmc_proposal_s {
         every step, to adapt the proposal distribution using information to this point in
         the chain. */
 
-    int accept_count, reject_count;  /**< These are about this chunk. The \ref apop_mcmc_settings group
-                                       has a total for the aggregate across all chunks. */
+    int accept_count, reject_count;  /**< If there are multiple \ref apop_mcmc_proposal_s structs for 
+                                       multiple chunks, These count accepts/rejects for
+                                       this chunk. The \ref apop_mcmc_settings group has
+                                       a total for the aggregate across all chunks. */
 } apop_mcmc_proposal_s;
 
-/** Method settings for a model to be put through Bayesian updating. 
-\ingroup settings 
- */
+/** Method settings for a model to be put through Bayesian updating. */
 typedef struct apop_mcmc_settings {
     apop_data *data;
     long int periods; /**< For how many steps should the MCMC chain run? */
     double burnin; /**< What <em>percentage</em> of the periods should be ignored
                          as initialization. That is, this is a number between zero and one. */
     int histosegments; /**< If outputting a binned PMF, how many segments should it have? */
-    double last_ll; /**< If you have already run mcmc, the last log likelihood in the chain.*/
-    apop_model *pmf; /**< If you have already run mcmc, I keep a pointer to the model
+    double last_ll; /**< If you have already run MCMC, the last log likelihood in the chain.*/
+    apop_model *pmf; /**< If you have already run MCMC, I keep a pointer to the model
             so far here. Use \ref apop_model_metropolis_draw to get one more draw.*/
     apop_model *base_model; /**< The model you provided with a \c log_likelihood or
             \c p element (which need not sum to one). You do not have to set this: if it is
@@ -1914,17 +1871,19 @@ typedef struct apop_mcmc_settings {
             struct for details. */
     int proposal_count; /**< The number of proposal sets; see \c gibbs_chunks below. */
     double target_accept_rate; /**< The desired acceptance rate, for use by adaptive proposals. Default: .35 */
-    int accept_count;   /**< After calling apop_mcmc, this will have the number of accepted proposals.*/
-    int reject_count;   /**< After calling apop_mcmc, this will have the number of rejected proposals.*/
-    char gibbs_chunks;  /**< 'a': One step draws and accepts/rejects all parameters as a unit<br>
+    int accept_count;   /**< After calling \ref apop_model_metropolis, this will have the number of accepted proposals.*/
+    int reject_count;   /**< After calling \ref apop_model_metropolis, this will have the number of rejected proposals.*/
+    char gibbs_chunks;  /**< See the \ref apop_model_metropolis documentation for discussion.
+                          
+                          \c 'a': One step draws and accepts/rejects all parameters as a unit<br>
 
-                             'b': draw in blocks: the vector is a block, the matrix
+                             \c 'b': draw in blocks: the vector is a block, the matrix
                                 is a separate block, the weights are a separate
                                 block, and so on through every page of the model
                                 parameters. Each block of parameters is drawn and
                                 accepted/rejected as a unit. <br>
 
-                             '1': draw each parameter and accept/reject separately. One
+                             \c '1': draw each parameter and accept/reject separately. One
                                 MCMC step consists of a set of draws for every
                                 parameter.<br> */
     size_t *block_starts; /**< For internal use */
@@ -1933,13 +1892,14 @@ typedef struct apop_mcmc_settings {
     char start_at; /**< If \c '1' (the default), start with a first proposal of all
         1s. Even when this is a far-from-useful starting point, MCMC typically does a good
         job of crawling to better spots early in the chain.<br>
-    If \c 'p', start at the \c parameters of the \ref apop_model sent in to \ref
+    The default when this is unset is to start at the \c parameters of the \ref apop_model sent in to \ref
     apop_model_metropolis.*/
-    void (*base_step_fn)(double const *, struct apop_mcmc_proposal_s*, struct apop_mcmc_settings *); /**< If a \ref apop_mcmc_proposal_s has \c NULL \c step_fn, use this. If you don't want a step function, set this to a do-nothing function. */
+    void (*base_step_fn)(double const *, struct apop_mcmc_proposal_s*, struct apop_mcmc_settings *); /**< If an \ref apop_mcmc_proposal_s struct has \c NULL \c step_fn, use this. If you don't want a step function, set this to a do-nothing function. */
     int (*base_adapt_fn)(struct apop_mcmc_proposal_s *ps, struct apop_mcmc_settings *ms); /**< If a \ref apop_mcmc_proposal_s has \c NULL \c adapt_fn, use this.  If you don't want an adapt function, set this to a do-nothing function.*/
 
 } apop_mcmc_settings;
 
+/** \cond doxy_ignore */
 //Loess, including the old FORTRAN-to-C.
 struct loess_struct {
 	struct {
@@ -1978,6 +1938,7 @@ struct loess_struct {
 		double  *divisor;
 	} out;
 };
+/** \endcond */ //End of Doxygen ignore.
 
 /** The code for the loess system is based on FORTRAN code from 1988,
 overhauled in 1992, linked in to Apophenia in 2009. The structure that
@@ -1990,99 +1951,99 @@ settings init function will copy your preferences into the working struct.
 
 The documentation for the elements is cut/pasted/modified from Cleveland,
 Grosse, and Shyu.
-
-<tt>.data</tt>: Mandatory. Your input data set.
-
-	<tt>.lo_s.model.span</tt>:	smoothing parameter. Default is 0.75.
-
-	<tt>.lo_s.model.degree</tt>: overall degree of locally-fitted polynomial. 1 is
-			locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
-
-	<tt>.lo_s.normalize</tt>:	Should numeric predictors
-			be normalized?	If 'y' - the default - the standard normalization
-			is used. If 'n', no normalization is carried out.
-
-	\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
-			specifies those variables that should be
-			conditionally-parametric. The argument should be a logical
-			vector of length p, specified in the order of the predictor
-			group ordered in x.  Default is a vector of 0's of length p.
-
-	\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
-			numeric predictors, this argument specifies those numeric
-			predictors whose squares should be dropped from the set of
-			fitting variables. The method of specification is the same as
-			for parametric.  Default is a vector of 0's of length p.
-
-	\c .lo_s.model.family: the assumed distribution of the errors. The values are
-	        <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
-            If the second value is specified, a robust fitting procedure is used.
-
-	\c lo_s.control.surface:	determines whether the fitted surface is computed
-            <tt>"directly"</tt> at all points  or whether an <tt>"interpolation"</tt>
-            method is used. The default, interpolation, is what most users should use
-			unless special circumstances warrant.
-
-    \c lo_s.control.statistics:	determines whether the statistical quantities are 
-        computed <tt>"exactly"</tt> or approximately, where <tt>"approximate"</tt>
-        is the default. The former should only be used for testing the approximation in
-        statistical development and is not meant for routine usage because computation
-        time can be horrendous.
-
-        \c lo_s.control.cell: if interpolation is used to compute the surface,
-        this argument specifies the maximum cell size of the k-d tree. Suppose k =
-        floor(n*cell*span) where n is the number of observations.  Then a cell is
-        further divided if the number of observations within it is greater than or
-        equal to k. default=0.2
-
-	\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
-        When lo_s.control.surface is <tt>"approximate"</tt>, determines
-        the computational method used to compute the trace of the hat
-        matrix, which is used in the computation of the statistical
-        quantities.  If "exact", an exact computation is done; normally
-        this goes quite fast on the fastest machines until n, the number
-        of observations is 1000 or more, but for very slow machines,
-        things can slow down at n = 300.  If "wait.to.decide" is selected,
-        then a default is chosen in loess();  the default is "exact" for
-        n < 500 and "approximate" otherwise.  If surface is "exact", an
-        exact computation is always done for the trace. Set trace_hat to
-        "approximate" for large dataset will substantially reduce the
-        computation time.
-
-	\c lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
-        of the robust fitting method.  Default is 0 for
-        lo_s.model.family = gaussian; 4 for family=symmetric.
-
-        That's all you can set. Here are some output parameters:
-
-	\c fitted_values:	fitted values of the local regression model
-
-	\c fitted_residuals:	residuals of the local regression fit
-
-       \c  enp:		equivalent number of parameters.
-
-       \c  s:		estimate of the scale of the residuals.
-
-       \c  one_delta:	a statistical parameter used in the computation of standard errors.
-
-       \c  two_delta:	a statistical parameter used in the computation of standard errors.
-
-       \c  pseudovalues:	adjusted values of the response when robust estimation is used.
-
-	\c trace_hat:	trace of the operator hat matrix.
-
-       \c  diagonal:	diagonal of the operator hat matrix.
-
-       \c  robust:		robustness weights for robust fitting.
-
-       \c  divisor:	normalization divisor for numeric predictors.
-
-    \ingroup settings
 */
 typedef struct {
     apop_data *data;
-    struct  loess_struct lo_s;
-    int     want_predict_ci; /**< If 'y' (the default), calculate the
+    struct  loess_struct lo_s; /**< 
+
+<tt>.data</tt>: Mandatory. Your input data set.
+
+<tt>.lo_s.model.span</tt>:	smoothing parameter. Default is 0.75.
+
+<tt>.lo_s.model.degree</tt>: overall degree of locally-fitted polynomial. 1 is
+		locally-linear fitting and 2 is locally-quadratic fitting. Default is 2.
+
+<tt>.lo_s.normalize</tt>:	Should numeric predictors
+		be normalized?	If \c 'y' - the default - the standard normalization
+		is used. If \c 'n', no normalization is carried out.
+
+\c .lo_s.model.parametric:	for two or more numeric predictors, this argument
+		specifies those variables that should be
+		conditionally-parametric. The argument should be a logical
+		vector of length \c p, specified in the order of the predictor
+		group ordered in \c x.  Default is a vector of 0's of length \c p.
+
+\c .lo_s.model.drop_square:	for cases with degree = 2, and with two or more
+		numeric predictors, this argument specifies those numeric
+		predictors whose squares should be dropped from the set of
+		fitting variables. The method of specification is the same as
+		for parametric.  Default is a vector of 0's of length p.
+
+\c .lo_s.model.family: the assumed distribution of the errors. The values may be 
+        <tt>"gaussian"</tt> or <tt>"symmetric"</tt>. The first value is the default.
+        If the second value is specified, a robust fitting procedure is used.
+
+\c lo_s.control.surface:	determines whether the fitted surface is computed
+        <tt>"directly"</tt> at all points  or whether an <tt>"interpolation"</tt>
+        method is used. The default, interpolation, is what most users should use
+		unless special circumstances warrant.
+
+\c lo_s.control.statistics:	determines whether the statistical quantities are 
+    computed <tt>"exactly"</tt> or approximately, where <tt>"approximate"</tt>
+    is the default. The former should only be used for testing the approximation in
+    statistical development and is not meant for routine usage because computation
+    time can be horrendous.
+
+    \c lo_s.control.cell: if interpolation is used to compute the surface,
+    this argument specifies the maximum cell size of the k-d tree. Suppose k =
+    floor(n*cell*span) where n is the number of observations.  Then a cell is
+    further divided if the number of observations within it is greater than or
+    equal to k. default=0.2
+
+\c lo_s.control.trace_hat: Options are <tt>"approximate"</tt>, <tt>"exact"</tt>, and <tt>"wait.to.decide"</tt>.	
+    When lo_s.control.surface is <tt>"approximate"</tt>, determines
+    the computational method used to compute the trace of the hat
+    matrix, which is used in the computation of the statistical
+    quantities.  If "exact", an exact computation is done; normally
+    this goes quite fast on the fastest machines until n, the number
+    of observations is 1000 or more, but for very slow machines,
+    things can slow down at n = 300.  If "wait.to.decide" is selected,
+    then a default is chosen in loess();  the default is "exact" for
+    n < 500 and "approximate" otherwise.  If surface is "exact", an
+    exact computation is always done for the trace. Set trace_hat to
+    "approximate" for large dataset will substantially reduce the
+    computation time.
+
+\c lo_s.model.iterations:	if family is <tt>"symmetric"</tt>, the number of iterations 
+    of the robust fitting method.  Default is 0 for
+    lo_s.model.family = gaussian; 4 for family=symmetric.
+
+    That's all you can set. Here are some output parameters:
+
+\c fitted_values:	fitted values of the local regression model
+
+\c fitted_residuals:	residuals of the local regression fit
+
+   \c  enp:		equivalent number of parameters.
+
+   \c  s:		estimate of the scale of the residuals.
+
+   \c  one_delta:	a statistical parameter used in the computation of standard errors.
+
+   \c  two_delta:	a statistical parameter used in the computation of standard errors.
+
+   \c  pseudovalues:	adjusted values of the response when robust estimation is used.
+
+\c trace_hat:	trace of the operator hat matrix.
+
+   \c  diagonal:	diagonal of the operator hat matrix.
+
+   \c  robust:		robustness weights for robust fitting.
+
+   \c  divisor:	normalization divisor for numeric predictors.
+*/
+
+    int     want_predict_ci; /**< If \c 'y' (the default), calculate the
                                 confidence bands for predicted values */
     double  ci_level; /**< If running a prediction, the level at which
                         to calculate the confidence interval. default: 0.95 */
@@ -2110,22 +2071,34 @@ typedef struct {  /* attributes of the entire rejection envelope */
 } arms_state;
     /** \endcond */
 
-/** to perform derivative-free adaptive rejection sampling with metropolis step */
+/** For use with \ref apop_arms_draw, to perform derivative-free adaptive rejection sampling with metropolis step. 
+
+That function generates default values for this struct if you do not attach one to the
+model beforehand, via a form like <tt>apop_model_add_group(your_model, apop_arms,
+.model=your_model, .xl=8, .xr =14);</tt>. If you initialize it manually via \ref
+apop_settings_add_group, the \c model element is mandatory; you'll get a run-time
+complaint if you forget it.
+*/
 typedef struct {
-    double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending order. Default: -1, 0, 1. If this isn't \c NULL, I need at least three items. */
+    double *xinit;  /**< A <tt>double*</tt> giving starting values for x in ascending
+                      order, e.g., <tt>(double *){1, 10, 100}</tt>.  . Default: -1,
+                      0, 1. If this isn't \c NULL, I need at least three items, and
+                      the length in \c ninit. */
     double  xl;     /**< Left bound. If you don't give me one, I'll use min[min(xinit)/10, min(xinit)*10].*/
     double  xr;     /**< Right bound. If you don't give me one, I'll use max[max(xinit)/10, max(xinit)*10]. */
     double convex;  /**< Adjustment for convexity */
-    int ninit;      /**< Number of starting values supplied (i.e. number of elements in \c xinit)*/
+    int ninit;      /**< The length of \c xinit.*/
     int npoint;     /**< Maximum number of envelope points. I \c malloc space for this many <tt>double</tt>s at the outset. Default = 1e5. */
-   char do_metro;   /**< Whether metropolis step is required. (I.e., set to one if you're not sure if the function is log-concave). Set  to <tt>'y'</tt>es or <tt>'n'</tt>o*/
-   double xprev;    /**< Previous value from Markov chain */
+   char do_metro;   /**< Set to \c 'y' if the metropolis step is required (i.e.,
+                           if you're not sure if the function is log-concave).*/
+   double xprev;    /**< For internal use; please ignore. Previous value from Markov chain. */
    int neval;       /**< On exit, the number of function evaluations performed */
    arms_state *state;
-   apop_model *model; /**< The model from which I will draw. Mandatory. Must have either a \c log_likelihood or \c p method.*/
+   apop_model *model; /**< The model from which to draw. Mandatory. Must have either a \c log_likelihood or \c p method.*/
 } apop_arms_settings;
 
 
+/** The settings to accompany the \ref apop_cross model, representing the cross product of two models (or, via recursion, a list of models of arbitrary length).*/
 typedef struct {
     char *splitpage;    /**< The name of the page at which to split the data. If \c NULL, I send the entire data set to both models as needed. */
     apop_model *model1; /**< The first model in the stack.*/
@@ -2133,14 +2106,15 @@ typedef struct {
 } apop_cross_settings;
 
 typedef struct {
-    apop_data *(*base_to_transformed)(apop_data*);
-    apop_data *(*transformed_to_base)(apop_data*);
-    double (*jacobian_to_base)(apop_data*);
-    apop_model *base_model;
-} apop_ct_settings;/**< All of the elements of this struct should be considered private.*/
+    apop_data *(*base_to_transformed)(apop_data*); /**< The function to transform the model from pre-transform space to post-transform space. */
+    apop_data *(*transformed_to_base)(apop_data*); /**< The function to transform from post-transform space back to pre-transform space. If this function does not exist, using a Jacobian-based transformation is probably not mathematically correct. */
+    double (*jacobian_to_base)(apop_data*); /**< The derivative of the \c transformed_to_base function. */
+    apop_model *base_model;  /**< The pre-transformation model. */
+} apop_coordinate_transform_settings;/**< Settings for an \ref apop_coordinate_transform model; see its documentation for notes and an example.
+*/
 
 /** For use with the \ref apop_dconstrain model. See its documentation for an example. 
-\hideinitializer \ingroup settings */
+*/
 typedef struct {
     apop_model *base_model; /**< The model, before constraint. */
     double (*constraint)(apop_data *, apop_model *); /**< The constraint. Return 1 if the data is in the constraint; zero if out. */
@@ -2159,7 +2133,7 @@ typedef struct {
 /** For mixture distributions, typically set up using \ref apop_model_mixture. See
 \ref apop_mixture for discussion. Please consider all elements but \c model_list and \c
 weights as private and subject to change. See the examples for use of these elements.  
-\hideinitializer \ingroup settings */
+*/
 typedef struct {
     gsl_vector *weights;     /**< The likelihood of a draw from each component. */
     apop_model **model_list; /**< A \c NULL-terminated list of component models. */
@@ -2171,14 +2145,11 @@ typedef struct {
 
     //Models built via call to apop_model_copy_set.
 
-#define apop_model_coordinate_transform(...) Apop_model_copy_set(apop_coordinate_transform, apop_ct, __VA_ARGS__)
-#define apop_model_dcompose(...) Apop_model_copy_set(apop_composition, apop_composition, __VA_ARGS__)
-#define apop_model_dconstrain(...) Apop_model_copy_set(apop_dconstrain, apop_dconstrain, __VA_ARGS__)
-
-/** \defgroup settings Settings*/
+#define apop_model_dcompose(...) Apop_model_set_settings(apop_composition, __VA_ARGS__)
+#define apop_model_dconstrain(...) Apop_model_set_settings(apop_dconstrain, __VA_ARGS__)
+#define apop_model_coordinate_transform(...) Apop_model_set_settings(apop_coordinate_transform, __VA_ARGS__)
 
 //Doxygen drops whatever is after these declarations, so I put them last.
-Apop_settings_declarations(apop_ct)
 Apop_settings_declarations(apop_lm)
 Apop_settings_declarations(apop_pm)
 Apop_settings_declarations(apop_pmf)
@@ -2193,10 +2164,13 @@ Apop_settings_declarations(apop_dconstrain)
 Apop_settings_declarations(apop_composition)
 Apop_settings_declarations(apop_parts_wanted)
 Apop_settings_declarations(apop_kernel_density)
+Apop_settings_declarations(apop_coordinate_transform)
 
 #ifdef	__cplusplus
 }
 #endif
+
+/** @} */ //End doxygen's all_public grouping
 
 //Part of the intent of a convenience header like this is that you
 //don't have to remember what else you're including. So here are 

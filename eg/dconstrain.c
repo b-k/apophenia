@@ -1,11 +1,5 @@
 #include <apop.h>
 
-#ifdef Testing
-#define Show_results(m)
-#else
-#define Show_results(m) apop_model_print(m, NULL);
-#endif
-
 //The constraint function.
 double over_zero(apop_data *in, apop_model *m){
     return apop_data_get(in) > 0;
@@ -24,7 +18,8 @@ int main(){
       default scaling function is used.*/
     gsl_rng *r = apop_rng_alloc(213);
     apop_model *norm = apop_model_set_parameters(apop_normal, 1.2, 0.8);
-    apop_model *trunc = apop_model_dconstrain(.base_model=apop_model_copy(norm), 
+    apop_model *trunc = apop_model_set_settings(apop_dconstrain,
+                            .base_model=apop_model_copy(norm), 
                             .constraint=over_zero, .draw_ct=5e4, .rng=r);
 
     //make draws. Currently, you need to prep the model first.
@@ -33,7 +28,7 @@ int main(){
 
     //Estimate the parameters given the just-produced data:
     apop_model *est = apop_estimate(d, trunc);
-    Show_results(est);
+    apop_model_print(est);
     assert(apop_vector_distance(est->parameters->vector, norm->parameters->vector)<1e-1);
 
     //Generate a data set that is truncated at zero using alternate means
@@ -44,11 +39,13 @@ int main(){
     }
 
     //this time, use an unparameterized model, and the in_bounds fn
-    apop_model *re_trunc = apop_model_dconstrain(.base_model=apop_normal, 
+    apop_model *re_trunc = apop_model_set_settings(apop_dconstrain,
+                            .base_model=apop_normal, 
                             .constraint=over_zero, .scaling=in_bounds);
 
     apop_model *re_est = apop_estimate(normald, re_trunc);
-    Show_results(re_est)
-    assert(apop_vector_distance(re_est->parameters->vector, apop_vector_fill(gsl_vector_alloc(2), 0, 1))<1e-1);
+    apop_model_print(re_est);
+    assert(apop_vector_distance(re_est->parameters->vector,
+                apop_vector_fill(gsl_vector_alloc(2), 0, 1))<1e-1);
     apop_model_free(trunc);
 }

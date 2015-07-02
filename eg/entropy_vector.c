@@ -6,11 +6,9 @@ long double entropy_base_2(gsl_vector *x) {
     return apop_vector_entropy(x)/log(2);
 }
 
-apop_data *flip_a_coin(int how_many){
-    return apop_model_draws(apop_model_set_parameters(apop_bernoulli, .5), how_many);
-}
-
 int main(){
+    apop_model *flip = apop_model_set_parameters(apop_bernoulli, .5);
+
     //zero data => entropy zero
     gsl_vector *v = gsl_vector_calloc(1);
     assert(apop_vector_entropy(v) == 0);
@@ -27,9 +25,13 @@ int main(){
     gsl_vector_set_all(v, 1./100);
     Diff(log(100), apop_vector_entropy(v), 1e-5);
 
+    //Normalization is optional. You may send a vector of counts.
+    gsl_vector_set_all(v, 1);
+    Diff(log(100), apop_vector_entropy(v), 1e-5);
+
     //flip two coins.
-    apop_data *coin_flips = flip_a_coin(10000);
-    apop_data *c2         = flip_a_coin(10000);
+    apop_data *coin_flips = apop_model_draws(flip, .count=10000);
+    apop_data *c2         = apop_model_draws(flip, .count=10000);
     apop_data_stack(c2, coin_flips, 'c', .inplace='y');
 
     //entropy of one coin flip in base2 == 1
@@ -40,12 +42,11 @@ int main(){
     apop_data_pmf_compress(c2);
     Diff(entropy_base_2(c2->weights), 2, 1e-3);
 
+    //flip three coins, via model cross products
+    Diff(entropy_base_2(apop_data_pmf_compress(apop_model_draws(
+            apop_model_cross(flip, flip, flip) ,.count=10000))->weights), 3, 1e-3);
+
     apop_data_free(coin_flips);
     apop_data_free(c2);
     gsl_vector_free(v);
 }
-
-/*
-export LDLIBS="`pkg-config --libs apophenia`"
-export CFLAGS="-g -Wall `pkg-config --cflags apophenia` -O3 -std=gnu11"
-*/

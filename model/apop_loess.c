@@ -27,7 +27,7 @@ representation is in the form of the \c predicted vector of the \c expected data
 see below.
 
 From the 1992 manual for the package:
-``The method we will use to fit local regression models is called {\em loess}, which
+``The method we will use to fit local regression models is called <em>loess</em>, which
 is short for local regression, and was chosen as the name since a loess is a deposit
 of fine clay or silt along a river valley, and thus is a surface of sorts. The word
 comes from the German löss, and is pronounced löíss.''
@@ -50,12 +50,11 @@ is primarily FORTRAN code from 1988 converted to C; the data thus has to be conv
 into a relatively obsolete internal format.
 
 
-\adoc    Parameter_format  The parameter vector is unused. 
+\adoc    Parameter_format  Unused. 
 \adoc    estimated_parameters None.  
-\adoc    estimated_settings
-The \ref apop_loess_settings is filled with results (and internal processing cruft). The
+\adoc    Postestimate_settings The \ref apop_loess_settings is filled with results (and internal processing cruft). The
 \c out_model->info data set has a table giving the actual, \c predicted, and \c residual
-columns, which is probably what you were looking for.  Try:
+columns, which is amenable to plotting.  Try:
         \code
         apop_data_show(apop_data_get_page(output_model->info, "<Predicted>"));
         \endcode
@@ -2853,6 +2852,7 @@ static void loess_prune( long	*parameter, long *a, double	*xi, double *vert, dou
 
 ////// predict.c
 
+/** \cond doxy_ignore  Private to this file.*/
 struct pred_struct {
 	double	*fit;           //The evaluated loess surface at eval.
 	double	*se_fit;        //Estimates of the standard errors of the surface values.
@@ -2860,6 +2860,7 @@ struct pred_struct {
 	double  df;             //The degrees of freedom of the t-distribution used to compute pointwise 
                             //   confidence intervals for the evaluated surface. 
 };
+/** \endcond */ //End of Doxygen ignore.
 
 void predict(double  *new_x, long M, struct loess_struct *lo, struct pred_struct *pre, int want_cov) {
 	
@@ -3493,7 +3494,7 @@ Apop_settings_free(apop_loess, loess_free_mem(&(in->lo_s));)
 void matrix_to_FORTRAN(gsl_matrix *inmatrix, double *outFORTRAN, int start_col){
     double *current_outcol = outFORTRAN; 
     for (int i=start_col; i< inmatrix->size2; i++){
-        Apop_matrix_col(inmatrix, i, col);
+        gsl_vector *col = Apop_mcv(inmatrix, i);
         for (int j=0; j< col->size; j++)
             current_outcol[j]=gsl_vector_get(col,j);
         current_outcol += col->size;

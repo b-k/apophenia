@@ -27,7 +27,37 @@ static void apop_tack_on(char **in, char *addme){
 
 typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
 
-/** Join together a list or array of strings, with optional separators between the strings.
+/** Join together the \c text grid of an \ref apop_data set into a single string.
+
+For example, say that we have a data set with some text: row 0 has
+\c "a0", \c "b0", \c "c0"; row 2 has 
+\c "a1", \c "b1", \c "c1"; and so on. We would like to produce
+
+\code
+insert into tab values ('a0', 'b0', 'c0');
+insert into tab values ('a1', 'b1', 'c1');
+...
+\endcode
+
+This could be sent to an SQL engine to copy the data to a database (but this is just an example
+for demonstration---use \ref apop_data_print to write to a database table).
+
+To construct this single string from the text grid, we would need to add:
+\li before the text, <tt>Insert into tab values ('</tt>.
+\li between each element on a row: <tt>', '</tt>
+\li between rows: <tt>'); \\ninsert into tab values('</tt>
+\li at the tail end: <tt>');'
+
+Thus, do the conversion via:
+\code
+char *insert_string = apop_text_paste(indata,
+    .before="Insert into tab values ('",
+    .between="', '",
+    .between_cols="'); \\ninsert into tab values(',
+    .after="');'"
+);
+\endcode
+
 
 \param strings  An \ref apop_data set with a grid of text to be combined into a single string
 \param between  The text to put in between the rows of the table, such as ", ". (Default is a single space: " ")
@@ -35,7 +65,6 @@ typedef int (*apop_fn_riip)(apop_data*, int, int, void*);
 \param after   The text to put at the tail of the string. For the query example, <tt>.after=" from data_table"</tt>. (Default: NULL)
 \param between_cols The text to insert between columns of text. See below for an example (Default is set to equal <tt>.between</tt>)
 \param prune If you don't want to use the entire text set, you can provide a function to indicate which elements should be pruned out. Some examples:
-
 \code
 //Just use column 3
 int is_not_col_3(apop_data *indata, int row, int col, void *ignore){
@@ -47,20 +76,23 @@ int is_blank(apop_data *indata, int row, int col, void *ignore){
     return strlen(indata->text[row][col])==0;
 }
 \endcode
-
 \param prune_parameter A void pointer to pass to your \c prune function.
 
-\return A single string with the elements of the \c strings table joined as per your specification. Allocated by the function, to be freed by you if desired.
+\return A single string with the elements of the \c strings table joined as per your
+specification. Allocated by the function, to be freed by you if desired.
 
-\li If the table of strings is \c NULL or has no text, I will print only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
-\li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
-\li This function uses the \ref designated syntax for inputs.
+  \li If the table of strings is \c NULL or has no text, the output string will have
+only the <tt>.before</tt> and <tt>.after</tt> parts with nothing in between.
+  \li if <tt> apop_opts.verbose >=3</tt>, then print the pasted text to stderr.
+  \li It is sometimes useful to use \c Apop_r and \c Apop_rs to get a view of only
+one or a few rows in conjunction with this function.
 
-The sample snippet generates the SQL for a query using a list of column names (where
+  \li This function uses the \ref designated syntax for inputs.
+
+This sample snippet generates the SQL for a query using a list of column names (where
 the query begins with <tt>select </tt>, ends with <tt>from datatab</tt>, and has commas
 in between each element), re-processes the same list to produce the head of an HTML
-table, then produces the body of the table with the query result (pasting the
-<tt>tr</tt>s and <tt> td</tt>s into the right places).
+table, then produces the body of the table with the query result.
 
 \include sql_to_html.c
 */
@@ -105,13 +137,13 @@ apop_varad_head(char *, apop_text_paste){
 
 \li There are no doubt efficient shortcuts do doing this, but I use brute force. [Though Knuth's Art of Programming v1 doesn't offer anything, which is strong indication of nonexistence.] To speed things along, I save the results so that they can just be looked up should you request the same calculation. 
 
-\li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=1</tt>
+\li If \c N is zero or negative, return NaN. Notify the user if <tt>apop_opts.verbosity >=0</tt>
 
 For example: 
 
 \include test_harmonic.c
 */
-double apop_generalized_harmonic(int N, double s){
+long double apop_generalized_harmonic(int N, double s){
 /* 
 Each row in the saved-results structure is an \f$s\f$, and each column is \f$1\dots n\f$, up to the largest \f$n\f$ calculated to date.
 
@@ -121,7 +153,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
     static double *  eses	= NULL;
     static int * 	 lengths= NULL;
     static int		 count	= 0;
-    static double ** precalced=NULL;
+    static long double ** precalced=NULL;
     int	old_len, i;
     OMP_critical(generalized_harmonic)
     { //Due to memoization, this can't parallelize.
@@ -131,10 +163,10 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 	if (i == count){	//you need to build the vector from scratch.
 		count			++;
         i               = count - 1;
-		precalced 		= realloc(precalced, sizeof (double*) * count);
+		precalced 		= realloc(precalced, sizeof (long double*) * count);
 		lengths 		= realloc(lengths, sizeof (int*) * count);
 		eses 			= realloc(eses, sizeof (double) * count);
-		precalced[i]	= malloc(sizeof(double) * N);
+		precalced[i]	= malloc(sizeof(long double) * N);
 		lengths[i]	    = N;
 		eses[i]		    = s;
 		precalced[i][0]	= 1;
@@ -144,7 +176,7 @@ When reading the code, remember that the zeroth element holds the value for N=1,
 		old_len = lengths[i];
 	}
 	if (N-1 >= old_len){	//It's there, but you need to extend what you have.
-		precalced[i] = realloc(precalced[i], sizeof(double) * N);
+		precalced[i] = realloc(precalced[i], sizeof(long double) * N);
 		for (int j = old_len; j<N; j++)
 			precalced[i][j] = precalced[i][j-1] + 1/pow((j+1),s);
 	}
@@ -172,44 +204,6 @@ int apop_system(const char *fmt, ...){
     return out;
 }
 
-/** Returns an array of size 101, where \c returned_vector[95] gives the value of the 95th percentile, for example. \c Returned_vector[100] is always the maximum value, and \c returned_vector[0] is always the min (regardless of rounding rule).
-
-\param data	a \c gsl_vector of data. (No default, must not be \c NULL.)
-\param rounding This will either be \c 'u', \c 'd', or \c 'a'. Unless your data is exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round up (use the next highest value); if \c 'd' (or anything else), round down to the next lowest value; if \c 'a', take the mean of the two nearest points. If \c 'u' or \c 'a', then you can say "5% or more  of the sample is below \c returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5% or more of the sample is above returned_vector[5]".   (Default = \c 'd'.)
-
-\li You may eventually want to \c free() the array returned by this function.
-\li This function uses the \ref designated syntax for inputs.
-*/ 
-#ifdef APOP_NO_VARIADIC
-double * apop_vector_percentiles(gsl_vector *data, char rounding){
-#else
-apop_varad_head(double *, apop_vector_percentiles){
-    gsl_vector *apop_varad_var(data, NULL);
-    Apop_stopif(!data, return NULL, 0, "You gave me NULL data.");
-    char apop_varad_var(rounding, 'd');
-    return apop_vector_percentiles_base(data, rounding);
-}
-
- double * apop_vector_percentiles_base(gsl_vector *data, char rounding){
-#endif
-    gsl_vector *sorted	= gsl_vector_alloc(data->size);
-    double     *pctiles = malloc(sizeof(double) * 101);
-	gsl_vector_memcpy(sorted,data);
-	gsl_sort_vector(sorted);
-	for(int i=0; i<101; i++){
-		int index = i*(data->size-1)/100.0;
-		if (rounding == 'u' && index != i*(data->size-1)/100.0)
-			index ++; //index was rounded down, but should be rounded up.
-		if (rounding == 'a' && index != i*(data->size-1)/100.0)
-            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
-        else pctiles[i]	= gsl_vector_get(sorted, index);
-	}
-	gsl_vector_free(sorted);
-	return pctiles;
-}
-
-/** \} */
-
 static int count_parens(const char *string){
     int out = 0;
     int last_was_backslash = 0;
@@ -225,7 +219,9 @@ static int count_parens(const char *string){
     return out;
 }
 
-/** A convenience function for regular expression searching 
+/** Extract subsets from a string via regular expressions.
+
+This function takes a regular expression and repeatedly applies it to an input string. It returns the count of matches, and optionally returns the matches themselves organized into the \c text grid of an \ref apop_data set.
 
 \li There are three common flavors of regular expression: Basic, Extended,
 and Perl-compatible (BRE, ERE, PCRE). I use EREs, as per the specs of
@@ -243,15 +239,13 @@ If you give a non-\c NULL address in which to place a table of paren-delimited s
 \param use_case         Should I be case sensitive, \c 'y' or \c 'n'? (default = \c 'n', which is not the POSIX default.)
 
 \return         Count of matches found. 0 == no match. \c substrings may be allocated and filled if needed.
-\ingroup names
-
 
 \li If <tt>apop_opts.stop_on_warning='n'</tt> returns -1 on error (e.g., regex \c NULL or didn't compile).
 \li If <tt>strings==NULL</tt>, I return 0---no match---and if \c substrings is provided, set it to \c NULL.
 
 \li Here is the test function. Notice that the substring-pulling
-function call passes \c &subs, not plain \c subs. Also, the non-match
-has a zero-length blank in <tt>subs->text[0][1]</tt>.
+function call passes \c &subs, not plain \c subs. 
+
 
 \include test_regex.c
 
@@ -314,10 +308,10 @@ apop_varad_head(int, apop_regex){
 
 Devroye uses this as the base for many of his distribution-generators, including the Waring.
 
-\li If one of the inputs is <=0, error. Returns \c GSL_NAN if the function doesn't stop.
+\li If one of the inputs is <=0, error; return NaN and print a warning.
 */  //Header in stats.h
 double apop_rng_GHgB3(gsl_rng * r, double* a){
-    Apop_stopif(!((a[0]>0) && (a[1] > 0) && (a[2] > 0)), return GSL_NAN, 0, "all inputs must be positive.");
+    Apop_stopif(!((a[0]>0) && (a[1] > 0) && (a[2] > 0)), return NAN, 0, "all inputs must be positive.");
     double aa = gsl_ran_gamma(r, a[0], 1),
 		   b  = gsl_ran_gamma(r, a[1], 1),
 		   c  = gsl_ran_gamma(r, a[2], 1);
@@ -327,7 +321,7 @@ double apop_rng_GHgB3(gsl_rng * r, double* a){
 
 /** The Beta distribution is useful for modeling because it is bounded between zero and one, and can be either unimodal (if the variance is low) or bimodal (if the variance is high), and can have either a slant toward the bottom or top of the range (depending on the mean).
 
-The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns a random draw from the appropriate Beta distribution.
+The distribution has two parameters, typically named \f$\alpha\f$ and \f$\beta\f$, which can be difficult to interpret. However, there is a one-to-one mapping between (alpha, beta) pairs and (mean, variance) pairs. Since we have good intuition about the meaning of means and variances, this function takes in a mean and variance, calculates alpha and beta behind the scenes, and returns the appropriate Beta distribution.
 
 \param m
 The mean the Beta distribution should have. Notice that m
@@ -336,7 +330,9 @@ is in [0,1].
 \param v
 The variance which the Beta distribution should have. It is in (0, 1/12), where (1/12) is the variance of a Uniform(0,1) distribution. Funny things happen with variance near 1/12 and mean far from 1/2.
 
-\return Returns an \c apop_beta model with its parameters appropriately set.
+\return Returns an \ref apop_model produced by copying the \c apop_beta model and
+setting its parameters appropriately.
+
 \exception out->error=='r' Range error: mean is not within [0, 1].
 */
 apop_model *apop_beta_from_mean_var(double m, double v){
@@ -353,14 +349,21 @@ apop_model *apop_beta_from_mean_var(double m, double v){
 
 /** \def apop_rng_get_thread
 The \c gsl_rng is not itself thread-safe, in the sense that it can not be used
-simultaneously by multiple threads. However, if each thread has its own \c gsl_rng, then each will safely operate independently.
+simultaneously by multiple threads. However, if each thread has its own \c gsl_rng,
+then each will safely operate independently.
 
 Thus, Apophenia keeps an internal store of RNGs for use by threaded functions. If the
 input to this function, \c thread, is greater than any previous input, then the array
 of <tt>gsl_rng</tt>s is extended to length \c thread, and each element extended using
 <tt>++apop_opts.rng_seed</tt> (i.e., the seed is incremented before use).
 
-\param thread_in The number of the RNG to retrieve, starting at zero (which is how OpenMP numbers its threads). If blank, I'll look up the current thread (via \c omp_get_thread_num) for you.
+This function can be used anywhere a \c gsl_rng would be used.
+
+\param thread_in The number of the RNG to retrieve, starting at zero (which is
+how OpenMP numbers its threads). If -1, I'll look up the current thread (via \c
+omp_get_thread_num) for you.
+
+See \ref threading for additional notes. In most cases, you want to use <tt>apop_rng_get_thread(-1)</tt>.
 
 \return The appropriate RNG, initialized if necessary.
 \hideinitializer
@@ -405,15 +408,15 @@ gsl_rng *apop_rng_get_thread_base(int thread){
 \exception out->error=='d' Trouble drawing from the distribution for at least one row. That row is set to all \c NAN.
 
 \li Prints a warning if you send in a non-<tt>NULL apop_data</tt> set, but its \c matrix element is \c NULL, when <tt>apop_opts.verbose>=1</tt>.
-
 \li See also \ref apop_draw, which makes a single draw.
-
 \li Random numbers are generated using RNGs from \ref apop_rng_get_thread, qv.
 
 Here is a two-line program to draw a different set of ten Standard Normals on every run (provided runs are more than a second apart):
 
 \include draw_some_normals.c
- */
+
+\li This function uses the \ref designated syntax for inputs.
+*/
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_model_draws(apop_model *model, int count, apop_data *draws){
 #else

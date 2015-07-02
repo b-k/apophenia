@@ -6,17 +6,6 @@ columns, check bounds, et cetera.
 */ 
 /* Copyright (c) 2006--2007, 2012 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
-/** \defgroup linear_algebra 	Singular value decompositions, determinants, et cetera.  
-
-This page describes some standard bits of linear algebra that Apophenia facilitates.
-
-See also the printing functions, \ref apop_print, and the
-\ref convenience_fns "Convenience functions".
-*/
-
-/** \defgroup convenience_fns 	Things to make life easier with the GSL
- */
-
 #include "apop_internal.h"
 
 void apop_gsl_error(const char *reason, const char *file, int line, int gsl_errno){
@@ -47,8 +36,6 @@ Calculate the determinant of a matrix, its inverse, or both, via LU decompositio
 
 \return If <tt>calc_det == 1</tt>, then return the determinant. Otherwise, just returns zero.  If <tt>calc_inv!=0</tt>, 
 then \c *out is pointed to the matrix inverse. In case of difficulty, I will set <tt>*out=NULL</tt> and return \c NaN.
-
-\ingroup linear_algebra
 */
 
 double apop_det_and_inv(const gsl_matrix *in, gsl_matrix **out, int calc_det, int calc_inv) {
@@ -80,7 +67,6 @@ You may want to call \ref apop_matrix_determinant first to check that your input
 
 \param in The matrix to be inverted.
 \return Its inverse.
-\ingroup linear_algebra
 */
 gsl_matrix * apop_matrix_inverse(const gsl_matrix *in) {
     gsl_matrix *out = NULL;
@@ -95,7 +81,6 @@ See also \ref apop_matrix_inverse ,  or \ref apop_det_and_inv to do both at once
 
 \param in The matrix to be determined.
 \return     The determinant.
-\ingroup linear_algebra
 */
 double apop_matrix_determinant(const gsl_matrix *in) {
     return apop_det_and_inv(in, NULL, 1, 0);
@@ -103,18 +88,26 @@ double apop_matrix_determinant(const gsl_matrix *in) {
 
 /** Principal component analysis: hand in a matrix and (optionally) a number of desired dimensions, and I'll return a data set where each column of the matrix is an eigenvector. The columns are sorted, so column zero has the greatest weight. The vector element of the data set gives the weights.
 
-You also specify the number of elements your principal component space should have. If this is equal to the rank of the space in which the input data lives, then the sum of weights will be one. If the dimensions desired is less than that (probably so you can prepare a plot), then the weights will be accordingly smaller, giving you an indication of how much variation these dimensions explain. 
+You may also specify the number of elements your principal component space should have. If
+this is equal to the rank of the space in which the input data lives, then the sum of
+weights will be one. If the dimensions desired is less than that (probably so you can
+prepare a plot), then the weights will be accordingly smaller, giving you an indication
+of how much variation these dimensions explain.
 
-\param data The input matrix. (No default. If \c NULL, return \c NULL and print a warning iff <tt>apop_opts.verbose >= 1</tt>.)
-I modify int in place so that each column has mean zero.
+\param data The input matrix.  I modify int in place so that each column has
+mean zero. (No default. If \c NULL, return \c NULL and print a warning iff
+<tt>apop_opts.verbose >= 1</tt>.)
 
-\param dimensions_we_want  (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
-The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues.
+\param dimensions_we_want The singular value decomposition will return this many of the eigenvectors with the largest eigenvalues. (default: the size of the covariance matrix, i.e. <tt>data->size2</tt>)
 
-\return     Returns a \ref apop_data set whose matrix is the principal component space. Each column of the returned matrix will be another eigenvector; the columns will be ordered by the eigenvalues. 
+\return  Returns an \ref apop_data set whose matrix is the principal component
+space. Each column of the returned matrix will be another eigenvector; the columns
+will be ordered by the eigenvalues.
+
 The data set's vector will be the largest eigenvalues, scaled by the total of all eigenvalues (including those that were thrown out). The sum of these returned values will give you the percentage of variance explained by the factor analysis.
+
 \exception out->error=='a'  Allocation error.
-\ingroup linear_algebra */
+*/
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_matrix_pca(gsl_matrix *data, int const dimensions_we_want){
 #else
@@ -140,7 +133,9 @@ apop_varad_head(apop_data *, apop_matrix_pca) {
     Apop_stopif(!eigenvectors || !dummy_v || !all_evalues || !square, pc_space->error='a'; return pc_space, 
                 0, "Allocation error setting up workspace for %zu dimensions.", data->size2);
     double eigentotals	= 0;
-    apop_matrix_normalize(data, 'c', 'm');
+    for (int i=0; i< data->size2; i++)
+        apop_vector_normalize(Apop_mcv(data, i), NULL, 'm');
+
 	Checkgsl(gsl_blas_dgemm(CblasTrans,CblasNoTrans, 1, data, data, 0, square))
 	Checkgsl(gsl_linalg_SV_decomp(square, eigenvectors, all_evalues, dummy_v))
 	for (int i=0; i< all_evalues->size; i++)
@@ -157,66 +152,56 @@ apop_varad_head(apop_data *, apop_matrix_pca) {
     return pc_space;
 }
 
-/** Take the log (base ten) of every element in a vector.
+static void l10(double *d){ *d = log10(*d); }
+static void ln(double *d){ *d = log(*d); }
+static void ex(double *d){ *d = exp(*d); }
 
+/** Replace every vector element \f$v_i\f$ with log\f$_{10}(v_i)\f$.
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_log10(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d = gsl_vector_ptr(v, i);
-	    *d = log10(*d);
-    }
+    apop_vector_apply(v, l10);
 }
 
-/** Take the natural log of every element in a vector.
-
+/** Replace every vector element \f$v_i\f$ with ln\f$(v_i)\f$.
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_log(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d  = gsl_vector_ptr(v, i);
-	    *d = gsl_sf_log(*d);
-    }
+    apop_vector_apply(v, ln);
 }
 
-/** Replace every vector element \f$v_i\f$ with exp(\f$v_i\f$).
-
+/** Replace every vector element \f$v_i\f$ with exp\f$(v_i)\f$.
 \li If the input vector is \c NULL, do nothing. 
-\ingroup convenience_fns
- */
+*/
 void apop_vector_exp(gsl_vector *v){
     if (!v) return;
-    for (size_t i=0; i< v->size; i++){
-        double *d = gsl_vector_ptr(v, i);
-        *d = exp(*d);
-    }
+    apop_vector_apply(v, ex);
 }
 
 /** Put the first vector on top of the second vector.
 
-\param  v1  the upper vector (default=\c NULL, in which case this basically copies \c v2)
+\param  v1  the upper vector (default=\c NULL, in which case this copies \c v2)
 \param  v2  the second vector (default=\c NULL, in which case nothing is added)
-\param  inplace If 'y', use \ref apop_vector_realloc to modify \c v1 in place; see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1 unmolested. (default='n')
+\param  inplace If \c 'y', use \ref apop_vector_realloc to modify \c v1 in place;
+    see the caveats on that function. Otherwise, allocate a new vector, leaving \c v1
+    undisturbed. (default=\c 'n')
 \return     the stacked data, either in a new vector or a pointer to \c v1.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
 */
 #ifdef APOP_NO_VARIADIC
-gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector * v2, char inplace){
+gsl_vector * apop_vector_stack(gsl_vector *v1, gsl_vector const * v2, char inplace){
 #else
 apop_varad_head(gsl_vector *, apop_vector_stack){
     gsl_vector * apop_varad_var(v1, NULL);
-    gsl_vector * apop_varad_var(v2, NULL);
+    gsl_vector const * apop_varad_var(v2, NULL);
     char apop_varad_var(inplace, 'n');
     return apop_vector_stack_base(v1, v2, inplace);
 }
 
- gsl_vector * apop_vector_stack_base(gsl_vector *v1, gsl_vector * v2, char inplace){
+ gsl_vector * apop_vector_stack_base(gsl_vector *v1, gsl_vector const * v2, char inplace){
 #endif
     gsl_vector *out;
     gsl_vector t;
@@ -247,17 +232,15 @@ apop_varad_head(gsl_vector *, apop_vector_stack){
 }
 
 /** Put the first matrix either on top of or to the right of the second matrix.
-  The fn returns a new matrix, meaning that at the end of this function, until you gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
+Returns a new matrix, meaning that at the end of this function, until you \c gsl_matrix_free() the original matrices, you will be taking up twice as much memory. Plan accordingly.
 
-\param  m1  the upper/rightmost matrix (default=\c NULL, in which case this basically copies \c m2)
-\param  m2  the second matrix (default = \c NULL, in which case \c m1 is returned)
-\param  posn    if 'r', stack rows on top of other rows, else, e.g. 'c' stack  columns next to columns. (default ='r')
-\param  inplace If 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 unmolested. (default='n')
+\param  m1  the upper/rightmost matrix (default: \c NULL, in which case this copies \c m2)
+\param  m2  the second matrix (default: \c NULL, in which case \c m1 is returned)
+\param  posn    If \c 'r', stack rows on top of other rows. If \c 'c' stack  columns next to columns. (default: \c 'r')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc to modify \c m1 in place; see the caveats on that function. Otherwise, allocate a new matrix, leaving \c m1 undisturbed. (default: \c 'n')
 \return     the stacked data, either in a new matrix or a pointer to \c m1.
 
-\ingroup convenience_fns
-
-For example, here is a little function to merge four matrices into a single two-part-by-two-part matrix. The original matrices are unchanged.
+For example, here is a function to merge four matrices into a single two-part-by-two-part matrix. The original matrices are unchanged.
 \code
 gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl, gsl_matrix *dr){
   gsl_matrix *output, *t;
@@ -272,17 +255,17 @@ gsl_matrix *apop_stack_two_by_two(gsl_matrix *ul, gsl_matrix *ur, gsl_matrix *dl
 \li This function uses the \ref designated syntax for inputs.
 */
 #ifdef APOP_NO_VARIADIC
-gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace){
+gsl_matrix * apop_matrix_stack(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace){
 #else
 apop_varad_head(gsl_matrix *, apop_matrix_stack){
     gsl_matrix *apop_varad_var(m1, NULL);
-    gsl_matrix *apop_varad_var(m2, NULL);
+    gsl_matrix const *apop_varad_var(m2, NULL);
     char apop_varad_var(posn, 'r');
     char apop_varad_var(inplace, 'n');
     return apop_matrix_stack_base(m1, m2, posn, inplace);
 }
 
- gsl_matrix * apop_matrix_stack_base(gsl_matrix *m1, gsl_matrix * m2, char posn, char inplace){
+ gsl_matrix * apop_matrix_stack_base(gsl_matrix *m1, gsl_matrix const * m2, char posn, char inplace){
 #endif
     gsl_matrix      *out;
     gsl_vector_view tmp_vector;
@@ -312,7 +295,7 @@ apop_varad_head(gsl_matrix *, apop_matrix_stack){
             }
         }
         for (int i=m1size; i< m1size + m2->size1; i++){
-            tmp_vector  = gsl_matrix_row(m2, i- m1size);
+            gsl_vector_const_view tmp_vector = gsl_matrix_const_row(m2, i- m1size);
             gsl_matrix_set_row(out, i, &(tmp_vector.vector));
         }
         return out;
@@ -325,78 +308,39 @@ apop_varad_head(gsl_matrix *, apop_matrix_stack){
             out = apop_matrix_realloc(m1, m1->size1, m1->size2 + m2->size2);
         else {
             out     = gsl_matrix_alloc(m1->size1, m1->size2 + m2->size2);
-            for (int i=0; i< m1size; i++){
-                tmp_vector  = gsl_matrix_column(m1, i);
-                gsl_matrix_set_col(out, i, &(tmp_vector.vector));
-            }
+            for (int i=0; i< m1size; i++)
+                gsl_matrix_set_col(out, i, Apop_mcv(m1, i));
         }
-        for (int i=0; i< m2->size2; i++){
-            tmp_vector  = gsl_matrix_column(m2, i);
-            gsl_matrix_set_col(out, i+ m1size, &(tmp_vector.vector));
-        }
+        for (int i=0; i< m2->size2; i++)
+            gsl_matrix_set_col(out, i+ m1size, Apop_mcv((gsl_matrix*)m2, i));
         return out;
     } 
 }
 
-/** Delete columns from a matrix. 
+/** Test that all elements of a vector are within bounds, so you can preempt a procedure
+that is about to break on infinite or too-large values.
 
-  This is done via copying, so if you have an exceptionally large
-  data set, you're better off producing the matrix in the perfect form
-  directly.
-
-\param in   the \c gsl_matrix to be subsetted
-\return     a \c gsl_matrix with the specified columns removed. If you ask me to remove no columns, I'll return a copy of the original. If you ask me to remove all columns, I'll return \c NULL.
-\param drop an array of <tt>int</tt>s. If use[7]==1, then column seven will be cut from the output. 
-*/
-gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
-    int ct  = 0,  //how many columns will not be dropped?
-        j   = 0;
-    for (size_t i=0; i < in->size2; i++)
-        if (drop[i]==0)
-            ct++;
-    if (ct == in->size2)
-        return apop_matrix_copy(in);
-    if (ct == 0)
-        return NULL;
-    gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
-    for (size_t i=0; i < in->size2; i++){
-        if (drop[i]==0){
-            gsl_vector *v = Apop_cv(&(apop_data){.matrix=in}, i);
-            gsl_matrix_set_col(out, j, v);
-            j   ++;
-        }
-    }
-    return out;
-}
-
-/** Test for a situation when a vector is diverging,
-so you can preempt a procedure that is about to break on infinite values.
-
-Alternatively, set \c max to \c INFINITY (or \c GSL_INF) to just test whether all of the matrix's elements are finite.
-
- \param in  A <tt>gsl_vector</tt>
- \param max An upper and lower bound to the elements of the vector. (default: GSL_POSINF)
- \return    1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$; zero otherwise. 
+\param in  A <tt>gsl_vector</tt>
+\param max An upper and lower bound to the elements of the vector. (default: INFINITY)
+\return  1 if everything is bounded: not Inf, -Inf, or NaN, and \f$-\max < x < \max\f$;<br> 0 otherwise. 
  
-\li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=1</tt>.
+\li A \c NULL vector has no unbounded elements, so \c NULL input returns 1. You get a warning if <tt>apop_opts.verbosity >=2</tt>.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
- */
+*/
 #ifdef APOP_NO_VARIADIC
 int apop_vector_bounded(const gsl_vector *in, long double max){
 #else
 apop_varad_head(int, apop_vector_bounded){
     const gsl_vector * apop_varad_var(in, NULL)
-    Apop_stopif(!in, return 1, 1, "You sent in a NULL vector; returning 1.");
-    long double apop_varad_var(max, GSL_POSINF)
+    Apop_stopif(!in, return 1, 2, "You sent in a NULL vector; returning 1.");
+    long double apop_varad_var(max, INFINITY)
     return apop_vector_bounded_base(in, max);
 }
 
  int apop_vector_bounded_base(const gsl_vector *in, long double max){
 #endif
-    double x;
     for (size_t i=0; i< in->size; i++){
-        x   = gsl_vector_get(in, i);
+        double x = gsl_vector_get(in, i);
         if (!gsl_finite(x) || x> max || x< -max)
             return 0;
     }
@@ -416,14 +360,12 @@ static gsl_vector* dot_for_apop_dot(const gsl_matrix *m, const gsl_vector *v,
 
 /** A convenience function for dot products, which requires less prep and typing than the <tt>gsl_cblas_dgexx</tt> functions.
 
-Second, it makes some use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
-
-\li This function uses the \ref designated syntax for inputs.
+It makes use of the semi-overloading of the \ref apop_data structure. \c d1 may be a vector or a matrix, and the same for \c d2, so this function can do vector dot matrix, matrix dot matrix, and so on. If \c d1 includes both a vector and a matrix, then later parameters will indicate which to use.
 
 \param d1 the left part of \f$ d1 \cdot d2\f$
 \param d2 the right part of \f$ d1 \cdot d2\f$
 \param form1 't' or 'p': transpose or prime \c d1->matrix, or, if \c d1->matrix is \c NULL, read \c d1->vector as a row vector.<br>
-                    'n' or 0: no transpose. (the default)<br>
+                    'n' or 0: use matrix if present; no transpose. (the default)<br>
                     'v': ignore the matrix and use the vector.
 
 \param form2 As above, with \c d2.
@@ -434,42 +376,36 @@ Second, it makes some use of the semi-overloading of the \ref apop_data structur
 \exception out->error='a'  Allocation error.
 \exception out->error='d'  dimension-matching error.
 \exception out->error='m'  GSL math error.
-\exception NULL If you ask me to take the dot product of NULL, I return NULL. [May some day change.]
+\exception NULL If you ask me to take the dot product of NULL, I return NULL.
 
 \li Some systems auto-transpose non-conforming matrices. You input a \f$3 \times 5\f$ and
 a \f$3 \times 5\f$ matrix, and the system assumes that you meant to transpose the second,
-producing a \f$3 \times 5 \cdot 5 \times 3 \rightarrow 3 \times 3\f$ output. Apophenia
+producing a \f$(3 \times 5) \cdot (5 \times 3) \rightarrow (3 \times 3)\f$ output. Apophenia
 does not do this. First, it's ambiguous whether the output should be \f$3 \times 3\f$
 or \f$5 \times 5\f$. Second, your next run might have three observations, and two \f$3 \times 3\f$ 
 matrices don't require transposition; auto-transposition thus creates situations where
 bugs can pop up on only some iterations of a loop.
-
-\li For a vector \f$cdot\f$ a matrix, the vector is always treated as a row vector,
-meaning that a \f$3\times 1\f$ dot a \f$3\times 4\f$ matrix is correct, and produces a
-\f$1 \times 4\f$ vector.  For a vector \f$cdot\f$ a matrix, the vector is always treated
-as a column vector. Requests for transposition are ignored.  
-
+\li For a vector \f$\cdot\f$ a matrix, the vector is always treated as a row vector,
+meaning that a \f$(3\times 1)\f$ dot a \f$(3\times 4)\f$ matrix is correct, and produces a
+\f$(1 \times 4)\f$ vector.  For a matrix \f$\cdot\f$ a vector, the vector is always treated
+as a column vector. Requests for transposing the vector are ignored in both cases.  
 \li As a corrollary to the above rule, a vector dot a vector always produces a scalar,
  which will be put in the zeroth element of the output vector;
 see the example. 
-
 \li If you want to multiply an \f$N \times 1\f$ vector \f$\cdot\f$ a \f$1 \times N\f$
-matrix produce an \f$N \times N\f$ matrix, then use \ref apop_vector_to_matrix to turn
+vector to produce an \f$N \times N\f$ matrix, then use \ref apop_vector_to_matrix to turn
 your vectors into matrices; see the example.
-
-
 \li A note for readers of <em>Modeling with Data</em>: the awkward instructions on using
 this function on p 130 are now obsolete, thanks to the designated initializer syntax
 for function calls. Notably, in the case where <tt>d1</tt> is a vector and <tt>d2</tt>
 a matrix, then <tt>apop_dot(d1,d2,'t')</tt> won't work, because <tt>'t'</tt> now refers
 to <tt>d1</tt>. Instead use <tt>apop_dot(d1,d2,.form2='t')</tt> or  <tt>apop_dot(d1,d2,0,
 't')</tt>
+\li This function uses the \ref designated syntax for inputs.
 
 Sample code:
 \include dot_products.c
-
-\ingroup linear_algebra
-  */
+*/
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_dot(const apop_data *d1, const apop_data *d2, char form1, char form2){
 #else

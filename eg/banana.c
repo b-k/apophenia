@@ -20,11 +20,17 @@ int main(){
     Apop_model_add_group(b, apop_mle, .verbose='y', .method="NM simplex");
     Apop_model_add_group(b, apop_parts_wanted);
     apop_model *e1 = apop_estimate(NULL, b);
-    apop_model_print(e1, NULL);
+    apop_model_print(e1);
+
+    //for printing the path below
+    apop_data *bfgs_path = NULL;
+    Apop_settings_set(b, apop_mle, path, &bfgs_path);
 
     Apop_settings_set(b, apop_mle, method, "BFGS cg");
     apop_model *e2 = apop_estimate(NULL, b);
-    apop_model_print(e2, NULL);
+    apop_model_print(e2);
+
+    apop_data_show(bfgs_path);
 
     gsl_vector *one = apop_vector_fill(gsl_vector_alloc(2), 1, 1);
     assert(apop_vector_distance(e1->parameters->vector, one) < 1e-2);

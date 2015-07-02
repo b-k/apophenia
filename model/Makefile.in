@@ -106,8 +106,7 @@ libapopmodel_la_LIBADD =
 am_libapopmodel_la_OBJECTS = libapopmodel_la-apop_bernoulli.lo \
 	libapopmodel_la-apop_beta.lo libapopmodel_la-apop_dirichlet.lo \
 	libapopmodel_la-apop_exponential.lo \
-	libapopmodel_la-apop_gamma.lo \
-	libapopmodel_la-apop_histogram.lo \
+	libapopmodel_la-apop_gamma.lo libapopmodel_la-apop_kerneld.lo \
 	libapopmodel_la-apop_loess.lo \
 	libapopmodel_la-apop_multinomial.lo \
 	libapopmodel_la-apop_multivariate_normal.lo \
@@ -332,7 +331,7 @@ libapopmodel_la_SOURCES = \
 	apop_dirichlet.c \
 	apop_exponential.c \
 	apop_gamma.c \
-	apop_histogram.c \
+	apop_kerneld.c \
 	apop_loess.c \
 	apop_multinomial.c \
 	apop_multivariate_normal.c \
@@ -413,7 +412,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_dirichlet.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_exponential.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_gamma.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_histogram.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_kerneld.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_loess.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_multinomial.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopmodel_la-apop_multivariate_normal.Plo@am__quote@
@@ -484,12 +483,12 @@ libapopmodel_la-apop_gamma.lo: apop_gamma.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -c -o libapopmodel_la-apop_gamma.lo `test -f 'apop_gamma.c' || echo '$(srcdir)/'`apop_gamma.c
 
-libapopmodel_la-apop_histogram.lo: apop_histogram.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -MT libapopmodel_la-apop_histogram.lo -MD -MP -MF $(DEPDIR)/libapopmodel_la-apop_histogram.Tpo -c -o libapopmodel_la-apop_histogram.lo `test -f 'apop_histogram.c' || echo '$(srcdir)/'`apop_histogram.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopmodel_la-apop_histogram.Tpo $(DEPDIR)/libapopmodel_la-apop_histogram.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_histogram.c' object='libapopmodel_la-apop_histogram.lo' libtool=yes @AMDEPBACKSLASH@
+libapopmodel_la-apop_kerneld.lo: apop_kerneld.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -MT libapopmodel_la-apop_kerneld.lo -MD -MP -MF $(DEPDIR)/libapopmodel_la-apop_kerneld.Tpo -c -o libapopmodel_la-apop_kerneld.lo `test -f 'apop_kerneld.c' || echo '$(srcdir)/'`apop_kerneld.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopmodel_la-apop_kerneld.Tpo $(DEPDIR)/libapopmodel_la-apop_kerneld.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_kerneld.c' object='libapopmodel_la-apop_kerneld.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -c -o libapopmodel_la-apop_histogram.lo `test -f 'apop_histogram.c' || echo '$(srcdir)/'`apop_histogram.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -c -o libapopmodel_la-apop_kerneld.lo `test -f 'apop_kerneld.c' || echo '$(srcdir)/'`apop_kerneld.c
 
 libapopmodel_la-apop_loess.lo: apop_loess.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopmodel_la_CFLAGS) $(CFLAGS) -MT libapopmodel_la-apop_loess.lo -MD -MP -MF $(DEPDIR)/libapopmodel_la-apop_loess.Tpo -c -o libapopmodel_la-apop_loess.lo `test -f 'apop_loess.c' || echo '$(srcdir)/'`apop_loess.c

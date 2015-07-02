@@ -9,53 +9,8 @@ Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 sqlite3	*db=NULL;	                //There's only one SQLite database handle. Here it is.
 
 
-/** \page db_moments Database moments (plus pow()!)
 
-SQLite lets users define new functions for use in queries, and Apophenia uses this facility to define a few common functions.
-
-\li <tt>select ran() from table</tt> will produce a new random number between zero and one for every row of the input table, using \c gsl_rng_uniform. 
-
-\li The SQL standard includes the <tt>count(x)</tt> and <tt>avg(x)</tt> aggregators,
-but statisticians are usually interested in higher moments as well---at least the
-variance. Therefore, SQL queries using the Apophenia library may include any of these moments:
-
-\code
-select count(x), stddev(x), avg(x), var(x), variance(x), skew(x), kurt(x), kurtosis(x),
-std(x), stddev_samp(x), stddev_pop(x), var_samp(x), var_pop(x)
-from table
-group by whatever
-\endcode
-
-<tt>var</tt> and <tt>variance</tt>; <tt>kurt</tt> and <tt>kurtosis</tt> do the same thing. Choose the one that sounds better to you. <tt>var</tt>, <tt>var_samp</tt>, <tt>stddev</tt> and <tt>stddev_samp</tt> give sample variance/standard deviation; <tt>variance</tt>, <tt>var_pop</tt> <tt>std</tt> and <tt>stddev_pop</tt> give population standard deviation.  The plethora of variants are for mySQL compatibility.
-
-\li The  var/skew/kurtosis functions calculate sample moments, so if you want the population moment, multiply the result by (n-1)/n .
-
-\li Also provided: wrapper functions for standard math library
-functions---<tt>sqrt(x)</tt>, <tt>pow(x,y)</tt>, <tt>exp(x)</tt>, <tt>log(x)</tt>,
-and trig functions. They call the standard math library function of the same name
-to calculate \f$\sqrt{x}\f$, \f$x^y\f$, \f$e^x\f$, \f$\ln(x)\f$, \f$\sin(x)\f$,
-\f$\arcsin(x)\f$, et cetera.
-
-\li The <tt>ran()</tt> function calls <tt>gsl_rng_uniform</tt> to produce a uniform
-draw between zero and one. It keeps its own <tt>gsl_rng</tt>, which is intialized on
-first call using the value of <tt>apop_ots.rng_seed</tt> (which is then incremented,
-so the next function to use it will get a different seed).
-
-\code
-select sqrt(x), pow(x,0.5), exp(x), log(x), 
-    sin(x), cos(x), tan(x), asin(x), acos(x), atan(x)
-from table
-\endcode
-
-Here is a test script using many of the above.
-
-\include db_fns.c
-
-Here is some more realistic sample code:
-
-\include normalizations.c
-*/
-
+/** \cond doxy_ignore */
 typedef struct StdDevCtx StdDevCtx;
 struct StdDevCtx {
     double avg;     /* avg of terms */
@@ -64,6 +19,7 @@ struct StdDevCtx {
     double avg4;    /* avg of the fourth-power of terms */
     int cnt;        /* Number of terms counted */
 };
+/** \endcond */
 
 static void twoStep(sqlite3_context *context, int argc, sqlite3_value **argv){
     if (argc<1) return;
@@ -179,7 +135,8 @@ static void powFn(sqlite3_context *context, int argc, sqlite3_value **argv){
 
 static void rngFn(sqlite3_context *context, int argc, sqlite3_value **argv){
     Staticdef(gsl_rng *, rng, apop_rng_alloc(apop_opts.rng_seed++));
-    sqlite3_result_double(context, gsl_rng_uniform(rng));
+    //sqlite3_result_double(context, gsl_rng_uniform(rng));
+    sqlite3_result_double(context, gsl_rng_uniform(apop_rng_get_thread(-1)));
 }
 
 #define sqfn(name) static void name##Fn(sqlite3_context *context, int argc, sqlite3_value **argv){ \
@@ -215,11 +172,13 @@ static int apop_sqlite_db_open(char const *filename){
     return 0;
 }
 
+/** \cond doxy_ignore */
 typedef struct {    //for the apop_query_to_... functions.
     int       firstcall, namecol;
     size_t    currentrow;
     apop_data *outdata;
 } callback_t;
+/** \endcond */
 
 //This is the callback for apop_query_to_text.
 static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
@@ -230,7 +189,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
     if (qi->firstcall){
         qi->firstcall = 0;
         for(int i=0; i<argc; i++)
-            if (!strcasecmp(column[i], apop_opts.db_name_column)){
+            if (apop_opts.db_name_column && !strcasecmp(column[i], apop_opts.db_name_column)){
                 qi->namecol = i;
                 break;
             }
@@ -243,7 +202,7 @@ static int db_to_chars(void *qinfo,int argc, char **argv, char **column){
             apop_name_add(d->names, argv[jj], 'r'); 
             ncshift ++;
         } else {
-            apop_text_add(d, rows, jj-ncshift, (argv[jj]==NULL)? apop_opts.nan_string: argv[jj]);
+            apop_text_set(d, rows, jj-ncshift, (argv[jj]==NULL)? apop_opts.nan_string: argv[jj]);
             //Asprintf(&(d->text[rows][jj-ncshift]), "%s", (argv[jj]==NULL)? "NaN": argv[jj]);
             if(addnames)
                 apop_name_add(d->names, column[jj], 't'); 
@@ -263,12 +222,14 @@ apop_data * apop_sqlite_query_to_text(char *query){
     return qinfo.outdata;
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     apop_data  *d;
     int        intypes[5];//names, vectors, mcols, textcols, weights.
     int        current, thisrow, error_thrown;
     const char *instring;
 } apop_qt;
+/** \endcond */
 
 static void count_types(apop_qt *in, const char *intypes){
     int i = 0;

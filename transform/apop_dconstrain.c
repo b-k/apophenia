@@ -4,8 +4,6 @@
 data constraint. E.g., truncate \f$P(d)\f$ to zero for all \f$d\f$ outside of a given
 constraint. Generate using \ref apop_model_dconstrain .
 
-\li This is still in beta. Expect the interface to change.
-
 The log likelihood works by using the \c base_model log likelihood, and then scaling
 it based on the part of the base model's density that is within the constraint. If you
 have an easy means of specifying what that density is, please do, as in the example. If
@@ -14,7 +12,8 @@ the base model and checking whether they are in or out of the constraint. Becaus
 default method is stochastic, there is some loss of precision, and conjugate gradient
 methods may get confused.
 
-Here is an example that makes a few draws and estimations from data-constrained models.
+Here is an example that makes a few draws and estimations from data-constrained
+models. Note the use of \ref apop_model_set_settings to prepare the constrained models.
 
 \adoc Examples
 \include dconstrain.c
@@ -56,7 +55,7 @@ Apop_settings_free(apop_dconstrain,)
 static void dc_prep(apop_data *d, apop_model *m){
     apop_dconstrain_settings *cs = Apop_settings_get_group(m, apop_dconstrain); 
     Apop_stopif(!cs, m->error='s', 0, "missing apop_dconstrainct_settings group. "
-            "Maybe initialize this with apop_model_dcompose?");
+            "Maybe initialize this with apop_model_dconstrain?");
     apop_prep(d, cs->base_model);
     m->parameters=cs->base_model->parameters;
     m->constraint=cs->base_model->constraint;
@@ -103,5 +102,4 @@ Build an \c apop_dconstrain model, q.v., which applies a data constraint to the 
 \li Uses the \ref apop_dconstrain_settings group. This macro takes elements of that struct as inputs.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup model_transformations
 */

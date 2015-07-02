@@ -8,28 +8,27 @@ The apop_data structure joins together a gsl_matrix, apop_name, and a table of s
 #define Set_gsl_handler gsl_error_handler_t *prior_handler = gsl_set_error_handler(apop_gsl_error);
 #define Unset_gsl_handler gsl_set_error_handler(prior_handler);
 
-/** Allocate a \ref apop_data structure, to be filled with data.
+/** Allocate an \ref apop_data structure.
  
 \li The typical case is  three arguments, like <tt>apop_data_alloc(2,3,4)</tt>: vector size, matrix rows, matrix cols. If the first argument is zero, you get a \c NULL vector.
 \li Two arguments, <tt>apop_data_alloc(2,3)</tt>,  would allocate just a matrix, leaving the vector \c NULL.
 \li One argument, <tt>apop_data_alloc(2)</tt>,  would allocate just a vector, leaving the matrix \c NULL.
-\li Zero arguments, <tt>apop_data_alloc()</tt>,  will produce a basically blank set, with \c out->matrix==out->vector==NULL. 
+\li Zero arguments, <tt>apop_data_alloc()</tt>,  will produce a basically blank set, with \c out->matrix and \c out->vector set to \c NULL. 
 
 For allocating the text part, see \ref apop_text_alloc.
 
 The \c weights vector is set to \c NULL. If you need it, allocate it via
-\code d->weights   = gsl_vector_alloc(row_ct); \endcode
+\code d->weights = gsl_vector_alloc(row_ct); \endcode
 
-\see apop_data_calloc
-
-\return The \ref apop_data structure, allocated and ready.
+\return The \ref apop_data structure, allocated and ready to be populated with data.
 \exception out->error=='a'  Allocation error. The matrix, vector, or names couldn't be <tt>malloc</tt>ed, which probably means that you requested a very large data set.
 
 \li An \ref apop_data struct, by itself, is about 72 bytes. If I can't allocate that much memory, I return \c NULL.
                 But if even this much fails, your computer may be on fire and you should go put it out. 
 
- \li This function uses the \ref designated syntax for inputs.
- \ingroup data_struct
+\li This function uses the \ref designated syntax for inputs.
+
+\see apop_data_calloc
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_alloc(const size_t size1, const size_t size2, const int size3){
@@ -79,10 +78,9 @@ apop_varad_head(apop_data *, apop_data_alloc){
 /** Allocate a \ref apop_data structure, to be filled with data; set everything in the allocated portion to zero. See \ref apop_data_alloc for details.
 
 \return    The \ref apop_data structure, allocated and zeroed out.
-\exception out->error=='m' malloc error; probably out of memory.
-\see apop_data_alloc 
-\ingroup data_struct
+\exception out->error=='a' allocation error; probably out of memory.
 \li This function uses the \ref designated syntax for inputs.
+\see apop_data_alloc 
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_calloc(const size_t size1, const size_t size2, const int size3){
@@ -109,15 +107,15 @@ apop_varad_head(apop_data *, apop_data_calloc){
     }
     else vsize = size1;
     apop_data *setme = malloc(sizeof(apop_data));
-    Apop_stopif(!setme, apop_return_data_error('m'), 0, "malloc failed. Probably out of memory.");
+    Apop_stopif(!setme, apop_return_data_error('a'), 0, "malloc failed. Probably out of memory.");
     *setme = (apop_data) { }; //init to zero/NULL.
     if (msize2 >0 && msize1 > 0){
         setme->matrix = gsl_matrix_calloc(msize1,msize2);
-        Apop_stopif(!setme->matrix, apop_return_data_error('m'), 0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
+        Apop_stopif(!setme->matrix, apop_return_data_error('a'), 0, "malloc failed on a %zu x %i matrix. Probably out of memory.", msize1, msize2);
     }
     if (vsize){
         setme->vector = gsl_vector_calloc(vsize);
-        Apop_stopif(!setme->vector, apop_return_data_error('m'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
+        Apop_stopif(!setme->vector, apop_return_data_error('a'), 0, "malloc failed on a vector of size %zu. Probably out of memory.", vsize);
     }
     setme->names = apop_name_alloc();
     return setme;
@@ -132,13 +130,15 @@ static void apop_text_blank(apop_data *in, const size_t row, const size_t col){
     in->text[row][col] = apop_nul_string;
 }
 
-/** Free a matrix of chars* (i.e., a char***). This is the form of the
- text element of the \ref apop_data set, so you can use this for:
- \code
- apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
- \endcode
- This is what \c apop_data_free uses internally.
-   */
+/** Free a matrix of chars* (i.e., a char***).
+This is what \c apop_data_free uses internally to deallocate the \c text element of
+an \ref apop_data set. You may never need to use it directly.
+
+Sample usage:
+\code
+apop_text_free(yourdata->text, yourdata->textsize[0], yourdata->textsize[1]);
+\endcode
+*/
 void apop_text_free(char ***freeme, int rows, int cols){
     if (rows && cols)
         for (int i=0; i < rows; i++){
@@ -162,7 +162,7 @@ I set <tt>freeme.error='c'</tt> and return. If you send in a structure like A ->
 B, then both data sets A and B will be marked.
 
 \return \c 0 on OK, \c 'c' on error.
-  */
+*/
 char apop_data_free_base(apop_data *freeme){
     if (!freeme) return 0;
     if (freeme->more){
@@ -194,7 +194,8 @@ data, and fail if the copy would write more elements than there are bins.
 
   \li If you want space allocated or are unsure about dimensions, use \ref apop_data_copy.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
-  \li You can use the subsetting macros, \ref Apop_r or \ref Apop_rs, to copy within a data set:
+  \li You can use the subsetting macros, \ref Apop_r, \ref Apop_rs, \ref Apop_c,
+      and so on, to copy within a data set:
 
 \code
 //Copy the contents of row i of mydata to row j.
@@ -209,11 +210,9 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
   \param out   A structure that this function will fill. Must be preallocated with the appropriate sizes.
   \param in    The input data.
 
-\exception out.error='d'  Dimension error; couldn't copy.
-\exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't; couldn't copy.
-
- \ingroup data_struct
-  */
+\exception out.error='d'  Dimension error.
+\exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't.
+*/
 void apop_data_memcpy(apop_data *out, const apop_data *in){
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
@@ -243,12 +242,18 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
         gsl_vector_memcpy(out->weights, in->weights);
     }
     if (in->names){
-        apop_name_free(out->names);
-        out->names = apop_name_alloc();
-        apop_name_stack(out->names, in->names, 'v');
-        apop_name_stack(out->names, in->names, 'r');
-        apop_name_stack(out->names, in->names, 'c');
-        apop_name_stack(out->names, in->names, 't');
+        if (!out->names) out->names = apop_name_alloc();
+        Asprintf(&out->names->title, "%s", in->names->title);
+        if (out->names->vector && in->names->vector) {Asprintf(&out->names->vector, "%s", in->names->vector);}
+        for (int i=0; i< in->names->rowct; i++)
+            if (i< out->names->rowct) {Asprintf(out->names->row+i, "%s", in->names->row[i]);}
+            else  apop_name_add(out->names, in->names->row[i], 'r');
+        for (int i=0; i< in->names->colct; i++)
+            if (i< out->names->colct) {Asprintf(out->names->col+i, "%s", in->names->col[i]);}
+            else  apop_name_add(out->names, in->names->col[i], 'c');
+        for (int i=0; i< in->names->textct; i++)
+            if (i< out->names->textct) {Asprintf(out->names->text+i, "%s", in->names->text[i]);}
+            else  apop_name_add(out->names, in->names->text[i], 't');
     }
     out->textsize[0] = in->textsize[0]; 
     out->textsize[1] = in->textsize[1]; 
@@ -263,27 +268,29 @@ void apop_data_memcpy(apop_data *out, const apop_data *in){
             for(size_t j=0; j < in->textsize[1]; j ++)
                 if (in->text[i][j] == apop_nul_string)
                      apop_text_blank(out, i, j);
-                else apop_text_add(out, i, j, "%s", in->text[i][j]);
+                else apop_text_set(out, i, j, "%s", in->text[i][j]);
     }
     if (in->more && out->more) apop_data_memcpy(out->more, in->more);
 }
 
 /** Copy one \ref apop_data structure to another. That is, all data is duplicated.
 
-  Basically a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax. 
+Basically a front-end for \ref apop_data_memcpy for those who prefer this sort of syntax. 
 
-  Unlike \ref apop_data_memcpy, I do follow the \c more pointer.
+If the data set has a \c more pointer, that will be followed and subsequent pages copied as well.
  
   \param in    the input data
   \return       a structure that this function will allocate and fill. If input is NULL, then this will be NULL.
-
- \ingroup data_struct
 
 \exception out.error='a'  Allocation error.
 \exception out.error='c'  Cyclic link: <tt>D->more == D</tt> (may be later in the chain, e.g., <tt>D->more->more = D->more</tt>) You'll have only a partial copy.
 \exception out.error='d'  Dimension error; should never happen.
 \exception out.error='p'  Missing part error; should never happen.
-\li If the input data set has an error, then I will copy it anyway, including the error flag (which might be overwritten). I print a warning if the verbosity level is <tt>>=1</tt>.
+
+\li If the input data set has an error, then I will copy it anyway, including the
+error flag (which might be overwritten). I print a warning if the verbosity level
+is <tt>>=1</tt>.
+
   */
 apop_data *apop_data_copy(const apop_data *in){
     if (!in) return NULL;
@@ -324,34 +331,35 @@ apop_data *apop_data_copy(const apop_data *in){
 
 /** Put the first data set either on top of or to the left of the second data set.
 
-The fn returns a new data set, meaning that at the end of this function,
-until you apop_data_free() the original data sets, you will be taking up
-twice as much memory. Plan accordingly. 
-
- For the opposite operation, see \ref apop_data_split.
+For the opposite operation, see \ref apop_data_split.
 
 \param  m1      the upper/rightmost data set (default = \c NULL)
 \param  m2      the second data set (default = \c NULL)
-\param  posn    If 'r', stack rows of m1's matrix above rows of m2's<br>
-if 'c', stack columns of m1's matrix to left of m2's<br>
-(default = 'r')
-\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place; see the caveats on those function. Otherwise, allocate a new vector, leaving \c m1 unmolested. (default='n')
+\param  posn    If 'r', stack rows of m1 above rows of m2<br>
+    if 'c', stack columns of m1 to left of m2's<br>
+    (default = 'r')
+\param  inplace If \c 'y', use \ref apop_matrix_realloc and \ref apop_vector_realloc to modify \c m1 in place. Otherwise, allocate a new \ref apop_data set, leaving \c m1 undisturbed. (default='n')
 \return         The stacked data, either in a new \ref apop_data set or \c m1
 \exception out->error=='a' Allocation error.
 \exception out->error=='d'  Dimension error; couldn't make a complete copy.
 
-\li If m1 or m2 are NULL, this returns a copy of the other element, and if
-both are NULL, you get NULL back (except if \c m2 is \c NULL and \c inplace is \c 'y', where you'll get the original \c m1 pointer back)
-\li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the other [number of columns must match]; if 'c', one set of text is set next to the other [number of rows must match].
+\li The function returns a new data set, meaning that until you apop_data_free()
+    the original data sets, you will be taking up twice as much memory.
+\li If m1 or m2 are \c NULL, returns a copy of the other element, and if
+    both are \c NULL, returns \c NULL. If \c m2 is \c NULL and \c inplace is \c
+    'y', returns the original \c m1 pointer unmodified.
+\li Text is handled as you'd expect: If 'r', one set of text is stacked on top of the
+    other [number of columns must match]; if 'c', one set of text is set next to the other
+    [number of rows must match].
 \li \c more is ignored.
 \li If stacking rows on rows, the output vector is the input
-vectors stacked accordingly. If stacking columns by columns, the output
-vector is just a copy of the vector of m1 and m2->vector doesn't appear in the
-output at all.  
+    vectors stacked accordingly. If stacking columns by columns, the output
+    vector is just a copy of the vector of \c m1 and <tt>m2->vector</tt> doesn't appear in the
+    output at all.  
 \li The same rules for dealing with the vector(s) hold for the vector(s) of weights.
-\li Names are a copy of the names for \c m1, with the names for \c m2 appended to the row or column list, as appropriate.
+\li Names are a copy of the names for \c m1, with the names for \c m2 appended to the
+    row or column list, as appropriate.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup data_struct
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_stack(apop_data *m1, apop_data * m2, char posn, char inplace){
@@ -418,7 +426,7 @@ apop_varad_head(apop_data *, apop_data_stack){
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i+basetextsize, j);
-                    else apop_text_add(out, i+basetextsize, j, m2->text[i][j]);
+                    else apop_text_set(out, i+basetextsize, j, "%s", m2->text[i][j]);
         } else {
             Apop_stopif(out->text && m2->textsize[0]!=out->textsize[0], 
                     out->error='d'; return out, 0,
@@ -431,7 +439,7 @@ apop_varad_head(apop_data *, apop_data_stack){
                 for(int j=0; j< m2->textsize[1]; j++)
                     if (m2->text[i][j] == apop_nul_string)
                          apop_text_blank(out, i, j+basetextsize);
-                    else apop_text_add(out, i, j+basetextsize, m2->text[i][j]);
+                    else apop_text_set(out, i, j+basetextsize, "%s", m2->text[i][j]);
             apop_name_stack(out->names, m2->names, 't');
         }
     }
@@ -450,14 +458,19 @@ apop_varad_head(apop_data *, apop_data_stack){
  For the opposite operation, see \ref apop_data_stack.
  
 \param in  The \ref apop_data structure to split 
-\param splitpoint The index of what will be the first row/column of the second data set.  E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second data set; if this is the length of the matrix then the whole data set will be in the first data set. Another way to put it is that \c splitpoint will equal the number of rows/columns in the first matrix (unless it is -1, in which case the first matrix will have zero rows, or it is greater than the matrix's size, in which case it will have as many rows as the original).  
+\param splitpoint The index of what will be the first row/column of the second data set.
+E.g., if this is -1 and \c r_or_c=='c', then the whole data set will be in the second
+data set; if this is the length of the matrix then the whole data set will be in the
+first data set. Another way to put it is that for values between zero and the matrix's
+size, \c splitpoint will equal the number of rows/columns in the first matrix.
+
 \param r_or_c If this is 'r' or 'R', then put some rows in the first data set and some in the second; of 'c' or 'C', split columns into first and second data sets.
 
  \return An array of two \ref apop_data sets. If one is empty then a
  \c NULL pointer will be returned in that position. For example, for a data set of 50 rows, <tt>apop_data **out = apop_data_split(data, 100, 'r')</tt> sets <tt>out[0] = apop_data_copy(data)</tt> and <tt>out[1] = NULL</tt>.
 
  \li When splitting at a row, the text is also split.
- \li \c more pointer is ignored.
+ \li The \c more pointer is ignored.
  \li The <tt>apop_data->vector</tt> is taken to be the -1st element of the matrix.  
  \li Weights will be preserved. If splitting by rows, then the top and bottom parts of the weights vector will be assigned to the top and bottom parts of the main data set. If splitting by columns, identical copies of the weights vector will be assigned to both parts.
  \li Data is copied, so you may want to call <tt>apop_data_free(in)</tt> after this.
@@ -628,8 +641,8 @@ allocation:
 /** Remove the columns set to one in the \c drop vector.
 \param n the \ref apop_name structure to be pared down
 \param drop  a vector with n->colct elements, mostly zero, with a one marking those columns to be removed.
-\ingroup names
- */
+\see \ref apop_data_prune_columns
+*/
 static void apop_name_rm_columns(apop_name *n, int *drop){
     apop_name *newname = apop_name_alloc();
     size_t initial_colct = n->colct;
@@ -648,16 +661,38 @@ static void apop_name_rm_columns(apop_name *n, int *drop){
 }
 
 
-/** Remove the columns set to one in the \c drop vector.
-The returned data structure looks like it was modified in place, but the data matrix and the names are duplicated before being pared down, so if your data is taking up more than half of your memory, this may not work.
+static gsl_matrix *apop_matrix_rm_columns(gsl_matrix *in, int *drop){
+    int ct  = 0,  //how many columns will not be dropped?
+        j   = 0;
+    for (size_t i=0; i < in->size2; i++)
+        if (drop[i]==0)
+            ct++;
+    if (ct == in->size2) return apop_matrix_copy(in);
+    if (ct == 0)         return NULL;
+    gsl_matrix *out = gsl_matrix_alloc(in->size1, ct);
+    for (size_t i=0; i < in->size2; i++){
+        if (drop[i]==0){
+            gsl_vector *v = Apop_cv(&(apop_data){.matrix=in}, i);
+            gsl_matrix_set_col(out, j, v);
+            j   ++;
+        }
+    }
+    return out;
+}
 
-\param d the \ref apop_data structure to be pared down. 
-\param drop an array of ints. If use[7]==1, then column seven will be cut from the
+/** Remove the columns of the \ref apop_data set corresponding to a nonzero value in the \c drop vector.
+
+\li The returned data structure looks like it was modified in place, but the data
+matrix and the names are duplicated before being pared down, so if your data is taking
+up more than half of your memory, this may not work.
+
+\param d  The \ref apop_data structure to be pared down. 
+\param drop  An array of ints. If use[7]==1, then column seven will be cut from the
 output. A reminder: <tt>calloc(in->size2 , sizeof(int))</tt> will fill your array with zeros on allocation, and 
 <tt>memset(use, 1, in->size2 * sizeof(int))</tt> will
 quickly fill an array of ints with nonzero values.
- \ingroup data_struct
- */
+\ref apop_data_rm_rows
+*/
 void apop_data_rm_columns(apop_data *d, int *drop){
     gsl_matrix *freeme = d->matrix;
     d->matrix = apop_matrix_rm_columns(d->matrix, drop);
@@ -696,10 +731,10 @@ columns into a list of strings, adds a \c NULL string at the end, and calls that
   \endcode
 
 \param d The data set to prune.
-\param colnames A null-terminated list of names to retain (i.e. the columns that shouldn't be pruned
-out). 
+\param colnames A NULL-terminated list of names to retain. 
 \return A pointer to the input data set, now pruned.
-  */
+\see apop_data_rm_columns
+*/
 apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     /* In types.h, you'll find an alias that takes the input, wraps it in the cruft that is
     C's compound literal syntax, and appends a final "" to the list of strings. Here, I
@@ -732,62 +767,10 @@ apop_data* apop_data_prune_columns_base(apop_data *d, char **colnames){
     return d;
 }
 
-/** \defgroup data_set_get Set/get/point to the data element at the given point
-  \{
-First, some examples:
-
-\code
-apop_data *d = apop_data_alloc(10, 10, 10);
-apop_name_add(d->names, "Zeroth row", 'r');
-apop_name_add(d->names, "Zeroth col", 'c');
-
-apop_data_set(d, 8, 0, 27);
-assert(apop_data_get(d, 8, .colname="Zeroth") == 27);
-double *x = apop_data_ptr(d, .col=7, .rowname="Zeroth");
-*x = 270;
-assert(apop_data_get(d, 0, 7) == 270);
-
-
-//apop_data set holding a scalar:
-apop_data *s = apop_data_alloc(1);
-apop_data_set(s, .val=12);
-assert(apop_data_get(s) == 12);
-
-//apop_data set holding a vector:
-apop_data *v = apop_data_alloc(12);
-for (int i=0; i< 12; i++) apop_data_set(s, i, .val=i*10);
-assert(apop_data_get(s,3) == 30);
-
-\endcode
-
-A call like <tt> apop_data_set(in, row, col, data)</tt> is much like the GSL's
- <tt>gsl_matrix_set(in->matrix, row, col, data)</tt>,
-but with some differences:
-
-\li The \ref apop_data set has names, so we can get/set elements using those names.
-\li The versions that take a column/row name use  \ref apop_name_find
-for the search; see notes there on the name matching rules.
-\li The \ref apop_data set has both matrix and vector elements.
-\li For those that take a column number, column -1 is the vector element. 
-\li For those that take a column name, I will search the vector last---if I don't find the name among the matrix columns, but the name matches the vector name, I return column -1.
-\li If you give me both a .row and a .rowname, I go with the name; similarly for .col and
-.colname.
-\li You can give me the name of a page, e.g.
-\code
-double AIC = apop_data_get(data, .rowname="AIC", .col=-1, .page="<Info>");
-\endcode
-
-\li The column (like all defaults) is zero unless stated otherwise, so <tt>apop_data_get(dataset, 1)</tt> gets item (1, 0) from the matrix element of \c dataset. As a do-what-I-mean exception, if there is no matrix element but there is a vector, then this form will get vector element 1. Relying on this DWIM exception is useful iff you can guarantee that a data set will have only a vector or a matrix but not both. Otherwise, be explicit: <tt>apop_data_get(dataset, 1, -1)</tt>.
-
-The \c _ptr functions return a pointer to the given cell. Those functions follow the lead of \c gsl_vector_ptr and \c gsl_matrix_ptr, and like those functions, return a pointer to the appropriate \c double.
-
-\li These functions use the \ref designated syntax for inputs.
-*/
-
 /** Get a pointer to an element of an \ref apop_data set. 
 
-\li If a \c NULL vector or matrix (as the case may be), stop (unless <tt>apop_opts.stop_on_warning='n'</tt>, then return \c NULL).
-\li If the row/column you requested is outside the bounds of the matrix (or the name isn't found), always return \c NULL.
+\li If a \c NULL vector or matrix (as the case may be), or the row/column you requested
+    is outside bounds, return \c NULL.
 \li See \ref data_set_get "the set/get page" for details. 
 
 \param data The data set. Must not be \c NULL.
@@ -840,12 +823,15 @@ apop_varad_head(double *, apop_data_ptr){
 
 /** Returns the data element at the given point.
  
-  In case of error (probably that you asked for a data point out of bounds), returns \c GSL_NAN.
- See \ref data_set_get "the set/get page" for details.
+In case of error (probably that you asked for a data point out of bounds), returns \c NAN.
+ See \ref data_set_get "the set/get page" for details and examples.
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
-\param col The column number of the desired element. -1 indicates the vector. If <tt>colname==NULL</tt>, default is zero.
+\param col The column number of the desired element. -1 indicates the vector. 
+If <tt>colname==NULL</tt>, default is zero if the <tt>->matrix</tt> element is not \c
+NULL and -1 if the <tt>->matrix</tt> element is \c NULL and the <tt>->vector</tt> element is not.
+
 \param rowname The row name of the desired element. If <tt>NULL</tt>, use the row number.
 \param colname The column name of the desired element. If <tt>NULL</tt>, use the column number.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
@@ -903,26 +889,17 @@ void apop_gsl_error_for_set(const char *reason, const char *file, int line, int 
 }
 
 /**  Set a data element.
+See \ref data_set_get "the set/get page" for details and examples. 
  
-  This function uses the \ref designated syntax, so with names you don't have to worry
-  about element ordering. But the ordering of elements may still be
-  noteworthy. For compatibility with older editions of Apophenia, the order is (row, col,
-  value, rowname, colname), so the following would all set row 3, column 8, of \c d to 5:
-  \code
-  apop_data_set(d, 3, 8, 5);
-  apop_data_set(d, .row = 3, .col=8, .val=5);
-  apop_data_set(d, .row = 3, .colname="Column 8", .val=5);
-//but:
-  apop_data_set(d, .row = 3, .colname="Column 8", 5);  //invalid---the value doesn't follow the colname.
-  \endcode
-
-  \return 0=OK, -1=error (couldn't find row/column name, or you asked for a location outside the vector/matrix bounds).
+  \return 0=OK, -1=error: couldn't find row/column name, or you asked for a location outside the vector/matrix bounds.
 
 \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
 C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread
 extension enabled.
 
- See \ref data_set_get "the set/get page" for details. 
+\li Set weights via <tt>gsl_vector_set(your_data->weights, row, val);</tt>.
+\li Set text elements via \ref apop_text_set.
+
 
 \param data The data set. Must not be \c NULL.
 \param row The row number of the desired element. If <tt>rowname==NULL</tt>, default is zero.
@@ -932,7 +909,8 @@ extension enabled.
 \param page The case-insensitive name of the page on which the element is found. If \c NULL, use first page.
 \param val The value to give the point.
 
-\return The value at the given location. */
+\li This function uses the \ref designated syntax for inputs.
+*/
 #ifdef APOP_NO_VARIADIC
 int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *colname, const char *rowname, const char *page){
 #else
@@ -974,68 +952,6 @@ apop_varad_head(int, apop_data_set){
     Unset_gsl_handler
     return error_for_set;
 }
-/** \} //End data_set_get group */
-
-/** Now that you've used \ref Apop_r to pull a row from an \ref apop_data set,
-  this function lets you write that row to another position in the same data set or a
-  different data set entirely.  
-
-  The set written to must have the same form as the original: 
-  \li a vector element has to be present if one existed in the original, 
-  \li same for the weights vector,
-  \li the matrix in the destination has to have as many columns as in the original, and
-  \li the text has to have a row long enough to hold the original
-  \li If the row to be written to already has a rowname, it is overwritten.
-        If <tt>d->names->rowct == row_number</tt> (all rows up to \c row_number have row names), then extend the list of row names by one to add the new name. Else, don't add the row name. 
-  \li Column names (of all types) aren't touched. Maybe use \c apop_data_copy or \c apop_name_copy if you need to copy these names.
-
-  If any of the source elements are \c NULL, I won't bother to check that element in the
-  destination.
-
-  \return 0=OK, -1=error (probably a source/destination size mismatch).
-
-  \li  The error codes for out-of-bounds errors are thread-safe iff you are have a
-  C11-compliant compiler (thanks to the \c _Thread_local keyword) or a version of GCC with the \c __thread extension enabled.
-*/
-int apop_data_set_row(apop_data * d, apop_data *row, int row_number){
-    Set_gsl_handler
-    if (row->vector){
-        Apop_assert_negone(d->vector, "You asked me to copy an apop_data row with a vector element to "
-                "an apop_data set with no vector.");
-        gsl_vector_set(d->vector, row_number, row->vector->data[0]);
-    }
-    if (row->matrix && row->matrix->size2 > 0){
-        Apop_assert_negone(d->matrix, "You asked me to copy an apop_data row with a matrix row to "
-                "an apop_data set with no matrix.");
-        gsl_vector_memcpy(Apop_rv(d, row_number), Apop_rv(row, 0));
-    }
-    if (row->textsize[1]){
-        Apop_assert_negone(d->textsize[1], "You asked me to copy an apop_data row with text to "
-                "an apop_data set with no text element.");
-        for (int i=0; i < row->textsize[1]; i++){
-            free(d->text[row_number][i]);
-            d->text[row_number][i]= 
-                row->text[0][i] == apop_nul_string
-                    ? apop_nul_string
-                    : strdup(row->text[0][i]);
-        }
-    }
-    if (row->weights){
-        Apop_assert_negone(d->weights, "You asked me to copy an apop_data row with a weight to "
-                "an apop_data set with no weights vector.");
-        gsl_vector_set(d->weights, row_number, row->weights->data[0]);
-    }
-    if (row->names && row->names->rowct && d->names){
-        if (row_number < d->names->rowct){
-            free(d->names->row[row_number]);
-            d->names->row[row_number]=strdup(row->names->row[0]);
-        } else if (row_number == d->names->rowct)
-            apop_name_add(d->names, row->names->row[0], 'r');
-    }
-    Unset_gsl_handler
-    return error_for_set;
-}
-
 
 /** A convenience function to add a named element to a data set.  Many of Apophenia's
 testing procedures use this to easily produce a column of named parameters. It is public
@@ -1059,6 +975,10 @@ apop_data_add_named_elmt(list, "height", 165);
 apop_data_add_named_elmt(list, "weight", 60);
 
 double height = apop_data_get(list, .rowname="height");
+
+//or
+#define Lookup(dataset, key) apop_data_get(dataset, .rowname=#key)
+height = Lookup(list, height);
 \endcode
 */
 void apop_data_add_named_elmt(apop_data *d, char *name, double val){
@@ -1085,35 +1005,34 @@ void apop_data_add_names_base(apop_data *d, const char type, char const ** names
 
 \param in   The \ref apop_data set, that already has an allocated \c text element.
 \param row  The row
-\param col  The col
+\param col  The column
 \param fmt The text to write.
 \param ... You can use a printf-style fmt and follow it with the usual variables to fill in.
 
 \return 0=OK, -1=error (probably out-of-bounds)
 
-\li UTF-8 or ASCII text is correctly handled.
-\li Apophenia follows a general rule of not reallocating behind your back: if your text
-matrix is currently of size (3,3) and you try to put an item in slot (4,4), then I display
-an error rather than reallocating the text matrix.
-\li Resizing a text matrix is annoying in C, so note that \ref apop_text_alloc will
-reallocate to a new size if you need. For example, this code will fill the diagonals of
-the text array with a message, resizing as it goes:
-\li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
-\li If there had been a string at the grid point you are writing to, 
-the old one is effectively lost when the new one is placed. So, I free
-the old string to prevent leaks if necessary. Remember this if you had other pointers aliasing that
-string, in which case you may as well avoid this function and just use <tt>
-asprintf(&(your_dataset->text[row][col]), "your string")</tt>.
+  \li UTF-8 or ASCII text is correctly handled.
+  \li Apophenia follows a general rule of not reallocating behind your back: if
+your text matrix is currently of size (3,3) and you try to put an item in slot (4,4),
+then I display an error rather than reallocating the text matrix.
+  \li The string added is a copy (via <tt>asprintf</tt>), not a pointer to the input(s).
+  \li If there had been a string at the grid point you are writing to,
+the old one is freed to prevent leaks. Remember this if you had other pointers aliasing
+that string.
+  \li If an element is \c NULL, write <tt>apop_opts.nan_string</tt> at that point. You
+may prefer to use <tt>""</tt> to express a blank.
+  \li \ref apop_text_alloc will reallocate to a new size if you need. For example,
+this code will fill the diagonals of the text array with a message, resizing as it goes:
 
 \code
 apop_data *list = (something already allocated.);
 for (int n=0; n < 10; n++){
     apop_text_alloc(list, n+1, n+1);
-    apop_text_add(list, n, n, "This is cell (%i, %i)", n, n);
+    apop_text_set(list, n, n, "This is cell (%i, %i)", n, n);
 }
 \endcode
 */
-int apop_text_add(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
+int apop_text_set(apop_data *in, const size_t row, const size_t col, const char *fmt, ...){
     Apop_stopif(!in, return -1, 0, "You asked me to write text to a NULL data set.");
     Apop_stopif((in->textsize[0] < (int)row+1) || (in->textsize[1] < (int)col+1), return -1, 0, "You asked me to put the text "
                             " '%s' at position (%zu, %zu), but the text array has size (%zu, %zu)\n", 
@@ -1130,7 +1049,7 @@ int apop_text_add(apop_data *in, const size_t row, const size_t col, const char 
     return 0;
 }
 
-/** This allocates an array of strings and puts it in the \c text element of an \ref apop_data set. 
+/** This allocates or resizes the \c text element of an \ref apop_data set. 
 
   If the \c text element already exists, then this is effectively a \c realloc function,
   reshaping to the size you specify.
@@ -1210,24 +1129,25 @@ also \ref apop_vector_to_matrix, which can convert a vector to a 1 X N matrix.) 
 copying, these other elements won't be present; if <tt>.inplace='y'</tt>, it is up to you to
 handle these not-transposed elements correctly.
 
-\param in The input \ref apop_data set. If \c NULL, I return \c NULL. Default is \c NULL.
-\param transpose_text If \c 'y', then also transpose the text element. Default is \c 'y'.
+\param in The input \ref apop_data set. If \c NULL, I return \c NULL. (default: \c NULL)
+\param transpose_text If \c 'y', then also transpose the text element. (default: \c 'y')
 \param inplace If \c 'y', transpose the input in place; if \c 'n', produce a transposed
 copy, leaving the original untouched. Due to how <tt>gsl_matrix_transpose_memcpy</tt>
-works, a copy will still be made, then copied to the original location.  Default is \c 'y'.
-\return  If <tt>inplace=='n'</tt>, a newly alloced \ref apop_data set, with the appropriately transposed
-matrix and/or text. The vector and weights elements will be \c NULL. If
-<tt>transpose_text='n'</tt>, then the text element of the output set will also be \c NULL.<br>
-if <tt>inplace=='y'</tt>, a pointer to the original data set, with matrix and (if <tt>transpose_text='y'</tt>)
-text transposed and vector and weights left in place untouched.
+works, a copy will still be made, then copied to the original location.  (default: \c 'y')
+
+\return  If <tt>inplace=='n'</tt>, a newly alloced \ref apop_data set, with the
+appropriately transposed matrix and/or text. The vector and weights elements will be
+\c NULL. If <tt>transpose_text='n'</tt>, then the text element of the output set will
+also be \c NULL.<br> if <tt>inplace=='y'</tt>, a pointer to the original data set,
+with matrix and (if <tt>transpose_text='y'</tt>, text) transposed and vector and weights
+left in place untouched.
 
 \li Row names are written to column names of the output matrix, text, or both (whichever is not empty in the input).
 \li If only the matrix or only the text have names, then the one set of names is written to the row names of the output.
 \li If both matrix column names and text column names are present, text column names are lost.
 \li if you have a \c gsl_matrix with no names or text, you may prefer to use \c gsl_matrix_transpose_memcpy.
-
 \li This function uses the \ref designated syntax for inputs.
- */ 
+*/ 
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_transpose(apop_data *in, char transpose_text, char inplace){
 #else
@@ -1314,7 +1234,7 @@ apop_varad_head(apop_data *, apop_data_transpose){
             for (int c=0; c< in->textsize[1]; c++)
                 if (in->text[r][c] == apop_nul_string)
                      apop_text_blank(out, c, r);
-                else apop_text_add(out, c, r, in->text[r][c]);
+                else apop_text_set(out, c, r, in->text[r][c]);
     }
     if (in->names && in->names->textct && !in->names->colct)
         apop_name_stack(out->names, in->names, 't', 'r');
@@ -1325,9 +1245,12 @@ apop_varad_head(apop_data *, apop_data_transpose){
 
 Data in the matrix will be retained. If the new height or width is smaller than the old, then data in the later rows/columns will be cropped away (in a non--memory-leaking manner). If the new height or width is larger than the old, then new cells will be filled with garbage; it is your responsibility to zero out or otherwise fill new rows/columns before use.
 
-<b>Warning I</b>: Using this function is basically bad form---especially when used in a <tt>for</tt> loop that adds a column each time. A large number of <tt>realloc</tt>s can take a noticeable amount of time. You are thus encouraged to make an effort to determine the size of your data beforehand.
-
-<b>Warning II</b>: The <tt>gsl_matrix</tt> is a versatile struct that can represent submatrices and other cuts from parent data. I can't deal with those, and check for such situations beforehand. [Besides, resizing a portion of a parent matrix makes no sense.]
+  \li A large number of <tt>realloc</tt>s can take a noticeable amount of time. You
+are encouraged to determine the size of your data beforehand and avoid writing \c for
+loops that reallocate the matrix at every iteration.
+  \li The <tt>gsl_matrix</tt> is a versatile struct that can represent submatrices and
+other cuts from parent data. Resizing a subset of a parent matrix makes no sense,
+so return \c NULL and print a warning if asked to resize a view of a matrix.
 
 \param m The already-allocated matrix to resize.  If you give me \c NULL, this becomes equivalent to \c gsl_matrix_alloc
 \param newheight, newwidth The height and width you'd like the matrix to be.
@@ -1371,16 +1294,13 @@ cropped away (in a non--memory-leaking manner). If the new height is larger than
 then new cells will be filled with garbage; it is your responsibility
 to zero out or otherwise fill them before use.
 
-<b>Warning I</b>: Using this function is basically bad form---especially
-when used in a <tt>for</tt> loop that adds an element each time. A large
-number of <tt>realloc</tt>s can take a noticeable amount of time. You are
-thus encouraged to make an effort to determine the size of your data
-beforehand.
-
-<b>Warning II</b>: The <tt>gsl_vector</tt> is a versatile struct that
-can represent subvectors, matrix columns and other cuts from parent data. I can't
-deal with those, and check for such situations beforehand. [Besides,
-resizing a portion of a parent matrix makes no sense.]
+  \li A large number of <tt>realloc</tt>s can take a noticeable amount of time. You
+are thus encouraged to make an effort to determine the size of your data and do one
+allocation, rather than writing \c for loops that resize a vector at every increment.
+  \li The <tt>gsl_vector</tt> is a versatile struct that
+can represent subvectors, matrix columns and other cuts from parent data. 
+Resizing a portion of a parent matrix makes no sense, so
+return \c NULL and print an error if asked to resize a view.
 
 \param v The already-allocated vector to resize.  If you give me \c NULL, this is equivalent to \c gsl_vector_alloc
 \param newheight The height you'd like the vector to be.
@@ -1404,7 +1324,7 @@ gsl_vector * apop_vector_realloc(gsl_vector *v, size_t newheight){
   \param data The \ref apop_data set to use. No default; if \c NULL,
       gives a warning if <tt>apop_opts.verbose >=1</tt> and returns \c NULL.
 
-  \param title The name of the page to retrieve. Default=\c "Info", which
+  \param title The name of the page to retrieve. Default=\c "<Info>", which
       is the name of the page of additional estimation information returned
       by estimation routines (log likelihood, status, AIC, BIC, confidence intervals, ...).
       
@@ -1420,7 +1340,7 @@ apop_data * apop_data_get_page(const apop_data * data, const char *title, const 
 apop_varad_head(apop_data *, apop_data_get_page){
     const apop_data * apop_varad_var(data, NULL);
     Apop_stopif(!data, return NULL, 1, "You requested a page from a NULL data set. Returning NULL");
-    const char * apop_varad_var(title, "Info");
+    const char * apop_varad_var(title, "<Info>");
     const char apop_varad_var(match, 'c');
     Apop_stopif(match!='r' && match!='e' && match!='c', return NULL, 0,
                 "match type needs to be 'r', 'e', or 'c'; you supplied %c.", match);
@@ -1438,33 +1358,15 @@ apop_varad_head(apop_data *, apop_data_get_page){
     return (apop_data *) data; //de-const.
 }
 
-/** Add a page to a \ref apop_data set. It gets a name so you can find it later.
+/** Add a page to an \ref apop_data set. It gets a name so you can find it later.
 
   \param dataset The input data set, to which a page will be added.
   \param newpage The page to append
-  \param title The name of the new page. Remember, this is truncated at 100 characters.
+  \param title The name of the new page.
 
   \return The new page.  I post a warning if I am appending or appending to a \c NULL data set and  <tt>apop_opts.verbose >=1 </tt>.
 
-  \li Some data is fundamentally multi-page; an optimization search over multi-page
-  parameters would search the space given by all pages, for example. 
-  Also, pages may be appended as output or auxiliary information, such as covariances---an
-  MLE would not search over these elements. Generally, any page with a name in XML-ish
-  brackets, such as <tt>\<Covariance\></tt>, will be considered informational and ignored
-  by search routines, missing data routines, et cetera. This is achieved by a rule in \ref
-  apop_data_pack and \ref apop_data_unpack.
-
-  Here is a toy example that establishes a baseline data set, adds a page,
-  modifies it, and then later retrieves it.
-  \code
-  apop_data *d = apop_data_alloc(10, 10, 10); //the base data set.
-  apop_data *a_new_page = apop_data_add_page(d, apop_data_alloc(2,2), "new 2 x 2 page");
-  gsl_vector_set_all(a_new_page->matrix, 3);
-
-  //later:
-  apop_data *retrieved = apop_data_get_page(d, "new", 'r'); //use regexes, not literal match.
-  apop_data_show(retrieved); //print a 2x2 grid of 3s.
-  \endcode
+  \li See \ref pps for further notes.
 */
 apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const char *title){
     Apop_stopif(!newpage, return NULL, 1, "You are adding a NULL page to a data set. Doing nothing; returning NULL.");
@@ -1482,11 +1384,13 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
 
 /** Remove the first page from an \ref apop_data set that matches a given name.
 
-  \param data The input data set, to which a page will be added. No default. If \c NULL, I return silently if <tt> apop_opts.verbose < 1 </tt>; print an error otherwise.
-  \param title The case-insensitive name of the page to remove. Default: \c "Info"
-  \param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+\param data The input data set, from which a page will be removed. No default. 
+If \c NULL, maybe print a warning (see below).
 
-  \return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
+\param title The case-insensitive name of the page to remove. Default: \c "<Info>"
+\param free_p If \c 'y', then \ref apop_data_free the page. Default: \c 'y'.
+
+\return If not freed, a pointer to the \c apop_data page that I just pulled out. Thus,
   you can use this to pull a single page from a data set. I set that page's \c more
   pointer to \c NULL, to minimize any confusion about more-than-linear linked list
   topologies. If <tt>free_p=='y'</tt> (the default) or the page is not found, return \c NULL.
@@ -1496,17 +1400,23 @@ apop_data * apop_data_add_page(apop_data * dataset, apop_data *newpage, const ch
   set is not to fully implement a linked list, but primarily to allow you to staple auxiliary
   information to a main data set.
 
-  \li If I don't find the page you want, I return NULL, and print a message if
-  <tt>apop_opts.verbose >= 1</tt>.
+  \li If I don't find the page you want, I return NULL, and maybe print a warning; see below.
+
+  \li For the two above cases where a warning may be printed, if the page is to be
+      returned and <tt> apop_opts.verbose >= 1 </tt>, print a warning.
+    If the page is to be freed and <tt> apop_opts.verbose >= 2 </tt>, print a warning.
+
+  \li The remaining \c more pointers in the \ref apop_data set are adjusted accordingly.
 */
 #ifdef APOP_NO_VARIADIC
 apop_data* apop_data_rm_page(apop_data * data, const char *title, const char free_p){
 #else
 apop_varad_head(apop_data*, apop_data_rm_page){
-    apop_data *apop_varad_var(data, NULL);
-    Apop_stopif(!data, return NULL, 1, "You are removing a page from a NULL a data set. Doing nothing.");
-    const char *apop_varad_var(title, "Info");
+    const char *apop_varad_var(title, "<Info>");
     const char apop_varad_var(free_p, 'y');
+    apop_data *apop_varad_var(data, NULL);
+    Apop_stopif(!data, return NULL, (free_p=='y'? 2: 1), "You are removing a "
+                               "page from a NULL a data set. Doing nothing.");
     return apop_data_rm_page_base(data, title, free_p);
 }
 
@@ -1514,7 +1424,8 @@ apop_varad_head(apop_data*, apop_data_rm_page){
 #endif
     while (data->more && strcasecmp(data->more->names->title, title))
         data = data->more;
-    Apop_stopif(!data->more, return NULL, 1, "You asked me to remove '%s' but I couldn't find a page matching that.", title);
+    Apop_stopif(!data->more, return NULL, (free_p=='y'?2:1), "You asked me to "
+                "remove '%s' but I couldn't find a page matching that.", title);
     if (data->more){
         apop_data *tmp = data->more;
         data->more = data->more->more;
@@ -1530,31 +1441,42 @@ apop_varad_head(apop_data*, apop_data_rm_page){
 typedef int (*apop_fn_ir)(apop_data*, void*);
 
 /** Remove the rows set to one in the \c drop vector or for which the \c do_drop function returns one.  
-  \param in the \ref apop_data structure to be pared down
-  \param drop  a vector with as many elements as the max of the vector, matrix, or text
-  parts of \c in, with a one marking those columns to be removed.       \ingroup names
-  \param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
+\param in the \ref apop_data structure to be pared down
+\param drop  a vector with as many elements as the max of the vector, matrix, or text
+  parts of \c in, with a one marking those rows to be removed.
+\param do_drop A function that returns one for rows to drop and zero for rows to not drop. A sample function:
   \code
   int your_drop_function(apop_data *onerow, void *extra_param){
-    return gsl_isnan(apop_data_get(onerow)) || !strcmp(onerow->text[0][0], "Uninteresting data point");
+    return gsl_isnan(apop_data_get(onerow)) ||
+                !strcmp(onerow->text[0][0], "Uninteresting data point");
   }
   \endcode
-  \ref apop_data_rm_rows uses \ref Apop_r to get a subview of the input data set of height one (and since all the default arguments default to zero, you don't have to write out things like \ref apop_data_get <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
-  \param drop_parameter If your \c do_drop function requires additional input, put it here and it will be passed through.
+  \ref apop_data_rm_rows will use \ref Apop_r to get a subview of the input data set
+  of height one, and send that subview to this function (and since arguments typically
+  default to zero, you don't have to write out things like \ref apop_data_get
+  <tt>(onerow, .row=0, .col=0)</tt>, which can help to keep things readable).
+\param drop_parameter If your \c do_drop function requires additional input, put it here
+  and it will be passed through.
 
 \return Returns a pointer to the input data set, now pruned.
 
-  \li If all the rows are to be removed, then you will wind up with the same \ref apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore, you may wish to check for \c NULL elements after use. I remove rownames, but leave the other names, in case you want to add new data rows.
-
- \li The typical use is to provide only a list or only a function. If both are \c NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose >=1</tt>. If you provide both, I will drop the row if either the vector has a one in that row's position, or if the function returns a nonzero value.
- \li This function uses the \ref designated syntax for inputs.
+\li If all the rows are to be removed, then you will wind up with the same \ref
+    apop_data set, with \c NULL \c vector, \c matrix, \c weight, and text. Therefore,
+    you may wish to check for \c NULL elements after use. I remove rownames, but leave
+    the other names, in case you want to add new data rows.
+\li The typical use is to provide only a list or only a function. If both are \c
+    NULL, I return without doing anything, and print a warning if <tt>apop_opts.verbose
+    >=2</tt>. If you provide both, I will drop the row if either the vector has a one in
+    that row's position, or if the function returns a nonzero value.
+\li This function uses the \ref designated syntax for inputs.
+\see \ref apop_data_listwise_delete, \ref apop_data_rm_columns
 */  
 #ifdef APOP_NO_VARIADIC
 apop_data* apop_data_rm_rows(apop_data *in, int *drop, apop_fn_ir do_drop, void *drop_parameter ){
 #else
 apop_varad_head(apop_data*, apop_data_rm_rows){
     apop_data* apop_varad_var(in, NULL);
-    Apop_stopif(!in, return in, 1, "Input data set was NULL; no changes made.");
+    Apop_stopif(!in, return in, 2, "Input data set was NULL; no changes made.");
     int* apop_varad_var(drop, NULL);
     apop_fn_ir apop_varad_var(do_drop, NULL);
     void* apop_varad_var(drop_parameter, NULL);
@@ -1576,8 +1498,8 @@ apop_varad_head(apop_data*, apop_data_rm_rows){
             drop_row = do_drop(Apop_r(in, i), drop_parameter);
         }
         if (!drop_row){
-            if (outlength == i) outlength++;
-            else                apop_data_set_row(in, Apop_r(in, i), outlength++);
+            if (outlength != i) apop_data_memcpy(Apop_r(in, outlength), Apop_r(in, i));
+            outlength++;
         }
     }
     if (!outlength){

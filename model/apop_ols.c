@@ -1,51 +1,44 @@
 /* OLS models. Much of the real work is done in apop_regression.c.
 Copyright (c) 2005--2007, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
-\amodel apop_wls The Weighed Least Squares model
-This is a (deprecated) synonym for \ref apop_ols, qv.  If you use the \ref apop_ols
-model and provide weights in \c your_input_data->weights, then I will use them
+\amodel apop_ols Ordinary least squares. Weighted least squares is also handled by this model.
+
+\adoc    Input_format   See the notes on the prep routine.
+
+If you provide weights in \c your_input_data->weights, then I will use them
 appropriately. That is, the \ref apop_ols model really implements Weighted Least Squares,
 but in most cases <tt>weights==NULL</tt> and the math reduces to the special case of
 Ordinary Least Squares.
 
-\amodel apop_ols Ordinary least squares. Weighted least squares is also handled by this model.
-You can also use it for a lot of not-entirely linear models based on the form \f$Y = f(x_1) + f(x_2) + ... + \epsilon\f$.
+\adoc    Parameter_format  A vector of OLS coefficients. Coefficient zero
+                refers to the constant column, if any. 
+                The \c vector of the output will therefore be of size <tt>data->size2</tt>.
 
-\adoc    Input_format  See \ref dataprep.
-\adoc    Parameter_format  A vector of OLS coefficients. coeff. zero
-                         refers to the constant column, if any. 
+The estimation routine appends a page named <tt>\<Covariance\></tt>, giving the covariance matrix for the
+estimated parameters (not the data itself).
+
+
 \adoc    estimated_parameter_model  For the mean, a noncentral \f$t\f$ distribution (\ref apop_t_distribution).
-\adoc    Prep_routine      Focuses on the data shunting. 
+\adoc    Prep_routine      
+If your input data has no \c vector element, then column zero of the matrix is taken
+to be the dependent variable. This routine moves the dependent variable to the \c vector, and replaces
+column zero with a column of all ones, indicating a constant term. This is the norm
+for OLS, and is probably what you want. The easiest way to generate data for this sort
+of process is via a query like <tt>apop_query_to_matrix("select depvar, independent_var1,
+independent_var2 from dataset")</tt>.
+
+If your data has a \c vector element, then the prep routines won't try to force something
+to be there. That is, nothing will be moved, and no constant column generated. If
+you don't want to use a constant column, or your data has already been prepped by an
+estimation, then this is what you want. See \ref apop_query_to_mixed_data for an easy
+way to generate a data set like this via queries.
+
 
 \adoc    settings  \ref apop_lm_settings 
-\adoc    Examples
-First, you will need a file named <tt>data</tt> in comma-separated form. The first column is the dependent variable; the remaining columns are the independent. For example:
-\code
-Y, X_1, X_2, X_3
-2,3,4,5
-1,2,9,3
-4,7,9,0
-2,4,8,16
-1,4,2,9
-9,8,7,6
-\endcode
+\adoc    Examples \ref gentle opens with a sample program using OLS. For quick reference,
+here is the program, but see that page for a full discussion.
 
-The program:
 \include ols.c
-
-If you saved this code to <tt>sample.c</tt>, then you can compile it with
-\code
-gcc sample.c -std=gnu99 -lapophenia -lgsl -lgslcblas -lsqlite3 -o run_me
-\endcode
-
-and then run it with <tt>./run_me</tt>. Alternatively, you may prefer to compile the program using a \ref makefile .
-
-Feeling lazy? The program above was good form and demonstrated useful features, but the code below will do the same thing in two lines:
-
-\code
-#include <apop.h>
-int main(){ apop_model_show(apop_estimate(apop_text_to_data("data"), apop_ols)); }
-\endcode
 */
 
 #include "apop_internal.h"
@@ -116,6 +109,7 @@ static void ols_prep(apop_data *d, apop_model *m){
     apop_parameter_model_vtable_add(ols_param_models, apop_ols);
     apop_predict_vtable_add(ols_predict, apop_ols);
     apop_model_print_vtable_add(ols_print, apop_ols);
+    if (m->data && m->info) return; //already prepped; re-prep must be a no-op
     Apop_stopif(!d || (!d->vector && !d->matrix), m->error='d'; return, 0, "No data for regression.");
     ols_shuffle(d);
     void *mpt = m->prep; //also use the defaults.
@@ -237,7 +231,7 @@ OLS, we know that \f$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)\f$, because this 
 an assumption about the error process, but we don't know much of anything about the
 distribution of \f$X\f$.
 
-The \ref apop_lm_settings group includes an \ref apop_model* element named \c
+The \ref apop_lm_settings group includes an \ref apop_model element named \c
 input_distribution. This is the distribution of the independent/predictor/X columns
 of the data set.
 
@@ -251,8 +245,8 @@ log likelihoods under the typical assumption that the observed data has probabil
 <em>But</em> you can't draw from an improper uniform. So if you draw from a linear
 model with a default <tt>input_distribution</tt>, then you'll get an error.
 
-Alternatively, you may know something about the distribution of the input data. At
-     the least, you could generate a PMF from the actual data:
+Alternatively, you may know something about the distribution of the input data.
+     For example, the data model may simply be a PMF from the actual data:
      \code
     apop_settings_set(your_model, apop_lm, input_distribution, apop_estimate(inset, apop_pmf));
      \endcode
@@ -278,25 +272,16 @@ static int ols_rng(double *out, gsl_rng *r, apop_model *m){
     return 0;
 }
 
-/* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. If so, see \ref dataprep for details. Else, left unchanged.
-
-\adoc estimated_parameters
-The \c parameters set will hold the coefficients; the first coefficient will be the
-coefficient on the constant term, and the remaining will correspond to the independent
-variables. It will therefore be of size <tt>(data->size2)</tt>.
-
-I add a page named <tt>\<Covariance\></tt>, which gives the covariance matrix for the
-estimated parameters (not the data itself).
+/* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. Else, left unchanged.
 
 \adoc estimated_info Reports log likelihood, and runs \ref apop_estimate_coefficient_of_determination 
 to add \f$R^2\f$-type information (SSE, SSR, \&c) to the info page.
 
-Residuals: I add a page named <tt>\<Predicted\></tt>, with three columns. If this is a model
-with a single dependent and lots of independent vars, then the first column is the
-actual data. Let our model be \f$ Y = \beta X + \epsilon\f$. Then the second column
-is the predicted values: \f$\beta X\f$, and the third column is the residuals:
-\f$\epsilon\f$. The third column is therefore always the first minus the second,
-and this is probably how that column was calculated internally.
+Residuals: I add a page named <tt>\<Predicted\></tt>, with three columns. 
+The first column is the dependent variable from the input data. Let our model
+be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values:
+\f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column
+is therefore always the first minus the second.
 
 Given your estimate \c est, the zeroth element is one of <br> 
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="observed"),</tt><br>
@@ -353,7 +338,7 @@ static void apop_estimate_OLS(apop_data *inset, apop_model *ep){
 
 /* \adoc predict This function is limited to taking in a data set with a matrix, and
 filling the vector with \f$X\beta\f$. Like, the OLS estimation will shuffle a matrix around
-to insert a column of ones (see \ref dataprep).
+to insert a column of ones (see the discussion on the \ref apop_ols prep routine).
  */
 apop_data *ols_predict(apop_data *in, apop_model *m){
     Nullcheck_mpd(in, m, NULL);
@@ -397,24 +382,27 @@ apop_model *apop_ols = &(apop_model){.name="Ordinary Least Squares", .vsize = -1
 
 Operates much like the \ref apop_ols model, but the input parameters also need to have
 a table of substitutions (like the addition of the <tt>.instruments</tt> setting in
-the example below). The vector element of the table lists the column numbers to be
-substituted (the dependent var is zero; first independent col is one), and then one
-column for each item to substitute.
+the example below).
 
-\li If the vector of the instrument \ref apop_data set is \c NULL, then I will use
-the column names to find the columns to substitute. This is generally more robust
-and/or convenient.
+Which columns substitute where can be specified in your choice of two ways. The first
+is to use the vector element of the \ref apop_data set to list the column numbers
+to be substituted (the dependent variable is zero; first independent column is one),
+and then one column for each item to substitute.
 
-\li If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+The second method, if the vector of the instrument \ref apop_data set is \c NULL, is to
+use the column names to find the matching columns in the base data to substitute. This
+is generally more robust and/or convenient.
 
-\li Don't forget that the \ref apop_lm_settings group has a \c destroy_data setting. If
+\li If the \c instruments data set is \c NULL or empty, I'll just run OLS. 
+
+\li The \ref apop_lm_settings group has a \c destroy_data setting. If
 you set that to \c 'y', I will overwrite the column in place, saving the trouble of
 copying the entire data set.
 
-\adoc    Input_format  See \ref apop_ols; see \ref dataprep. 
+\adoc    Input_format  See the discussion on the \ref apop_ols page regarding its prep routine. See above regarding the <tt>.instruments</tt> elment of the attached \ref apop_lm_settings group.
 \adoc    Parameter_format  As per \ref apop_ols 
 \adoc    Estimate_results  As per \ref apop_ols 
-\adoc    Prep_routine  Focuses on the data shunting. 
+\adoc    Prep_routine  See the discussion on the \ref apop_ols page regarding its prep routine.
 \adoc    settings  \ref apop_lm_settings 
 \adoc Examples 
 \include  iv.c

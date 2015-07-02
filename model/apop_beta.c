@@ -1,15 +1,15 @@
 /* \file apop_beta.c  The Beta distribution 
 Copyright (c) 2006--2007, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
-\amodel apop_beta The Beta distribution.
+\amodel apop_beta
 
-The beta distribution has two parameters and is restricted between zero and one. You
+The beta distribution has two parameters and is restricted to data between zero and one. You
 may also find \ref apop_beta_from_mean_var to be useful.
 
 \adoc    Input_format  Any arrangement of scalar values. 
-\adoc    Parameter_format   a vector, v[0]=\f$\alpha\f$; v[1]=\f$\beta\f$    
+\adoc    Parameter_format   A vector, v[0]=\f$\alpha\f$; v[1]=\f$\beta\f$    
 \adoc    RNG  Produces a scalar \f$\in[0,1]\f$. 
-\adoc    settings None.  */
+*/
 
 #include "apop_internal.h"
 
@@ -18,7 +18,6 @@ static long double beta_log_likelihood(apop_data *d, apop_model *p);
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void beta_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     Get_vmsizes(data) //vsize, msize1,...
     double		mmean=0, mvar=0, vmean=0, vvar=0, alpha, beta;
     if (vsize){
@@ -38,9 +37,11 @@ static void beta_estimate(apop_data * data,  apop_model *est){
     //apop_numerical_covariance_matrix(apop_beta, est, data);
 }
 
+/** \cond doxy_ignore */
 typedef struct{
     double alpha, beta; 
 } ab_type;
+/** \endcond */ //End of Doxygen ignore.
 
 static double betamap(double x, void *abin) {
     ab_type *ab = abin; 

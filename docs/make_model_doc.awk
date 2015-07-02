@@ -15,7 +15,7 @@
 # 
 # \adoc    Input_format  Any arrangement of scalar values. 
 # \adoc    Parameter_format   a vector, v[0]=\f$\alpha\f$; v[1]=\f$\beta\f$    
-# \adoc    settings None. 
+# \adoc    Settings None. 
 # */
 # [...]
 # /* \adoc Name  <tt>Beta distribution</tt>  */
@@ -97,7 +97,7 @@ in_doc==1 && !/\\a[model|doc]/ {
 
 
 #the declaration [like apop_model new_model = {"new model", .p=prob, .score=deriv}; ] tells us which struct elements are actually used.
-/apop_model[ \t]*[^ \t]*[ \t]*=/ { in_decl=1 }
+/apop_model[ \t]*[^ \t]*[ \t]*=.*{/ { in_decl=1 }
 
 in_decl == 1 { cp = $0;
     if (match(cp, "\"([^\"]*)\"")){
@@ -132,7 +132,7 @@ function onedot(name, isdefault){
     print "</tr>"
 }
 
-END {print "/** \\file */ /**\\defgroup models */"
+END {print "/** \\file */  /**\\defgroup models */"
     model_no=0
     for (m in models){
         model_no++
@@ -142,7 +142,7 @@ END {print "/** \\file */ /**\\defgroup models */"
             print items[m ":intro"]
         else
             print "!!! Without an intro, " m " won't print\n" >> "/dev/stderr"
-        print " \\hideinitializer \\ingroup models */"
+        print " \\hideinitializer  \\ingroup models */"
         print "enum " m " {"
 
 #apop_model apop_normal = {"Normal distribution", 2, 0, 0, .dsize=1, 
@@ -152,51 +152,53 @@ END {print "/** \\file */ /**\\defgroup models */"
 # .cdf = normal_cdf, .predict = normal_predict}; 
 
             #dot = "<td class=\"memitem\" >\\f$\\bullet\\f$</td>"
-            print "model_specific_x" model_no "x_, /**< <table cellpadding=3px><tr><td><table class=\"memproto\">"
-
-            onedot("Estimation", items[m ":hasestimate"])
-            onedot("Prob.", items[m ":hasp"])
-            onedot("Log likelihood", items[m ":haslog_likelihood"])
-            onedot("RNG", items[m ":hasdraw"])
-
-            print "</table></td><td><table class=\"memproto\">"
-
-            onedot("Predict", items[m ":haspredict"])
-            onedot("CDF", items[m ":hascdf"])
-            onedot("Score", items[m ":hasscore"])
-            onedot("Prep routine", items[m ":hasprep"])
-
-            print "</table> </td></tr></table>*/"
+#            print "model_specific_x" model_no "x_, /**< <table cellpadding=3px><tr><td><table class=\"memproto\">"
+#
+#            onedot("Estimation", items[m ":hasestimate"])
+#            onedot("Prob.", items[m ":hasp"])
+#            onedot("Log likelihood", items[m ":haslog_likelihood"])
+#            onedot("RNG", items[m ":hasdraw"])
+#
+#            print "</table></td><td><table class=\"memproto\">"
+#
+#            onedot("Predict", items[m ":haspredict"])
+#            onedot("CDF", items[m ":hascdf"])
+#            onedot("Score", items[m ":hasscore"])
+#            onedot("Prep routine", items[m ":hasprep"])
+#
+#            print "</table> </td></tr></table>*/"
         for (i=1; i<=doc_part_count;i++){
             part=doc_parts[i]
             #print "processing", m, part, "\n" >> "/dev/stderr"
             if (doc_parts[i]=="Estimate_results"){
-                print part "_x" model_no "x_, /**< <table>"
-                print "<tr><td style=\"vertical-align:top\"><tt>data</tt></td><td style=\"vertical-align:top\">"
+                print "postestimate_data_x" model_no "x_, /**< "
                 if (items[m ":estimated_data"])
                     print items[m ":estimated_data"] 
                 else
                     print "Unchanged."
-                print "</td></tr>"
-                print "<tr><td style=\"vertical-align:top\"><tt>parameters</tt></td><td style=\"vertical-align:top\">"
-                if (items[m ":estimated_parameters"])
+                print "*/"
+
+                if (items[m ":estimated_parameters"]){
+                    print "postestimate_parameters_x" model_no "x_, /**< "
                     print items[m ":estimated_parameters"] 
-                else
-                    print "See parameter format."
-                print "</td></tr>"
+                    print "*/"
+                }
+
                 if (items[m ":estimated_parameter_model"]){
-                    print "<tr><td style=\"vertical-align:top\"><tt>parameter models</tt></td><td style=\"vertical-align:top\">"
+                    print "postestimate_parameter_model_x" model_no "x_, /**< "
                     print items[m ":estimated_parameter_model"] "</td></tr>"
+                    print "*/"
                 }
                 if (items[m ":estimated_info"]){
-                    print "<tr><td style=\"vertical-align:top\"><tt>info</tt></td><td style=\"vertical-align:top\">"
+                    print "postestimate_info_x" model_no "x_, /**< "
                     print items[m ":estimated_info"] "</td></tr>"
+                    print "*/"
                 }
                 if (items[m ":estimated_settings"]){
-                    print "<tr><td style=\"vertical-align:top\">settings</td><td style=\"vertical-align:top\">"
+                    print "postestimate_settings_" model_no "x_, /**< "
                     print items[m ":estimated_settings"] "</td></tr>"
+                    print "*/"
                 }
-                print "</table> */"
             }
             else if (items[m ":" part]) print part "_x" model_no "x_, /**< " items[m ":" part] "*/"
             else print m, part >> "missing_model_parts"  #not at the moment important.

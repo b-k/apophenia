@@ -8,15 +8,18 @@ EXTRA_TESTS = distribution_tests \
 	$(top_builddir)/eg/cross_models \
 	$(top_builddir)/eg/dconstrain \
 	$(top_builddir)/eg/entropy_model \
+	$(top_builddir)/eg/f_test \
 	$(top_builddir)/eg/fix_params \
 	$(top_builddir)/eg/hills2 \
+	$(top_builddir)/eg/jack \
 	$(top_builddir)/eg/jacobian \
 	$(top_builddir)/eg/ml_imputation \
 	$(top_builddir)/eg/pmf_test \
 	$(top_builddir)/eg/some_cdfs \
 	$(top_builddir)/eg/test_kl_divergence \
 	$(top_builddir)/eg/test_ranks \
-	$(top_builddir)/eg/test_updating 
+	$(top_builddir)/eg/test_updating \
+	$(top_builddir)/eg/transform
 else
 	EXTRA_TESTS =
 endif
@@ -24,11 +27,14 @@ endif
 check_PROGRAMS= \
 	db_tests \
 	error_test \
+	factors \
 	nist_tests \
 	sort_example \
 	test_apop \
 	$(top_builddir)/eg/apop_map_row \
 	$(top_builddir)/eg/binning \
+	$(top_builddir)/eg/boot_clt \
+	$(top_builddir)/eg/data_fill \
 	$(top_builddir)/eg/draw_to_db \
 	$(top_builddir)/eg/db_fns \
 	$(top_builddir)/eg/dot_products \
@@ -36,9 +42,13 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/fake_logit \
 	$(top_builddir)/eg/iv \
 	$(top_builddir)/eg/ks_tests \
-	$(top_builddir)/eg/normalizations \
+	$(top_builddir)/eg/logit \
+	$(top_builddir)/eg/normalization_demo \
+	$(top_builddir)/eg/ols \
+	$(top_builddir)/eg/ols_oneliner \
 	$(top_builddir)/eg/parameterization \
 	$(top_builddir)/eg/simple_subsets \
+	$(top_builddir)/eg/t_test_by_rows \
 	$(top_builddir)/eg/test_distances \
 	$(top_builddir)/eg/test_fisher \
 	$(top_builddir)/eg/test_harmonic \

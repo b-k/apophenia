@@ -3,9 +3,6 @@
 /*
 \amodel apop_mixture The mixture model transformation: a linear combination of multiple models.  
 
-Generated via \ref apop_model_mixture.
-
-Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
 Use \ref apop_model_mixture to produce one of these models. In the examples below, some are generated from unparameterized input models with a form like 
 
@@ -26,15 +23,14 @@ Apop_settings_add(r_ed, apop_mixture, weights, wts->vector);
 printf("LL=%g\n", apop_log_likelihood(dd, r_ed));
 \endcode
 
-Notice that the weights vector has to be added after the model is set up. If none is given, then equal weights are assigned to all components of the mixture.
-
+Notice that the weights vector has to be added after the call to \ref apop_model_mixture. If none is given, then equal weights are assigned to all components of the mixture.
 
 One can think of the estimation as a missing-data problem: each data point originated
 in one distribution or the other, and if we knew with certainty which data point
 came from which distribution, then the estimation problem would be trivial:
 just generate the subsets and call <tt>apop_estimate(dataset1, model1)</tt>, ...,
 <tt>apop_estimate(datasetn, modeln)</tt> separately.  But the assignment of which
-element goes where is unknown information, which we guess at using an E-M algorithm. The
+element goes where is unknown information, which we guess at using an expectation-maximization algorithm. The
 standard algorithm starts with an initial set of parameters for the models, and assigns
 each data point to its most likely model. It then re-estimates the
 model parameters using their subsets. The standard algorithm, see e.g. <a
@@ -48,7 +44,7 @@ not-conditionally IID models. Commit \c 1ac0dd44 in the repository had some note
 this, now removed.]  As a side-effect, it calculates the odds of drawing from each model
 (the vector λ). Following the above-linked paper, the probability for a given
 observation under the mixture model is its probability under the most likely model
-weighted by the previously calculated λ for the given model.
+weighted by the previously calculated \f$\lambda\f$ for the given model.
 
 Apohenia modifies this routine slightly because it uses the same maximum likelihood
 back-end that most other <tt>apop_model</tt>s use for estimation. The ML search algorithm
@@ -56,12 +52,11 @@ provides model parameters, then the LL method allocates observations and reports
 the search algorithm, then the search algorithm uses its usual rules to step to the next
 candidate set of parameters. This provides slightly more flexibility in the search.
 
-\li <b>Estimations of mixture distributions can be sensitive to initial conditions.</b>
-You are encouraged to try a sequence random starting points for your model parameters.
+<em>Estimations of mixture distributions can be sensitive to initial conditions.</em>
+You are encouraged to try a sequence of random starting points for your model parameters.
 Some authors recommend plotting the data and eyeballing a guess as to the model parameters.
 
-Determining to which parts of a mixture to assign a data point is a
-well-known hard problem, which is often not solvable--that information is basically lost. 
+\li A kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
 \adoc    Input_format   The same data gets sent to each of the component models of the
 mixture. Each row is an observation, and the estimation routine assumes that models are
@@ -73,10 +68,10 @@ comes from, its likelihood can be calculated independently of all other observat
 \adoc    Parameter_format The parameters are broken out in a readable form in the
     settings group, so your best bet is to use those. See the sample code for usage.<br>
     The <tt>parameter</tt> element is a single vector piling up all elements, beginning
-    with the first $n-1$ weights, followed by an <tt>apop_data_pack</tt> of each model's
+    with the first \f$n-1\f$ weights, followed by an <tt>apop_data_pack</tt> of each model's
     parameters in sequence. Because all elements are in a single vector, one could run a
-    maximum likelihood search for all components (including the weights) at once. Fortunately
-    for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack
+    maximum likelihood search for all components (including the weights) at once. 
+    The <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack
     this vector into its component parts for you.
 
 \adoc RNG Uses the weights to select a component model, then makes a draw from that component.
@@ -87,6 +82,8 @@ iff all component models have the same \c dsize.
 \adoc   Examples
 The first example uses a text file \c faith.data, in the \c tests directory of the distribution.
 \include faithful.c
+
+This example begins with a fixed mixture distribution, and makes assertions about the characteristics of draws from it.
 
 \include hills2.c
 */

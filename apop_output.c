@@ -5,25 +5,6 @@
 
 //The reader will find a few function headers for this file in asst.h
 #include "apop_internal.h"
-
-/** \defgroup output		Printing to the screen or a text file
-
-Most functions print only to the screen, but the 
-\ref apop_print "matrix and vector printing functions" will let you print to a text file as
-well. The presumption is that statistic estimates are for your own
-consumption, while you are printing a matrix for import into another program.
-
-*/
-/** \defgroup apop_print 	Assorted printing functions		
-
-The <tt>apop_*_print</tt> functions will print to screen, text file,
-or database, depending on how you set \c .output_type.
-The <tt>apop_*_show</tt> functions print only to screen, and are basically
-just a convenience shell to the corresponding <tt>apop_*_print</tt>
-function.
-
-\ingroup output
-*/
  
 #define Output_vars output_name, output_pipe, output_type, output_append
 
@@ -43,11 +24,20 @@ function.
   \param output_name The name of the output file, if any. For a database, the table to write.
   \param output_pipe If you have already opened a file and have a \c FILE* on hand, use
   this instead of giving the file name.
-  \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database, \c 's' = stdout
+  \param output_type \c 'p' = pipe, \c 'f'= file, \c 'd' = database
   \param output_append \c 'a' = append (default), \c 'w' = write over.
 
 At the end, \c output_name, \c output_pipe, and \c output_type are all set.
 Notably, the local \c output_pipe will have the correct location for the calling function to \c fprintf to.
+
+\li See \ref legi for more discussion.
+
+\li The default is output to stdout. For example,
+\code
+apop_data_print(your_data);
+//is equivalent to
+apop_data_print(your_data, .output_type='p', .output_pipe=stdout);
+\endcode
 
 \li Tip: if writing to the database, you can get a major speed boost by wrapping the call in a begin/commit wrapper:
 
@@ -56,6 +46,7 @@ apop_query("begin;");
 apop_data_print(your_data, .output_name="dbtab", .output_type='d');
 apop_query("commit;");
 \endcode
+\ingroup all_public
 */
 int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_type, char *output_append){
     *output_append = *output_append ? *output_append : 'w';
@@ -65,7 +56,6 @@ int apop_prep_output(char const *output_name, FILE ** output_pipe, char *output_
     else if (!output_name && *output_pipe && !*output_type) *output_type = 'p';     
 
     if (*output_type =='p')      *output_pipe = *output_pipe ? *output_pipe: stdout;      
-    else if (*output_type =='s') *output_pipe = stdout; 
     else if (*output_type =='d') *output_pipe = stdout;  //won't be used.
     else *output_pipe = output_name
                         ? fopen(output_name, *output_append == 'a' ? "a" : "w")
@@ -90,15 +80,19 @@ static void white_pad(int ct){
         printf(" ");
 }
 
-/** This function prettyprints the \c apop_data set to a screen.
+/* This function prettyprints the \c apop_data set to a screen.
+
+It is currently not in the documentation. It'd be nice to merge this w/apop_data_print.
 
 This takes a lot of machinery. I write every last element to a text array, then measure column widths, then print to screen with padding to guarantee that everything lines up.  There's no way to have the first element of a column line up with the last unless you interrogate the width of every element in the column, so printing columns really can't be a one-pass process.
 
-So, I produce an \ref apop_data set with no numeric elements and a text element to be filled with the input data set, and then print that. That means that I'll be using (more than) twice the memory to print this. If this is a problem, you can use \ref apop_print to dump your data to a text file, and view the text file, or print subsets.
+So, I produce an \ref apop_data set with no numeric elements and a text element to be
+filled with the input data set, and then print that. That means that I'll be using
+(more than) twice the memory to print this. If this is a problem, you can use \ref
+apop_data_print to dump your data to a text file, and view the text file, or print
+subsets.
 
 For more machine-readable printing, see \ref apop_data_print.
-
-\ingroup output
 */
 void apop_data_show(const apop_data *in){
     if (!in) {printf("NULL\n"); return;}
@@ -125,32 +119,32 @@ void apop_data_show(const apop_data *in){
     apop_data *printout = apop_text_alloc(NULL , outsize_r, outsize_c);
     if (hasrownames)
         for (size_t i=0; i < in->names->rowct; i ++)
-            apop_text_add(printout, i + hascolnames, 0, "%s", in->names->row[i]);
+            apop_text_set(printout, i + hascolnames, 0, "%s", in->names->row[i]);
     for (size_t i=0; i < vsize; i ++) //vsize may be zero.
-        apop_text_add(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
+        apop_text_set(printout, i + hascolnames, hasrownames, "%g", gsl_vector_get(in->vector, i));
     for (size_t i=0; i < msize1; i ++) //msize1 may be zero.
         for (size_t j=0; j < msize2; j ++)
-            apop_text_add(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
+            apop_text_set(printout, i + hascolnames, hasrownames + (vsize >0)+ j, "%g", gsl_matrix_get(in->matrix, i, j));
     if (in->textsize[0])
         for (size_t i=0; i < in->textsize[0]; i ++)
             for (size_t j=0; j < in->textsize[1]; j ++)
-                apop_text_add(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, "%s", in->text[i][j]);
+                apop_text_set(printout, i + hascolnames, hasrownames + (vsize>0)+ msize2 + j, "%s", in->text[i][j]);
     if (hasweights)
         for (size_t i=0; i < in->weights->size; i ++)
-            apop_text_add(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
+            apop_text_set(printout, i + hascolnames, outsize_c-1, "%g", gsl_vector_get(in->weights, i));
 
 //column names
     if (hascolnames){
         if (vsize && in->names->vector)
-            apop_text_add(printout, 0 , hasrownames, "%s", in->names->vector);
+            apop_text_set(printout, 0 , hasrownames, "%s", in->names->vector);
         if (msize2 && in->names)
             for (size_t i=0; i < in->names->colct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + i, "%s", in->names->col[i]);
+                apop_text_set(printout, 0 , hasrownames + (vsize>0) + i, "%s", in->names->col[i]);
         if (in->textsize[1] && in->names)
             for (size_t i=0; i < in->names->textct; i ++)
-                apop_text_add(printout, 0 , hasrownames + (vsize>0) + msize2 + i, "%s", in->names->text[i]);
+                apop_text_set(printout, 0 , hasrownames + (vsize>0) + msize2 + i, "%s", in->names->text[i]);
         if (hasweights)
-            apop_text_add(printout, 0 , outsize_c-1, "Weights");
+            apop_text_set(printout, 0 , outsize_c-1, "Weights");
     }
 
 //get column sizes
@@ -199,13 +193,16 @@ static void print_core_v(const gsl_vector *data, char *separator, Output_declare
 	if (output_name) fclose(f);
 }
 
-/** Print a vector in float format.
-You may want to set \ref apop_opts_type "apop_opts.output_delimiter"; the default is a tab, which puts the vector on one line, but a newline would print the vector vertically.
+/** Print a vector to the screen, a file, a pipe, or the database.
 
-\li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
-\li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+  \li See \ref apop_prep_output for more on how printing settings are set.
+  \li For example, the default for \ref apop_opts_type "apop_opts.output_delimiter"
+is a tab, which puts the vector on one line, but <tt>apop_opts.output_type="\n"</tt>
+would print the vector vertically.
+  \li See also \ref Legi for more details and examples.
+  \li This function uses the \ref designated syntax for inputs.
+\ingroup all_public
+*/
 #ifdef APOP_NO_VARIADIC
 void apop_vector_print(gsl_vector *data, Output_declares){
 #else
@@ -220,13 +217,14 @@ apop_varad_head(void, apop_vector_print){
 	print_core_v(data, apop_opts.output_delimiter, Output_vars);
  }
 
-/** Dump a <tt>gsl_vector</tt> to the screen. 
+/* currently removed from the documentation.
+ Dump a <tt>gsl_vector</tt> to the screen. 
     You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+*/
 void apop_vector_show(const gsl_vector *data){
 	print_core_v(data, apop_opts.output_delimiter, NULL, stdout, 's', 0); 
 }
@@ -258,7 +256,7 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
     if (data->names && data->names->rowct)
         L   = get_max_strlen(data->names->row, data->names->rowct);
     if (data->names && data->names->rowct && (data->names->vector || data->names->colct || data->names->textct)){
-        if (*apop_opts.db_name_column=='\0' || 
+        if ((apop_opts.db_name_column || *apop_opts.db_name_column=='\0') || 
                 !strcmp(apop_opts.db_name_column, "row_names"))
             fprintf(f, "%*s  ", L+2, " ");
         else { fprintf(f, "%s", apop_opts.db_name_column); a_pipe(f, displaytype); }
@@ -326,9 +324,11 @@ static void apop_data_print_core(const apop_data *data, FILE *f, char displaytyp
   as determined by the \c .output_type.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See \ref Legi for more details and examples.
+\li See \ref sqlsec for notes on writing an \ref apop_data set to the database.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+\ingroup all_public
+*/
 #ifdef APOP_NO_VARIADIC
 void apop_data_print(const apop_data *data, Output_declares){
 #else
@@ -354,13 +354,13 @@ apop_varad_head(void, apop_data_print){
         fclose(output_pipe);
 }
 
-/** Print a matrix in float format.
-    You may want to set \ref apop_opts_type "apop_opts.output_delimiter".
+/** Print a \c gsl_matrix to the screen, a file, a pipe, or a database table.
 
 \li See \ref apop_prep_output for more on how printing settings are set.
-\li See also the legible output section of the \ref outline for more details and examples.
+\li See also \ref Legi for more details and examples.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup apop_print */
+\ingroup all_public
+*/
 #ifdef APOP_NO_VARIADIC
 void apop_matrix_print(const gsl_matrix *data, Output_declares){
 #else
@@ -381,8 +381,7 @@ apop_varad_head(void, apop_matrix_print){
     apop_data_print(&(apop_data){.matrix=(gsl_matrix*)data}, Output_vars); //cheating on the const qualifier
 }
 
-/** Convenience function to dump a <tt>gsl_matrix</tt> to the screen.
-\ingroup apop_print */
+//leaving this undocumented for now.
 void apop_matrix_show(const gsl_matrix *data){
     apop_data_print_core(&(apop_data){.matrix=(gsl_matrix*)data},  stdout, 's');
 }

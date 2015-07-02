@@ -8,7 +8,18 @@
 
 /** Allocates a name structure
 \return	An allocated, empty name structure.  In the very unlikely event that \c malloc fails, return \c NULL.
-\ingroup names
+
+Because \ref apop_data_alloc uses this to set up its output, you will rarely if ever
+need to call this function explicitly. You may want to use it if wrapping a \c gsl_matrix into an \ref apop_data set. For example, to put a title on a vector:
+
+\code
+apop_data *d = &(apop_data){.vector=your_vector, .names=apop_name_alloc()};
+apop_name_add(d->names, "A column of numbers", 'v');
+apop_data_print(d);
+
+...
+apop_name_free(d->names); //but d itself is auto-allocated; no need to free it.
+\endcode
 */
 apop_name * apop_name_alloc(void){
     apop_name * init_me = malloc(sizeof(apop_name));
@@ -22,12 +33,11 @@ apop_name * apop_name_alloc(void){
 \param n 	An existing, allocated \ref apop_name structure.
 \param add_me 	A string. If \c NULL, do nothing; return -1.
 \param type 	'r': add a row name<br>
-'c': add a column name<br>
-'t': add a text category name<br>
-'h': add a title (or a header. 't' is taken).<br>
+'c': add a matrix column name<br>
+'t': add a text column name<br>
+'h': add a title (i.e., a header).<br>
 'v': add (or overwrite) the vector name<br>
 \return 	Returns the number of rows/cols/depvars after you have added the new one. But if \c add_me is \c NULL, return -1.
-\ingroup names
 */
 int apop_name_add(apop_name * n, char const *add_me, char type){
     if (!add_me)
@@ -67,9 +77,9 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		return n->colct;
 }
 
-/** Prints the given list of names to STDOUT. Useful for debugging, and not much else.
+/** Prints the given list of names to stdout. Useful for debugging.
+
 \param n  The \ref apop_name structure
-\ingroup names
 */
 void apop_name_print(apop_name * n){
     if (!n) {
@@ -101,8 +111,7 @@ void apop_name_print(apop_name * n){
 	}
 }
 	
-/** Erases an \ref apop_name structure.
-\ingroup names 	*/
+/** Free the memory used by an \ref apop_name structure. */
 void  apop_name_free(apop_name * free_me){
     if (!free_me) return; //only needed if users are doing tricky things like newdata = (apop_data){.matrix=...};
 	for (size_t i=0; i < free_me->colct; i++)  free(free_me->col[i]);
@@ -117,13 +126,15 @@ void  apop_name_free(apop_name * free_me){
 
 /** Append one list of names to another.
 
-Notice that if the first list is empty, then this is a copy function. If the second is \c NULL, it is a no-op.
+If the first list is empty, then this is a copy function.
 
 \param  n1      The first set of names (no default, must not be \c NULL)
-\param  nadd      The second set of names, which will be appended after the first. (no default, if \c NULL, a no-op)
-\param type1     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then ignore \c typeadd and just overwrite the target vector name with the source name. (default = 'r')
-\param typeadd     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name. (default = type1)
-\ingroup names */
+\param  nadd      The second set of names, which will be appended after the first. (no default. If \c NULL, a no-op.)
+\param type1     Either 'c', 'r', 't', or 'v' stating whether you are merging the
+columns, rows, text, or vector. If 'v', then ignore \c typeadd and just overwrite the
+target vector name with the source name. (default: 'r')
+\param typeadd     Either 'c', 'r', 't', or 'v' stating whether you are merging the columns, rows, or text. If 'v', then overwrite the target with the source vector name. (default: type1)
+*/
 #ifdef APOP_NO_VARIADIC
 void apop_name_stack(apop_name * n1, apop_name *nadd, char type1, char typeadd){
 #else
@@ -156,15 +167,20 @@ apop_varad_head(void, apop_name_stack){
                         "valid options are r t c v. Doing nothing.", typeadd);
 }
 
-/** Copy one \ref apop_name structure to another. That is, all data is duplicated. Usage:
+/** Copy one \ref apop_name structure to another. That is, all data is duplicated.
 
+Used internally by \ref apop_data_copy, but sometimes useful by itself. For example,
+say that we have an \ref apop_data struct named \c d and a \ref gsl_matrix of the same
+dimensions named \c m; we could give \c m the labels from \c d for printing:
 \code
-apop_name *out  = apop_name_copy(in);
+apop_data *wrapped = &(apop_data){.matrix=m, .names=apop_name_copy(d)};
+apop_data_print(wrapped);
+apop_name_free(wrapped->names); //wrapped itself is auto-allocated; do not free.
 \endcode
  
-    \param in    the input names
-    \return       a structure that this function will allocate and fill
-\ingroup names */
+\param in The input names
+\return   A \ref apop_name struct with copies of all input names.
+*/
 apop_name * apop_name_copy(apop_name *in){
     apop_name *out = apop_name_alloc();
     apop_name_stack(out, in, 'v');
@@ -177,14 +193,13 @@ apop_name * apop_name_copy(apop_name *in){
 
 /** Finds the position of an element in a list of names.
 
-The function uses case-insensitive search (POSIX's \c strcasecmp).
+The function uses POSIX's \c strcasecmp, and so does case-insensitive search the way that function does.
 
 \param n        the \ref apop_name object to search.
 \param name     the name you seek; see above.
-\param type     \c 'c', \c 'r', or \c 't'. Default is \c 'c'.
+\param type     \c 'c' (=column), \c 'r' (=row), or \c 't' (=text). Default is \c 'c'.
 \return         The position of \c findme. If \c 'c', then this may be -1, meaning the vector name. If not found, returns -2.  On error, e.g. <tt>name==NULL</tt>, returns -2.
-
-\ingroup names */
+*/
 int apop_name_find(const apop_name *n, const char *name, const char type){
     Apop_stopif(!name, return -2, 0, "You asked me to search for NULL.");
     char **list;

@@ -168,7 +168,6 @@ am_libapopkernel_la_OBJECTS = libapopkernel_la-apop_arms.lo \
 	libapopkernel_la-apop_rake.lo \
 	libapopkernel_la-apop_regression.lo \
 	libapopkernel_la-apop_settings.lo \
-	libapopkernel_la-apop_smoothing.lo \
 	libapopkernel_la-apop_sort.lo libapopkernel_la-apop_stats.lo \
 	libapopkernel_la-apop_tests.lo libapopkernel_la-apop_update.lo \
 	libapopkernel_la-apop_vtables.lo
@@ -492,7 +491,6 @@ libapopkernel_la_SOURCES = \
 	apop_rake.c \
 	apop_regression.c \
 	apop_settings.c \
-	apop_smoothing.c \
 	apop_sort.c \
 	apop_stats.c \
 	apop_tests.c \
@@ -659,7 +657,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_rake.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_regression.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_settings.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_smoothing.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_sort.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_stats.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libapopkernel_la-apop_tests.Plo@am__quote@
@@ -826,13 +823,6 @@ libapopkernel_la-apop_settings.lo: apop_settings.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_settings.c' object='libapopkernel_la-apop_settings.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_settings.lo `test -f 'apop_settings.c' || echo '$(srcdir)/'`apop_settings.c
-
-libapopkernel_la-apop_smoothing.lo: apop_smoothing.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_smoothing.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_smoothing.Tpo -c -o libapopkernel_la-apop_smoothing.lo `test -f 'apop_smoothing.c' || echo '$(srcdir)/'`apop_smoothing.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libapopkernel_la-apop_smoothing.Tpo $(DEPDIR)/libapopkernel_la-apop_smoothing.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='apop_smoothing.c' object='libapopkernel_la-apop_smoothing.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -c -o libapopkernel_la-apop_smoothing.lo `test -f 'apop_smoothing.c' || echo '$(srcdir)/'`apop_smoothing.c
 
 libapopkernel_la-apop_sort.lo: apop_sort.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libapopkernel_la_CFLAGS) $(CFLAGS) -MT libapopkernel_la-apop_sort.lo -MD -MP -MF $(DEPDIR)/libapopkernel_la-apop_sort.Tpo -c -o libapopkernel_la-apop_sort.lo `test -f 'apop_sort.c' || echo '$(srcdir)/'`apop_sort.c

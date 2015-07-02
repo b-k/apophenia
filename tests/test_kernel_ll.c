@@ -17,7 +17,7 @@ long double sum_of_parts(apop_data *d1, apop_data *target){
 }
 
 void go(apop_data *d1, apop_data *d2){
-    apop_model *k = apop_model_copy_set(apop_kernel_density, apop_kernel_density, .base_data=d1);
+    apop_model *k = apop_model_set_settings(apop_kernel_density, .base_data=d1);
     assert(fabs(apop_p(d2, k)- sum_of_parts(d1, d2)) < 1e-5);
 
     apop_model *test_copying = apop_model_copy(k);

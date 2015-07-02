@@ -59,7 +59,6 @@ libapopkernel_la_SOURCES = \
 	apop_rake.c \
 	apop_regression.c \
 	apop_settings.c \
-	apop_smoothing.c \
 	apop_sort.c \
 	apop_stats.c \
 	apop_tests.c \

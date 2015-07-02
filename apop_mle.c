@@ -1,12 +1,5 @@
 
-/** \file apop_mle.c	The MLE functions. Call them with an \ref apop_model.
-
-This file includes a number of distributions and models whose parameters one would estimate using maximum likelihood techniques.
-
-It has (more-or-less) a single public function: \ref apop_maximum_likelihood, and you don't even need to use that one, because the \c apop_estimate function defaults to using it if there is no model-specific estimation routine provided.
-
-At the bottom are the maximum likelihood procedures themselves. There are four: Newton-type derivative methods, the no-derivative version, the with-derivative version, and the simulated annealing routine.*/
-
+/** \file apop_mle.c */
 /*Copyright (c) 2006--2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 #include "apop_internal.h"
 #include <setjmp.h>
@@ -21,6 +14,7 @@ typedef long double (*apop_fn_with_params) (apop_data *, apop_model *);
 typedef	void (*apop_df_with_void)(const gsl_vector *beta, void *d, gsl_vector *gradient);
 typedef	void (*apop_fdf_with_void)(const gsl_vector *beta, void *d, double *f, gsl_vector *df);
 
+/** \cond doxy_ignore */
 typedef struct {
 	gsl_vector	*beta;
 	int		    dimension;
@@ -38,10 +32,11 @@ typedef struct {
     jmp_buf     bad_eval_jump;
     apop_data** path;
 }   infostruct;
+/** \endcond */ //End of Doxygen ignore.
 
 static apop_model * find_roots (infostruct p); //see end of file.
 
-double default_delta = 1e-3;
+ //as a macro, we can put it in documentation
 
 /* Generate support fns (esp. initializers) for apop_mle_settings and apop_parts_wanted structs. */
 Apop_settings_copy(apop_parts_wanted, )
@@ -62,7 +57,7 @@ Apop_settings_init(apop_mle,
     Apop_varad_set(method, "");//default picked in apop_maximum_likelihood
     Apop_varad_set(verbose, 0);
     Apop_varad_set(step_size, 0.05);
-    Apop_varad_set(delta, default_delta);
+    Apop_varad_set(delta, 1e-3);
     Apop_varad_set(dim_cycle_tolerance, 0);
 //siman:
     //siman also uses step_size  = 1.;  
@@ -113,20 +108,22 @@ static void apop_internal_numerical_gradient(apop_fn_with_params ll,
     gsl_vector_free(beta);
 }
 
-/**The GSL provides one-dimensional numerical differentiation; here's the multidimensional extension.
+/**
+A wrapper around the GSL's one-dimensional \c gsl_deriv_central to find a numeric differential for each dimension of the input \ref apop_model's log likelihood (or \c p if \c log_likelihood is \c NULL).
 
-\param data The data set to use for all evaluations. It remains constant throughout.
-\param model The model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
-\param delta The size of the differential. If you explicitly give me a \c delta, I'll use it. If \c delta is not specified,
- but \c model has \c method_settings of type \c apop_ml_params, then the \c delta element is used for the differential. Else, I use 1e-3.
+\param data The \ref apop_data set to use for all evaluations.
+\param model The \ref apop_model, expressing the function whose derivative is sought. The gradient is taken via small changes along the model parameters.
+\param delta The size of the differential. (default: 1e-3, but see below)
  
  \code
  gsl_vector *gradient = apop_numerical_gradient(data, your_parametrized_model);
  \endcode
 
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings
+    group attached to the input model, and check that for a \c delta element. If that is
+    also missing, use the default of 1e-3.
 \li This function uses the \ref designated syntax for inputs.
-\ingroup linear_algebra
- */
+*/
 #ifdef APOP_NO_VARIADIC
 gsl_vector * apop_numerical_gradient(apop_data *data, apop_model *model, double delta){
 #else
@@ -137,7 +134,7 @@ apop_varad_head(gsl_vector *, apop_numerical_gradient){
     double apop_varad_var(delta, 0);
     if (!delta){
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
-        delta = mp ? mp->delta : default_delta;
+        delta = mp ? mp->delta : 1e-3;
     }
     return apop_numerical_gradient_base(data, model, delta);
 }
@@ -153,10 +150,12 @@ apop_varad_head(gsl_vector *, apop_numerical_gradient){
     return out;
 }
 
+/** \cond doxy_ignore */
 typedef struct {
     apop_model *base_model;
     int *current_index;
 } apop_model_for_infomatrix_struct;
+/** \endcond */
 
 static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     static threadlocal gsl_vector *v = NULL;
@@ -164,9 +163,10 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
     apop_model *mm = settings->base_model;
     apop_score_type ms = apop_score_vtable_get(mm);
     if (ms){
-        if (!v || v->size != mm->parameters->vector->size){
+        Get_vmsizes(mm->parameters); //tsize
+        if (!v || v->size != tsize){
             if (v) gsl_vector_free(v);
-            v = gsl_vector_alloc(mm->parameters->vector->size);
+            v = gsl_vector_alloc(tsize);
         }
         ms(d, v, mm);
         return gsl_vector_get(v, *settings->current_index);
@@ -180,15 +180,16 @@ static long double apop_fn_for_infomatrix(apop_data *d, apop_model *m){
 apop_model *apop_model_for_infomatrix = &(apop_model){"Ad hoc model for working out the information matrix.", 
                                                 .log_likelihood = apop_fn_for_infomatrix};
 
-/** Numerically estimate the matrix of second derivatives of the
-parameter values. The math is
- simply a series of re-evaluations at small differential steps. [Therefore, it may be expensive to do this for a very computationally-intensive model.]  
+/** Numerically estimate the matrix of second derivatives of the parameter values, via
+a series of re-evaluations at small differential steps. [Therefore, it may be expensive
+to do this for a very computationally-intensive model.]
 
-\param data The data at which the model was estimated
-\param model The model, with parameters already estimated
-\param delta the step size for the differentials. The current default is around 1e-3.
+\param data The \ref apop_data at which the model was estimated (default: \c NULL)
+\param model The \ref apop_model, with parameters already estimated (no default, must not be \c NULL)
+\param delta the step size for the differentials. (default: 1e-3, but see below)
 \return The matrix of estimated second derivatives at the given data and parameter values.
  
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of 1e-3.
 \li This function uses the \ref designated syntax for inputs.
  */
 #ifdef APOP_NO_VARIADIC
@@ -201,7 +202,7 @@ apop_varad_head(apop_data *, apop_model_hessian){
     double apop_varad_var(delta, 0);
     if (!delta){
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
-        delta = mp ? mp->delta : default_delta;
+        delta = mp ? mp->delta : 1e-3;
     }
     return apop_model_hessian_base(data, model, delta);
 }
@@ -240,14 +241,15 @@ apop_varad_head(apop_data *, apop_model_hessian){
 
 I follow Efron and Hinkley in using the estimated information matrix---the value of the information matrix at the estimated value of the score---not the expected information matrix that is the integral over all possible data. See Pawitan 2001 (who cribbed a little off of Efron and Hinkley) or Klemens 2008 (who directly cribbed off of both) for further details. 
 
- \param data The data by which your model was estimated
- \param model A model whose parameters have been estimated.
- \param delta The differential by which to step for sampling changes.  (default currently = 1e-3)
- \return A covariance matrix for the data. Also, if the data does not have a
- <tt>"Covariance"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
- existing covar].  
+\param data The data by which your model was estimated
+\param model A model whose parameters have been estimated.
+\param delta The differential by which to step for sampling changes. (default: 1e-3, but see below)
+\return A covariance matrix for the data. Also, if the data does not have a
+ <tt>"<Covariance>"</tt> page, I'll set it to the result as well [i.e., I won't overwrite an
+ existing covariance page].  
 
-This function uses the \ref designated syntax for inputs.
+\li If you do not set \ref delta as an input, I first look for an \ref apop_mle_settings group attached to the input model, and check that for a \c delta element. If that is also missing, use the default of 1e-3.
+\li This function uses the \ref designated syntax for inputs.
  */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_model_numerical_covariance(apop_data * data, apop_model *model, double delta){
@@ -259,7 +261,7 @@ apop_varad_head(apop_data *, apop_model_numerical_covariance){
     double apop_varad_var(delta, 0);
     if (!delta){
         apop_mle_settings *mp = apop_settings_get_group(model, apop_mle);
-        delta = mp ? mp->delta : default_delta;
+        delta = mp ? mp->delta : 1e-3;
     }
     return apop_model_numerical_covariance_base(data, model, delta);
 }
@@ -288,7 +290,12 @@ apop_varad_head(apop_data *, apop_model_numerical_covariance){
 
 static void tracepath(const gsl_vector *beta, double value, apop_data **path){
     size_t msize1 = (*path && (*path)->matrix) ? (*path)->matrix->size1: 0;
-    if (!*path) *path = apop_data_alloc();
+    if (!*path) {
+        *path = apop_data_alloc();
+        (*path)->names->title = strdup("Path of ML search");
+        apop_name_add((*path)->names, "f(x)", 'v');
+        apop_name_add((*path)->names, "x", 'm');
+    }
     (*path)->matrix = apop_matrix_realloc((*path)->matrix, msize1+1, beta->size);
     gsl_vector_memcpy(Apop_rv(*path, msize1), beta);
 
@@ -612,38 +619,41 @@ Onecheck(Newton hybrid no scale)
 return 1;
 }
 
-/** The maximum likelihood calculations. 
+/** Find the likelihood-maximizing parameters of a model given data.
 
-\li I assume that \c apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
+\li I assume that \ref apop_prep has been called on your model. The easiest way to guarantee this is to use \ref apop_estimate, which calls this function if the input model has no \c estimate method.
 
 \li All of the settings are specified by adding a
   \ref apop_mle_settings struct to your model, so see the many notes there. Notably,
   the default method is the Fletcher-Reeves conjugate gradient method, and if your model
   does not have a dlog likelihood function, then a numeric gradient will be calculated
-  via \ref apop_numerical_gradient. Add a \ref apop_mle_settings group to your model
-  for other methods, including the Nelder-Mead simplex and simulated annealing.
+  via \ref apop_numerical_gradient. Add an \ref apop_mle_settings group to your model
+  to set tuning parameters or select other methods, including the Nelder-Mead simplex,
+  simulated annealing, and root-finding.
 
 \param data	    An \ref apop_data set.
 
 \param	dist	The \ref apop_model object: \ref apop_gamma, \ref apop_probit, \ref apop_zipf, &amp;c. You can add
     an \c apop_mle_settings struct to it (<tt>Apop_model_add_group(your_model, apop_mle,
-    .verbose=1, .method="PR cg", and_so_on)</tt>). So, see the \c apop_mle_settings
-    documentation for the many options, such as choice of method and tuning parameters.
+    .verbose=1, .method="PR cg", and_so_on)</tt>).
 
 \return	None, but the input model is modified to include the parameter estimates, &c. 
 
 \li There is auxiliary info in the <tt>->info</tt> element of the post-estimation struct. Get elements via, e.g.:
 \code
 apop_model *est = apop_estimate(your_data, apop_probit);
+
+
 int status = apop_data_get(est->info, .rowname="status");
 if (status)
     //trouble
 else
     //optimum found
+    apop_data_print(est->parameters); //Here are the estimated parameters
 \endcode
 
 \li During the search for an optimum, ctrl-C (SIGINT) will halt the search, and the function will return whatever parameters the search was on at the time.
- \ingroup mle */
+*/
 void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     apop_mle_settings *mp = apop_settings_get_group(dist, apop_mle);
     if (!mp) mp = Apop_model_add_group(dist, apop_mle);
@@ -660,7 +670,6 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
                        .model          = dist};
     get_desires(dist, &info);
     info.beta = apop_data_pack(dist->parameters);
-    if (info.path) *info.path = apop_data_alloc();
     if (setup_starting_point(mp, info.beta)) return;
     info.model->data = data;
     if (mp->dim_cycle_tolerance)            dim_cycle(data, dist, info);
@@ -672,8 +681,12 @@ void apop_maximum_likelihood(apop_data * data, apop_model *dist){
     else   /* Conjugate Gradient*/   apop_maximum_likelihood_w_d(data, &info);
 }
 
-/** 
-  The simplest use of this function is to restart a model at the latest parameter estimates.
+/** Maximum likelihod searches are not guaranteed to find a global optimum, and it can be
+difficult to tune a search such that it covers a wide space, but also accurately hones in
+on the optimum. In both cases, one could restart the search using a different starting
+point or different parameters.
+
+The simplest use of this function is to restart a model at the latest parameter estimates.
 
   \code
 apop_model *m = apop_estimate(data, model_using_an_MLE_search);
@@ -694,24 +707,25 @@ apop_data_show(m);
   \endcode
 
 Only one estimate is returned, either the one you sent in or a new
-one. The loser (which may be the one you sent in) is freed. That is,
-there is no memory leak in the above loop.
+one. The loser (which may be the one you sent in) is freed, to prevent memory leaks.
 
- \param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
- \param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
+\param e   An \ref apop_model that is the output from a prior MLE estimation. (No default, must not be \c NULL.)
+\param copy  Another not-yet-parametrized model that will be re-estimated with (1) the same data and (2) a <tt>starting_pt</tt> as per the next setting (probably
  to the parameters of <tt>e</tt>). If this is <tt>NULL</tt>, then copy <tt>e</tt>. (Default = \c NULL)
- \param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates); "es"= starting point originally used by the first model; "np"=current parameters of the new (second) model; "ns"=starting point specified by the new model's MLE settings. (default = "ep")
- \param boundary I test whether the starting point you give me is outside this certain bound, so I can warn you if there's divergence in your sequence of re-estimations. (default: 1e8)
+\param starting_pt "ep"=last estimate of the first model (i.e., its current parameter estimates)<br>
+"es"= starting point originally used by the first model<br>
+"np"=current parameters of the new (second) model<br>
+"ns"=starting point specified by the new model's MLE settings. (default = "ep")
+\param boundary I test whether the starting point you give me has magintude greater
+ than this bound, so I can warn you if there's divergence in your sequence of
+ re-estimations. (default: 1e8)
 
-\return         At the end of this procedure, we'll have two \ref
-    apop_model structs: the one you sent in, and the one produced using the
-    new method/scale. If the new estimate includes any NaNs/Infs, then
+\return  If the new estimated parameters  include any NaNs/Infs, then
     the old estimate is returned (even if the old estimate included
     NaNs/Infs). Otherwise, the estimate with the largest log likelihood
     is returned.
 
 \li This function uses the \ref designated syntax for inputs.
-\ingroup mle
 */ 
 #ifdef APOP_NO_VARIADIC
 apop_model * apop_estimate_restart(apop_model *e, apop_model *copy, char * starting_pt, double boundary){
@@ -768,17 +782,6 @@ apop_varad_head(apop_model *, apop_estimate_restart){
 }
 
 // Simulated Annealing.
-
-/** \page simanneal Notes on simulated annealing
-
-Simulated annealing is a controlled random walk.  As with the other methods, the system tries a new point, and if it is better, switches. Initially, the system is allowed to make large jumps, and then with each iteration, the jumps get smaller, eventually converging. Also, there is some decreasing probability that if the new point is {\em less} likely, it will still be chosen. Simulated annealing is best for situations where there may be multiple local optima. Early in the random walk, the system can readily jump from one to another; later it will fine-tune its way toward the optimum. The number of points tested is basically not dependent on the function: if you give it a 4,000 step program, that is basically how many steps it will take.  If you know your function is globally convex (as are most standard probability functions), then this method is overkill.
-
-The GSL's simulated annealing system doesn't actually do very much. It basically provides a for loop that calls a half-dozen functions that we the users get to write. So, the file \ref apop_mle.c handles all of this for you. The likelihood function is taken from the model, the metric is the Manhattan metric, the copy/destroy functions are just the usual vector-handling fns., et cetera. The reader who wants further control is welcome to override these functions.
-
-Verbosity: if ep->verbose==1, show likelihood,  temp, &c. in a table; if ep->verbose>1, show that plus the vector of params.
-
-\ingroup mle
-*/
 
 static double annealing_energy(void *in) {
     infostruct *i = in;

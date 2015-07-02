@@ -1,12 +1,12 @@
 /* The Poisson distribution.
  Copyright (c) 2006--2007, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
   
-\amodel apop_poisson The Poisson distribution.
+\amodel apop_poisson
 
-\f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
+\f$p(k) = {\mu^k \over k!} \exp(-\mu). \f$
 
-\adoc    Input_format  Location of data in the grid is not relevant; send it a 1 x N, N x 1, or N x M and it will all be the same.
-\adoc    Parameter_format  One parameter, the zeroth element of the vector.    
+\adoc    Input_format One scalar observation per row (in the \c matrix or \c vector).  
+\adoc    Parameter_format  One parameter, the zeroth element of the vector (<tt>double mu = apop_data_get(estimated_model->parameters)</tt>).
 \adoc    settings   \ref apop_parts_wanted_settings, for the \c .want_cov element.  */
 
 #include "apop_internal.h"
@@ -41,7 +41,6 @@ Unless you decline it by adding the \ref apop_parts_wanted_settings group, I wil
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void poisson_estimate(apop_data * data,  apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     double mean = data_mean(data);
 	apop_data_set(est->parameters, .val=mean);
     apop_data_add_names(est->parameters, 'r', "λ");
@@ -73,7 +72,7 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
     gsl_vector_set(gradient,0, d_a);
 }
 
-/* \adoc RNG Just a wrapper for \c gsl_ran_poisson.  */
+/* \adoc RNG A wrapper for \c gsl_ran_poisson. Sets a single scalar.*/
 static int poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
     return 0;

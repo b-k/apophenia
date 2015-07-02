@@ -2,7 +2,6 @@
 noinst_LTLIBRARIES = libapoptransform.la
 
 libapoptransform_la_SOURCES = \
-	apop_dcompose.c \
 	apop_dconstrain.c\
 	apop_fix_params.c \
 	apop_coordinate_transform.c \

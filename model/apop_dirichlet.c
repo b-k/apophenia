@@ -42,7 +42,7 @@ static long double dirichlet_constraint(apop_data *data, apop_model *v){
     return apop_linear_constraint(v->parameters->vector, .margin= 1e-4);
 }
 
-/*\adoc    RNG  A call to \c gsl_ran_dirichlet.*/
+/*\adoc    RNG  A call to \c gsl_ran_dirichlet. Output format is identical to the input data format.*/
 static int dirichlet_rng(double *out, gsl_rng *r, apop_model* eps){
     gsl_ran_dirichlet(r, eps->parameters->vector->size, eps->parameters->vector->data, out);
     return 0;

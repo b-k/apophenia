@@ -34,7 +34,7 @@ void test_ml_imputation(gsl_rng *r){
                 apop_data_set(fillme, i, j, GSL_NAN);
                 ctr++;
             }
-    apop_ml_imputation(fillme, mvn); 
+    apop_ml_impute(fillme, mvn); 
     apop_model *est2 = apop_estimate(fillme, apop_multivariate_normal);
     //apop_data_show(est2->parameters);
     compare_mvn_estimates(est2, mvn, 1e-1);

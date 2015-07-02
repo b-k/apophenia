@@ -29,12 +29,17 @@ model_doc.h: $(apophenia_CSOURCES)
 	cat $^ | awk -f make_model_doc.awk > $@
 
 doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
+	cp ../apop.h abkup
+	sed -i -e 's/__attribute.*;/;/' -e "s/extern //" ../apop.h
+	if [ ! -e structs.png ] ; then dot -Tpng <structs.dot >structs.png; fi;
 	doxygen doxygen.conf
+	cp structs.png html
+	cp abkup ../apop.h
 	cp $(apophenia_IMAGES) $(apophenia_JS) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html
-	sed -i -f edit_globals.sed html/globals.html
 	sed -i -f edit_group.sed html/group__models.html
 	sed -i -f edit_width.sed html/*.html
+	. adjust
 
 doc-clean:
 	-rm -rf html latex man

@@ -2,23 +2,10 @@
 /** \file apop_regression.c	Generally, if it assumes something is  Normally distributed, it's here.*/
 /* Copyright (c) 2006--2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  */
 
-/** \defgroup regression  OLS/GLS: The linear projection methods */
-/** \defgroup ttest  T-tests: comparing two vectors */
-/** \defgroup asst_tests  Various means of hypothesis testing.
-
- See also the goodness of fit tests in \ref histograms.
- */
-
 #include "apop_internal.h"
 #include <search.h> //lsearch; bsearch is in stdlib.
 
-/** For many, it is a knee-jerk reaction to a parameter estimation to test whether each individual parameter differs from zero. This function does that.
-
-\param est  The \ref apop_model, which includes pre-calculated parameter estimates, var-covar matrix, and the original data set.
-
-Returns nothing. At the end of the routine, <tt>est->info->more</tt> includes a set of t-test values: p value, confidence (=1-pval), t statistic, standard deviation, one-tailed Pval, one-tailed confidence.
-
-*/
+/* For use by MLE, OLS, et al. Available for public use, but undocumented. */
 void apop_estimate_parameter_tests (apop_model *est){
     Nullcheck_p(est, )
     if (!est->data) return;
@@ -64,12 +51,13 @@ static int strcmpwrap(const void *a, const void *b){
     return strcmp(*aa, *bb);
 }
 
-/** Give me a vector of numbers, and I'll give you a sorted list of the unique elements. 
-  This is basically running "select distinct datacol from data order by datacol", but without the aid of the database.
+/** Give me a vector of numbers, and I'll give you a sorted list of the unique elements.
+  This is basically running <tt>select distinct datacol from data order by datacol</tt>,
+  but without the aid of the database.
 
   \param v a vector of items
   \return a sorted vector of the distinct elements that appear in the input.
-  \li NaNs appear at the end of the sort order.
+  \li NaNs (if any) appear at the end of the sort order.
   \see apop_text_unique_elements 
 */
 gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
@@ -90,9 +78,8 @@ gsl_vector * apop_vector_unique_elements(const gsl_vector *v){
     return out;
 }
 
-/** Give me a column of text, and I'll give you a sorted list of the unique
-  elements. 
-  This is basically running "select distinct * from datacolumn", but without 
+/** Give me a column of text, and I'll give you a sorted list of the unique elements. 
+  This is basically running <tt>select distinct * from datacolumn</tt>, but without 
   the aid of the database.  
 
   \param d An \ref apop_data set with a text component
@@ -121,7 +108,7 @@ apop_data * apop_text_unique_elements(const apop_data *d, size_t col){
     //pack and ship
     apop_data *out = apop_text_alloc(NULL, elmt_ctr, 1);
     for (int j=0; j< elmt_ctr; j++)
-        apop_text_add(out, j, 0, telmts[j]);
+        apop_text_set(out, j, 0, telmts[j]);
     free(telmts);
     return out;
 }
@@ -153,43 +140,79 @@ static char *make_catname (apop_data *d, int col, char type){
     return name;
 }
 
-/* Producing dummies consists of finding the index of element i, for all i, then
- setting (i, index) to one.
- Producing factors consists of finding the index and then setting (i, datacol) to index.
- Otherwise the work is basically identical.  
- Also, add a ->more page to the input data giving the translation.
- */
-static apop_data * dummies_and_factors_core(apop_data *d, int col, char type, 
-                            int keep_first, int datacol, char dummyfactor, 
-                            apop_data **factor_list){
-    size_t index, elmt_ctr = 0;
-    gsl_vector *delmts = NULL;
-    char **telmts = NULL;//unfortunately needed for the bsearch.
+/** Factor names are stored in an auxiliary table with a name like 
+<tt>"<categories for your_var>"</tt>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.
 
+\param data The data set. (No default, must not be \c NULL)
+\param col The column in the main data set whose name I'll use to check for the factor name list. Vector==-1. (default=0)
+\param type If you are referring to a text column, use 't'. (default='d')
+
+\return A pointer to the page in the data set with the given factor names.
+
+\li This function uses the \ref designated syntax for inputs.
+*/
+#ifdef APOP_NO_VARIADIC
+apop_data * apop_data_get_factor_names(apop_data *data, int col, char type){
+#else
+apop_varad_head(apop_data *, apop_data_get_factor_names){
+    apop_data *apop_varad_var(data, NULL)
+    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.");
+    int apop_varad_var(col, 0)
+    char apop_varad_var(type, 'd')
+    return apop_data_get_factor_names_base(data, col, type);
+}
+
+ apop_data * apop_data_get_factor_names_base(apop_data *data, int col, char type){
+#endif
+    char *name = make_catname (data, col, type);
+    apop_data *out = apop_data_get_page(data, name, .match='e');
+    free(name);
+    return out;
+}
+
+apop_data * create_factor_list(apop_data *d, int col, char type){
     //first, create an ordered list of unique elements.
     //Record that list for use in this function, and in a ->more page of the data set.
     char *catname =  make_catname(d, col, type);
+    apop_data *factor_list;
     if (type == 't'){
-        *factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), catname);
-        elmt_ctr = (*factor_list)->textsize[0];
+        factor_list = apop_data_add_page(d, apop_text_unique_elements(d, col), catname);
+        size_t elmt_ctr = factor_list->textsize[0];
         //awkward format conversion:
-        telmts = malloc(sizeof(char*)*elmt_ctr);
-        for (size_t j=0; j< elmt_ctr; j++)
-            Asprintf(&(telmts[j]), "%s", (*factor_list)->text[j][0]);
-        (*factor_list)->vector = gsl_vector_alloc(elmt_ctr);
-        for (size_t i=0; i< (*factor_list)->vector->size; i++)
-            apop_data_set(*factor_list, i, -1, i);
+        factor_list->vector = gsl_vector_alloc(elmt_ctr);
+        for (size_t i=0; i< factor_list->vector->size; i++)
+            apop_data_set(factor_list, i, -1, i);
     } else {
-        delmts = apop_vector_unique_elements(Apop_cv(d, col));
-        elmt_ctr = delmts->size;
-        *factor_list = apop_data_add_page(d, apop_data_alloc(elmt_ctr), catname);
-        apop_text_alloc((*factor_list), delmts->size, 1);
-        for (size_t i=0; i< (*factor_list)->vector->size; i++){
+        gsl_vector *delmts = apop_vector_unique_elements(Apop_cv(d, col));
+        factor_list = apop_data_add_page(d, apop_data_alloc(), catname);
+        factor_list->vector = delmts;
+        apop_text_alloc(factor_list, delmts->size, 1);
+        for (size_t i=0; i< factor_list->vector->size; i++){
             //shift to the text, for conformity with the more common text version.
-            apop_text_add((*factor_list), i, 0, "%g", gsl_vector_get(delmts, i));
-            apop_data_set((*factor_list), i, -1, i);
+            apop_text_set(factor_list, i, 0, "%g", gsl_vector_get(delmts, i));
         }
     }
+    free(catname);
+    return factor_list;
+}
+
+/* Producing dummies consists of finding the index of element i, for all i, then
+ setting (i, index) to one.
+ Producing factors consists of finding the index and then setting (i, datacol) to index.
+ Otherwise the work is basically identical.
+ Also, add a ->more page to the input data giving the translation.
+ */
+static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
+                            int keep_first, int datacol, char dummyfactor,
+                            apop_data **factor_list){
+    if (!(*factor_list=apop_data_get_factor_names(d, col, type)))
+        *factor_list = create_factor_list(d, col, type);
+    Get_vmsizes((*factor_list)); //maxsize
+    size_t elmt_ctr = maxsize;
+
+    //copy the strings to a single list-of-strings
+    apop_data *telmts = *(*factor_list)->textsize ? apop_data_transpose(*factor_list, .inplace='n'):NULL;
+    gsl_vector *delmts = (*factor_list)->vector;
 
     //Now go through the input vector, and for row i find the posn of the vector's
     //name in the element list created above (j), then change (i,j) in
@@ -198,16 +221,43 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
             ? d->textsize[0]
             : (col >=0 ? d->matrix->size1 : d->vector->size);
     apop_data *out = (dummyfactor == 'd')
-                ? apop_data_calloc(0, s, (keep_first ? elmt_ctr : elmt_ctr-1))
+                ? apop_data_calloc(0, s, (keep_first!='n' ? elmt_ctr : elmt_ctr-1))
                 : d;
+    size_t index;
     for (size_t i=0; i< s; i++){
         if (type == 'd'){
             double val = apop_data_get(d, i, col);
-            index = ((size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles) - (size_t)delmts->data)/sizeof(double);
-        } else 
-            index   = ((size_t)bsearch(&(d->text[i][col]), telmts, elmt_ctr, sizeof(char**), strcmpwrap) - (size_t)telmts)/sizeof(char**);
+            size_t posn = (size_t)bsearch(&val, delmts->data, elmt_ctr, sizeof(double), compare_doubles);
+            if (posn )
+                index = (posn - (size_t)delmts->data)/sizeof(double);
+            else {
+                index = elmt_ctr++;
+                (*factor_list)->vector = apop_vector_realloc((*factor_list)->vector, elmt_ctr);
+                gsl_vector_set((*factor_list)->vector, index, val);
+                out->matrix = apop_matrix_realloc(out->matrix, out->matrix->size1, elmt_ctr);
+                gsl_vector_set_zero(Apop_cv(out, index));
+            }
+        } else {
+            size_t posn = (size_t)bsearch(&(d->text[i][col]), *telmts->text, elmt_ctr, sizeof(char**), strcmpwrap);
+            if (posn)
+                index = (posn - (size_t)*telmts->text)/sizeof(char**);
+            else {
+                index = elmt_ctr++;
+                *factor_list = apop_text_alloc(*factor_list, elmt_ctr, 1);
+                apop_text_set(*factor_list, index, 0, d->text[i][col]);
+                (*factor_list)->vector = apop_vector_realloc((*factor_list)->vector, elmt_ctr);
+                apop_data_set(*factor_list, index, -1, index);
+
+                telmts = apop_text_alloc(telmts, 1, elmt_ctr);
+                apop_text_set(telmts, 0, index, d->text[i][col]);
+                if (dummyfactor == 'd'){
+                    out->matrix = apop_matrix_realloc(out->matrix, out->matrix->size1, out->matrix->size2+1);
+                    gsl_vector_set_zero(Apop_cv(out, out->matrix->size2-1));
+                }
+            }
+        }
         if (dummyfactor == 'd'){
-            if (keep_first)
+            if (keep_first!='n')
                 gsl_matrix_set(out->matrix, i, index,1); 
             else if (index > 0)   //else don't keep first and index==0; throw it out. 
                 gsl_matrix_set(out->matrix, i, index-1, 1); 
@@ -217,23 +267,16 @@ static apop_data * dummies_and_factors_core(apop_data *d, int col, char type,
     //Add names:
     if (dummyfactor == 'd'){
         char *basename = apop_get_factor_basename(d, col, type);
-        for (size_t i = (keep_first) ? 0 : 1; i< elmt_ctr; i++){
+        for (size_t i = (keep_first!='n') ? 0 : 1; i< elmt_ctr; i++){
             char n[1000];
             if (type =='d'){
                 sprintf(n, "%s dummy %g", basename, gsl_vector_get(delmts,i));
             } else
-                sprintf(n, "%s", telmts[i]);
+                sprintf(n, "%s", telmts->text[0][i]);
             apop_name_add(out->names, n, 'c');
         }
     }
-    if (delmts)
-        gsl_vector_free(delmts);
-    if (telmts){
-        for (size_t j=0; j< elmt_ctr; j++)
-            free(telmts[j]);
-        free(telmts);
-    }
-    free(catname);
+    apop_data_free(telmts);
     return out;
 }
 
@@ -257,8 +300,7 @@ to remove the column used to generate the dummies. Implemented only for <tt>type
 \li By specifying <tt>.append='i'</tt>, I will place the matrix of dummies in place,
 immediately after the data column you had specified. You will probably use this with
 <tt>.remove='y'</tt> to replace the single column with the new set of dummy columns.
-Bear in mind that if there are two or more dummy columns (which there probably are if you
-are bothering to use this function), subsequent column numbers will change.
+Bear in mind that if there are two or more dummy columns, adding columns will change subsequent column numbers; use \ref apop_name_find to find columns instead of giving an explicit column number.
 
 \li If <tt>.append='i'</tt> and you asked for a text column, I will append to the end of
 the table, which is equivalent to <tt>append='e'</tt>.
@@ -266,11 +308,11 @@ the table, which is equivalent to <tt>append='e'</tt>.
 \param  d The data set with the column to be dummified (No default.)
 \param col The column number to be transformed; -1==vector (default = 0)
 \param type 'd'==data column, 't'==text column. (default = 't')
-\param  keep_first  if zero, return a matrix where each row has a one in the (column specified MINUS
-    ONE). That is, the zeroth category is dropped, the first category
+\param  keep_first  If \c 'n', return a matrix where each row has a one in the (column specified <em>minus
+    one</em>). That is, the zeroth category is dropped, the first category
     has an entry in column zero, et cetera. If you don't know why this
     is useful, then this is what you need. If you know what you're doing
-    and need something special, set this to one and the first category won't be dropped. (default = 0)
+    and need something special, set this to \c 'y' and the first category won't be dropped. (default = \c 'n')
 \param append If \c 'e' or \c 'y', append the dummy grid to the end of the original data
 matrix. If \c 'i', insert in place, immediately after the original data column. (default = \c 'n')
 \param remove If \c 'y', remove the original data or text column. (default = \c 'n')
@@ -280,8 +322,14 @@ matrix of dummies. If you used <tt>.append</tt>, then this is the main matrix.
 Also, I add a page named <tt>"\<categories for your_var\>"</tt> giving a reference table of names and column numbers (where <tt>your_var</tt> is the appropriate column heading).
 \exception out->error=='a' allocation error
 \exception out->error=='d' dimension error
-\li NaNs appear at the end of the sort order.
+
+\li Use \ref apop_data_get_factor_names to get the list of category names.
+\li NaNs (if any) appear at the end of the sort order.
+\li See \ref fact for further discussion.
+\li See the documentation for \ref apop_logit for a sample linear model using this function.
 \li This function uses the \ref designated syntax for inputs.
+
+\see \ref apop_data_to_factors
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_to_dummies(apop_data *d, int col, char type, int keep_first, char append, char remove){
@@ -291,7 +339,7 @@ apop_varad_head(apop_data *, apop_data_to_dummies){
     Apop_stopif(!d, return NULL, 1, "You sent me a NULL data set for apop_data_to_dummies. Returning NULL.");
     int apop_varad_var(col, 0)
     char apop_varad_var(type, 't')
-    int apop_varad_var(keep_first, 0)
+    int apop_varad_var(keep_first, 'n')
     char apop_varad_var(append, 'n')
     char apop_varad_var(remove, 'n')
     if (remove =='y' && type == 't') Apop_notify(1, "Remove isn't implemented for text source columns yet.");
@@ -353,17 +401,16 @@ apop_varad_head(apop_data *, apop_data_to_dummies){
   it on the vector or (if no vector) zeroth column of the matrix of the input \ref apop_data set, because those models need a list of the unique values of the dependent variable.
 
 \param data The data set to be modified in place. (No default. If \c NULL, returns \c NULL and a warning)
-\param intype If \c 't', then \c incol refers to text, otherwise (\c 'd'
-is a good choice) refers to the vector or matrix. Default = \c 't'.
-\param incol The column in the text that will be converted. -1 is the vector. Default = 0.
-\param outcol The column in the data set where the numeric factors will be written (-1 means the vector). Default = 0.
+\param intype If \c 't', then \c incol refers to text, if \c 'd', refers to the vector or matrix. (default = \c 't')
+\param incol The column in the text that will be converted. -1 is the vector. (default = 0)
+\param outcol The column in the data set where the numeric factors will be written (-1 means the vector). (default = 0)
 
 For example:
 \code
-apop_data *d  = apop_query_to_mixed_data("mmt", "select 1, year, color from data");
+apop_data *d  = apop_query_to_mixed_data("mmt", "select 0, year, color from data");
 apop_data_to_factors(d);
 \endcode
-Notice that the query pulled a column of ones for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.
+Notice that the query pulled a column of zeros for the sake of saving room for the factors. It reads column zero of the text, and writes it to column zero of the matrix.
 
 Another example:
 \code
@@ -380,8 +427,13 @@ Also, I add a page named <tt>"<categories for your_var>"</tt> giving a reference
 
 \exception out->error=='a' allocation error.
 \exception out->error=='d' dimension error.
-\li  If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
+
+\li If the vector or matrix you wanted to write to is \c NULL, I will allocate it for you.
+\li See \ref fact for further discussion.
+\li See the documentation for \ref apop_logit for a sample linear model using this function.
 \li This function uses the \ref designated syntax for inputs.
+
+\see \ref apop_data_to_dummies
 */
 #ifdef APOP_NO_VARIADIC
 apop_data * apop_data_to_factors(apop_data *data, char intype, int incol, int outcol){
@@ -419,36 +471,6 @@ apop_varad_head(apop_data *, apop_data_to_factors){
     return out;
 }
 
-/** Factor names are stored in an auxiliary table with a name like 
-<tt>"<categories for your_var>"</tt>. Producing this name is annoying (and prevents us from eventually making it human-language independent), so use this function to get the list of factor names.
-
-\param data The data set. (No default, must not be \c NULL)
-\param col The column in the main data set whose name I'll use to check for the factor name list. Vector==-1. (default=0)
-\param type If you are referring to a text column, use 't'. (default='d')
-
-\return A pointer to the page in the data set with the given factor names.
-
-\li This function uses the \ref designated syntax for inputs.
-*/
-#ifdef APOP_NO_VARIADIC
-apop_data * apop_data_get_factor_names(apop_data *data, int col, char type){
-#else
-apop_varad_head(apop_data *, apop_data_get_factor_names){
-    apop_data *apop_varad_var(data, NULL)
-    Apop_stopif(!data, return NULL, 1, "You sent me a NULL data set. Returning NULL.");
-    int apop_varad_var(col, 0)
-    char apop_varad_var(type, 'd')
-    return apop_data_get_factor_names_base(data, col, type);
-}
-
- apop_data * apop_data_get_factor_names_base(apop_data *data, int col, char type){
-#endif
-    char *name = make_catname (data, col, type);
-    apop_data *out = apop_data_get_page(data, name, .match='e');
-    free(name);
-    return out;
-}
-
 
 /** Deprecated. Use \ref apop_data_to_factors.
   
@@ -482,17 +504,19 @@ apop_data *apop_text_to_factors(apop_data *d, size_t textcol, int datacol){
     return out;
 }
 
-/** Good ol' \f$R^2\f$.  Let \f$Y\f$ be the dependent variable,
-\f$\epsilon\f$ the residual,  \f$n\f$ the number of data points, and \f$k\f$ the number of independent vars (including the constant). Returns an \ref apop_data set with the following entries (in the vector element):
+/** Also known as \f$R^2\f$. Let \f$Y\f$ be the dependent variable,
+\f$\epsilon\f$ the residual, \f$n\f$ the number of data points, and \f$k\f$ the number
+of independent vars (including the constant). Returns an \ref apop_data set with the
+following entries (in the vector element):
 
 \li  \f$ SST \equiv \sum (Y_i - \bar Y) ^2 \f$
 \li  \f$ SSE \equiv \sum \epsilon ^2       \f$
 \li  \f$ R^2 \equiv 1 - {SSE\over SST}     \f$
 \li  \f$ R^2_{adj} \equiv R^2 - {(k-1)\over (n-k-1)}(1-R^2)     \f$
 
-  Internally allocates (and frees) a vector the size of your data set.
+Internally allocates (and frees) a vector the size of your data set.
 
-\return: a \f$5 \times 1\f$ apop_data table with the following fields:
+\return A \f$5 \times 1\f$ apop_data table with the following fields:
 \li "R squared"
 \li "R squared adj"
 \li "SSE"
@@ -509,15 +533,13 @@ keeps you from finding the \f$R^2\f$ of, say, a kernel smooth; it is up to you t
 whether such a thing is appropriate to your given models and situation.
 
 \li <tt>apop_estimate(yourdata, apop_ols)</tt> does this automatically
-\li If I don't find a Predicted page, I throw an error on the screen and return \c NULL.
+\li If I don't find a <tt>"<Predicted>"</tt> page, print an error (iff <tt>apop_opts.verbose >=0</tt>) and return \c NULL.
 \li The number of observations equals the number of rows in the Predicted page
 \li The number of independent variables, needed only for the adjusted \f$R^2\f$, is from the
 number of columns in the main data set's matrix (i.e. the first page; i.e. the set of
 parameters if this is the \c parameters output from a model estimation). 
 \li If your data (first page again) has a \c weights vector, I will find weighted SSE,
 SST, and SSR (and calculate the \f$R^2\f$s using those values).
-
-\ingroup regression
   */
 apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
   double          sse, sst, rsq, adjustment;
@@ -551,5 +573,4 @@ apop_data *apop_estimate_coefficient_of_determination (apop_model *m){
 /**  \def apop_estimate_r_squared(in) 
  A synonym for \ref apop_estimate_coefficient_of_determination, q.v. 
  \hideinitializer
- \ingroup regression
  */

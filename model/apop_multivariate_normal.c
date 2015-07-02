@@ -1,5 +1,5 @@
 /* apop_multivariate_normal.c  The multivariate Normal distribution.
- Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
+Copyright (c) 2007 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 
 \amodel apop_multivariate_normal This is the multivariate generalization of the Normal distribution.
 
@@ -7,8 +7,12 @@
 \adoc    Parameter_format  An \c apop_data set whose vector element is the vector of
                             means, and whose matrix is the covariances.
 
-If you had only one dimension, the mean would be a vector of size one, and the covariance matrix a \f$1\times 1\f$ matrix. This differs from the setup for \ref apop_normal, which outputs a single vector with \f$\mu\f$ in element zero and \f$\sigma\f$ in element one.
-\adoc    Settings   None.    */
+If you had only one dimension, the mean would be a vector of size one, and the covariance
+matrix a \f$1\times 1\f$ matrix. This differs from the setup for \ref apop_normal, which
+outputs a single vector with \f$\mu\f$ in element zero and \f$\sigma\f$ in element one.
+
+After estimation, the <tt>\<Covariance\></tt> page gives the covariance matrix of the means.
+*/
  
 #include "apop_internal.h"
 
@@ -48,10 +52,7 @@ static long double apop_multinormal_ll(apop_data *data, apop_model * m){
 
 static double a_mean(gsl_vector * in){ return apop_vector_mean(in); }
 
-/*\adoc  estimated_parameters  Format as above. The <tt>\<Covariance\></tt> page gives
-the covariance matrix of the means.
-
-\adoc estimated_info   Reports <tt>log likelihood</tt>.  */ 
+/* \adoc estimated_info   Reports <tt>log likelihood</tt>.  */ 
 static void multivariate_normal_estimate(apop_data * data, apop_model *p){
     p->parameters = apop_map(data, .fn_v=a_mean, .part='c'); 
     apop_data *cov =  apop_data_covariance(data);
@@ -60,9 +61,7 @@ static void multivariate_normal_estimate(apop_data * data, apop_model *p){
     apop_data_add_named_elmt(p->info, "log likelihood", apop_multinormal_ll(data, p));
 }
 
-/* \adoc    RNG  The RNG fills an input array whose length is based on the input parameters.
-
- The nice, easy method from Devroye, p 565 */
+/* \adoc RNG From <a href="http://cgm.cs.mcgill.ca/~luc/mbookindex.html">Devroye (1986)</a>, p 565.  */
 static int mvnrng(double *out, gsl_rng *r, apop_model *eps){
     apop_data *params = eps->parameters;
     gsl_vector *v = gsl_vector_alloc(params->vector->size);

@@ -119,9 +119,9 @@ void db_to_text(){
     assert(apop_data_get(de, 5, .colname="ab")==201);
     unlink("mixedtest");
 
-    gsl_matrix *as_matrix = apop_query_to_matrix("select ab from d");
+    apop_data *as_matrix = apop_query_to_data("select ab from d");
     gsl_vector *as_vector = apop_query_to_vector("select ab from d");
-    Apop_matrix_col(as_matrix, 0, mv);
+    Apop_matrix_col(as_matrix->matrix, 0, mv);
     gsl_vector_sub(as_vector, mv);
     Diff(apop_sum(as_vector), 0, 1e-10);
 
@@ -137,12 +137,10 @@ void test_blank_db_queries(){
     apop_query("create table t (a integer, b integer, c integer)");
     apop_data *d = apop_query_to_data("select * from t");
     apop_data *e = apop_query_to_text("select * from t");
-    gsl_matrix *f = apop_query_to_matrix("select * from t");
     gsl_vector *g = apop_query_to_vector("select * from t");
     double h = apop_query_to_float("select * from t");
     assert(d==NULL);
     assert(e==NULL);
-    assert(f==NULL);
     assert(g==NULL);
     assert(gsl_isnan(h));
 }
@@ -152,7 +150,7 @@ void test_nan_data(){
     apop_table_exists("fw", 'd');
     apop_table_exists("fww", 'd');
     apop_text_to_db( DATADIR "/" "test_data_nans" , "nandata");
-    strcpy(apop_opts.db_name_column, "head");
+    apop_opts.db_name_column = "head";
     apop_opts.nan_string = "nan";
     apop_data *d = apop_query_to_data("select * from nandata");
     apop_data_print(d, "nantest", .output_type='d');
@@ -189,9 +187,9 @@ static void test_printing(){
 
     if (!apop_table_exists("nandata"))
         test_nan_data();
-    strcpy(apop_opts.db_name_column, "head");
-    gsl_matrix *m  = apop_query_to_matrix("select * from nandata");
-    apop_matrix_print(m, .output_name=outfile, .output_append='w');
+    apop_opts.db_name_column = "head";
+    apop_data *m  = apop_query_to_data("select * from nandata");
+    apop_matrix_print(m->matrix, .output_name=outfile, .output_append='w');
 
 apop_system("cp %s xxx", outfile);
 
@@ -242,9 +240,9 @@ void test_crosstabbing() {
     assert(apop_data_get(d, .rowname="C", "G")==1);
 
     apop_data *ct = apop_text_alloc(apop_data_alloc(3,1),3,1);
-    apop_data_set(ct, 0, 0, 1); apop_text_add(ct, 0, 0, "first");
-    apop_data_set(ct, 1, 0, 2); apop_text_add(ct, 1, 0, "second");
-    apop_data_set(ct, 2, 0, 3); apop_text_add(ct, 2, 0, "third");
+    apop_data_set(ct, 0, 0, 1); apop_text_set(ct, 0, 0, "first");
+    apop_data_set(ct, 1, 0, 2); apop_text_set(ct, 1, 0, "second");
+    apop_data_set(ct, 2, 0, 3); apop_text_set(ct, 2, 0, "third");
     apop_table_exists("ct", 'd');
     apop_crosstab_to_db(ct, "ct", "r", "c", "val");
     if (apop_opts.db_engine=='s'){

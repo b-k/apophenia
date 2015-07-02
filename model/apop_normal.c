@@ -1,7 +1,7 @@
 /* The Normal and Lognormal distributions.
  Copyright (c) 2005--2009 by Ben Klemens.  Licensed under the GPLv2; see COPYING.  
 
-\amodel apop_normal The Normal (Gaussian) distribution
+\amodel apop_normal
 
 You know it, it's your attractor in the limit, it's the Gaussian distribution.
 
@@ -15,13 +15,13 @@ You know it, it's your attractor in the limit, it's the Gaussian distribution.
 
 See also the \ref apop_multivariate_normal.
 
-\adoc    Input_format     I use the elements of the matrix and vector, without regard to their order or position. 
+\adoc    Input_format A scalar, in the \c vector or \c matrix elements of the input \ref apop_data set.
 \adoc    Settings   None.
-\adoc    Parameter_format  
-  As is custom, parameter zero (in the vector) is the mean, parmeter one is the standard deviation (i.e., the square root of the variance). 
+\adoc    Parameter_format  Parameter zero (in the vector) is the mean, parmeter one is the standard deviation (i.e., the square root of the variance). 
+After estimation, a page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters.
 
-\adoc    Predict  Returns the expected value. The <tt>->more</tt>
-                 element holds a \ref apop_data set with the title <tt>\<Covariance\></tt>, whose 
+\adoc    Predict  <tt>apop_predict(NULL, estimated_normal_model)</tt> returns the expected value. The <tt>->more</tt>
+                 element holds an \ref apop_data set with the title <tt>\<Covariance\></tt>, whose 
                  matrix holds the covariance of the mean.
 */
 
@@ -73,12 +73,9 @@ void get_mu_var(apop_data *data, double *mu_out, double *var_out){
     }
 }
 
-/*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
- A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
- \adoc estimated_info Reports the log likelihood.*/
+/* \adoc estimated_info Reports the log likelihood.*/
 static void normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, );
-    apop_prep(data, est);
     Get_vmsizes(data); //tsize
     double mean, var;
     get_mu_var(data, &mean, &var);
@@ -135,9 +132,7 @@ apop_data * normal_predict(apop_data *dummy, apop_model *m){
     return out;
 }
 
-/*\adoc RNG An apophenia wrapper for the GSL's Normal RNG.
-
-This one asks explicitly for a mean, and the GSL assumes zero and lets you add the mean yourself.  */
+/*\adoc RNG A wrapper for the GSL's Normal RNG. */
 static int normal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0];
     return 0;
@@ -155,16 +150,17 @@ apop_model *apop_normal = &(apop_model){"Normal distribution", 2, 0, 0, .dsize=1
  .draw = normal_rng, .cdf = normal_cdf};
 
 
-/*\amodel apop_lognormal The Lognormal distribution
+/*\amodel apop_lognormal
 
-The log likelihood function for the lognormal distribution:
+The log likelihood function for lognormal distributions:
 
 \f$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})\f$
+
 \f$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})\f$
 
-\adoc    Input_format     I use the all elements of the matrix and vector, without regard to their order. 
-\adoc    Parameter_format  Zeroth vector element is the mean (after logging); first is the std dev (after logging)    
-\adoc    Estimate_results  Parameters are set. Log likelihood is calculated.    
+\adoc    Input_format     A scalar in the the matrix or vector element of the input \ref apop_data set.
+\adoc    Parameter_format  Zeroth vector element is the mean of the logged data set; first is the standard deviation of the logged data set.
+\adoc    Estimate_results  Parameters are set. Log likelihood is calculated.
 \adoc    settings   None.    
 */
 
@@ -187,7 +183,6 @@ static long double lognormal_log_likelihood(apop_data *d, apop_model *params){
 /* \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void lognormal_estimate(apop_data * data, apop_model *est){
     apop_data *cp = apop_data_copy(data);
-    apop_prep(data, est);
     Apop_stopif(!cp->matrix && !cp->vector, est->error='d'; return, 
             0, "Neither matrix nor vector in the input data.");
     Get_vmsizes(cp); //vsize, msize1
@@ -240,7 +235,7 @@ static void lognormal_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_m
     gsl_vector_set(gradient, 1, sll/gsl_pow_3(sd)- tsize/sd);
 }
 
-/* \adoc RNG An Apophenia wrapper for the GSL's Normal RNG, exp'ed.  */
+/* \adoc RNG An Apophenia wrapper for the GSL's Normal RNG, exponentiated.  */
 static int lognormal_rng(double *out, gsl_rng *r, apop_model *p){
 	*out = exp(gsl_ran_gaussian(r, p->parameters->vector->data[1]) + p->parameters->vector->data[0]);
     return 0;

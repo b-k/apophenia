@@ -3,7 +3,7 @@ Copyright (c) 2009, 2013 by Ben Klemens.  Licensed under the GPLv2; see COPYING.
 #include "apop_internal.h"
 
 //There used to be a χ^2 and F model, but nobody used them and they were largely untested.
-//They last appearedi in commit 2b4715111704cee3a86fca1b16903c4408bdacb9 if you'd like to recover them.
+//They last appeared in commit 2b4715111 if you'd like to recover them.
 
 static void apop_t_estimate(apop_data *d, apop_model *m){
     Apop_stopif(!d, m->error='d'; return, 0, "No data with which to count df. (the default estimation method)");
@@ -66,12 +66,46 @@ static long double apop_t_dist_constraint(apop_data *beta, apop_model *m){
 
 /*\amodel apop_t_distribution The t distribution, primarily for descriptive purposes.
 
-If you want to test a hypothesis, you probably don't need this, and should instead use \ref apop_test.  See notes in \ref tfchi.  
+If you want to test a hypothesis, you probably don't need this, and should instead
+use \ref apop_test.
+
+In that world, the \f$t\f$ distribution is parameter free. The data are
+assumed to be normalized to be based on a mean zero, variance one process, you get
+the degrees of freedom from the size of the data, and the distribution is thus fixed.
+
+For modeling purposes, more could be done. For example, the t-distribution is a favorite
+proxy for Normal-like situations where there are fat tails relative to the Normal
+(i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing
+your data---one could easily rewrite the theorems underlying the t-distribution without
+the normalizations.
+
+In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$
+indicates the fatness of the tails, which has some optimal value given the data.
+Thus, there are two modes of use for these distributions:
+
+\li Parameterized, testing style: the degrees of freedom are determined
+from the data, and all necessary normalizations are assumed. Thus, this code---
+
+\code
+apop_data *t_for_testing = apop_estimate(data, apop_t)
+\endcode
+
+---will return exactly the type of \f$t\f$-distribution one would use for testing. 
+
+\li By removing the \c estimate method---
+\code
+apop_model *spare_t = apop_model_copy(apop_t);
+spare_t->estimate = NULL;
+apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
+\endcode
+---I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
+to find the best-fitting model for descriptive purposes.
 
 \adoc    Input_format     Unordered list of scalars in the matrix and/or vector.     
-\adoc    Parameter_format  vector->data[0] = mu<br>
-                            vector->data[1] = sigma<br>
-                            vector->data[2] = df 
+\adoc    Parameter_format  Three scalars in the \c vector element:<br>
+<tt>double mu=apop_data_get(estimated_model->parameters, 0)</tt><br>
+<tt>double sigma=apop_data_get(estimated_model->parameters, 1)</tt><br>
+<tt>double df=apop_data_get(estimated_model->parameters, 2)</tt>
 \adoc    Estimate_results  I'll just count elements and set \f$df = n-1\f$. If you set the \c estimate method to \c NULL, via MLE.
 \adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings   
 */

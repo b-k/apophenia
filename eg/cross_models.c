@@ -1,8 +1,42 @@
 #include <apop.h>
 
-int main(){
-    //bind together a Poisson and a Normal;
-    //make a draw producing a 2-element vector
+/* In this initial example, build a cross product of two Normal(2,.1) distributions.
+Make 10,000 draws from it.
+ 
+Then, build a cross product of two unparameterized Normals and estimate the parameters
+of the combined model; check that they match the (2, .1) we started with.
+*/
+void cross_normals(){
+    double mu = 2;
+    double sigma = .1;
+    apop_model *n1 = apop_model_set_parameters(apop_normal, mu, sigma);
+    apop_model *n2 = apop_model_copy(n1);
+    apop_model *two_independent_normals = apop_model_cross(n1, n2);
+    //
+    //We don't use it, but the cross product of three is just as easy:
+    apop_model *n3 = apop_model_copy(n1);
+    apop_model *three_independent_normals = apop_model_cross(n1, n2, n3);
+
+    apop_data *draws = apop_model_draws(two_independent_normals, .count=10000);
+
+    //The unparameterized cross product:
+    apop_model *two_n = apop_model_cross(
+                    apop_model_copy(apop_normal),
+                    apop_model_copy(apop_normal)
+                    );
+    apop_model *estimated_norms = apop_estimate(draws, two_n);
+
+    apop_model_print(estimated_norms);
+    apop_data *estp1 = Apop_settings_get(estimated_norms, apop_cross, model1)->parameters;
+    apop_data *estp2 = Apop_settings_get(estimated_norms, apop_cross, model2)->parameters;
+    assert(fabs(apop_data_get(estp1, 0) - mu)    < 2e-3);
+    assert(fabs(apop_data_get(estp2, 0) - mu)    < 2e-3);
+    assert(fabs(apop_data_get(estp1, 1) - sigma) < 2e-3);
+    assert(fabs(apop_data_get(estp2, 1) - sigma) < 2e-3);
+}
+
+//bind together a Poisson and a Normal
+void norm_cross_poisson(){
     apop_model *m1 = apop_model_set_parameters(apop_poisson, 3);
     apop_model *m2 = apop_model_set_parameters(apop_normal, -5, 1);
     apop_model *mm = apop_model_cross(m1, m2);
@@ -14,9 +48,13 @@ int main(){
         assert(onev->data[1]<0);
     }
 
-    //The rest of the test script recovers the parameters.
-    //First, set up a two-page data set: poisson data (column 0 of the draws) on p1,
-    //Normal (column 1 of the draws) on p2
+    /*The rest of the test script recovers the parameters.
+    Input data to an apop_cross model can take two formats. In cross_normals, the
+    draws are in a single matrix. Here, the data for the Poisson (col 0 of the draws)
+    will be put in an apop_data set, and the data for the Normal (col 1 of the draws)
+    on a second page appended to the first. Then, set the .splitpage element of the
+    apop_cross settings group to the name of the second page.
+    */
     apop_data *comeback = apop_data_alloc();
     comeback->vector = apop_vector_copy(Apop_cv(draws, 0));
     apop_data_add_page(comeback, apop_data_alloc(), "p2");
@@ -44,4 +82,9 @@ int main(){
     assert(fabs(apop_data_get(sum, .row=2, .colname="mean") - 8) < 4e-2);
     assert(apop_data_get(sum, .row=0, .colname="median") == 3);
     assert(apop_data_get(sum, .row=2, .colname="median") == 8);
+}
+
+int main(){
+    cross_normals();
+    norm_cross_poisson();
 }

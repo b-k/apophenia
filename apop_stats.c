@@ -11,29 +11,7 @@
     Apop_stopif(!v->size, return GSL_NAN, 0, "data vector has size 0. Returning NaN.\n");   \
     Apop_stopif(weights && weights->size != v->size, return GSL_NAN, 0, "data vector has size %zu; weighting vector has size %zu. Returning NaN.\n", v->size, weights->size);
 
-/** \defgroup vector_moments Calculate moments (mean, var, kurtosis) for the data in a gsl_vector.
-
-These functions simply take in a GSL vector and return its mean, variance, or kurtosis; the covariance functions take two GSL vectors as inputs.
-
-\see db_moments
-
-For <tt>apop_vector_var_m(vector, mean)</tt>, <tt>mean</tt> is the mean of the
-vector. This saves the trouble of re-calculating the mean if you've
-already done so. E.g.,
-
-\code
-gsl_vector *v;
-double mean, var;
-
-//Allocate v and fill it with data here.
-mean = apop_vector_mean(v);
-var  = apop_vector_var_m(v, mean);
-printf("Your vector has mean %g and variance %g\n", mean, var);
-\endcode
-*/
-
 /** Returns the sum of the data in the given vector.
-\ingroup convenience_fns
 */
 long double apop_vector_sum(const gsl_vector *in){
     Apop_stopif(!in, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
@@ -45,37 +23,32 @@ long double apop_vector_sum(const gsl_vector *in){
 
 /** \def apop_sum(in)
   An alias for \ref apop_vector_sum. Returns the sum of the data in the given vector.
-\ingroup convenience_fns
 */
 
-/**  \def apop_vector_mean(in)
- 
- Returns the mean of the data in the given vector.
-\ingroup vector_moments
-*/
+/** \def apop_mean(v)
+ Returns the mean of the elements of the vector \c v.
 
-/**  \def apop_mean(in)
-  An alias for \ref apop_vector_mean.  Returns the mean of the data in the given vector.
-\ingroup vector_moments
+\param v A \ref gsl_vector.
 */
 
 /** \def apop_var(in)
-  An alias for \ref apop_vector_var.
+An alias for \ref apop_vector_var.
 Returns the variance of the data in the given vector.
-\ingroup vector_moments
 */
 
-/** Returns an unbiased estimate of the sample skew (population skew times  y \f$n^2/(n^2-1)\f$) of the data in the given vector.
-\ingroup vector_moments
+/** Returns an unbiased estimate of the sample skew of the data in the given vector.
 */
 double apop_vector_skew(const gsl_vector *in){
 	return apop_vector_skew_pop(in) * gsl_pow_2(in->size)/((in->size -1.)*(in->size -2.)); }
 
-/** Returns the sample kurtosis (divide by \f$n-1\f$) of the data in the given
-vector. Corrections are made to produce an unbiased result as per <a href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling with data</em>.
+/** Returns the sample fourth central moment of the data in the given
+vector. Corrections are made to produce an unbiased result as per <a
+href="http://modelingwithdata.org/pdfs/moments.pdf">Appendix M</a> (PDF) of <em>Modeling
+with data</em>.
 
-  \li This does not normalize the output: the kurtosis of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
-\ingroup vector_moments
+\li This is an estimate of the fourth central moment without normalization. The kurtosis
+    of a \f${\cal N}(0,1)\f$ is \f$3 \sigma^4\f$, not three, one, or zero.
+\see \ref apop_vector_kurtosis_pop
 */
 double apop_vector_kurtosis(const gsl_vector *in){
     size_t n = in->size;
@@ -103,16 +76,15 @@ static double wskewkurt(const gsl_vector *v, const gsl_vector *w, const int expo
 
 \param v       The data vector
 \param weights The weight vector. Default: equal weights for all observations.
-\return        The weighted skew. No sample adjustment given weights.
+\return        The weighted skew.
  
-\li  Some people like to normalize the skew by dividing by variance\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
+\li  Some people like to normalize the skew by dividing by (variance)\f$^{3/2}\f$; that's not done here, so you'll have to do so separately if need be.
 
 \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
-\ingroup vector_moments
 */
 #ifdef APOP_NO_VARIADIC
 double apop_vector_skew_pop(gsl_vector const *v, gsl_vector const *weights){
@@ -140,15 +112,18 @@ apop_varad_head(double, apop_vector_skew_pop){
     return avg;
 }
 
-/** Returns the population kurtosis (\f$\sum_i (x_i - \mu)^4/n)\f$) of the data in the given vector, with an optional weighting.
+/** Returns the population fourth central moment [\f$\sum_i (x_i - \mu)^4/n)\f$] of the data in
+the given vector, with an optional weighting.
 
 \param v The data vector
 \param weights The weight vector. If NULL, assume equal weights.
-\return The weighted kurtosis. No sample adjustment given weights.
+\return The weighted kurtosis.
  
-\li Some people like to normalize the kurtosis by dividing by variance squared, or by subtracting three; those things are  not done here, so you'll have to do them separately if need be.
-\li This function uses the \ref designated syntax for inputs.
-\ingroup vector_moments
+  \li Some people like to normalize the fourth central moment by dividing by variance
+squared, or by subtracting three; those things are not done here, so you'll have to
+do them separately if desired.
+  \li This function uses the \ref designated syntax for inputs.
+\see \ref apop_vector_kurtosis for the unbiased sample version.
 */
 #ifdef APOP_NO_VARIADIC
 double apop_vector_kurtosis_pop(gsl_vector const *v, gsl_vector const *weights){
@@ -179,46 +154,68 @@ apop_varad_head(double, apop_vector_kurtosis_pop){
 /** Returns the variance of the data in the given vector, given that you've already calculated the mean.
 \param in	the vector in question
 \param mean	the mean, which you've already calculated using \ref apop_vector_mean.
-\ingroup vector_moments
+\see apop_vector_var
 */
 double apop_vector_var_m(const gsl_vector *in, const double mean){
 	return gsl_stats_variance_m(in->data,in->stride, in->size, mean); }
 
-/** Returns the correlation coefficient of two vectors. It's just
-\f$ {\hbox{cov}(a,b)\over \sqrt(\hbox{var}(a)) * \sqrt(\hbox{var}(b))}.\f$
-\ingroup vector_moments
+/** Returns the correlation coefficient of two vectors:
+\f$ {\hbox{cov}(a,b)\over \sqrt{\hbox{var}(a)} \sqrt{\hbox{var}(b)}}.\f$
+
+An example
+\code 
+gsl_matrix *m = apop_text_to_data("indata")->matrix;
+printf("The correlation coefficient between rows two "
+       "and three is %g.\n", apop_vector_correlation(Apop_mrv(m, 2), Apop_mrv(m, 3)));
+\endcode 
+
+\param ina, inb Two vectors of equal length (no default, must not be NULL)
+\param weights Replicate weights for the observations. (default: equal weights for all observations)
+
+\li This function uses the \ref designated syntax for inputs.
 */
-double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb){
-	return apop_vector_cov(ina, inb) / sqrt(apop_vector_var(ina) * apop_vector_var(inb)); }
+#ifdef APOP_NO_VARIADIC
+double apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights){
+#else
+apop_varad_head(double, apop_vector_correlation){
+    gsl_vector const * apop_varad_var(ina, NULL);
+    gsl_vector const * apop_varad_var(inb, NULL);
+    gsl_vector const * apop_varad_var(weights, NULL);
+    return apop_vector_correlation_base(ina, inb, weights);
+}
+
+ double apop_vector_correlation_base(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights){
+#endif
+	return apop_vector_cov(ina, inb, weights) 
+            / sqrt(apop_vector_var(ina, weights) * apop_vector_var(inb, weights)); }
 
 
 /** Returns the distance between two vectors, where distance is defined
  based on the third (optional) parameter:
 
- - 'e' or 'E' (the default): scalar distance (standard Euclidean metric) between two vectors. Simply \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
+ - 'e'  (the default): scalar distance (standard Euclidean metric) between two vectors. \f$\sqrt{\sum_i{(a_i - b_i)^2}},\f$
 where \f$i\f$ iterates over dimensions.
- - 'm' or 'M'  Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
+ - 'm'   Returns the Manhattan metric distance  between two vectors: \f$\sum_i{|a_i - b_i|},\f$
 where \f$i\f$ iterates over dimensions.
- - 'd' or 'D' The discrete norm: if \f$a = b\f$, return zero, else return one.
- - 's' or 'S' The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
- - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{(a_i - b_i)^2}\right)^{1/p},\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
+ - 'd'  The discrete norm: if \f$a = b\f$, return zero, else return one.
+ - 's'  The sup norm: find the dimension where \f$|a_i - b_i|\f$ is largest, return the distance along that one dimension.
+ - 'l' or 'L' The \f$L_p\f$ norm, \f$\left(\sum_i{|a_i - b_i|^2}\right)^{1/p}\f$. The value of \f$p\f$ is set by the fourth (optional) argument.
 
  \param ina First vector (No default, must not be \c NULL)
  \param inb Second vector (Default = zero)
  \param metric The type of metric, as above.
  \param norm  If you are using an \f$L_p\f$ norm, this is \f$p\f$. Must be strictly greater than zero. (default = 2)
 
- Notice that the defaults are such that
+\li  The defaults are such that
  \code
  apop_vector_distance(v);
  apop_vector_distance(v, .metric = 's');
+ apop_vector_distance(v, .metric = 'm');
  \endcode
- gives you the standard Euclidean length of \c v and its longest element.
+gives you the standard Euclidean length of \c v, its longest element, and its sum.
+\li This function uses the \ref designated syntax for inputs.
 
 \include test_distances.c
-
-\li This function uses the \ref designated syntax for inputs.
-\ingroup convenience_fns
 */
 #ifdef APOP_NO_VARIADIC
 double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm){
@@ -226,7 +223,7 @@ double apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const 
 apop_varad_head(double, apop_vector_distance){
     static threadlocal gsl_vector *zero = NULL;
     const gsl_vector * apop_varad_var(ina, NULL);
-    Apop_assert(ina, "The first vector has to be non-NULL.");
+    Apop_stopif(!ina, return NAN, 1, "The first vector is NULL. Returning NAN");
     const gsl_vector * apop_varad_var(inb, NULL);
     if (!inb){
         if (!zero || zero->size !=ina->size){
@@ -271,51 +268,28 @@ apop_varad_head(double, apop_vector_distance){
             dist += pow(fabs(gsl_vector_get(ina, i) - gsl_vector_get(inb, i)), norm);
         return pow(dist, 1./norm); 
     }
-  Apop_assert(0, "I couldn't find the metric type you gave, %c, in my list of supported types.", metric);
+  Apop_stopif(1, return NAN, 1, "I couldn't find the metric type you gave, %c, in my list of supported types. Returning NaN", metric);
 }
 
 /** This function will normalize a vector, either such that it has mean
 zero and variance one, or ranges between zero and one, or sums to one.
 
-\param in 	A gsl_vector which you have already allocated and filled. \c NULL input gives \c NULL output. (No default)
+\param in	A \c gsl_vector with the un-normalized data. \c NULL
+input gives \c NULL output. (No default)
 
 \param out 	If normalizing in place, \c NULL.
-If not, the address of a <tt>gsl_vector</tt>. Do not allocate. (default = \c NULL.)
+If not, the address of a <tt>gsl_vector*</tt>. Do not allocate. (default = \c NULL.)
 
 \param normalization_type 
-'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br>
-'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
-'s': normalized vector will have mean zero and variance one. Replace
+\c 'p': normalized vector will sum to one. E.g., start with a set of observations in bins, end with the percentage of observations in each bin. (the default)<br>
+\c 'r': normalized vector will range between zero and one. Replace each X with (X-min) / (max - min).<br>
+\c 's': normalized vector will have mean zero and (sample) variance one. Replace
 each X with \f$(X-\mu) / \sigma\f$, where \f$\sigma\f$ is the sample
 standard deviation.<br>
-'m': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
+\c 'm': normalize to mean zero: Replace each X with \f$(X-\mu)\f$<br>
 
 \b Example 
 \code
-#include <apop.h>
-
-int main(void){
-gsl_vector  *in, *out;
-
-in = gsl_vector_calloc(3);
-gsl_vector_set(in, 1, 1);
-gsl_vector_set(in, 2, 2);
-
-printf("The original vector:\n");
-apop_vector_show(in);
-
-apop_vector_normalize(in, &out, 's');
-printf("Standardized with mean zero and variance one:\n");
-apop_vector_show(out);
-
-apop_vector_normalize(in, &out, 'r');
-printf("Normalized range with max one and min zero:\n");
-apop_vector_show(out);
-
-apop_vector_normalize(in, NULL, 'p');
-printf("Normalized into percentages:\n");
-apop_vector_show(in);
-}
 \endcode
 
 \li This function uses the \ref designated syntax for inputs.
@@ -343,7 +317,7 @@ apop_varad_head(void, apop_vector_normalize){
 		mu = apop_vector_mean(in);
         Apop_stopif(!isfinite(mu), return, 0, "normalization failed: the mean of the vector is not finite.");
 		gsl_vector_add_constant(*out, -mu);
-        double scaling = 1./(sqrt(apop_vector_var_m(in, 0)));
+        double scaling = 1./(sqrt(apop_vector_var_m(*out, 0)));
         Apop_stopif(!isfinite(scaling), return, 0, "normalization failed: 1/(std error)  of the vector is not finite.");
 		gsl_vector_scale(*out, scaling);
 	} 
@@ -365,73 +339,54 @@ apop_varad_head(void, apop_vector_normalize){
 	}
 }
 
-/** Normalize  each row or column in the given matrix, one by one.
-
-  Basically just a convenience fn to iterate through the columns or rows and run \ref apop_vector_normalize for you.
-
-\param data     The data set to normalize.
-\param row_or_col   Either 'r' or 'c'.
-\param normalization     see \ref apop_vector_normalize.
-*/
-void apop_matrix_normalize(gsl_matrix *data, const char row_or_col, const char normalization){
-    Apop_assert_c(data, , 1, "input matrix is NULL. Doing nothing.");
-    if (row_or_col == 'r')
-        for (size_t j = 0; j < data->size1; j++){
-            Apop_matrix_row(data, j, v);
-            apop_vector_normalize(v, NULL, normalization);
-        }
-    else
-        for (size_t j = 0; j < data->size2; j++){
-            Apop_matrix_col(data, j, v);
-            apop_vector_normalize(v, NULL, normalization);
-        }
-}
-
 /** Returns the sum of the elements of a matrix. Occasionally convenient.
 
-  \param m	the matrix to be summed. 
-\ingroup convenience_fns*/
+\param m	the matrix to be summed. 
+*/
 long double apop_matrix_sum(const gsl_matrix *m){
     Apop_stopif(!m, return 0, 1, "You just asked me to sum a NULL. Returning zero.");
     long double	sum	= 0;
 	for (size_t j=0; j< m->size1; j++)
 		for (size_t i=0; i< m->size2; i++)
-			sum     += gsl_matrix_get(m, j, i);
+			sum += gsl_matrix_get(m, j, i);
 	return sum;
 }
 
 /** Returns the mean of all elements of a matrix.
 
-Calculated with an eye toward avoiding overflow errors.
-
-\param data	the matrix to be averaged. If \c NULL, return zero.
-\ingroup convenience_fns*/
+\param data	The matrix to be averaged. If \c NULL, return zero.
+\return The mean of all cells of the matrix.
+*/
 double apop_matrix_mean(const gsl_matrix *data){
     if (!data) return 0;
-    double  avg     = 0;
-    int     cnt= 0;
-    double  x, ratio;
+    long double avg = 0;
+    int cnt = 0;
     for(size_t i=0; i < data->size1; i++)
         for(size_t j=0; j < data->size2; j++){
-            x       = gsl_matrix_get(data, i,j);
-            ratio   = cnt/(cnt+1.0);
-            cnt     ++;
-            avg     *= ratio;
-            avg     += x/(cnt +0.0);
+            double x = gsl_matrix_get(data, i,j);
+            long double ratio = cnt/(cnt+1.0);
+            cnt++;
+            avg*= ratio;
+            avg+= x/cnt;
         }
 	return avg;
 }
 
 /** Returns the mean and population variance of all elements of a matrix.
  
-  \li If you want sample variance, multiply the result returned by <tt>(data->size1*data->size2)/(data->size1*data->size2-1.0)</tt>.
+\li If \c NULL, return \f$\mu=0, \sigma^2=NaN\f$.
+\li Gives the population variance (sum of squares divided by \f$N\f$).  
+If you want sample variance, multiply the result by \f$N/(N-1)\f$:
+\code
+double mu, var;
+apop_data *data= apop_query_to_data("select * from indata");
+apop_matrix_mean_and_var(data->matrix, &mu, &var);
+var *= (data->size1*data->size2)/(data->size1*data->size2-1.0);
+\endcode
 
 \param data	the matrix to be averaged. 
 \param	mean	where to put the mean to be calculated.
 \param	var	where to put the variance to be calculated.
-
-\li If \c NULL, return (zero, NaN).
-\ingroup convenience_fns
 */
 void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var){
     if (!data) {*mean=0; *var=GSL_NAN; return;}
@@ -455,16 +410,18 @@ void apop_matrix_mean_and_var(const gsl_matrix *data, double *mean, double *var)
 
 /** Put summary information about the columns of a table (mean, std dev, variance, min, median, max) in a table.
 
-\param indata The table to be summarized. An \ref apop_data structure.
-\return     An \ref apop_data structure with one row for each column in the original table, and a column for each summary statistic. May have a <tt>weights</tt> element.
+\param indata The table to be summarized. An \ref apop_data structure. May have a <tt>weights</tt> element.
+\return     An \ref apop_data structure with one row for each column in the original
+            table, and a column for each summary statistic.
 \exception out->error='a'  Allocation error.
 
 \li This function gives more columns than you probably want; use \ref apop_data_prune_columns to pick the ones you want to see.
-\todo We should probably let this summarize rows as well. 
-\ingroup    output */
+
+\li See apop_data_prune_columns for an example.
+*/
 apop_data * apop_data_summarize(apop_data *indata){
-    Apop_assert_c(indata, NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
-    Apop_assert_c(indata->matrix, NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
+    Apop_stopif(!indata, return NULL, 0, "You sent me a NULL apop_data set. Returning NULL.");
+    Apop_stopif(!indata->matrix, return NULL, 0, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
     apop_data *out = apop_data_alloc(indata->matrix->size2, 6);
     double mean, var;
     char rowname[10000]; //crashes on more than 10^9995 columns.
@@ -509,6 +466,50 @@ apop_data * apop_data_summarize(apop_data *indata){
 	return out;
 }
 
+/** Returns an array of size 101, where \c returned_vector[95] gives the value of the
+95th percentile, for example. \c Returned_vector[100] is always the maximum value,
+and \c returned_vector[0] is always the min (regardless of rounding rule).
+
+  \param data	A \c gsl_vector with the data. (No default, must not be \c NULL.)
+  \param rounding Either be \c 'u', \c 'd', or \c 'a'. Unless your data is
+exactly a multiple of 101, some percentiles will be ambiguous. If \c 'u', then round
+up (use the next highest value); if \c 'd', round down to the next lowest value; if \c
+'a', take the mean of the two nearest points.  (Default = \c 'd'.)
+
+\li If the rounding method is \c 'u' or \c 'a', then you can say "5% or more  of
+the sample is below returned_vector[5]"; if \c 'd' or \c 'a', then you can say "5%
+or more of the sample is above returned_vector[5]".
+\li You may eventually want to \c free() the array returned by this function.
+\li This function uses the \ref designated syntax for inputs.
+*/ 
+#ifdef APOP_NO_VARIADIC
+double * apop_vector_percentiles(gsl_vector *data, char rounding){
+#else
+apop_varad_head(double *, apop_vector_percentiles){
+    gsl_vector *apop_varad_var(data, NULL);
+    Apop_stopif(!data, return NULL, 0, "You gave me NULL data.");
+    char apop_varad_var(rounding, 'd');
+    return apop_vector_percentiles_base(data, rounding);
+}
+
+ double * apop_vector_percentiles_base(gsl_vector *data, char rounding){
+#endif
+    gsl_vector *sorted	= gsl_vector_alloc(data->size);
+    double     *pctiles = malloc(sizeof(double) * 101);
+	gsl_vector_memcpy(sorted,data);
+	gsl_sort_vector(sorted);
+	for(int i=0; i<101; i++){
+		int index = i*(data->size-1)/100.0;
+		if (rounding == 'u' && index != i*(data->size-1)/100.0)
+			index ++; //index was rounded down, but should be rounded up.
+		if (rounding == 'a' && index != i*(data->size-1)/100.0)
+            pctiles[i]	= (gsl_vector_get(sorted, index)+gsl_vector_get(sorted, index+1))/2.;
+        else pctiles[i]	= gsl_vector_get(sorted, index);
+	}
+	gsl_vector_free(sorted);
+	return pctiles;
+}
+
 /** Find the mean, weighted or unweighted. 
 
 \param v        The data vector
@@ -539,21 +540,20 @@ apop_varad_head(double, apop_vector_mean){
 
 /** Find the sample variance of a vector, weighted or unweighted.
 
-\li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
-
-\li  At the moment, there is no var_pop function. Just multiply this by (n-1)/n if you need that.
-
 \param v       The data vector
-\param weights The weight vector. If NULL, assume equal weights.
+\param weights The weight vector. If NULL (the default), assume equal weights.
 \return        The weighted sample variance.  
 
-\li Apophenia tries to be smart about reading the weights. If weights
+  \li This uses (n-1) in the denominator of the sum; i.e., it corrects for the bias
+introduced by using \f$\bar x\f$ instead of \f$\mu\f$.
+  \li  Multiply the output by (n-1)/n if you need population variance.
+  \li Apophenia tries to be smart about reading the weights. If weights
 sum to one, then the system uses \c w->size as the number of elements,
 and returns the usual sum over \f$n-1\f$. If weights > 1, then the
 system uses the total weights as \f$n\f$. Thus, you can use the weights
 as standard weightings or to represent elements that appear repeatedly.
-
-\li This function uses the \ref designated syntax for inputs.
+  \li This function uses the \ref designated syntax for inputs.
+\see apop_vector_var_m for the case where you already have the vector's mean.
 */
 #ifdef APOP_NO_VARIADIC
 double apop_vector_var(gsl_vector const *v, gsl_vector const *weights){
@@ -584,9 +584,10 @@ apop_varad_head(double, apop_vector_var){
 /** Find the sample covariance of a pair of vectors, with an optional weighting. This only
 makes sense if the weightings are identical, so the function takes only one weighting vector for both.
 
-\param  v1, v2  The data vectors
-\param  weights The weight vector. Default: equal weights for all elements.
+\param  v1, v2  The data vectors (no default; must not be \c NULL)
+\param  weights The weight vector. (default equal weights for all elements)
 \return The sample covariance
+
 \li This function uses the \ref designated syntax for inputs.
 */
 #ifdef APOP_NO_VARIADIC
@@ -626,16 +627,21 @@ apop_varad_head(double, apop_vector_cov){
 
 /** Returns the sample variance/covariance matrix relating each column of the matrix to each other column.
 
-\param in 	An \ref apop_data set. If the weights vector is set, I'll take it into account.
+\param in An \ref apop_data set. If the weights vector is set, I'll take it into account.
 
-\li This is the sample covariance---dividing by \f$n-1\f$, not \f$n\f$.
+\li This is the sample covariance---dividing by \f$n-1\f$, not \f$n\f$. If you need the population variance, use 
+\code
+apop_data *popcov = apop_data_covariance(indata);
+int size=indata->matrix->size1;
+gsl_matrix_scale(popcov->matrix, size/(size-1.));
+\endcode
 
-\return Returns a \ref apop_data set the variance/covariance matrix relating each column with each other.
+\return Returns an \ref apop_data set the variance/covariance matrix.  
 \exception out->error='a'  Allocation error.
-\ingroup matrix_moments */
+*/
 apop_data *apop_data_covariance(const apop_data *in){
-    Apop_assert_c(in,  NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
-    Apop_assert_c(in->matrix,  NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
+    Apop_stopif(!in, return NULL, 1, "You sent me a NULL apop_data set. Returning NULL.");
+    Apop_stopif(!in->matrix, return NULL, 1, "You sent me an apop_data set with a NULL matrix. Returning NULL.");
     apop_data *out = apop_data_alloc(in->matrix->size2, in->matrix->size2);
     Apop_stopif(out->error, return out, 0, "allocation error.");
     for (size_t i=0; i < in->matrix->size2; i++){
@@ -654,9 +660,9 @@ apop_data *apop_data_covariance(const apop_data *in){
 
 \param in 	A data matrix: rows are observations, columns are variables. If you give me a weights vector, I'll use it.
 
-\return Returns the variance/covariance matrix relating each column with each other. This function allocates the matrix for you.
+\return Returns the square variance/covariance matrix with dimensions equal to the number of input columns.
 \exception out->error='a'  Allocation error.
-\ingroup matrix_moments */
+*/
 apop_data *apop_data_correlation(const apop_data *in){
     apop_data *out = apop_data_covariance(in);
     if (!out) return NULL;
@@ -671,7 +677,7 @@ apop_data *apop_data_correlation(const apop_data *in){
 
 /** Given a vector representing a probability distribution of observations, calculate the entropy, \f$\sum_i -\ln(v_i)v_i\f$.
 
-\li The input vector need not be normalized to sum to one. You may input a vector giving frequencies.
+\li You may input a vector giving frequencies (normalized to sum to one) or counts (arbitrary sum).
 
 \li The entropy of a data set depends only on the frequency with which elements are
 observed, not the value of the elements themselves. The \ref apop_data_pmf_compress
@@ -724,18 +730,16 @@ double get_ll(apop_data *d, void *m){ return apop_log_likelihood(d, m); }
 /** Calculate the entropy of a model: \f$\int -\ln(p(x))p(x)dx\f$, which is the expected
   value of \f$-\ln(p(x))\f$.
 
-The default method is to make draws using the input model's \c draw method (or the MCMC or ARMS default methods), then
-evaluate the log likelihood at that point using the models \c log_likelihood method.
+The default method is to make draws using \ref apop_model_draws, then
+evaluate the log likelihood at those points using the model's \c log_likelihood method.
 
 There are a number of routines for specific models, inlcuding the \ref apop_normal and \ref apop_pmf models.
 
-\li  If you have a data set, see \ref apop_vector_entropy.
-
+\li  If you want the entropy of a data set, see \ref apop_vector_entropy.
 \li The entropy is calculated using natural logs. If you prefer base-2 logs, just divide by \f$\ln(2)\f$: <tt>apop_model_entropy(my_model)/log(2)</tt>.
 
 \param in A parameterized \ref apop_model. That is, you have already used \ref apop_estimate or \ref apop_model_set_parameters to estimate/set the model parameters.
 \param draws If using the default method of making random draws, how many random draws to make (default=1,000)
-\param r If using the default method of making random draws, the RNG to use. (default: use \ref apop_rng_get_thread)
 
 Sample code:
 \include entropy_model.c
@@ -775,46 +779,47 @@ double a_div(gsl_vector *in){
 
 /** Kullback-Leibler divergence.
 
-  This measure of the divergence of one distribution from another
-  has the form \f$ D(p,q) = \sum_i \ln(p_i/q_i) p_i \f$.
-  Notice that it is not a distance, because there is an asymmetry
-  between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
+This measure of the divergence of one distribution from another has the form \f$ D(p,q)
+= \sum_i \ln(p_i/q_i) p_i \f$.  Notice that it is not a distance, because there is an
+asymmetry between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(q, p)\f$.
 
   \param from the \f$p\f$ in the above formula. (No default; must not be \c NULL)
   \param to the \f$q\f$ in the above formula. (No default; must not be \c NULL)
   \param draw_ct If I do the calculation via random draws, how many? (Default = 1e5)
   \param rng    A \c gsl_rng. If \c NULL or number of threads is greater than 1, I'll take care of the RNG; see \ref apop_rng_get_thread. (Default = \c NULL)
 
-  This function can take empirical histogram-type models (\ref apop_pmf) or continuous models like \ref apop_loess
-  or \ref apop_normal.
+This function can take empirical histogram-type models (\ref apop_pmf) or continuous
+models like \ref apop_loess or \ref apop_normal.
 
- If there is a PMF (I'll try \c from first, under the presumption that you are measuring the divergence of data from an observed data distribution), then I'll step
+If there is a PMF (I'll try \c from first, under the presumption that you are measuring
+the divergence of a fitted model from an observed data distribution), then I'll step
 through it for the points in the summation.
 
-\li If you have two empirical distributions, that they must be synced: if \f$p_i>0\f$
-but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If <tt>apop_opts.verbose >=1</tt>
-I print a message as well.
+\li If you have two empirical distributions in the form of \ref apop_pmf, they must
+be synced: if \f$p_i>0\f$ but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If
+<tt>apop_opts.verbose >=1</tt> I print a message as well.
 
-If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c to and evaluate at those points.
+If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c from
+and evaluate at those points.
 
 \li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
 
 \li This function uses the \ref designated syntax for inputs.
- */
+*/
 #ifdef APOP_NO_VARIADIC
-double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
+long double apop_kl_divergence(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
 #else
-apop_varad_head(double, apop_kl_divergence){
+apop_varad_head(long double, apop_kl_divergence){
     apop_model * apop_varad_var(from, NULL);
     apop_model * apop_varad_var(to, NULL);
     Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
     Apop_stopif(!to, return NAN, 0, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
-    gsl_rng * apop_varad_var(rng, apop_rng_get_thread());
+    gsl_rng * apop_varad_var(rng, apop_rng_get_thread(-1));
     return apop_kl_divergence_base(from, to, draw_ct, rng);
 }
 
- double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
+ long double apop_kl_divergence_base(apop_model *from, apop_model *to, int draw_ct, gsl_rng *rng){
 #endif
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
@@ -840,7 +845,7 @@ apop_varad_head(double, apop_kl_divergence){
         apop_data *draw_list = apop_data_alloc(draw_ct, 2);
         OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
             double draw[from->dsize];
-            apop_draw(draw, apop_rng_get_thread(), from);
+            apop_draw(draw, apop_rng_get_thread(-1), from);
             gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
             double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
             double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);
@@ -850,47 +855,12 @@ apop_varad_head(double, apop_kl_divergence){
             Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
                                                 "to-distribution doesn't (which produces infinite divergence).");
         }
-        apop_matrix_normalize(draw_list->matrix, 'v', 'p');
+        apop_vector_normalize(Apop_cv(draw_list, 0), NULL, 'p');
+        apop_vector_normalize(Apop_cv(draw_list, 1), NULL, 'p');
         div = apop_map_sum(draw_list, .fn_v=a_div);
     }
     return div;
 }
-
-
-/** \defgroup tfchi t-, chi-squared, F-, Wishart distributions
-
-Most of these distributions are typically used for testing purposes.  For such a situation, you don't need the models here.
-Given a statistic of the right properties, you can find the odds that the statistic is above or below a cutoff on the t-, F, or chi-squared distribution using the \ref apop_test function. 
-
-In that world, those three distributions are actually parameter free. The data is assumed to be normalized to be based on a mean zero, variance one process, you get the degrees of freedom from the size of the data, and the distribution is fixed.
-
-For modeling purposes, more could be done. For example, the t-distribution is a favorite proxy for Normal-like situations where there are fat tails relative to the Normal (i.e., high kurtosis). Or, you may just prefer not to take the step of normalizing your data---one could easily rewrite the theorems underlying the t-distribution without the normalizations.
-
-In such a case, the researcher would not want to fix the \f$df\f$, because \f$df\f$ indicates the fatness of the tails, which has some optimal value given the data. 
-Thus, there are two modes of use for these distributions: 
-
-\li Parameterized, testing style: the degrees of freedom are determined
-from the data, and all necessary normalizations are assumed. Thus, this code---
-
-\code
-apop_data *t_for_testing = apop_estimate(data, apop_t)
-\endcode
-
----will return exactly the type of \f$t\f$-distribution one would use for testing. 
-
-\li By removing the \c estimate method---
-\code
-apop_model *spare_t = apop_model_copy(apop_t);
-spare_t->estimate = NULL;
-apop_model *best_fitting_t = apop_estimate(your_data, spare_t);
-\endcode
----I will find the best \f$df\f$ via maximum likelihood, which may be desirable for
-to find the best-fitting model for descriptive purposes.
-
-\c df works for all four distributions here; \c df2 makes sense only for the \f$F\f$, 
-
-For the Wishart, the degrees of freedom and covariance matrix are always estimated via MLE.
-*/
 
 /** The multivariate generalization of the Gamma distribution.
 \f[
@@ -903,7 +873,7 @@ Because \f$\Gamma(x)\f$ is undefined for \f$x\in\{0, -1, -2, ...\}\f$, this func
 See also \ref apop_multivariate_lngamma, which is more numerically stable in most cases.
 */
 long double apop_multivariate_gamma(double a, int p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    Apop_stopif(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0, return NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
     long double out = pow(M_PI, p*(p-1.)/4.);
     long double factor = 1;
     for (int i=1; i<=p; i++)
@@ -915,7 +885,7 @@ long double apop_multivariate_gamma(double a, int p){
  \ref apop_multivariate_gamma.
 */
 long double apop_multivariate_lngamma(double a, int p){
-    Apop_assert_c(!(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0), GSL_NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
+    Apop_stopif(-(a+(1-p)/2) == (int)-(a+(1-p)/2) && a+(1-p)/2 <=0, return NAN, 1, "Undefined when a + (1-p)/2 = 0, -1, -2, ... [you sent a=%g, p=%i]", a, p);
     long double out = M_LNPI * p*(p-1.)/4.;
     for (int i=1; i<=p; i++)
         out += gsl_sf_lngamma(a+(1-i)/2.);
@@ -944,14 +914,17 @@ static double biggest_elmt(gsl_matrix *d){
     return  GSL_MAX(fabs(gsl_matrix_max(d)), fabs(gsl_matrix_min(d)));
 }
 
-/** Test whether the input matrix is positive semidefinite.
+/** Test whether the input matrix is positive semidefinite (PSD).
 
 A covariance matrix will always be PSD, so this function can tell you whether your matrix is a valid covariance matrix.
 
-Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the upper left, on up to the full matrix. If the matrix is PSD, then each of these has a positive determinant. This function thus calculates \f$N\f$ determinants for an \f$N\f$x\f$N\f$ matrix.
+Consider the 1x1 matrix in the upper left of the input, then the 2x2 matrix in the
+upper left, on up to the full matrix. If the matrix is PSD, then each of these has
+a positive determinant. This function thus calculates \f$N\f$ determinants for an
+\f$N\f$x\f$N\f$ matrix.
 
 \param m The matrix to test. If \c NULL, I will return zero---not PSD.
-\param semi If anything but 's', check for positive definite, not semidefinite. (default 's')
+\param semi If anything but \c 's', check for positive definite, not semidefinite. (default 's')
 
 See also \ref apop_matrix_to_positive_semidefinite, which will change the input to something PSD.
 
@@ -962,7 +935,7 @@ int apop_matrix_is_positive_semidefinite(gsl_matrix *m, char semi){
 #else
 apop_varad_head(int, apop_matrix_is_positive_semidefinite){
     gsl_matrix * apop_varad_var(m, NULL);
-    Apop_assert_c(m, 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite.");
+    Apop_stopif(!m, return 0, 1, "You gave me a NULL matrix. I will take this as not positive semidefinite; returning zero.");
     char apop_varad_var(semi, 's');
     return apop_matrix_is_positive_semidefinite_base(m, semi);
 }
@@ -980,20 +953,18 @@ apop_varad_head(int, apop_matrix_is_positive_semidefinite){
 
 void vfabs(double *x){*x = fabs(*x);}
 
-/**  First, this function passes tests, but is under development.
-  
-It takes in a matrix and converts it to the `closest' positive semidefinite matrix.
+/**  This function takes in a matrix and converts it in place to the `closest' positive semidefinite matrix.
 
-\param m On input, any matrix; on output, a positive semidefinite matrix.
+\param m On input, any matrix; on output, a positive semidefinite matrix. If \c NULL, return \c NaN and print an error.
 \return the distance between the original and new matrices.
 
 \li See also the test function \ref apop_matrix_is_positive_semidefinite.
-\li This function can be used as (the core of) a model constraint.
-
-Adapted from the R Matrix package's nearPD, which is 
-Copyright (2007) Jens Oehlschlägel [and is GPL].
+\li This function can be used as the core of a model constraint.
+\li Adapted from the R Matrix package's nearPD, which is 
+Copyright (2007) Jens Oehlschlägel [under the GPL].
 */
 double apop_matrix_to_positive_semidefinite(gsl_matrix *m){
+    Apop_stopif(!m, return NAN, 0, "Got a NULL matrix. Returning NaN.");
     if (apop_matrix_is_positive_semidefinite(m)) return 0; 
     double diffsize=0, dsize;
     apop_data *qdq; 

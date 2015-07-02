@@ -1,23 +1,22 @@
 /* Probit and Logit. 
 Copyright (c) 2005--2008, 2010 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
-\amodel apop_probit The Probit model.
+\amodel apop_probit
 
-  Apophenia makes no distinction between the bivariate probit and the multinomial probit. This one does both.
+Apophenia makes no distinction between the Bivariate Probit and the Multinomial
+Probit. This one does both.
 
 \adoc    Input_format  
 The first column of the data matrix this model expects is zeros, ones, ..., enumerating
-the factors; to get there, try \ref apop_data_to_factors; if you  forget to run it,
-I'll run it on the first data column for you.  The remaining columns are values of the
+the factors; see the prep routine. The remaining columns are values of the
 independent variables. Thus, the model will return [(data columns)-1]\f$\times\f$[(option
 count)-1] parameters.  Column names are options; row names are input variables.
 
 \adoc    Parameter_format  As above 
-\adoc    Prep_routine You will probably want to convert some column of your data into
-factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
-to your data set (and of course adjusts the data itself). If I find a factor page,
-I will use that info; if not, then I will run \ref apop_data_to_factors on the first
-column (the vector if there is one, else the first column of the matrix.)
+\adoc    Prep_routine The initial column of data should be a set of 
+factors, set up via \ref apop_data_to_factors. If I find a factor page, I will use
+that info; if not, then I will run \ref apop_data_to_factors on the left-most column
+(the vector if there is one, else the first column of the matrix.)
 
 Also, if there is no vector, then I will move the first column of the matrix, and
 replace that matrix column with a constant column of ones, just like with OLS.
@@ -41,6 +40,7 @@ static apop_data *get_category_table(apop_data *d){
 }
 
 static void probit_prep(apop_data *d, apop_model *m){
+    if (m->data && m->parameters) return; //already prepped; re-prep is a no-op.
     apop_data *factor_list = get_category_table(d);
     apop_score_vtable_add(probit_dlog_likelihood, apop_probit);
     //apop_score_vtable_add(logit_dlog_likelihood, apop_logit);
@@ -157,7 +157,7 @@ apop_model *apop_probit = &(apop_model){"Probit", .log_likelihood = multiprobit_
     .dsize=-1, .prep = probit_prep};
 
 
-/* \amodel apop_multinomial_probit The Multinomial Probit model.
+/* amodel apop_multinomial_probit The Multinomial Probit model.
 
   \deprecated  Use \ref apop_probit, which handles multiple options.*/
 
@@ -331,7 +331,7 @@ static int logit_rng(double *out, gsl_rng *r, apop_model *m){
 }
 
 
-/* \amodel apop_logit The Logit model.
+/* \amodel apop_logit
 
 Apophenia makes no distinction between the bivariate logit and the multinomial logit. This does both.
 
@@ -345,8 +345,8 @@ Apophenia makes no distinction between the bivariate logit and the multinomial l
 ones, ..., enumerating the factors; to get there, try \ref apop_data_to_factors; if
 you  forget to run it, I'll run it on the first data column for you.  The remaining
 columns are values of the independent variables. Thus, the model will return [(data
-columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names are options;
-row names are input variables.
+columns)-1]\f$\times\f$[(option count)-1] parameters.  Column names list factors in the dependent variables;
+row names list the independent variables.
 
 \adoc    Parameter_format  As above.    
 \adoc    Prep_routine You will probably want to convert some column of your data into
@@ -362,6 +362,7 @@ replace that matrix column with a constant column of ones, just like with OLS.
 
 \adoc RNG Much like the \ref apop_ols RNG, qv. Returns the category drawn.
 
+<!--
 \li PS: Here is a nice trick used in the implementation. let \f$y_i = x\beta_i\f$.
   Then
 \f[ln(\sum_i{e^{x\beta_i}}) = max(y_i) + ln(\sum_i{e^{y_i - max(y_i)}}).\f]
@@ -370,10 +371,17 @@ The elements of the sum are all now exp(something negative), so
 overflow won't happen, and if there's underflow, then that term
 must not have been very important. [This trick is attributed to Tom
 Minka, who implemented it in his Lightspeed Matlab toolkit.]
+-->
 
-Here is an artifical example:
+Here is an artifical example which clarifies the simplest use of the model:
 
 \include fake_logit.c
+
+Here is an example using data from a U.S. Congressional vote, including one text
+variable that has to be converted to factors, and one to convert to dummies.
+A loop then calculates the customary p-values.
+
+\include logit.c
 */
 apop_model *apop_logit = &(apop_model){.name="Logit", .log_likelihood = multilogit_log_likelihood, .dsize=-1,
 /*.score = logit_dlog_likelihood,*/ .prep = logit_prep, .draw=logit_rng

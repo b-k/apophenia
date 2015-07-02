@@ -7,7 +7,7 @@ libapopmodel_la_SOURCES = \
 	apop_dirichlet.c \
 	apop_exponential.c \
 	apop_gamma.c \
-	apop_histogram.c \
+	apop_kerneld.c \
 	apop_loess.c \
 	apop_multinomial.c \
 	apop_multivariate_normal.c \

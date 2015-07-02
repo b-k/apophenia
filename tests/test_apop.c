@@ -36,6 +36,10 @@ post-install tests.  */
 #include <apop.h>
 #include <unistd.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #ifdef FULL_TOLERANCE
 double tol6 = 1e-6;
 double tol5 = 1e-5;
@@ -64,12 +68,6 @@ int verbose = 1;
 
 void test_nan_data();
 void db_to_text();
-
-void apop_data_scale (apop_data *d, double scale){
-    if (d->vector) gsl_vector_scale(d->vector, scale);
-    if (d->matrix) gsl_matrix_scale(d->matrix, scale);
-}
-
 
 void v_pow10(double *in){ *in = pow(10,*in);}
 double log_for_map(gsl_vector *v){apop_vector_log(v); return apop_sum(v);}
@@ -162,7 +160,8 @@ void test_normalizations(gsl_vector *v){
     gsl_vector_add_constant(v, 8);
     apop_data dv = (apop_data){.matrix=apop_vector_to_matrix(v)};
     apop_data_transpose(&dv);
-    apop_matrix_normalize(dv.matrix, 'r', 's');
+    for (int i=0; i< dv.matrix->size1; i++)
+        apop_vector_normalize(Apop_rv(&dv, i), NULL, 's');
     apop_data *dvagain = apop_data_transpose(&dv, .inplace='n');
     apop_data *sum = apop_data_summarize(dvagain);
     apop_data_free(dvagain);
@@ -199,7 +198,7 @@ void test_listwise_delete(){
   apop_text_alloc(t1, 10, 10);
   for (int i=0; i< 10; i++)
       for (int j=0; j< 10; j++)
-          apop_text_add(t1, i, j, "%i", i*j);
+          apop_text_set(t1, i, j, "%i", i*j);
   //no NaNs yet
   apop_data *t1c = apop_data_listwise_delete(t1);
   assert(t1c->matrix->size1==10);
@@ -235,7 +234,7 @@ void test_listwise_delete(){
     apop_text_alloc(t1, 12, 10);
     for (int i=0; i< 10; i++)
         for (int j=0; j< 9; j++)
-            apop_text_add(t1, i, j, "%i", i*j);
+            apop_text_set(t1, i, j, "%i", i*j);
     t2 = apop_data_copy(t1);
     apop_data_transpose(t1);
     assert(!strlen(t1->text[7][11]));
@@ -251,7 +250,7 @@ void test_listwise_delete(){
     t1 = apop_text_alloc(NULL, 10, 12);
     for (int i=0; i< 9; i++)
         for (int j=0; j< 10; j++)
-            apop_text_add(t1, i, j, "%i", i*j);
+            apop_text_set(t1, i, j, "%i", i*j);
     apop_data *t4 = apop_data_transpose(t1, .inplace='n');
     assert(!strlen(t4->text[11][7]));
     assert(atoi(t4->text[9][8])==72);
@@ -410,8 +409,8 @@ void test_split_and_stack(gsl_rng *r){
     apop_data *txt2 = apop_text_alloc(NULL, 3,3);
     for (int i=0; i< 3; i++)
         for (int j=0; j< 3; j++){
-            apop_text_add(txt, i, j, "(%i, %i)", i, j);
-            apop_text_add(txt2, i, j, "[%i, %i]", i, j);
+            apop_text_set(txt, i, j, "(%i, %i)", i, j);
+            apop_text_set(txt2, i, j, "[%i, %i]", i, j);
         }
 
     apop_data *rbound = apop_data_stack(txt, txt2, .posn='r');
@@ -461,28 +460,6 @@ gsl_matrix  *m          = gsl_matrix_alloc(est->data->matrix->size1,est->data->m
     gsl_blas_dgemv(CblasNoTrans, 1, m, est->parameters->vector, 0, prediction);
     gsl_vector_sub(prediction, vv);
     assert(fabs(apop_vector_sum(prediction)) < tol5);
-}
-
-/** I claim that the F test calculated via apop_F_test(est, NULL, NULL)
- equals a transformation of R^2 (after a normalization step).
-*/
-void test_f(apop_model *est){
-    apop_data *rsq  = apop_estimate_coefficient_of_determination(est);
-    apop_data *constr= apop_data_calloc(est->parameters->vector->size-1, est->parameters->vector->size);
-    int i;
-    for (i=1; i< est->parameters->vector->size; i++)
-        apop_data_set(constr, i-1, i, 1);
-    apop_data *ftab = apop_F_test(est, constr);
-    apop_data *ftab2 = apop_F_test(est, NULL);
-    //apop_data_show(ftab);
-    //apop_data_show(ftab2);
-    double n = est->data->matrix->size1;
-    double K = est->parameters->vector->size-1;
-    double r = apop_data_get(rsq, .rowname="R squared");
-    double f = apop_data_get(ftab, .rowname="F statistic");
-    double f2 = apop_data_get(ftab2, .rowname="F statistic");
-    Diff (f , r*(n-K)/((1-r)*K) , tol5);
-    Diff (f2 , r*(n-K)/((1-r)*K) , tol5);
 }
 
 void test_OLS(gsl_rng *r){
@@ -536,9 +513,9 @@ void test_inversion(gsl_rng *r){
 void test_summarize(){
     apop_table_exists("td", 'd');
     apop_text_to_db( DATADIR "/" "test_data" , .has_row_names= 0,1, .tabname = "td");
-    gsl_matrix *m = apop_query_to_matrix("select * from td");
-    apop_data *s = apop_data_summarize(&(apop_data){.matrix=m});
-    gsl_matrix_free(m);
+    apop_data *m = apop_query_to_data("select * from td");
+    apop_data *s = apop_data_summarize(m);
+    apop_data_free(m);
     double t = gsl_matrix_get(s->matrix, 1,0);
     assert (t ==3);
     t = gsl_matrix_get(s->matrix, 2, 1);
@@ -624,9 +601,8 @@ void apop_pack_test(gsl_rng *r){
                     outp2->weights = gsl_vector_alloc(w);}
             fill_p(p2, r);
         }
-        mid     = apop_data_pack(d, .all_pages= second_p ? 'y' : 'n');
+        mid     = apop_data_pack(d, .more_pages= second_p ? 'y' : 'n');
         apop_data_unpack(mid, dout);
-        //apop_data_unpack(mid, dout, .all_pages= second_p ? 'y' : 'n');
         check_p(d, dout);
         if (second_p)
             check_p(d->more, dout->more);
@@ -729,6 +705,7 @@ static void super_broken_est(apop_data *d, apop_model *m){
     apop_normal->estimate(d, m);
 }
 
+//In my inattention, I wrote two jackknife tests: this one and eg/jack.c. So you get double the checks.
 void test_jackknife(gsl_rng *r){
     double pv[] = {3.09,2.8762};
     int len = 2000;
@@ -770,25 +747,6 @@ assert ((fabs(apop_data_get(out, 0,0) - gsl_pow_2(pv[1])/len)) < tol2
     apop_data_free(out3);
     apop_model_free(m);
 }
-
-//In my inattention, I wrote two jackknife tests. So you get double the checks.
-int test_jack(gsl_rng *r){
-  int i, draws     = 1000;
-  apop_data *d = apop_data_alloc(draws, 1);
-  apop_model *m = apop_normal;
-  double pv[] = {1., 3.};
-    m->parameters = apop_data_fill_base(apop_data_alloc(2), pv);
-    for (i =0; i< draws; i++)
-        m->draw(apop_data_ptr(d, i, 0), r, m); 
-    apop_data *out = apop_jackknife_cov(d, m);
-    double error = fabs(apop_data_get(out, 0,0)-gsl_pow_2(pv[1])/draws) //var(mu)
-                + fabs(apop_data_get(out, 1,1)-gsl_pow_2(pv[1])/(2*draws))//var(sigma)
-                +fabs(apop_data_get(out, 0,1)) +fabs(apop_data_get(out, 1,0));//cov(mu,sigma); should be 0.
-    apop_data_free(d);
-    apop_data_free(out);
-    return (error < 1e-2);//still not very accurate.
-}
-
 
 void test_multivariate_normal(){
     int len = 5e5;
@@ -866,7 +824,7 @@ int get_factor_index(apop_data *flist, char *findme){
 //If the dummies are a separate matrix, offset=0;
 //If the dummies are an addendum to main, offset=original_data->matrix->size2;
 static void check_for_dummies(apop_data *d, apop_data *dum, int offset){
-  int n;
+    int n;
     apop_data *factorlist = apop_data_get_factor_names(d, 0, 't');
     for(int i=0; i < d->textsize[0]; i ++)
         if ((n = get_factor_index(factorlist, d->text[i][0]))>0){
@@ -958,15 +916,15 @@ void test_unique_elements(){
     assert(gsl_vector_get(distinct, 4) == .1);
 
     apop_data *t = apop_text_alloc(NULL, 9, 7);
-    apop_text_add(t, 0, 0, "Hi,");
-    apop_text_add(t, 1, 0, "there");
-    apop_text_add(t, 2, 0, ".");
-    apop_text_add(t, 3, 0, "This");
-    apop_text_add(t, 4, 0, "there");
-    apop_text_add(t, 5, 0, "is");
-    apop_text_add(t, 6, 0, "dummy");
-    apop_text_add(t, 7, 0, "text");
-    apop_text_add(t, 8, 0, ".");
+    apop_text_set(t, 0, 0, "Hi,");
+    apop_text_set(t, 1, 0, "there");
+    apop_text_set(t, 2, 0, ".");
+    apop_text_set(t, 3, 0, "This");
+    apop_text_set(t, 4, 0, "there");
+    apop_text_set(t, 5, 0, "is");
+    apop_text_set(t, 6, 0, "dummy");
+    apop_text_set(t, 7, 0, "text");
+    apop_text_set(t, 8, 0, ".");
     apop_data *dt = apop_text_unique_elements(t, 0);
     assert(dt->textsize[0] == 7);
     assert(!strcmp(".", dt->text[0][0]));
@@ -1167,40 +1125,27 @@ void test_pmf_compress(gsl_rng *r){
 
     apop_data *b = apop_data_alloc();
     b->vector = apop_array_to_vector((double []){1.1, 2.1, 2, 1, 1}, 5);
-    apop_text_alloc(b, 5, 1);
-    apop_text_add(b, 0, 0, "Type 1");
-    apop_text_add(b, 1, 0, "Type 1");
-    apop_text_add(b, 2, 0, "Type 1");
-    apop_text_add(b, 3, 0, "Type 1");
-    apop_text_add(b, 4, 0, "Type 2");
     apop_data *spec = apop_data_copy(Apop_r(b, 0));
     gsl_vector_set_all(spec->vector, 1);
     apop_data *c = apop_data_to_bins(b, .binspec=spec);
     apop_data_free(b);
-    assert(apop_strcmp(c->text[0][0], "Type 1"));
-    assert(apop_strcmp(c->text[1][0], "Type 1"));
-    assert(apop_strcmp(c->text[2][0], "Type 2"));
-    assert(c->weights->data[0]==2);
-    assert(c->weights->data[1]==2);
-    assert(c->weights->data[2]==1);
+    gsl_vector *should_be = apop_data_falloc((5), 1, 2, 2, 1, 1)->vector;
+    assert(!apop_vector_distance(should_be, c->vector, 'd'));
     apop_data_free(c);
 
     //I assert that if I use the default binspec returned by a call to apop_data_to_bins,
     //then re-binning with the binspec explicitly stated will give identical results.
-    int i, dcount = 10000;
+    int dcount = 10000;
     apop_data *draws = apop_data_alloc(dcount);
     apop_model *norm = apop_model_set_parameters(apop_normal, 0, 1);
-    for (i=0 ; i<dcount; i++)
+    for (int i=0; i<dcount; i++)
         apop_draw(draws->vector->data+i, r, norm);
     apop_data_sort(draws);
     apop_data *drawcopy = apop_data_copy(draws);
     apop_data *binned = apop_data_to_bins(draws);
-    apop_data *binnedc = apop_data_to_bins(drawcopy, .binspec=apop_data_get_page(draws, "<binspec>"));
-    assert(binned->weights->size == binnedc->weights->size);
-    for (i=0; i< binned->weights->size; i++){
+    apop_data *binnedc = apop_data_to_bins(drawcopy, .binspec=apop_data_get_page(draws, "<binspec>"), .close_top_bin='y');
+    for (int i=0; i< binned->vector->size; i++)
         assert(binned->vector->data[i] == binnedc->vector->data[i]);
-        assert(binned->weights->data[i] == binnedc->weights->data[i]);
-    }
 }
 
 void test_vtables(){
@@ -1262,7 +1207,9 @@ void test_ols_offset(gsl_rng *r){
 
 int main(int argc, char **argv){
     int  slow_tests = 0;
-    apop_opts.thread_count = 2;
+#ifdef _OPENMP
+    if (omp_get_num_procs()==1) omp_set_num_threads(2); //always at least 2 threads.
+#endif
     int c;
     char opts[]  = "sqt:";
     if (argc==1)
@@ -1270,7 +1217,9 @@ int main(int argc, char **argv){
     while((c = getopt(argc, argv, opts))!=-1)
         if (c == 's')       slow_tests++;
         else if (c == 'q')  verbose--;
-        else if (c == 't')  apop_opts.thread_count = atoi(optarg);
+#ifdef _OPENMP
+        else if (c == 't')  omp_set_num_threads(atoi(optarg));
+#endif
 
     //set up some global or common variables
     gsl_rng *r = apop_rng_alloc(8); 
@@ -1304,9 +1253,7 @@ int main(int argc, char **argv){
     do_test("test vector/matrix realloc", test_resize());
     do_test("test_vector_moving_average", test_vector_moving_average());
     do_test("apop_estimate->dependent test", test_predicted_and_residual(e));
-    do_test("apop_f_test and apop_coefficient_of_determination test", test_f(e));
     do_test("OLS test", test_OLS(r));
-    do_test("test jackknife covariance", test_jack(r));
     do_test("database skew, kurtosis, normalization", test_skew_and_kurt(r));
     do_test("test_percentiles", test_percentiles());
     do_test("weighted moments", test_weigted_moments());
