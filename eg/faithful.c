@@ -2,7 +2,7 @@
 
 /* This replacement for apop_model_printt(in) demonstrates retrieval of the useful
 settings: the weights (λ) and list of estimated models. It is here only for
-demonstration purposes---it is what apop_model_print(your_mix, NULL) will do.
+demonstration purposes---it is what apop_model_print(your_mix) will do.
 */
 void show_mix(apop_model *in){
     apop_mixture_settings *ms = Apop_settings_get_group(in, apop_mixture);

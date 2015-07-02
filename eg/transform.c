@@ -26,5 +26,5 @@ int main(){
             )->data,
             apop_normal
         )
-    , NULL);
+    );
 }

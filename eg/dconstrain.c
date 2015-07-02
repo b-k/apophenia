@@ -28,7 +28,7 @@ int main(){
 
     //Estimate the parameters given the just-produced data:
     apop_model *est = apop_estimate(d, trunc);
-    apop_model_print(est, NULL);
+    apop_model_print(est);
     assert(apop_vector_distance(est->parameters->vector, norm->parameters->vector)<1e-1);
 
     //Generate a data set that is truncated at zero using alternate means
@@ -44,7 +44,7 @@ int main(){
                             .constraint=over_zero, .scaling=in_bounds);
 
     apop_model *re_est = apop_estimate(normald, re_trunc);
-    apop_model_print(re_est, NULL);
+    apop_model_print(re_est);
     assert(apop_vector_distance(re_est->parameters->vector,
                 apop_vector_fill(gsl_vector_alloc(2), 0, 1))<1e-1);
     apop_model_free(trunc);

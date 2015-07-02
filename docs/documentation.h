@@ -1535,7 +1535,7 @@ The \c estimate function will estimate the parameters of your model. Just prep t
 \code
     apop_data *data = apop_query_to_data("select outcome, in1, in2, in3 from dataset");
     apop_model *the_estimate = apop_estimate(data, apop_probit);
-    apop_model_print(the_estimate, NULL);
+    apop_model_print(the_estimate);
 \endcode
 
 Along the way to estimating the parameters, most models also find covariance estimates for
@@ -1706,7 +1706,7 @@ and likelihood:
 \li\ref apop_p : the probability of a given data set given the model.
 \li\ref apop_log_likelihood : the log of \ref apop_p
 \li\ref apop_score : the derivative of \ref apop_log_likelihood
-\li\ref apop_model_print : write to screen, file, or database
+\li\ref apop_model_print : write model components to the screen or a file
 \li\ref apop_model_copy : duplicate a model
 \li\ref apop_model_set_parameters :  Use this to convert a Normal(\f$\mu\f$, \f$\sigma\f$) with unknown \f$\mu\f$ and \f$\sigma\f$ into a Normal(0, 1), for example.
 \li\ref apop_model_free
@@ -1854,7 +1854,7 @@ is natural:
 
 \code
 apop_data *regression_data = apop_query_to_data("select depvar, indyvar1, indyvar2, indyvar3 from dataset");
-apop_model_print(apop_estimate(regression_data, apop_ols), NULL);
+apop_model_print(apop_estimate(regression_data, apop_ols));
 \endcode
 
 <em> The already-prepped case</em>
@@ -1865,7 +1865,7 @@ an estimation, then this is what you want.
 
 \code
 apop_data *regression_data = apop_query_to_mixed_data("vmmm", "select depvar, indyvar1, indvar2, indvar3 from dataset");
-apop_model_print(apop_estimate(regression_data, apop_logit), NULL);
+apop_model_print(apop_estimate(regression_data, apop_logit));
 \endcode
 */
 
@@ -2445,7 +2445,7 @@ int main(){
     apop_data *data = apop_query_to_data("select log(pincp+10) as log_income, agep, sex "
                     "from dc where agep+ pincp+sex is not null and pincp>=0");
     apop_model *est = apop_estimate(data, apop_ols);
-    apop_model_print(est, NULL);
+    apop_model_print(est);
 }
 \endcode
 

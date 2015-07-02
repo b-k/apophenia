@@ -26,7 +26,7 @@ void cross_normals(){
                     );
     apop_model *estimated_norms = apop_estimate(draws, two_n);
 
-    apop_model_print(estimated_norms, NULL);
+    apop_model_print(estimated_norms);
     apop_data *estp1 = Apop_settings_get(estimated_norms, apop_cross, model1)->parameters;
     apop_data *estp2 = Apop_settings_get(estimated_norms, apop_cross, model2)->parameters;
     assert(fabs(apop_data_get(estp1, 0) - mu)    < 1e-3);

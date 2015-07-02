@@ -73,8 +73,8 @@ void apop_model_free (apop_model * free_me){
 
 /** Print the results of an estimation for a human to look over.
 
-\param print_me The model whose information should be displayed
-\param ap  The output stream. If \c NULL, use \c stdout. If you'd like something else, use \c fopen. E.g.:
+\param model The model whose information should be displayed (No default. If \c NULL, print <tt>NULL</tt>)
+\param output_pipe  The output stream. Default: \c stdout. If you'd like something else, use \c fopen. E.g.:
 \code
 FILE *out =fopen("outfile.txt", "w"); //or "a" to append.
 apop_model_print(the_model, out);
@@ -114,19 +114,23 @@ void print_method(apop_model *in, FILE* ap){
  \endcode
 
 \li Print methods are intended for human consumption and are subject to change.
+\li This function uses the \ref designated syntax for inputs.
 */
-void apop_model_print (apop_model * print_me, FILE *ap){
-    if (!ap) ap = stdout;
-    apop_model_print_type mpf = apop_model_print_vtable_get(print_me);
+APOP_VAR_HEAD void apop_model_print (apop_model * model, FILE *output_pipe){
+    FILE * apop_varad_var(output_pipe, stdout);
+    apop_model* apop_varad_var(model, NULL);
+    if (!model) {fprintf(output_pipe, "NULL\n"); return;}
+APOP_VAR_ENDHEAD
+    apop_model_print_type mpf = apop_model_print_vtable_get(model);
     if (mpf){
-        mpf(print_me, ap);
+        mpf(model, output_pipe);
         return;
     }
-    if (strlen(print_me->name)) fprintf (ap, "%s", print_me->name);
-    fprintf(ap, "\n\n");
-	if (print_me->parameters) apop_data_print(print_me->parameters, .output_pipe=ap);
-    Get_vmsizes(print_me->info); //maxsize
-    if (print_me->info && maxsize) apop_data_print(print_me->info, .output_pipe=ap);
+    if (strlen(model->name)) fprintf (output_pipe, "%s", model->name);
+    fprintf(output_pipe, "\n\n");
+	if (model->parameters) apop_data_print(model->parameters, .output_pipe=output_pipe);
+    Get_vmsizes(model->info); //maxsize
+    if (model->info && maxsize) apop_data_print(model->info, .output_pipe=output_pipe);
 }
 
 /* Alias for \ref apop_model_print. Use that one. */
