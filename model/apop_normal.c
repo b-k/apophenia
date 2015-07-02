@@ -17,8 +17,8 @@ See also the \ref apop_multivariate_normal.
 
 \adoc    Input_format A scalar, in the \c vector or \c matrix elements of the input \ref apop_data set.
 \adoc    Settings   None.
-\adoc    Parameter_format  
-  As is custom, parameter zero (in the vector) is the mean, parmeter one is the standard deviation (i.e., the square root of the variance). 
+\adoc    Parameter_format  Parameter zero (in the vector) is the mean, parmeter one is the standard deviation (i.e., the square root of the variance). 
+After estimation, a page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters.
 
 \adoc    Predict  <tt>apop_predict(NULL, estimated_normal_model)</tt> returns the expected value. The <tt>->more</tt>
                  element holds an \ref apop_data set with the title <tt>\<Covariance\></tt>, whose 
@@ -73,9 +73,7 @@ void get_mu_var(apop_data *data, double *mu_out, double *var_out){
     }
 }
 
-/*\adoc estimated_parameters Zeroth vector element is \f$\mu\f$, element 1 is \f$\sigma\f$.
- A page is added named <tt>\<Covariance\></tt> with the 2 \f$\times\f$ 2 covariance matrix for these two parameters
- \adoc estimated_info Reports the log likelihood.*/
+/* \adoc estimated_info Reports the log likelihood.*/
 static void normal_estimate(apop_data * data, apop_model *est){
     Nullcheck_mpd(data, est, );
     Get_vmsizes(data); //tsize
@@ -157,6 +155,7 @@ apop_model *apop_normal = &(apop_model){"Normal distribution", 2, 0, 0, .dsize=1
 The log likelihood function for lognormal distributions:
 
 \f$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})\f$
+
 \f$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})\f$
 
 \adoc    Input_format     A scalar in the the matrix or vector element of the input \ref apop_data set.

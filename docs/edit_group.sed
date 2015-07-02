@@ -20,6 +20,7 @@ s/[iI]nput[+\]*_[+\]*format/Input format/g
 s/[pP]ostestimate[+\]*_[+\]*\(data\|parameters\|settings\_info\)/Post-estimate \1/g
 s/[pP]ostestimate[+\]*_[+\]*parameter_model/Post-estimate parameter model/g
 s/[pP]arameter[+\]*_[+\]*format/Parameter format/g
+s/[pP]rep[+\]*_routine/Prep routine/g
 #delete all between the two markers, but not the second marker
 #/name="enum-members"/,/name="func-members"/{/name="func-members"/!d}
 #/<div class="summary">/,/\#func-members/d

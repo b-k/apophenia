@@ -10,13 +10,19 @@ appropriately. That is, the \ref apop_ols model really implements Weighted Least
 but in most cases <tt>weights==NULL</tt> and the math reduces to the special case of
 Ordinary Least Squares.
 
-\adoc    Parameter_format  A vector of OLS coefficients. coeff. zero
-                         refers to the constant column, if any. 
+\adoc    Parameter_format  A vector of OLS coefficients. Coefficient zero
+                refers to the constant column, if any. 
+                The \c vector of the output will therefore be of size <tt>data->size2</tt>.
+
+The estimation routine appends a page named <tt>\<Covariance\></tt>, giving the covariance matrix for the
+estimated parameters (not the data itself).
+
+
 \adoc    estimated_parameter_model  For the mean, a noncentral \f$t\f$ distribution (\ref apop_t_distribution).
 \adoc    Prep_routine      
 If your input data has no \c vector element, then column zero of the matrix is taken
-to be the dependent variable. Move the dependent variable to the \c vector, and repalce
-column zero with a column of all ones, indicating a constant term. This is tne norm
+to be the dependent variable. This routine moves the dependent variable to the \c vector, and replaces
+column zero with a column of all ones, indicating a constant term. This is the norm
 for OLS, and is probably what you want. The easiest way to generate data for this sort
 of process is via a query like <tt>apop_query_to_matrix("select depvar, independent_var1,
 independent_var2 from dataset")</tt>.
@@ -268,14 +274,6 @@ static int ols_rng(double *out, gsl_rng *r, apop_model *m){
 
 /* \adoc estimated_data You can specify whether the data is modified with an \ref apop_lm_settings group. Else, left unchanged.
 
-\adoc estimated_parameters
-The \c parameters set will hold the coefficients; the first coefficient will be the
-coefficient on the constant term, and the remaining will correspond to the independent
-variables. It will therefore be of size <tt>(data->size2)</tt>.
-
-I add a page named <tt>\<Covariance\></tt>, which gives the covariance matrix for the
-estimated parameters (not the data itself).
-
 \adoc estimated_info Reports log likelihood, and runs \ref apop_estimate_coefficient_of_determination 
 to add \f$R^2\f$-type information (SSE, SSR, \&c) to the info page.
 
@@ -283,8 +281,7 @@ Residuals: I add a page named <tt>\<Predicted\></tt>, with three columns.
 The first column is the dependent variable from the input data. Let our model
 be \f$ Y = \beta X + \epsilon\f$. Then the second column is the predicted values:
 \f$\beta X\f$, and the third column is the residuals: \f$\epsilon\f$. The third column
-is therefore always the first minus the second, and this is probably how that column
-was calculated internally.
+is therefore always the first minus the second.
 
 Given your estimate \c est, the zeroth element is one of <br> 
 <tt> apop_data_get(est->info, .page= "Predicted", .row=0, .colname="observed"),</tt><br>
@@ -396,7 +393,7 @@ The second method, if the vector of the instrument \ref apop_data set is \c NULL
 use the column names to find the matching columns in the base data to substitute. This
 is generally more robust and/or convenient.
 
-\li If the \c instruments data set is somehow \c NULL or empty, I'll just run OLS. 
+\li If the \c instruments data set is \c NULL or empty, I'll just run OLS. 
 
 \li The \ref apop_lm_settings group has a \c destroy_data setting. If
 you set that to \c 'y', I will overwrite the column in place, saving the trouble of

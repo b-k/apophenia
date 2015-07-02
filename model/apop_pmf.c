@@ -33,16 +33,13 @@ The \c apop_pmf internally represents data in this manner, with the dimensions
 in the \c matrix, \c vector, and \c text element of the data set, and the cell values
 are held in the \c weights element (not the vector).
 
-If your data is in a crosstab (with entries in the matrix element for 2-D data or the
-vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">this page</a> for another crosstab-to-PMF function as well.
+If your data is in a crosstab (with observation coordinates in the matrix element for 2-D data or the
+vector for 1-D data), then use \ref apop_crosstab_to_db to make the conversion. See also <a href="https://github.com/b-k/Apophenia/wiki/Crosstab-to-PMF">the wiki</a> for another crosstab-to-PMF function.
 
 If your data is already in the sparse listing format (which is probably the case for 3-
-or more dimensional data), then just point the model to your parameter set:
+or more dimensional data), then estimate the model via:
 
 \code
-apop_model *my_pmf = apop_model_copy(apop_pmf);
-my_pmf->data = in_data;
-//or equivalently:
 apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 \endcode
 
@@ -50,8 +47,9 @@ apop_model *my_pmf = apop_estimate(in_data, apop_pmf);
 equally probable.
 \li If the \c weights are present but sum to a not-finite value, the model's \c error element is set to \c 'w' when the estimation is run, and a warning printed.
 
-\adoc Input_format     As above, you can input to the \c estimate
-                      routine a 2-D matrix that will be converted into this form.     
+\adoc Input_format   One observation per row, with coordinates in the \c vector, \c matrix, and/or \c text, 
+                    and the density at that point in the \c weights. If <tt>weights==NULL</tt>, all observations are equiprobable.
+
 \adoc Parameter_format  None. The list of observations and their weights are in the \c data set, not the \c parameters.
 \adoc Settings   \ref apop_pmf_settings
 */
@@ -111,7 +109,7 @@ static void setup_cmf(apop_model *m){
 }
 
 /* \adoc    RNG  Return the data in a random row of the PMF's data set. If there is a
-      weights vector, i will use that to make draws; else all rows are equiprobable.
+      weights vector, I will use that to make draws; else all rows are equiprobable.
 
 \li If you set \c draw_index to \c 'y', e.g., 
 
@@ -119,7 +117,9 @@ static void setup_cmf(apop_model *m){
 Apop_settings_add(your_model, apop_pmf, draw_index, 'y');
 \endcode
 
-then I will return the row number of the draw, not the data in that row. 
+then I will return the row number of the draw, not the data in that row. Because \ref
+apop_draw only returns numeric data, this is the only meaningful way to make draws
+from text data.
 
 \li  The first time you draw from a PMF with uneven weights, I will generate a
 vector tallying the cumulative mass. Subsequent draws will have no computational
@@ -251,7 +251,7 @@ static long double pmf_p(apop_data *d, apop_model *m){
     return p;
 }
 
-/* \adoc    CDF  <b>Assuming the data is sorted in a meaningful manner</b>, find the total mass up to a given data point.
+/* \adoc    CDF  <em>Assuming the data is sorted in a meaningful manner</em>, find the total mass up to a given data point.
 
 That is, a CDF only makes sense if the data space is totally ordered. The sorting you
 define using \ref apop_data_sort defines that ordering.

@@ -8,17 +8,15 @@ Probit. This one does both.
 
 \adoc    Input_format  
 The first column of the data matrix this model expects is zeros, ones, ..., enumerating
-the factors. To get there, try \ref apop_data_to_factors; if no factors are found (i.e., <tt>apop_data_get_factor_names(depvar_name)</tt> returns \c NULL),
-the prep routine will run it on the first data column for you.  The remaining columns are values of the
+the factors; see the prep routine. The remaining columns are values of the
 independent variables. Thus, the model will return [(data columns)-1]\f$\times\f$[(option
 count)-1] parameters.  Column names are options; row names are input variables.
 
 \adoc    Parameter_format  As above 
-\adoc    Prep_routine You will probably want to convert some column of your data into
-factors, via \ref apop_data_to_factors. If you do, then that adds a page of factors
-to your data set (and of course adjusts the data itself). If I find a factor page,
-I will use that info; if not, then I will run \ref apop_data_to_factors on the first
-column (the vector if there is one, else the first column of the matrix.)
+\adoc    Prep_routine The initial column of data should be a set of 
+factors, set up via \ref apop_data_to_factors. If I find a factor page, I will use
+that info; if not, then I will run \ref apop_data_to_factors on the left-most column
+(the vector if there is one, else the first column of the matrix.)
 
 Also, if there is no vector, then I will move the first column of the matrix, and
 replace that matrix column with a constant column of ones, just like with OLS.

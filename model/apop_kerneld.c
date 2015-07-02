@@ -19,7 +19,12 @@ apop_model_set_settings function to get a copy of the base \ref apop_kernel_dens
 and add a \ref apop_kernel_density_settings group with the appropriate information;
 see the \c main function of the example below.
 
-Elements of \ref apop_kernel_density_settings that you may want to set:
+\adoc Input_format  One observation per line. Each row in turn will be passed through to the elements of <tt>kernelbase</tt> and optional <tt>set_params</tt> function, so follow the format of the base model.
+\adoc Parameter_format  None
+\adoc Estimated_parameters None
+\adoc Estimated_settings  The estimate method basically just runs
+                          <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>
+\adoc Settings  \ref apop_kernel_density_settings, including:
 
 \li \c data a data set, which, if  not \c NULL and \c base_pmf is \c NULL, will be converted to an \ref apop_pmf model.
 \li \c base_pmf This is the preferred format for input data. It is the histogram to be smoothed.
@@ -32,20 +37,14 @@ Normal distribution, where we want to center the distribution on each data point
 
 \code
 static void apop_set_first_param(apop_data *in, apop_model *m){
-    m->parameters->vector->data[0]  = apop_data_get(in);
+    apop_data_set(m->parameters, .val= apop_data_get(in));
 }
 \endcode
 
 See the sample code for for a Uniform[0,1] recentered around the first element of the PMF matrix.
 
-\adoc Input_format  One observation (of any format) per line. Each row in turn will be passed through to the elements of <tt>kernelbase</tt> and optional <tt>set_params</tt> function.
-\adoc Parameter_format  None
-\adoc Estimated_parameters None
-\adoc Estimated_settings  The estimate method basically just runs
-                          <tt>apop_model_add_group(your_data, apop_kernel_density);</tt>
-\adoc Settings  \ref apop_kernel_density_settings
 \adoc Examples
-This example sets up and uses KDEs based on a Normal and a Uniform distribution.
+This example sets up and uses KDEs based on Normal and Uniform distributions.
 
 \include kernel.c
 */

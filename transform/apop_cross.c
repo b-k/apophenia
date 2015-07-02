@@ -143,8 +143,7 @@ apop_model *apop_model_cross_base(apop_model *mlist[]){
     apop_model_print_vtable_add(cross_print, apop_cross);
     Apop_stopif(!mlist[0], apop_model *oute = apop_model_copy(apop_cross); oute->error='i', 
                             0, "No inputs. Returning blank model with outmodel->error=='n'.");
-    Apop_stopif(!mlist[1], return apop_model_copy(mlist[1]), 
-                            2, "Only one model input; returning a copy of that model.");
+    Apop_stopif(!mlist[1], return apop_model_copy(mlist[1]), 2, "Only one model input; returning a copy of that model.");
     apop_model *m2 = mlist[2] ? apop_model_cross_base(mlist+1): mlist[1];
     apop_model *out = apop_model_copy(apop_cross);
     Apop_model_add_group(out, apop_cross, .model1=mlist[0], .model2=m2);

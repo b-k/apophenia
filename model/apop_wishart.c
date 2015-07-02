@@ -167,15 +167,15 @@ P(\mathbf{W}, \mathbf{V}) = \frac{\left|\mathbf{W}\right|^\frac{n-p-1}{2}}
 
 See also notes in \ref tfchi.
 
-\adoc    Input_format     Each row of the input matrix is a single square matrix,
+adoc    Input_format     Each row of the input matrix is a single square matrix,
                       flattened; use \ref apop_data_pack to convert your
                       sequence of matrices into rows.     
-\adoc    Parameter_format  \f$N\f$ (the degrees of freedom) is the zeroth element of the vector. The matrix holds the matrix of parameters.
-\adoc    Estimate_results  Via MLE.    
-\adoc    Prep_routine   Allocates the parameters based on the size of the input data.       
-\adoc    RNG  You can use this to generate random covariance matrices, should you need them. See example below. 
-\adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings    
-\adoc    Examples Making some random draws:
+adoc    Parameter_format  \f$N\f$ (the degrees of freedom) is the zeroth element of the vector. The matrix holds the matrix of parameters.
+adoc    Estimate_results  Via MLE.    
+adoc    Prep_routine   Allocates the parameters based on the size of the input data.       
+adoc    RNG  You can use this to generate random covariance matrices, should you need them. See example below. 
+adoc    settings   \ref apop_mle_settings, \ref apop_parts_wanted_settings    
+adoc    Examples Making some random draws:
 
 \code
 apop_model *m = apop_estimate(yr_data, apop_wishart);
@@ -186,6 +186,7 @@ for (int i=0; i< 1e8; i++){
     do_math_with_matrix(rmatrix);
 }
 \endcode */
-apop_model *apop_wishart  = &(apop_model){"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
+apop_model *apop_wishart  =
+    &(apop_model){"Wishart distribution", 1, -1, -1, .dsize=-1, .estimate=wishart_estimate, .draw = apop_wishart_draw,
          .log_likelihood = wishart_ll, .constraint = pos_def, .prep=wishart_prep, .constraint=wishart_constraint};
 #endif

@@ -7,11 +7,10 @@ procedure first generates the clean data set, then copies the first column to th
 instrument set, then the add_noise function inserts Gaussian noise into the base
 data set. Once the base set and the instrument set have been generated, the setup for
 the IV consists of adding the relevant names and using Apop_model_add_group to add a
-lm (linear model) settings group with a .instrument= instrument_data element.
+lm (linear model) settings group with an .instrument=instrument_data element.
 
 In fact, the example sets up a sequence of IV regressions, with more noise each
-time. This sample is part of Apophenia's test suite, and so checks that the coefficients
-are correct along the way.
+time.
 */
 
 #include <apop.h>
@@ -23,17 +22,20 @@ int datalen =1e4;
 //generate a vector that is the original vector + noise
 void add_noise(gsl_vector *in, gsl_rng *r, double size){
     apop_model *nnoise = apop_model_set_parameters(apop_normal, 0, size);
-    for (int i=0; i< in->size; i++){
+    apop_data *nd = apop_model_draws(nnoise, in->size);
+    gsl_vector_add(in, Apop_cv(nd, 0));
+    /*for (int i=0; i< in->size; i++){
         double noise;
         apop_draw(&noise, r, nnoise);
         *gsl_vector_ptr(in, i) += noise;
-    }
+    }*/
+    apop_data_free(nd);
     apop_model_free(nnoise);
 }
 
 void test_for_unbiased_parameter_estimates(apop_model *m, double tolerance){
-        Diff(apop_data_get(m->parameters, .row=0,.col=-1), -1.4, tolerance);
-        Diff(apop_data_get(m->parameters, .row=1,.col=-1), 2.3, tolerance);
+        Diff(apop_data_get(m->parameters, 0, -1), -1.4, tolerance);
+        Diff(apop_data_get(m->parameters, 1, -1), 2.3, tolerance);
 }
 
 int main(){

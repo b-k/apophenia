@@ -1,6 +1,6 @@
 #include <apop.h>
 
-/* This replacement for apop_model_printt(in) demonstrates retrieval of the useful
+/* This replacement for apop_model_print(in) demonstrates retrieval of the useful
 settings: the weights (λ) and list of estimated models. It is here only for
 demonstration purposes---it is what apop_model_print(your_mix) will do.
 */

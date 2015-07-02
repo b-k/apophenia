@@ -97,7 +97,7 @@ in_doc==1 && !/\\a[model|doc]/ {
 
 
 #the declaration [like apop_model new_model = {"new model", .p=prob, .score=deriv}; ] tells us which struct elements are actually used.
-/apop_model[ \t]*[^ \t]*[ \t]*=/ { in_decl=1 }
+/apop_model[ \t]*[^ \t]*[ \t]*=.*{/ { in_decl=1 }
 
 in_decl == 1 { cp = $0;
     if (match(cp, "\"([^\"]*)\"")){

@@ -1150,8 +1150,8 @@ See \ref settingswriting for details and an example.
 /** The settings for maximum likelihood estimation (including simulated annealing). */
 typedef struct{
     double      *starting_pt;   /**< An array of doubles (e.g., <tt>(double*){2,4,6,8}</tt>) suggesting a starting point. 
-                                  If NULL, use an all-ones vector.  Note that if \c v is a \c gsl_vector, then 
-                                  \c v->data is of the right form (provided \c v is not a slice of a matrix).*/
+                                  If NULL, use an all-ones vector.  If \c startv is a \c gsl_vector
+                                  and is not a view of a matrix, use <tt>.starting_pt=startv->data</tt>.*/
     char *method; /**< The method to be used for the optimization. All strings are case-insensitive.
 
         <table>

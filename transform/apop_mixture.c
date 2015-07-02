@@ -3,9 +3,6 @@
 /*
 \amodel apop_mixture The mixture model transformation: a linear combination of multiple models.  
 
-Generated via \ref apop_model_mixture.
-
-Note that a kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
 Use \ref apop_model_mixture to produce one of these models. In the examples below, some are generated from unparameterized input models with a form like 
 
@@ -26,8 +23,7 @@ Apop_settings_add(r_ed, apop_mixture, weights, wts->vector);
 printf("LL=%g\n", apop_log_likelihood(dd, r_ed));
 \endcode
 
-Notice that the weights vector has to be added after the model is set up. If none is given, then equal weights are assigned to all components of the mixture.
-
+Notice that the weights vector has to be added after the call to \ref apop_model_mixture. If none is given, then equal weights are assigned to all components of the mixture.
 
 One can think of the estimation as a missing-data problem: each data point originated
 in one distribution or the other, and if we knew with certainty which data point
@@ -48,7 +44,7 @@ not-conditionally IID models. Commit \c 1ac0dd44 in the repository had some note
 this, now removed.]  As a side-effect, it calculates the odds of drawing from each model
 (the vector λ). Following the above-linked paper, the probability for a given
 observation under the mixture model is its probability under the most likely model
-weighted by the previously calculated λ for the given model.
+weighted by the previously calculated \f$\lambda\f$ for the given model.
 
 Apohenia modifies this routine slightly because it uses the same maximum likelihood
 back-end that most other <tt>apop_model</tt>s use for estimation. The ML search algorithm
@@ -60,8 +56,7 @@ candidate set of parameters. This provides slightly more flexibility in the sear
 You are encouraged to try a sequence of random starting points for your model parameters.
 Some authors recommend plotting the data and eyeballing a guess as to the model parameters.
 
-Determining to which parts of a mixture to assign a data point is a
-well-known hard problem, which is often not solvable--that information is basically lost. 
+\li A kernel density is a mixture of a large number of homogeneous models, where each is typically centered around a point in your data. For such situations, \ref apop_kernel_density will be easier to use.
 
 \adoc    Input_format   The same data gets sent to each of the component models of the
 mixture. Each row is an observation, and the estimation routine assumes that models are
@@ -75,8 +70,8 @@ comes from, its likelihood can be calculated independently of all other observat
     The <tt>parameter</tt> element is a single vector piling up all elements, beginning
     with the first \f$n-1\f$ weights, followed by an <tt>apop_data_pack</tt> of each model's
     parameters in sequence. Because all elements are in a single vector, one could run a
-    maximum likelihood search for all components (including the weights) at once. Fortunately
-    for parsing, the <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack
+    maximum likelihood search for all components (including the weights) at once. 
+    The <tt>log_likehood</tt>, <tt>estimate</tt>, and other methods unpack
     this vector into its component parts for you.
 
 \adoc RNG Uses the weights to select a component model, then makes a draw from that component.

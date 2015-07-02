@@ -3,7 +3,7 @@
   
 \amodel apop_poisson
 
-\f$p(k) = {\mu^k \over k!} \exp(-\mu), \f$
+\f$p(k) = {\mu^k \over k!} \exp(-\mu). \f$
 
 \adoc    Input_format One scalar observation per row (in the \c matrix or \c vector).  
 \adoc    Parameter_format  One parameter, the zeroth element of the vector (<tt>double mu = apop_data_get(estimated_model->parameters)</tt>).
@@ -72,7 +72,7 @@ static void poisson_dlog_likelihood(apop_data *d, gsl_vector *gradient, apop_mod
     gsl_vector_set(gradient,0, d_a);
 }
 
-/* \adoc RNG A wrapper for \c gsl_ran_poisson.  */
+/* \adoc RNG A wrapper for \c gsl_ran_poisson. Sets a single scalar.*/
 static int poisson_rng(double *out, gsl_rng* r, apop_model *p){
     *out = gsl_ran_poisson(r, *p->parameters->vector->data);
     return 0;

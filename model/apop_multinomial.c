@@ -1,17 +1,19 @@
 /* The binomial distribution as an \c apop_model.
 Copyright (c) 2006--2007, 2010--11 by Ben Klemens.  Licensed under the GPLv2; see COPYING. 
 
- \amodel apop_binomial The multi-draw generalization of the Bernoulli; the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
-This differs from the \ref apop_multinomial only in the input data format.
+ \amodel apop_binomial The multi-draw generalization of the Bernoulli, or the two-bin special case of the \ref apop_multinomial "Multinomial distribution".
 
 It is implemented as an alias of the \ref apop_multinomial model, except that
-it has a CDF, and we know it has two parameters and a draw returns a scalar. I.e., 
+it has an explicit CDF, we know it has two parameters, and its draw method returns a scalar. I.e., 
 <tt>.vsize==2</tt> and <tt>.dsize==1</tt>.
 
 \adoc    Parameter_format   a vector, v[0]=\f$n\f$; v[1]=\f$p_1\f$. Thus, \f$p_0\f$
         isn't written down; see \ref apop_multinomial for further discussion.
         If you input \f$v[1]>1\f$ and <tt>apop_opts.verbose >=1</tt>, the log likelihood
         function will throw a warning.
+        Post-estimate, will have a <tt>\<Covariance\></tt> page with the covariance
+        matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).
+
 
 \adoc    Input_format Each row of the matrix is one observation, consisting of two elements.
   The number of draws of type zero (sometimes read as `misses' or `failures') are in column zero, 
@@ -20,7 +22,7 @@ it has a CDF, and we know it has two parameters and a draw returns a scalar. I.e
 \adoc    RNG The RNG returns a single number representing the success count, not a
     vector of length two giving both the failure bin and success bin. This is notable
     because it differs from the input data format, but it tends to be what people expect
-    from a Binomial RNG. For draws with both dimensions (or situations where draws are fed back into the model), use a \ref apop_multinomial model
+    from a Binomial RNG. For draws with both dimensions (or situations where draws are fed back into the model), use an \ref apop_multinomial model
     with <tt>.vsize =2</tt>.
 */
 
@@ -166,8 +168,6 @@ static void multinomial_show(apop_model *est, FILE *out){
 double avs(gsl_vector *v){return (double) apop_vector_sum(v);}
 
 /* \amodel apop_multinomial The \f$n\f$--option generalization of the \ref apop_binomial "Binomial distribution".
-
-\adoc estimated_parameters  As per the parameter format. Has a <tt>\<Covariance\></tt> page with the covariance matrix for the \f$p\f$s (\f$n\f$ effectively has no variance).
 
 \adoc estimated_info   Reports <tt>log likelihood</tt>. */
 static void multinomial_estimate(apop_data * data,  apop_model *est){
