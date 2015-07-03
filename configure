@@ -1,4 +1,4 @@
-version=0.999d
+version=0.999e
 workdir=apophenia-$version
 
 echo This configure script uses Autotools to generate a build directory, $workdir.
@@ -28,8 +28,6 @@ cd $workdir
 #Autoconf requirements:
 cp ChangeLog NEWS
 echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
-
-
 
 autoreconf -f -i
 autoreconf -i
