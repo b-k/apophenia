@@ -1,6 +1,8 @@
 
 #The Doxygen documentation, which you'll have to call yourself (via make doc).
 
+GVZDOT = /usr/bin/dot
+
 default:
 
 ## adhoc
@@ -11,6 +13,9 @@ apophenia_CSOURCES = \
 	$(top_srcdir)/transform/*.c
 	echo #$(wildcard $(top_srcdir)/model/*.c) \
 	echo #$(wildcard $(top_srcdir)/transform/*.c)
+
+apophenia_DOTS = \
+	structs.dot
 
 apophenia_IMAGES = \
 	flake.gif \
@@ -25,24 +30,24 @@ apophenia_IMAGES_EXTRA = \
 apophenia_JS = \
 	tree.js
 
+apophenia_IMAGES_GENERATED = \
+	structs.png
+
 model_doc.h: $(apophenia_CSOURCES)
 	cat $^ | awk -f make_model_doc.awk > $@
 
-doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
-	cp ../apop.h abkup
-	sed -i -e 's/__attribute.*;/;/' -e "s/extern //" ../apop.h
-	if [ ! -e structs.png ] ; then dot -Tpng <structs.dot >structs.png; fi;
+doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED)
+	mkdir -p include
+	sed -e 's/__attribute.*;/;/;s/extern //' $(top_srcdir)/apop.h > include/apop.h
 	doxygen doxygen.conf
-	cp structs.png html
-	cp abkup ../apop.h
-	cp $(apophenia_IMAGES) $(apophenia_JS) html/
+	cp $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html
 	sed -i -f edit_group.sed html/group__models.html
 	sed -i -f edit_width.sed html/*.html
-	. adjust
+	$(abs_top_srcdir) adjust
 
 doc-clean:
-	-rm -rf html latex man
+	-rm -rf include html latex man
 
 CLEANFILES = \
 	missing_model_parts
@@ -54,7 +59,9 @@ MAINTAINERCLEANFILES = \
 maintainer-clean-local: doc-clean
 
 EXTRA_DIST = \
+	adjust \
 	make_model_doc.awk \
+	$(apophenia_DOTS) \
 	$(apophenia_IMAGES) \
 	$(apophenia_IMAGES_EXTRA) \
 	$(apophenia_JS) \
@@ -63,3 +70,5 @@ EXTRA_DIST = \
 	typical.css \
 	documentation.h
 
+%.png : %.dot
+	$(GVZDOT) -Tpng < $< > $@
