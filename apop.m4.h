@@ -192,7 +192,6 @@ Apop_var_declare( double * apop_data_ptr(apop_data *data, int row, int col, cons
 Apop_var_declare( double apop_data_get(const apop_data *data, size_t row, int  col, const char *rowname, const char *colname, const char *page) )
 Apop_var_declare( int apop_data_set(apop_data *data, size_t row, int col, const double val, const char *rowname, const char * colname, const char *page) )
 void apop_data_add_named_elmt(apop_data *d, char *name, double val);
-#define apop_text_add apop_text_set   //Deprecated
 int apop_text_set(apop_data *in, const size_t row, const size_t col, const char *fmt, ...);
 apop_data * apop_text_alloc(apop_data *in, const size_t row, const size_t col);
 void apop_text_free(char ***freeme, int rows, int cols);
@@ -225,7 +224,10 @@ Apop_var_declare( apop_data *apop_db_to_crosstab(char const*tabname, char const*
 
 //From array
 Apop_var_declare( gsl_vector * apop_array_to_vector(double *in, int size) )
+/** \cond doxy_ignore */   //Deprecated
+#define apop_text_add apop_text_set
 #define apop_line_to_vector apop_array_to_vector
+/** \endcond */
 
 //From text
 Apop_var_declare( apop_data * apop_text_to_data(char const *text_file, int has_row_names, int has_col_names, int const *field_ends, char const *delimiters) )
@@ -631,7 +633,6 @@ Apop_stopif(x < 0,  , 1, "warning: x is %g.", x);
 //Missing data
 Apop_var_declare( apop_data * apop_data_listwise_delete(apop_data *d, char inplace) )
 apop_model * apop_ml_impute(apop_data *d, apop_model* meanvar);
-#define apop_ml_imputation(d, m) apop_ml_impute(d, m)
 
 Apop_var_declare(apop_model *apop_model_metropolis(apop_data *d, gsl_rng* rng, apop_model *m))
 Apop_var_declare( apop_model * apop_update(apop_data *data, apop_model *prior, apop_model *likelihood, gsl_rng *rng) )
@@ -1122,7 +1123,9 @@ See \ref settingswriting for details and an example.
         return out; \
     }
 
+/** \cond doxy_ignore */
 #define Apop_varad_set(var, value) (out)->var = (in).var ? (in).var : (value);
+/** \endcond */
 
 /** A convenience macro for declaring the copy function for a new settings group.
 See \ref settingswriting for details and an example.

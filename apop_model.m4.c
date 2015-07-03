@@ -488,7 +488,7 @@ apop_data *apop_predict(apop_data *d, apop_model *m){
     if (prediction) return prediction;
     if (!apop_map_sum(out, disnan)) return out;
     //default:
-    apop_model *f = apop_ml_imputation(out, m);
+    apop_model *f = apop_ml_impute(out, m);
     apop_model_free(f);
     return out;
 }

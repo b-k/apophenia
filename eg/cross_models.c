@@ -29,10 +29,10 @@ void cross_normals(){
     apop_model_print(estimated_norms);
     apop_data *estp1 = Apop_settings_get(estimated_norms, apop_cross, model1)->parameters;
     apop_data *estp2 = Apop_settings_get(estimated_norms, apop_cross, model2)->parameters;
-    assert(fabs(apop_data_get(estp1, 0) - mu)    < 1e-3);
-    assert(fabs(apop_data_get(estp2, 0) - mu)    < 1e-3);
-    assert(fabs(apop_data_get(estp1, 1) - sigma) < 1e-3);
-    assert(fabs(apop_data_get(estp2, 1) - sigma) < 1e-3);
+    assert(fabs(apop_data_get(estp1, 0) - mu)    < 2e-3);
+    assert(fabs(apop_data_get(estp2, 0) - mu)    < 2e-3);
+    assert(fabs(apop_data_get(estp1, 1) - sigma) < 2e-3);
+    assert(fabs(apop_data_get(estp2, 1) - sigma) < 2e-3);
 }
 
 //bind together a Poisson and a Normal
