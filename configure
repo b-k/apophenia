@@ -1,3 +1,5 @@
+#!/bin/bash
+
 version=0.999e
 workdir=apophenia-$version
 
@@ -32,7 +34,8 @@ echo "Ben Klemens (fluffmail@f-m.fm)" > AUTHORS
 autoreconf -f -i
 autoreconf -i
 ./configure -C
-make dist
+#make dist
+make distcheck
 
 echo
 echo ---------------------
