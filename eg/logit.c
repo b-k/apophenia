@@ -1,10 +1,17 @@
 // See http://modelingwithdata.org/arch/00000160.htm for context and analysis.
+
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 
 int main(){
     //read the data to db, get the desired columns,
     //prep the two categorical variables
-    apop_text_to_db("amash_vote_analysis.csv", .tabname="amash");
+    apop_text_to_db( DATADIR "/" "amash_vote_analysis.csv" , .tabname="amash");
     apop_data *d = apop_query_to_mixed_data("mmmtt", "select 0, ideology,log(contribs+10) as contribs, vote, party from amash");
     apop_data_to_factors(d); //0th text col -> 0th matrix col
     apop_data_to_dummies(d, .col=1, .type='t', .append='y');
