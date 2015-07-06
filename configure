@@ -17,7 +17,7 @@ cp -r cmd docs eg install/{acinclude.m4,apophenia.pc.in,configure.ac,Makefile.am
 #Debian maintainers didn't want this in the makefile.
 cp *.c $workdir && rm $workdir/*.m4.c
 cp apop_internal.h $workdir
-m4 -P install/prep_variadics.m4 apop.m4.h > $workdir/apop.h
+m4 -P install/prep_variadics.m4 apop.m4.h > $workdir/apop.h.in
 for i in *.m4.c; do
     m4 -P install/prep_variadics.m4 $i > $workdir/`basename $i .m4.c`.c
 done

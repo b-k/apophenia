@@ -127,7 +127,10 @@ typedef struct{
     char db_pass[101]; /**< Password for database login. Max 100 chars.  */
     FILE *log_file;  /**< The file handle for the log. Defaults to \c stderr, but change it with, e.g.,
                            <tt>apop_opts.log_file = fopen("outlog", "w");</tt> */
-    #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__)
+
+#define Autoconf_no_atomics @Autoconf_no_atomics@
+
+    #if __STDC_VERSION__ > 201100L && !defined(__STDC_NO_ATOMICS__) && Autoconf_no_atomics==0
         _Atomic(int) rng_seed;
     #else
         int rng_seed;

@@ -52,6 +52,18 @@ AC_STRUCT_TM
 AC_CHECK_TYPES([ptrdiff_t])
 AX_C___ATTRIBUTE__
 
+#Some versions of GCC support atomics iff OpenMP is off.
+export CFLAGS="$CFLAGS $OPENMP_CFLAGS"
+AC_RUN_IFELSE(
+[AC_LANG_SOURCE([int main(){
+    _Atomic(int) i;
+ }
+])]
+, [AC_SUBST([Autoconf_no_atomics], 0)]
+, [AC_SUBST([Autoconf_no_atomics], 1)]
+, [AC_SUBST([Autoconf_no_atomics], 1)]
+)
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
@@ -72,6 +84,7 @@ AM_CONDITIONAL([EXTENDED_TESTS], [test "X$enable_extended_tests" != "Xno"])
 
 AC_CONFIG_FILES([
 	apophenia.pc
+    apop.h
 	Makefile
 	transform/Makefile
 	model/Makefile
