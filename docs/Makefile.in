@@ -133,6 +133,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+Autoconf_no_atomics = @Autoconf_no_atomics@
 BC = @BC@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -260,9 +261,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+GVZDOT = /usr/bin/dot
 apophenia_CSOURCES = \
 	$(top_srcdir)/model/*.c \
 	$(top_srcdir)/transform/*.c
+
+apophenia_DOTS = \
+	structs.dot
 
 apophenia_IMAGES = \
 	flake.gif \
@@ -277,6 +282,9 @@ apophenia_IMAGES_EXTRA = \
 apophenia_JS = \
 	tree.js
 
+apophenia_IMAGES_GENERATED = \
+	structs.png
+
 CLEANFILES = \
 	missing_model_parts
 
@@ -285,7 +293,9 @@ MAINTAINERCLEANFILES = \
 	doxygen.log
 
 EXTRA_DIST = \
+	adjust \
 	make_model_doc.awk \
+	$(apophenia_DOTS) \
 	$(apophenia_IMAGES) \
 	$(apophenia_IMAGES_EXTRA) \
 	$(apophenia_JS) \
@@ -501,23 +511,23 @@ html man: doc
 model_doc.h: $(apophenia_CSOURCES)
 	cat $^ | awk -f make_model_doc.awk > $@
 
-doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS)
-	cp ../apop.h abkup
-	sed -i -e 's/__attribute.*;/;/' -e "s/extern //" ../apop.h
-	if [ ! -e structs.png ] ; then dot -Tpng <structs.dot >structs.png; fi;
+doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED)
+	mkdir -p include
+	sed -e 's/__attribute.*;/;/;s/extern //' $(top_srcdir)/apop.h > include/apop.h
 	doxygen doxygen.conf
-	cp structs.png html
-	cp abkup ../apop.h
-	cp $(apophenia_IMAGES) $(apophenia_JS) html/
+	cp $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED) html/
 	sed -i -f edit_outline.sed html/index.html html/outline.html
 	sed -i -f edit_group.sed html/group__models.html
 	sed -i -f edit_width.sed html/*.html
-	. adjust
+	$(abs_top_srcdir) adjust
 
 doc-clean:
-	-rm -rf html latex man
+	-rm -rf include html latex man
 
 maintainer-clean-local: doc-clean
+
+%.png : %.dot
+	$(GVZDOT) -Tpng < $< > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

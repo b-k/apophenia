@@ -5,12 +5,17 @@ AUTOMAKE_OPTIONS = \
 	dist-bzip2 \
 	dist-zip
 
+AM_DISTCHECK_CONFIGURE_FLAGS ?= \
+	--disable-maintainer-mode \
+	--enable-extended-tests
+
 AM_CFLAGS = -g -Wall -O3
 
 ## Library versioning (C:R:A == current:revision:age)
 ## 0.999b 0:0:0
 ## 0.999c 1:0:0
-LIBAPOPHENIA_LT_VERSION = 1:0:0
+## 0.999e 2:0:0
+LIBAPOPHENIA_LT_VERSION = 2:0:0
 
 SUBDIRS = transform model . cmd eg tests docs
 

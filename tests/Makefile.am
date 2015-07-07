@@ -39,10 +39,10 @@ check_PROGRAMS= \
 	$(top_builddir)/eg/db_fns \
 	$(top_builddir)/eg/dot_products \
 	$(top_builddir)/eg/entropy_vector \
-	$(top_builddir)/eg/fake_logit \
 	$(top_builddir)/eg/iv \
 	$(top_builddir)/eg/ks_tests \
 	$(top_builddir)/eg/logit \
+	$(top_builddir)/eg/fake_logit \
 	$(top_builddir)/eg/normalization_demo \
 	$(top_builddir)/eg/ols \
 	$(top_builddir)/eg/ols_oneliner \

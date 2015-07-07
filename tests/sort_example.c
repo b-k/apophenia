@@ -1,3 +1,9 @@
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 #include <unistd.h>
 #ifdef Testing
@@ -8,8 +14,8 @@
 double get_distance(gsl_vector *v) {return apop_vector_distance(v);}
 
 int main(){
-    apop_text_to_db("amash_vote_analysis.csv");
-    apop_data *d = apop_query_to_mixed_data("mntmtm", "select 1,id,party,contribs/1000.0,vote,ideology from amash_vote_analysis ");
+    apop_text_to_db( DATADIR "/" "amash_vote_analysis.csv" );
+    apop_data *d = apop_query_to_mixed_data("mntmtm", "select 1,id,party,contribs/1000.0,vote,ideology from amash_vote_analysis " );
 
     //use the default order of columns for sorting
     apop_data *sorted = apop_data_sort(d, .inplace='n');
@@ -43,7 +49,7 @@ int main(){
 
     //take each row of the matrix as a vector; store the Euclidian distance to the origin in the vector;
     //sort in descending order.
-    apop_data *rowvectors = apop_text_to_data("test_data");
+    apop_data *rowvectors = apop_text_to_data( DATADIR "/" "test_data" );
     apop_map(rowvectors, .fn_v=get_distance, .part='r', .inplace='y');
     apop_data *arow = apop_data_copy(Apop_r(rowvectors, 0));
     arow->matrix=NULL; //sort only by the distance vector

@@ -106,7 +106,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = apophenia.pc
+CONFIG_CLEAN_FILES = apophenia.pc apop.h
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -257,8 +257,9 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/apophenia.pc.in \
-	$(srcdir)/config.h.in $(top_srcdir)/build-aux/compile \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/apop.h.in \
+	$(srcdir)/apophenia.pc.in $(srcdir)/config.h.in \
+	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.sub \
 	$(top_srcdir)/build-aux/depcomp \
@@ -320,6 +321,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+Autoconf_no_atomics = @Autoconf_no_atomics@
 BC = @BC@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -454,7 +456,7 @@ AUTOMAKE_OPTIONS = \
 	dist-zip
 
 AM_CFLAGS = -g -Wall -O3
-LIBAPOPHENIA_LT_VERSION = 1:0:0
+LIBAPOPHENIA_LT_VERSION = 2:0:0
 SUBDIRS = transform model . cmd eg tests docs
 include_HEADERS = apop.h
 pkgconfigdir = $(libdir)/pkgconfig
@@ -576,6 +578,8 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 distclean-hdr:
 	-rm -f config.h stamp-h1
 apophenia.pc: $(top_builddir)/config.status $(srcdir)/apophenia.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+apop.h: $(top_builddir)/config.status $(srcdir)/apop.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -1338,6 +1342,10 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
 
 .PRECIOUS: Makefile
 
+
+AM_DISTCHECK_CONFIGURE_FLAGS ?= \
+	--disable-maintainer-mode \
+	--enable-extended-tests
 
 apop_db.c: $(apop_db_INCLUDES)
 

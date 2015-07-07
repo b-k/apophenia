@@ -1,3 +1,9 @@
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 
 #define Diff(L, R, eps) {double left=(L), right=(R); Apop_stopif(isnan(left-right) || fabs((left)-(right))>(eps), abort(), 0, "%g is too different from %g (abitrary limit=%g).", (double)(left), (double)(right), eps);}
@@ -25,7 +31,7 @@ void test_f(apop_model *est){
 }
 
 int main(){
-    apop_data *d = apop_text_to_data("test_data2");
+    apop_data *d = apop_text_to_data( DATADIR "/" "test_data2" );
     apop_model *an_ols_model = apop_model_copy(apop_ols);
     Apop_model_add_group(an_ols_model, apop_lm, .want_expected_value= 1);
     apop_model *e  = apop_estimate(d, an_ols_model);

@@ -1122,7 +1122,7 @@ int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3
 }
 
 char *cut_at_dot(char const *infile){
-    char *out = strdup(infile);
+    char *out = strdup(basename(infile));
     for (char *c = out; *c; c++) if (*c=='.') {*c='\0'; return out;}
     return out;
 }
@@ -1144,8 +1144,9 @@ apop_query("commit;");
 \endcode
 
 \param text_file    The name of the text file to be read in. If \c "-", then read from \c STDIN. (default: "-")
-\param tabname      The name to give the table in the database (default:
-\c text_file up to the first dot, e.g., <tt>text_file=="pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>)
+\param tabname      The name to give the table in the database
+    (default: \c text_file after the last slash and up to the next dot. E.g.,
+    <tt>text_file=="../data/pant_lengths.csv"</tt> gives <tt>tabname=="pant_lengths"</tt>)
 \param has_row_names Does the lines of data have row names? (default: 0)
 \param has_col_names Is the top line a list of column names? (default: 1)
 \param field_names The list of field names, which will be the columns for the table. If <tt>has_col_names==1</tt>, read the names from the file (and just set this to <tt>NULL</tt>). If has_col_names == 1 && field_names !=NULL, I'll use the field names.  (default: NULL)

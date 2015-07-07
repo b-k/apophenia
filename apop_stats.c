@@ -823,7 +823,7 @@ apop_varad_head(long double, apop_kl_divergence){
 #endif
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
-    if (from->name && !strcmp(from->name, "PDF or sparse matrix")){
+    if (*from->name && !strcmp(from->name, "PDF or sparse matrix")){
         apop_data *p = from->data;
         apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
         Get_vmsizes(p); //maxsize

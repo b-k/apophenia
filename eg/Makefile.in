@@ -131,6 +131,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+Autoconf_no_atomics = @Autoconf_no_atomics@
 BC = @BC@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@

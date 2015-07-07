@@ -97,10 +97,10 @@ check_PROGRAMS = db_tests$(EXEEXT) error_test$(EXEEXT) \
 	$(top_builddir)/eg/db_fns$(EXEEXT) \
 	$(top_builddir)/eg/dot_products$(EXEEXT) \
 	$(top_builddir)/eg/entropy_vector$(EXEEXT) \
-	$(top_builddir)/eg/fake_logit$(EXEEXT) \
 	$(top_builddir)/eg/iv$(EXEEXT) \
 	$(top_builddir)/eg/ks_tests$(EXEEXT) \
 	$(top_builddir)/eg/logit$(EXEEXT) \
+	$(top_builddir)/eg/fake_logit$(EXEEXT) \
 	$(top_builddir)/eg/normalization_demo$(EXEEXT) \
 	$(top_builddir)/eg/ols$(EXEEXT) \
 	$(top_builddir)/eg/ols_oneliner$(EXEEXT) \
@@ -664,6 +664,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+Autoconf_no_atomics = @Autoconf_no_atomics@
 BC = @BC@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -2018,13 +2019,6 @@ $(top_builddir)/eg/entropy_vector.log: $(top_builddir)/eg/entropy_vector$(EXEEXT
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-$(top_builddir)/eg/fake_logit.log: $(top_builddir)/eg/fake_logit$(EXEEXT)
-	@p='$(top_builddir)/eg/fake_logit$(EXEEXT)'; \
-	b='$(top_builddir)/eg/fake_logit'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 $(top_builddir)/eg/iv.log: $(top_builddir)/eg/iv$(EXEEXT)
 	@p='$(top_builddir)/eg/iv$(EXEEXT)'; \
 	b='$(top_builddir)/eg/iv'; \
@@ -2042,6 +2036,13 @@ $(top_builddir)/eg/ks_tests.log: $(top_builddir)/eg/ks_tests$(EXEEXT)
 $(top_builddir)/eg/logit.log: $(top_builddir)/eg/logit$(EXEEXT)
 	@p='$(top_builddir)/eg/logit$(EXEEXT)'; \
 	b='$(top_builddir)/eg/logit'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/fake_logit.log: $(top_builddir)/eg/fake_logit$(EXEEXT)
+	@p='$(top_builddir)/eg/fake_logit$(EXEEXT)'; \
+	b='$(top_builddir)/eg/fake_logit'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
