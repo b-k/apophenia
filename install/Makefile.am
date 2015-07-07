@@ -5,6 +5,10 @@ AUTOMAKE_OPTIONS = \
 	dist-bzip2 \
 	dist-zip
 
+AM_DISTCHECK_CONFIGURE_FLAGS ?= \
+	--disable-maintainer-mode \
+	--enable-extended-tests
+
 AM_CFLAGS = -g -Wall -O3
 
 ## Library versioning (C:R:A == current:revision:age)
