@@ -34,20 +34,28 @@ apophenia_IMAGES_GENERATED = \
 	structs.png
 
 model_doc.h: $(apophenia_CSOURCES)
-	cat $^ | awk -f make_model_doc.awk > $@
+	cat $^ | awk -f $(top_srcdir)/docs/make_model_doc.awk > $@
 
 doc: documentation.h model_doc.h $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED)
-	mkdir -p include
-	sed -e 's/__attribute.*;/;/;s/extern //' $(top_srcdir)/apop.h > include/apop.h
+	$(MKDIR_P) include
+	sed -e 's/__attribute.*;/;/;s/extern //' $(top_builddir)/apop.h > include/apop.h
 	doxygen doxygen.conf
-	cp $(apophenia_IMAGES) $(apophenia_JS) $(apophenia_IMAGES_GENERATED) html/
-	sed -i -f edit_outline.sed html/index.html html/outline.html
-	sed -i -f edit_group.sed html/group__models.html
-	sed -i -f edit_width.sed html/*.html
+	for f in $(apophenia_IMAGES) $(apophenia_JS) ; do \
+		test -f $(top_srcdir)/docs/$$f && cp $(top_srcdir)/docs/$$f html/ ;\
+	done
+	cp $(apophenia_IMAGES_GENERATED) html/
+	sed -i -f $(top_srcdir)/docs/edit_outline.sed html/index.html html/outline.html
+	sed -i -f $(top_srcdir)/docs/edit_group.sed html/group__models.html
+	sed -i -f $(top_srcdir)/docs/edit_width.sed html/*.html
 	$(abs_top_srcdir)/docs/adjust
 
 doc-clean:
 	-rm -rf include html latex man
+
+install-html-local: doc
+	cp -prd html $(DESTDIR)$(docdir)
+
+maintainer-clean-local: doc-clean
 
 CLEANFILES = \
 	missing_model_parts
@@ -55,8 +63,6 @@ CLEANFILES = \
 MAINTAINERCLEANFILES = \
 	model_doc.h \
 	doxygen.log
-
-maintainer-clean-local: doc-clean
 
 EXTRA_DIST = \
 	adjust \
