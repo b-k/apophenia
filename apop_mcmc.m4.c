@@ -195,13 +195,14 @@ OMP_critical (metro_draw)
 }
 
 
-void main_mcmc_loop(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw, 
+void main_mcmc_loop(apop_data *d, apop_model *m, apop_data *out, gsl_vector *draw,
                         apop_mcmc_settings *s, gsl_rng *rng, int *constraint_fails){
+		double integerpart_periods_burnin = GSL_NAN; modf((double)(s->periods)*s->burnin,&integerpart_periods_burnin);
     s->accept_count = 0;
+    int out_row = -lround(integerpart_periods_burnin);
     int block = 0;
-    for (s->proposal_count=1; s->proposal_count< s->periods+1; s->proposal_count++){
-        one_step(d, draw, m, s, rng, constraint_fails, out, block
-                               , s->proposal_count-1 - s->periods*s->burnin);
+    for (s->proposal_count=1; s->proposal_count< s->periods+1; s->proposal_count++, out_row++){
+        one_step(d, draw, m, s, rng, constraint_fails, out, block, out_row);
         block = (block+1) % s->block_count;
         s->proposals[block].adapt_fn(s->proposals+block, s);
         //if (constraint_fails>10000) break;
@@ -292,11 +293,14 @@ APOP_VAR_END_HEAD
     apop_prep(d, m); //typically a no-op
     s->last_ll = GSL_NEGINF;
     gsl_vector * drawv = apop_data_pack(m->parameters);
-    Apop_stopif(s->burnin > 1, s->burnin/=(s->periods + 0.0), 
+    const double double_periods = (double)(s->periods);
+    Apop_stopif(s->burnin > 1, s->burnin/=double_periods,
                 1, "Burn-in should be a fraction of the number of periods, "
                    "not a whole number of periods. Rescaling to burnin=%g."
-                   , s->burnin/(s->periods+0.0));
-    apop_data *out = apop_data_alloc(s->periods*(1-s->burnin), drawv->size);
+                   , s->burnin/double_periods);
+		double integerpart_periods_cburnin = GSL_NAN; modf(double_periods*(1.0-s->burnin),&integerpart_periods_cburnin);
+		const size_t data_size1 = llround(integerpart_periods_cburnin);
+    apop_data *out = apop_data_alloc(data_size1, drawv->size);
 
     if (!s->proposals){
         set_block_count_and_block_starts(m->parameters, s, drawv->size);
