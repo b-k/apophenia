@@ -88,11 +88,13 @@ static long double beta_cdf(apop_data *d, apop_model *params){
 }
 
 static int beta_rng(double *out, gsl_rng *r, apop_model* eps){
+    double ans = GSL_NAN;
     Nullcheck_mp(eps, 1)
     Get_ab(eps)
     do {
-    *out = gsl_ran_beta(r, ab.alpha, ab.beta);
-    } while (*out <= 0 || *out >= 1);
+        ans = gsl_ran_beta(r, ab.alpha, ab.beta);
+    } while (!((0.0 < ans) && (GSL_DBL_EPSILON <= 1.0 - ans)));
+    *out = ans;
     return 0;
 }
 
