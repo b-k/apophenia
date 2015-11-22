@@ -17,7 +17,7 @@ computationally-intensive agent-based models.
 The library has been growing and improving since 2005, and has been downloaded well over 1e4 times. To date, it has over two hundred functions and macros to facilitate statistical computing, such as:
 
 \li OLS and family, discrete choice models like Probit and Logit, kernel density estimators, and other common models.
-\li Functions for transforming models (like Normal $\rightarrow$ truncated Normal)
+\li Functions for transforming models (like Normal \f$\rightarrow\f$ truncated Normal)
     and combining models (produce the cross-product of that truncated Normal with three others,
     or use Bayesian updating to combine that cross-product prior with an OLS likelihood
     to produce a posterior distribution over the OLS parameters).
@@ -36,21 +36,8 @@ For the full list of macros, functions, and prebuilt models, check the <a href="
 
 Most users will want to download the latest packaged version linked from the <a
 href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
-Apophenia here</a> header.
-
-Those who would like to work on a cutting-edge copy of the source code
-can get the latest version by cutting and pasting the following onto
-the command line. If you follow this route, be sure to read the development README in the
-<tt>apophenia</tt> directory this command will create.
-
-\code
-git clone https://github.com/b-k/apophenia.git
-\endcode
-
-<!--git clone git://apophenia.git.sourceforge.net/gitroot/apophenia/apophenia
-cvs -z3 -d:ext:<i>(your sourceforge login)</i>@cvs.sourceforge.net:/cvsroot/apophenia co -P apophenia
-cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/apophenia checkout -P apophenia
-svn co https://apophenia.svn.sourceforge.net/svnroot/apophenia/trunk/apophenia --> 
+Apophenia here</a> header. See the \ref setup page for detailed setup instructions,
+including how to use your package manager to install the Debian package.
 
 <em>The documentation</em>
 
@@ -188,9 +175,26 @@ or
 sudo yum install make gcc gsl-devel libsqlite3x-devel
 \endcode
 
-\li <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>. 
+\li If you use a Debian-based system (including Ubuntu), try the version in Debian's Stretch distribution:
 
-\li Once you have the library downloaded, compile it using
+\code
+#Add Stretch to your sources list
+sudo sed -i '$a
+deb http://httpredir.debian.org/debian stretch main
+deb-src http://httpredir.debian.org/debian stretch main' /etc/apt/sources.list
+sudo apt-get update
+
+#Get Apophenia
+sudo apt-get install apophenia-bin
+
+#Optional: remove Stretch from your sources list.
+sudo sed -i -e '$d' -e '$d' /etc/apt/sources.list
+\endcode
+
+Thanks to Jerome Benoit for getting the library packaged and adjusted to Debian standards.
+
+\li If the Debian package is not for you, <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.
+Once you have the library downloaded, compile it using
 
 \code
 tar xvzf apop*tgz && cd apophenia-0.999
@@ -212,6 +216,21 @@ permissions, see the \ref notroot page.
 \subpage makefile
 
 \subpage windows
+
+
+\li Those who would like to work on a cutting-edge copy of the source code
+can get the latest version by cutting and pasting the following onto
+the command line. If you follow this route, be sure to read the development README in the
+<tt>apophenia</tt> directory this command will create.
+
+\code
+git clone https://github.com/b-k/apophenia.git
+\endcode
+
+<!--git clone git://apophenia.git.sourceforge.net/gitroot/apophenia/apophenia
+cvs -z3 -d:ext:<i>(your sourceforge login)</i>@cvs.sourceforge.net:/cvsroot/apophenia co -P apophenia
+cvs -z3 -d:pserver:anonymous@cvs.sf.net:/cvsroot/apophenia checkout -P apophenia
+svn co https://apophenia.svn.sourceforge.net/svnroot/apophenia/trunk/apophenia -->
 
 */
 
