@@ -131,7 +131,6 @@ var group__models =
       [ "Input_format_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aada7bee035b320a28dcd81dba16e3530a", null ],
       [ "Parameter_format_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aa9924bce9086c9687768c2946ed9c56f0", null ],
       [ "postestimate_data_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aab4c93835f96033cfe3b275f623464180", null ],
-      [ "postestimate_parameters_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aa5849037a544ad73528a116a8919df269", null ],
       [ "postestimate_info_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aa2bdaf2f1ac14cb75cb9e98aa8bdeab4a", null ],
       [ "RNG_x5x_", "group__models.html#ggacd7823e794194d3646d586484833882aa82a752cff9ca429d5035170b244496aa", null ]
     ] ],
@@ -140,7 +139,6 @@ var group__models =
       [ "Input_format_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3a5a5b393fddcc7b1fa1a78c030a672ba6", null ],
       [ "Parameter_format_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3a87d5e0dae55445e170a13f8af7afccc0", null ],
       [ "postestimate_data_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3ae02d3373ba1963b7e13737d58d257983", null ],
-      [ "postestimate_parameters_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3a8e5cbab5f801ac76ee920bcaba06e932", null ],
       [ "postestimate_info_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3aa539b5dc848d7c09947fc22ef87cbe1c", null ],
       [ "RNG_x6x_", "group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3ac6231fb185d75498d6071812974e5e90", null ]
     ] ],
@@ -149,7 +147,6 @@ var group__models =
       [ "Input_format_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466aaa15b17d2202559927e802902e9502b6", null ],
       [ "Parameter_format_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466ab26fab7da0a30d6a66ab5b8bc6e54c9f", null ],
       [ "postestimate_data_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a3cd5282beba7367ba6ddc50376922a05", null ],
-      [ "postestimate_parameters_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a8bf56c4e67da5baba589e382129999ac", null ],
       [ "postestimate_info_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a3b08207668630e4eda478e64898048ea", null ],
       [ "Predict_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a1b67002cb1fa3c03dcdd40fbded94b19", null ],
       [ "RNG_x25x_", "group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a3a3cffad0b7ca17d9fd78dcc68052a5b", null ],
@@ -161,7 +158,6 @@ var group__models =
       [ "Prep_routine_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3aa33bfef67569eaf7a0d558f3eb485c7c", null ],
       [ "Parameter_format_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3a6a7cc6d1c86c9453b90a4b8c6619910e", null ],
       [ "postestimate_data_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3a90fe8b700f7c667e7d897154dfb10281", null ],
-      [ "postestimate_parameters_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3ace30ac9c1aa74f659b7b09be982aa844", null ],
       [ "postestimate_parameter_model_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3a6b33e26e68adbb205a62448d4808017f", null ],
       [ "postestimate_info_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3abbb7fd22f48ee089a15aa29ba6338f4d", null ],
       [ "RNG_x8x_", "group__models.html#gga85524b1deabd5829227888fd91740cc3a686e28adf99c0b3146df29c4fe59b51c", null ],
@@ -180,13 +176,11 @@ var group__models =
     [ "apop_poisson", "group__models.html#ga9c67838a4761452cc2c9113557f2a070", [
       [ "Name_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070affd081bcb4368f169538c14bebd4020c", null ],
       [ "Input_format_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a2e767a027546109b44c899bab669101c", null ],
-      [ "Prep_routine_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070af64397408bb9b275581d6f37f1365f82", null ],
       [ "Parameter_format_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070adcb38d478c57f0423f91f0f87a1ea029", null ],
       [ "postestimate_data_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a4db066cf9dfea3960b6199c7deda9a46", null ],
       [ "postestimate_parameters_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a0987d6bb2c177dd64dbe3b32687fa3a0", null ],
       [ "postestimate_info_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a457890560db963048295c3fb487e2e05", null ],
-      [ "RNG_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a38c95407fb642dcd3af88742320657b2", null ],
-      [ "Examples_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a72bd3ed0045dd63c42c66754d2f69a02", null ]
+      [ "RNG_x24x_", "group__models.html#gga9c67838a4761452cc2c9113557f2a070a38c95407fb642dcd3af88742320657b2", null ]
     ] ],
     [ "apop_probit", "group__models.html#ga319b8e3d5025a6fc94829a978273eb8b", [
       [ "Name_x21x_", "group__models.html#gga319b8e3d5025a6fc94829a978273eb8bab50a9cab69449ac7f463fb901ed4d9f5", null ],

@@ -1,8 +1,8 @@
 var structapop__settings__type =
 [
-    [ "copy", "structapop__settings__type.html#a1f06ed8f36fba035dbfd49fd46e54a0e", null ],
-    [ "free", "structapop__settings__type.html#a4b9a577130155010d8a5ce24d923e10c", null ],
-    [ "name", "structapop__settings__type.html#af94f0662be658184e0e962c8abf30040", null ],
+    [ "copy", "structapop__settings__type.html#ac7fbeb4365ff8f39adb212847fc1534b", null ],
+    [ "free", "structapop__settings__type.html#af788e5e0c2cf935ef5df3f2b525edfa4", null ],
+    [ "name", "structapop__settings__type.html#a27d082715e7de49fd30b9ee7062d08c5", null ],
     [ "name_hash", "structapop__settings__type.html#acf32308ed6c0ec67bc068e994b6045cd", null ],
-    [ "setting_group", "structapop__settings__type.html#a927f04071e256fbec2975ba0bfa37bb9", null ]
+    [ "setting_group", "structapop__settings__type.html#aeb51d5c1b3916dca7c76a27d4b58f488", null ]
 ];

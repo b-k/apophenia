@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['base_5fadapt_5ffn',['base_adapt_fn',['../structapop__mcmc__settings.html#a085288b9cb9c2acec4497cd49a970a3c',1,'apop_mcmc_settings']]],
-  ['base_5fdata',['base_data',['../structapop__kernel__density__settings.html#a9e101a64b90c7bbdc1eaae3b50b2721e',1,'apop_kernel_density_settings']]],
-  ['base_5fmodel',['base_model',['../structapop__mcmc__settings.html#a1ea0ccb424a1ac6c69bf647ab6ad656a',1,'apop_mcmc_settings::base_model()'],['../structapop__dconstrain__settings.html#a3b1ea1c653efb95bfe8f4a85978ebe7f',1,'apop_dconstrain_settings::base_model()']]],
-  ['base_5fpmf',['base_pmf',['../structapop__kernel__density__settings.html#ad04717a9a79e699559fd28b060c4a683',1,'apop_kernel_density_settings']]],
-  ['base_5fstep_5ffn',['base_step_fn',['../structapop__mcmc__settings.html#ae612a4cf6595e634927dbc7dd9cdb107',1,'apop_mcmc_settings']]],
-  ['base_5fto_5ftransformed',['base_to_transformed',['../structapop__coordinate__transform__settings.html#a824a84919e0b39c482349d5f466601eb',1,'apop_coordinate_transform_settings']]],
-  ['block_5fstarts',['block_starts',['../structapop__mcmc__settings.html#a3aaab8b4555be99e0d8673035856c0f3',1,'apop_mcmc_settings']]],
+  ['base_5fadapt_5ffn',['base_adapt_fn',['../structapop__mcmc__settings.html#af0b3a768ea4d032294932c450c31db15',1,'apop_mcmc_settings']]],
+  ['base_5fdata',['base_data',['../structapop__kernel__density__settings.html#a81f22716b3a6ef5c69378e16e274f742',1,'apop_kernel_density_settings']]],
+  ['base_5fmodel',['base_model',['../structapop__mcmc__settings.html#a6f038a951747f4bf534814a70ecdd547',1,'apop_mcmc_settings::base_model()'],['../structapop__dconstrain__settings.html#a7f9f8326aa9fa6e7f7d1d849c02e1210',1,'apop_dconstrain_settings::base_model()']]],
+  ['base_5fpmf',['base_pmf',['../structapop__kernel__density__settings.html#ae171931cab7613bd16006d5baf324ce4',1,'apop_kernel_density_settings']]],
+  ['base_5fstep_5ffn',['base_step_fn',['../structapop__mcmc__settings.html#ae8bb5cbb3e35e3c9519775b8bdead17b',1,'apop_mcmc_settings']]],
+  ['base_5fto_5ftransformed',['base_to_transformed',['../structapop__coordinate__transform__settings.html#a3f60d732b9252c365196aa2a105eb529',1,'apop_coordinate_transform_settings']]],
+  ['block_5fstarts',['block_starts',['../structapop__mcmc__settings.html#a378402aa7038d613dbfec59d3cceda21',1,'apop_mcmc_settings']]],
   ['burnin',['burnin',['../structapop__mcmc__settings.html#a7c60f0929a17f4c2b2582e9d14a7c030',1,'apop_mcmc_settings']]]
 ];

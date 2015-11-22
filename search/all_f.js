@@ -2,7 +2,7 @@ var searchData=
 [
   ['references_20and_20extensions',['References and extensions',['../refstatusext.html',1,'preliminaries']]],
   ['reject_5fcount',['reject_count',['../structapop__mcmc__proposal__s.html#a192618b78d9a36670c3ba5081916df29',1,'apop_mcmc_proposal_s::reject_count()']]],
-  ['rng',['rng',['../structapop__cdf__settings.html#a948d0a7bd0c576ca4e59edf7d6835794',1,'apop_cdf_settings::rng()']]],
+  ['rng',['rng',['../structapop__cdf__settings.html#a21fee6ad1f5fafe54eddf9449051efba',1,'apop_cdf_settings::rng()']]],
   ['rng_5fx10x_5f',['RNG_x10x_',['../group__models.html#ggaa88a402cf7d02c25c4613a74ace1b0c1a6c65270f204ee95d6da7276c1f6d8380',1,'model_doc.h']]],
   ['rng_5fx11x_5f',['RNG_x11x_',['../group__models.html#ggaded18b6bf8bd63a53f7b72ed5f27fdb5a55b3f592cfb119a98e9271136d8f0472',1,'model_doc.h']]],
   ['rng_5fx13x_5f',['RNG_x13x_',['../group__models.html#ggac11decb2971532ada7d2cd4982848b90a7759588538279517d81d488abe856054',1,'model_doc.h']]],

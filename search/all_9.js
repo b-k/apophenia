@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['kernel',['kernel',['../structapop__kernel__density__settings.html#a3aa105f6ca87b95f942c1301651d56c2',1,'apop_kernel_density_settings']]]
+  ['kernel',['kernel',['../structapop__kernel__density__settings.html#ab9eb46f59bc01dcb0715a156ba860e26',1,'apop_kernel_density_settings']]]
 ];

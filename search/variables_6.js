@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['input_5fdelimiters',['input_delimiters',['../structapop__opts__type.html#a21be8294c9e437dc7ef257546e69cc3b',1,'apop_opts_type']]],
-  ['input_5fdistribution',['input_distribution',['../structapop__lm__settings.html#a42cb12928e66c72e01b17eb900cd89f2',1,'apop_lm_settings']]],
-  ['instruments',['instruments',['../structapop__lm__settings.html#a4141ad9117a847a4a78911a2360d0fbf',1,'apop_lm_settings']]]
+  ['input_5fdelimiters',['input_delimiters',['../structapop__opts__type.html#a4847a549c668ec81207663032874bd49',1,'apop_opts_type']]],
+  ['input_5fdistribution',['input_distribution',['../structapop__lm__settings.html#aabc2f0277f6500c27ad4d3729e12b219',1,'apop_lm_settings']]],
+  ['instruments',['instruments',['../structapop__lm__settings.html#ac15f9930a7e9d081a88d8fd389d5708f',1,'apop_lm_settings']]]
 ];

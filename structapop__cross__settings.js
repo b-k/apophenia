@@ -1,6 +1,6 @@
 var structapop__cross__settings =
 [
-    [ "model1", "structapop__cross__settings.html#ac1e96e5516a44578292bcc51282d6501", null ],
-    [ "model2", "structapop__cross__settings.html#a67f5387ff6d30ad106909b120ba80859", null ],
-    [ "splitpage", "structapop__cross__settings.html#a7ea934b5ae7a974de3ae67234efad0ee", null ]
+    [ "model1", "structapop__cross__settings.html#a24434a5b38a3483dece53be6a76fa5b0", null ],
+    [ "model2", "structapop__cross__settings.html#a3e664969f8549fed957b9d9e7ea79ca3", null ],
+    [ "splitpage", "structapop__cross__settings.html#abcb0f389e1bf66424938b5daa85a3180", null ]
 ];

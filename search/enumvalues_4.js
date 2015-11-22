@@ -64,18 +64,13 @@ var searchData=
   ['postestimate_5fparameter_5fmodel_5fx8x_5f',['postestimate_parameter_model_x8x_',['../group__models.html#gga85524b1deabd5829227888fd91740cc3a6b33e26e68adbb205a62448d4808017f',1,'model_doc.h']]],
   ['postestimate_5fparameters_5fx18x_5f',['postestimate_parameters_x18x_',['../group__models.html#ggaca8f3323c57e0223a9f3c0f991c9760ea2dd0a77edd0e72c4477bc7085c034c61',1,'model_doc.h']]],
   ['postestimate_5fparameters_5fx24x_5f',['postestimate_parameters_x24x_',['../group__models.html#gga9c67838a4761452cc2c9113557f2a070a0987d6bb2c177dd64dbe3b32687fa3a0',1,'model_doc.h']]],
-  ['postestimate_5fparameters_5fx25x_5f',['postestimate_parameters_x25x_',['../group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a8bf56c4e67da5baba589e382129999ac',1,'model_doc.h']]],
   ['postestimate_5fparameters_5fx26x_5f',['postestimate_parameters_x26x_',['../group__models.html#ggac5437f95ff92d27f389a7b3e27812330ad845d1c1d281f4ce55168350f90c3b28',1,'model_doc.h']]],
   ['postestimate_5fparameters_5fx2x_5f',['postestimate_parameters_x2x_',['../group__models.html#gga8b3ad07d082de47bc9cd85661fe9fc4ba3c4716485f54402f9815cfc0a019e7df',1,'model_doc.h']]],
-  ['postestimate_5fparameters_5fx5x_5f',['postestimate_parameters_x5x_',['../group__models.html#ggacd7823e794194d3646d586484833882aa5849037a544ad73528a116a8919df269',1,'model_doc.h']]],
-  ['postestimate_5fparameters_5fx6x_5f',['postestimate_parameters_x6x_',['../group__models.html#gga3a4389e6e2a1a2ea606f89d55ec558d3a8e5cbab5f801ac76ee920bcaba06e932',1,'model_doc.h']]],
-  ['postestimate_5fparameters_5fx8x_5f',['postestimate_parameters_x8x_',['../group__models.html#gga85524b1deabd5829227888fd91740cc3ace30ac9c1aa74f659b7b09be982aa844',1,'model_doc.h']]],
   ['postestimate_5fparameters_5fx9x_5f',['postestimate_parameters_x9x_',['../group__models.html#ggaf7d01cc4076c9319036a0cce882dac62a96c9305f64fc6db44b01413037319d13',1,'model_doc.h']]],
   ['predict_5fx25x_5f',['Predict_x25x_',['../group__models.html#gga297c2dc8dbdf4ae93fc7e10860400466a1b67002cb1fa3c03dcdd40fbded94b19',1,'model_doc.h']]],
   ['predict_5fx9x_5f',['Predict_x9x_',['../group__models.html#ggaf7d01cc4076c9319036a0cce882dac62a75605197727f9762a8347102cee2c378',1,'model_doc.h']]],
   ['prep_5froutine_5fx10x_5f',['Prep_routine_x10x_',['../group__models.html#ggaa88a402cf7d02c25c4613a74ace1b0c1a601dbec8df12679c3916650c3697694f',1,'model_doc.h']]],
   ['prep_5froutine_5fx21x_5f',['Prep_routine_x21x_',['../group__models.html#gga319b8e3d5025a6fc94829a978273eb8ba1acb0091048b74b09c8fab12166df37e',1,'model_doc.h']]],
-  ['prep_5froutine_5fx24x_5f',['Prep_routine_x24x_',['../group__models.html#gga9c67838a4761452cc2c9113557f2a070af64397408bb9b275581d6f37f1365f82',1,'model_doc.h']]],
   ['prep_5froutine_5fx3x_5f',['Prep_routine_x3x_',['../group__models.html#gga1efcbbe0410c89401354c762363a909fa3209c95ab1d76245097418fa55f600ba',1,'model_doc.h']]],
   ['prep_5froutine_5fx8x_5f',['Prep_routine_x8x_',['../group__models.html#gga85524b1deabd5829227888fd91740cc3aa33bfef67569eaf7a0d558f3eb485c7c',1,'model_doc.h']]]
 ];

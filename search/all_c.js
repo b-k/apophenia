@@ -26,7 +26,7 @@ var searchData=
   ['name_5fx7x_5f',['Name_x7x_',['../group__models.html#ggaf085564a8adc67ba156c4cd1db8145e3a1af3011977da3fea6e97e3e5fbe2f004',1,'model_doc.h']]],
   ['name_5fx8x_5f',['Name_x8x_',['../group__models.html#gga85524b1deabd5829227888fd91740cc3a3653e32f34c0e7cbee2d48e66b1b7f62',1,'model_doc.h']]],
   ['name_5fx9x_5f',['Name_x9x_',['../group__models.html#ggaf7d01cc4076c9319036a0cce882dac62a9b0ac23dff498a53a6000fdec0db5416',1,'model_doc.h']]],
-  ['nan_5fstring',['nan_string',['../structapop__opts__type.html#a547e96926c697556211b31eb5daf939f',1,'apop_opts_type']]],
+  ['nan_5fstring',['nan_string',['../structapop__opts__type.html#a6f8139378a237e77d123747fc6952924',1,'apop_opts_type']]],
   ['neval',['neval',['../structapop__arms__settings.html#a79ea448f38bf9339a6adf350c406720b',1,'apop_arms_settings']]],
   ['ninit',['ninit',['../structapop__arms__settings.html#a1d01a0b27137d6c2c02f1829aca20915',1,'apop_arms_settings']]],
   ['not_20root_3f',['Not root?',['../notroot.html',1,'setup']]],

@@ -1,11 +1,11 @@
 var structapop__data =
 [
     [ "error", "structapop__data.html#a13f8f84c2ada3b5c8efee1c43057aad7", null ],
-    [ "matrix", "structapop__data.html#ae0dded3604b44e2f264995ce52db6028", null ],
-    [ "more", "structapop__data.html#a1e6523e4354876d595508c0aa0f85c67", null ],
-    [ "names", "structapop__data.html#ae03cbdb7853cdc8af43fbed4ad41c825", null ],
-    [ "text", "structapop__data.html#a1ad0ec65fded7e3fb27e8d24b7541b9b", null ],
-    [ "textsize", "structapop__data.html#ac59bc2f997e1a1ae5af289b74ae6cb06", null ],
-    [ "vector", "structapop__data.html#ab584acd900f2a17ecbd6bfb3ed721f3a", null ],
-    [ "weights", "structapop__data.html#adb2bbf1d96b9629876cd7ceaf640942f", null ]
+    [ "matrix", "structapop__data.html#a7a570510198f665f3effa6f7d18cfe89", null ],
+    [ "more", "structapop__data.html#ac729aca3fdc7ced5c69684741d58bd65", null ],
+    [ "names", "structapop__data.html#aae158ed457d0f1f0a70a9f24105481e8", null ],
+    [ "text", "structapop__data.html#a8602d5c470f0168ad4c5c27c1a3473ff", null ],
+    [ "textsize", "structapop__data.html#a52317f11b4d5d8a987d0773c9c1bc656", null ],
+    [ "vector", "structapop__data.html#af46ebaf49867139f0e9c9cc5610b0a99", null ],
+    [ "weights", "structapop__data.html#a7a19e6bfc64096b2107bafc8a802a2f4", null ]
 ];

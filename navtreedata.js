@@ -29,8 +29,8 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Modules", "modules.html", "modules" ],
-    [ "Data Structures", null, [
-      [ "Data Structures", "annotated.html", "annotated" ],
+    [ "Data Structures", "annotated.html", [
+      [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
       [ "Data Fields", "functions.html", [
         [ "All", "functions.html", null ],
@@ -43,8 +43,8 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"group__models.html#ga3199e483f340d6cedaa6488565c42c78",
-"structapop__cdf__settings.html"
+"group__all__public.html#gafc84b330122eaff7577f510b2575be60",
+"structapop__arms__settings.html#ac75adcea3cfe99ddc3408fffaa1dbfa6"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
