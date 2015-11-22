@@ -14,8 +14,11 @@ Ordinary Least Squares.
                 refers to the constant column, if any. 
                 The \c vector of the output will therefore be of size <tt>data->size2</tt>.
 
-The estimation routine appends a page named <tt>\<Covariance\></tt>, giving the covariance matrix for the
-estimated parameters (not the data itself).
+The estimation routine appends a page to the <tt>parameters</tt> named
+<tt>\<Covariance\></tt>, giving the covariance matrix for the estimated parameters
+(not the data itself). If the predicted values are calculated (and appended to
+the <tt>info</tt> page), then a page is appended to the <tt>parameters</tt>  named
+<tt>\<Error variance\></tt>, giving the variance of the error term.
 
 
 \adoc    estimated_parameter_model  For the mean, a noncentral \f$t\f$ distribution (\ref apop_t_distribution).
@@ -131,19 +134,29 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
   apop_lm_settings *lms = Apop_settings_get_group(p, apop_lm);
   apop_model *input_distribution = lms ? lms->input_distribution : NULL;
   gsl_matrix *data = d->matrix;
-  gsl_vector *errors = gsl_vector_alloc(data->size1);
-	for (size_t i=0;i< data->size1; i++){
-        gsl_blas_ddot(p->parameters->vector, Apop_rv(d, i), &expected);
-        if (d->vector){ //then this has been prepped
-            actual = apop_data_get(d,i, -1);
-        } else {
-            actual = gsl_matrix_get(data,i, 0);
-            expected += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
+  gsl_vector *errors;
+
+    apop_data *pred = apop_data_get_page(p->info, "<Predicted>");
+    if (pred && d==p->data) //use already-stored errors for this data set.
+        errors = Apop_cv(pred, 2);
+    else {
+        errors = gsl_vector_alloc(data->size1);
+        for (size_t i=0;i< data->size1; i++){
+            gsl_blas_ddot(p->parameters->vector, Apop_rv(d, i), &expected);
+            if (d->vector){ //then this has been prepped
+                actual = apop_data_get(d,i, -1);
+            } else {
+                actual = gsl_matrix_get(data,i, 0);
+                expected += gsl_vector_get(p->parameters->vector,0) * (1 - actual); //data isn't affine.
+            }
+            gsl_vector_set(errors, i, expected-actual);
         }
-        gsl_vector_set(errors, i, expected-actual);
     }
-    sigma = sqrt(apop_vector_var(errors));
-	for(size_t i=0; i< data->size1; i++){
+
+    apop_data *err = apop_data_get_page(p->parameters, "<Error variance>");
+    sigma = err ? sqrt(apop_data_get(err)) : sqrt(apop_vector_var(errors));
+
+    for(size_t i=0; i< data->size1; i++){
         apop_data *justarow = Apop_r(d, i);
         justarow->vector = NULL;
         x_prob = (input_distribution)
@@ -151,8 +164,8 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
                     : 1;
         weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         ll += logl(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
-	} 
-    gsl_vector_free(errors);
+    }
+    if (!pred) gsl_vector_free(errors);
     return ll;
 }
 
@@ -224,6 +237,7 @@ static void xpxinvxpy(apop_data const*data, gsl_matrix *xpx, apop_data const* xp
     if (apop_data_get_page(out->parameters, "<Covariance>"))
         apop_data_rm_page(out->parameters, "<Covariance>");
     apop_data_add_page(out->parameters, cov, "<Covariance>");
+    apop_data_add_page(out->parameters, apop_data_falloc((1), s_sq), "<Error variance>");
 }
 
 /* \adoc    RNG  Linear models are typically only partially defined probability models. For

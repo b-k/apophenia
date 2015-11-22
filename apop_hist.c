@@ -310,6 +310,7 @@ Each cell is an integer giving the bin number into which the cell falls.
     column, and bin size such that it takes \f$\sqrt{N}\f$ bins to cover the range to the
     max element.
 \li The text segment is not binned. The \c more pointer, if any, is not followed.
+\li If there are weights, they are copied to the output via \ref apop_vector_copy.
 \li Given \c NULL input, return \c NULL output. Print a warning if <tt>apop_opts.verbose >= 2</tt>.
 
 Iff you didn't give me a binspec, then I attach one to the output set as a page named
@@ -318,8 +319,9 @@ Iff you didn't give me a binspec, then I attach one to the output set as a page 
 apop_data_to_bins(first_set, NULL);
 apop_data_to_bins(second_set, apop_data_get_page(first_set, "<binspec>"));
 \endcode
-\li If you want to plot the output, it may help to run it through \ref
-    apop_data_pmf_compress to produce a vector of bin weights.
+\li The output has exactly as many rows as the input. Because many rows will be identical
+after binning, it may be fruitful to run it through \ref apop_data_pmf_compress to
+produce a short list with one total weight per bin.
 
 Here is a sample program highlighting \ref apop_data_to_bins and \ref apop_data_pmf_compress .
 
@@ -367,6 +369,7 @@ apop_varad_head(apop_data *, apop_data_to_bins){
             gsl_vector_set(onecol, i, (floor((val-offset-adjust)/binwidth))*binwidth+offset);
         }
     }
+    if (indata->weights) out->weights = apop_data_copy(indata->weights);
     return out;
 }
 

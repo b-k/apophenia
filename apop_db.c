@@ -16,7 +16,7 @@ apop_opts_type apop_opts	=
             .db_engine = '\0',             .db_user = "\0", 
             .db_pass = "\0",               .stop_on_warning = 'n',
             .log_file = NULL,
-            .rng_seed = 479901,            .version = 0.999 };
+            .rng_seed = 479901,            .version = 1.0 };
 
 #define ERRCHECK {Apop_stopif(err, return 1, 0, "%s: %s",query, err); }
 #define ERRCHECK_NR {Apop_stopif(err, return NULL, 0, "%s: %s",query, err); }

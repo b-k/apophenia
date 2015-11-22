@@ -528,7 +528,7 @@ double perfunc(apop_arms_settings *params, double x){
     Staticdef( apop_data *, d , apop_data_alloc(1,1));
     d->matrix->data[0] = x;
   double y = apop_log_likelihood(d, params->model);
-  Apop_assert(isfinite(y), "Evaluating the log likelihood of %g returned %g.", x, y);
+  Apop_assert(isfinite(y), "Evaluating the log likelihood at %g returned %g.", x, y);
   (params->neval)++; // increment count of function evaluations
   return y;
 }

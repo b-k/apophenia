@@ -17,7 +17,7 @@ s/[\+]*_[\+]*x[0-9]*x[_\+]*[_+]\+//g
 #s/model[+\]*_[+\]*specific/\\hbox{(D)efault\/(M)odel-specific}/g
 s/[eE]stimate[+\]*_[+\]*results/Post-estimate/g
 s/[iI]nput[+\]*_[+\]*format/Input format/g
-s/[pP]ostestimate[+\]*_[+\]*\(data\|parameters\|settings\_info\)/Post-estimate \1/g
+s/[pP]ostestimate[+\]*_[+\]*\(data\|parameters\|settings\|info\)/Post-estimate \1/g
 s/[pP]ostestimate[+\]*_[+\]*parameter_model/Post-estimate parameter model/g
 s/[pP]arameter[+\]*_[+\]*format/Parameter format/g
 s/[pP]rep[+\]*_routine/Prep routine/g

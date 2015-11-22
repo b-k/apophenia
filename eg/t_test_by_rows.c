@@ -17,7 +17,7 @@ int main(){
         apop_vector_apply(Apop_rv(d, i), offset_rng);
     }
 
-    size_t df = d->matrix->size2-1;
+    int df = d->matrix->size2-1;
     apop_data *means = apop_map(d, .fn_v = mu, .part ='r');
     apop_data *tstats = apop_map(d, .fn_v = find_tstat, .part ='r');
     apop_data *confidences = apop_map(tstats, .fn_dp = conf, .param = &df);
@@ -32,7 +32,7 @@ int main(){
         assert(apop_data_get(means, i, -1) * apop_data_get(tstats, i, -1) >=0);
 
         //inverse of P-value should be the t statistic.
-        assert(fabs(gsl_cdf_tdist_Pinv(apop_data_get(confidences, i, -1),100) 
-                    - apop_data_get(tstats, i, -1) < 1e-3));
+        assert(fabs(gsl_cdf_tdist_Pinv(apop_data_get(confidences, i, -1), 99) 
+                    - apop_data_get(tstats, i, -1)) < 1e-5);
     }
 }
