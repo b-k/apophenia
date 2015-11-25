@@ -385,7 +385,7 @@ void ols_print(apop_model *m, FILE *ap){
     apop_data_print(m->parameters, .output_pipe=(ap? ap : stdout));
     apop_data *predict = apop_data_rm_page(m->info, "<Predicted>", .free_p='n');
     apop_data_print(m->info, .output_pipe=(ap? ap : stdout));
-    apop_data_add_page(m->info, predict, predict->names->title);
+    if (predict) apop_data_add_page(m->info, predict, predict->names->title);
 }
 
 apop_model *apop_ols = &(apop_model){.name="Ordinary Least Squares", .vsize = -1, .dsize=-1, .estimate=apop_estimate_OLS, 
