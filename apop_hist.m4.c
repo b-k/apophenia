@@ -354,7 +354,7 @@ APOP_VAR_ENDHEAD
             gsl_vector_set(onecol, i, (floor((val-offset-adjust)/binwidth))*binwidth+offset);
         }
     }
-    if (indata->weights) out->weights = apop_data_copy(indata->weights);
+    if (indata->weights) out->weights = apop_vector_copy(indata->weights);
     return out;
 }
 
