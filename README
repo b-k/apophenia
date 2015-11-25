@@ -38,7 +38,7 @@ Or check out the branch via git:
 package. Try (apt-get || yum install) autoconf automake libtool. If you have Autotools installed, then from this branch you can run:
 
     ./configure
-    cd apophenia-0.999
+    cd apophenia-1.0
     make 
     sudo make install
 

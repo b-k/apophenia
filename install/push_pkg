@@ -1,4 +1,4 @@
-version=0.999
+version=1.0
 workdir=apophenia-$version
 git checkout -b pkg-`git log -1 | grep commit | cut -f2 -d' ' | head -c 8`
 ./configure
