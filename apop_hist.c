@@ -369,7 +369,7 @@ apop_varad_head(apop_data *, apop_data_to_bins){
             gsl_vector_set(onecol, i, (floor((val-offset-adjust)/binwidth))*binwidth+offset);
         }
     }
-    if (indata->weights) out->weights = apop_data_copy(indata->weights);
+    if (indata->weights) out->weights = apop_vector_copy(indata->weights);
     return out;
 }
 
