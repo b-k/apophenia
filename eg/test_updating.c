@@ -4,7 +4,7 @@
 void distances(gsl_vector *v1, gsl_vector *v2, double tol){
     double error = apop_vector_distance(v1, v2, .metric='m');
     double updated_size = apop_vector_sum(v1);
-    Apop_stopif(error/updated_size > tol, exit(1), 0, "The error is %g, which is too big.", error/updated_size);
+    Apop_stopif(error/updated_size > tol, exit(1), 0, "The error is %g, which is too big (> %g).", error/updated_size, tol);
 }
 
 int main(){
