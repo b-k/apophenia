@@ -3259,9 +3259,6 @@ Variables</h2></td></tr>
     <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;apop_data</a> *boots;</div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;apop_bootstrap_cov(data, model, .boot_store=&amp;boots); </div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160apop_data_print(boots);</div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;printf(&quot;The statistics calculated on the 28th iteration:\n&quot;);</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;gsl_vector *row_27 = Apop_rv(boot_stats, 27);</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;apop_data_print(apop_data_unpack(row_27));</div>
 </div><!-- fragment --> They are packed via <a class="el" href="group__all__public.html#gafe71f4643640f5a8536b4cbc3d861f71">apop_data_pack</a>, so use <a class="el" href="group__all__public.html#gae3058b7f39d0442f13284464d1ba235d">apop_data_unpack</a> if needed. (Default NULL)</td></tr>
     <tr><td class="paramname">ignore_nans</td><td>If <code>'y'</code> and any of the elements in the estimation return <code>NaN</code>, then I will throw out that draw and try again. If <code>'n'</code>, then I will write that set of statistics to the list, <code>NaN</code> and all. I keep count of throw-aways; if there are more than <code>iterations</code> elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that <code>NaNs</code> are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n') </td></tr>
   </table>
