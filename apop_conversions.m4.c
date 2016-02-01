@@ -798,7 +798,7 @@ APOP_VAR_ENDHEAD
             in = in->more;
         if (in->more){
             vout = gsl_vector_subvector((gsl_vector *)out, offset, out->size - offset).vector;
-            apop_data_pack(in->more, &vout);
+            apop_data_pack(in->more, &vout, more_pages, use_info_pages);
         }
     }
     return out;
