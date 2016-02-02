@@ -185,7 +185,8 @@ deb-src http://httpredir.debian.org/debian stretch main' /etc/apt/sources.list
 sudo apt-get update
 
 #Get Apophenia
-sudo apt-get install apophenia-bin
+sudo apt-get install apophenia-bin apophenia-doc libapophenia2 libapophenia2-dev libapophenia2-dbg
+
 
 #Optional: remove Stretch from your sources list.
 sudo sed -i -e '$d' -e '$d' /etc/apt/sources.list
