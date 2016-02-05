@@ -700,12 +700,6 @@ APOP_VAR_ENDHEAD
     return out;
 }
 
-double a_div(gsl_vector *in){
-    double pi = gsl_vector_get(in, 0);
-    double qi = gsl_vector_get(in, 0);
-    return pi ? pi * log(pi/qi):0;
-}
-
 /** Kullback-Leibler divergence.
 
 This measure of the divergence of one distribution from another has the form \f$ D(p,q)
@@ -720,16 +714,15 @@ asymmetry between \f$p\f$ and \f$q\f$, so one can expect that \f$D(p, q) \neq D(
 This function can take empirical histogram-type models (\ref apop_pmf) or continuous
 models like \ref apop_loess or \ref apop_normal.
 
-If there is a PMF (I'll try \c from first, under the presumption that you are measuring
-the divergence of a fitted model from an observed data distribution), then I'll step
-through it for the points in the summation.
+If the \c from distribution is a PMF (determined by checking whether its \c p function
+is that of \ref apop_pmf), then I'll step through it for the points in the summation.
 
 \li If you have two empirical distributions in the form of \ref apop_pmf, they must
 be synced: if \f$p_i>0\f$ but \f$q_i=0\f$, then the function returns \c GSL_NEGINF. If
 <tt>apop_opts.verbose >=1</tt> I print a message as well.
 
-If neither distribution is a PMF, then I'll take \c draw_ct random draws from \c from
-and evaluate at those points.
+If the \c from distribution is not a PMF, then I will take \c draw_ct random draws
+from \c from and evaluate at those points.
 
 \li Set <tt>apop_opts.verbose = 3</tt> for observation-by-observation info.
 
@@ -741,11 +734,11 @@ APOP_VAR_HEAD long double apop_kl_divergence(apop_model *from, apop_model *to, i
     Apop_stopif(!from, return NAN, 0, "The first model is NULL; returning NaN.");
     Apop_stopif(!to, return NAN, 0, "The second model is NULL.");
     double apop_varad_var(draw_ct, 1e5);
-    gsl_rng * apop_varad_var(rng, apop_rng_get_thread(-1));
+    gsl_rng * apop_varad_var(rng, NULL);
 APOP_VAR_ENDHEAD
     double div = 0;
     Apop_notify(3, "p(from)\tp(to)\tfrom*log(from/to)\n");
-    if (*from->name && !strcmp(from->name, "PDF or sparse matrix")){
+    if (from->p == apop_pmf->p){
         apop_data *p = from->data;
         apop_pmf_settings *settings = Apop_settings_get_group(from, apop_pmf);
         Get_vmsizes(p); //maxsize
@@ -764,22 +757,19 @@ APOP_VAR_ENDHEAD
     } else { //the version with the RNG.
         Apop_stopif(!from->dsize, return GSL_NAN, 0, "I need to make random draws from the 'from' model, "
                                                      "but its dsize (draw size)==0. Returning NaN.");
-        apop_data *draw_list = apop_data_alloc(draw_ct, 2);
         OMP_for_reduce(+:div,    int i=0; i < draw_ct; i++){
             double draw[from->dsize];
-            apop_draw(draw, apop_rng_get_thread(-1), from);
+            apop_draw(draw, rng, from);
             gsl_matrix_view dm = gsl_matrix_view_array(draw, 1, from->dsize);
             double pi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, from);
             double qi = apop_p(&(apop_data){.matrix=&(dm.matrix)}, to);
-            apop_data_set(draw_list, i, 0, pi);
-            apop_data_set(draw_list, i, 1, qi);
-            Apop_notify(3,"%g\t%g\t%g", pi, qi, pi ? pi * log(pi/qi):0);
-            Apop_stopif(!qi, div+=GSL_NEGINF; break, 1, "From-distribution has a value where "
+            double val = pi ? log(pi/qi): 0; //each row already has probability p_i
+            Apop_notify(3,"%g\t%g\t%g", pi, qi, val);
+            div += val;
+            Apop_stopif(!qi, break, 1, "From-distribution has a value where "
                                                 "to-distribution doesn't (which produces infinite divergence).");
         }
-        apop_vector_normalize(Apop_cv(draw_list, 0), NULL, 'p');
-        apop_vector_normalize(Apop_cv(draw_list, 1), NULL, 'p');
-        div = apop_map_sum(draw_list, .fn_v=a_div);
+        div /= draw_ct; //div is an expected value of ln(pi/qi)
     }
     return div;
 }
