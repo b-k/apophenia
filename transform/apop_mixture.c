@@ -147,7 +147,7 @@ static void mixture_prep(apop_data * data, apop_model *model){
     for (apop_model **m = ms->model_list; *m; m++){
         if (!(*m)->parameters) apop_prep(data, *m);
         gsl_vector *v = apop_data_pack((*m)->parameters);
-        ms->param_sizes[i++] = v->size;
+        ms->param_sizes[i++] = v ? v->size : 0;
         model->parameters->vector = apop_vector_stack(model->parameters->vector, v, .inplace='y');
         gsl_vector_free(v);
     }
@@ -159,6 +159,7 @@ void unpack(apop_model *min){
     int posn=0, i=0;
     if (!min->parameters) return; //Trusting user that the user has added already-esimated models.
     for (apop_model **m = ms->model_list; *m; m++){
+        if (!ms->param_sizes[i]) continue; //NULL params
         gsl_vector v = gsl_vector_subvector(min->parameters->vector, posn, ms->param_sizes[i]).vector;
         apop_data_unpack(&v, (*m)->parameters);
         posn+=ms->param_sizes[i++];
@@ -286,6 +287,7 @@ static long double mixture_constraint(apop_data *data, apop_model *model_in){
     if (penalty){
         int posn=0, i=0;
         for (apop_model **m = ms->model_list; *m; m++){
+            if (!ms->param_sizes[i]) continue; //NULL params
             gsl_vector v = gsl_vector_subvector(model_in->parameters->vector, posn, ms->param_sizes[i]).vector;
             apop_data_pack((*m)->parameters, &v);
             posn+=ms->param_sizes[i++];
