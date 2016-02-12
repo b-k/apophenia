@@ -96,17 +96,13 @@ apop_data * apop_jackknife_cov(apop_data *in, apop_model *model){
 \param model    An \ref apop_model, whose \c estimate method will be used here. (No default)
 \param iterations How many bootstrap draws should I make? (default: 1,000) 
 \param rng        An RNG that you have initialized, probably with \c apop_rng_alloc. (Default: an RNG from \ref apop_rng_get_thread)
-\param keep_boots  Deprecated; use \c boot_store.
-\param boot_store  If not \c NULL, put the list of drawn parameter values here, with one parameter set per row. Sample use: <tt>apop_data *boots; apop_bootstrap_cov(data, model, .boot_store=&boots); apop_data_print(boots);</tt>
-They are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed. (Default: 'n')
+\param boot_store  If not \c NULL, put the list of drawn parameter values here, with one parameter set per row. Sample use: 
 \code
-apop_data *boot_output = apop_bootstrap_cov(your_data, your_model, .keep_boots='y');
-apop_data *boot_stats = apop_data_get_page(boot_output, "<bootstrapped statistics>");
-
-printf("The statistics calculated on the 28th iteration:\n");
-gsl_vector *row_27 = Apop_rv(boot_stats, 27);
-apop_data_print(apop_data_unpack(row_27));
+apop_data *boots;
+apop_bootstrap_cov(data, model, .boot_store=&boots);
+apop_data_print(boots);
 \endcode
+The rows are packed via \ref apop_data_pack, so use \ref apop_data_unpack if needed. (Default: \c NULL)
 \param ignore_nans If \c 'y' and any of the elements in the estimation return \c NaN, then I will throw out that draw and try again. If \c 'n', then I will write that set of statistics to the list, \c NaN and all. I keep count of throw-aways; if there are more than \c iterations elements thrown out, then I throw an error and return with estimates using data I have so far. That is, I assume that \c NaNs are rare edge cases; if they are as common as good data, you might want to rethink how you are using the bootstrap mechanism. (Default: 'n')
 \return         An \c apop_data set whose matrix element is the estimated covariance matrix of the parameters.
 \exception out->error=='n'   \c NULL input data.
@@ -187,11 +183,8 @@ apop_varad_head(apop_data *, apop_bootstrap_cov) {
                 1, "I ran into %i NaNs, and so stopped. Returning results based "
                        "on %zu bootstrap iterations.", iterations, i);
 	summary	= apop_data_covariance(array_of_boots);
-    if (!boot_store && (keep_boots == 'n' || keep_boots == 'N'))
-        apop_data_free(array_of_boots);
-    if (keep_boots != 'n' && keep_boots != 'N') //deprecated version
-        apop_data_add_page(summary, array_of_boots, "<Bootstrapped statistics>");
     if (boot_store) *boot_store = array_of_boots;
+    else            apop_data_free(array_of_boots);
     if (set_error) summary->error = 'N';
 	return summary;
 }

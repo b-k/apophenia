@@ -133,6 +133,7 @@ CONFIG_CLEAN_VPATH_FILES =
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/cross_models$(EXEEXT) \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/dconstrain$(EXEEXT) \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/entropy_model$(EXEEXT) \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/faithful$(EXEEXT) \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/f_test$(EXEEXT) \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/fix_params$(EXEEXT) \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/hills2$(EXEEXT) \
@@ -193,6 +194,9 @@ __top_builddir__eg_entropy_vector_LDADD = $(LDADD)
 __top_builddir__eg_f_test_SOURCES = $(top_builddir)/eg/f_test.c
 __top_builddir__eg_f_test_OBJECTS = f_test.$(OBJEXT)
 __top_builddir__eg_f_test_LDADD = $(LDADD)
+__top_builddir__eg_faithful_SOURCES = $(top_builddir)/eg/faithful.c
+__top_builddir__eg_faithful_OBJECTS = faithful.$(OBJEXT)
+__top_builddir__eg_faithful_LDADD = $(LDADD)
 __top_builddir__eg_fake_logit_SOURCES =  \
 	$(top_builddir)/eg/fake_logit.c
 __top_builddir__eg_fake_logit_OBJECTS = fake_logit.$(OBJEXT)
@@ -366,7 +370,8 @@ SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/draw_to_db.c \
 	$(top_builddir)/eg/entropy_model.c \
 	$(top_builddir)/eg/entropy_vector.c \
-	$(top_builddir)/eg/f_test.c $(top_builddir)/eg/fake_logit.c \
+	$(top_builddir)/eg/f_test.c $(top_builddir)/eg/faithful.c \
+	$(top_builddir)/eg/fake_logit.c \
 	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
 	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jack.c \
 	$(top_builddir)/eg/jacobian.c $(top_builddir)/eg/ks_tests.c \
@@ -399,7 +404,8 @@ DIST_SOURCES = $(top_builddir)/eg/apop_map_row.c \
 	$(top_builddir)/eg/draw_to_db.c \
 	$(top_builddir)/eg/entropy_model.c \
 	$(top_builddir)/eg/entropy_vector.c \
-	$(top_builddir)/eg/f_test.c $(top_builddir)/eg/fake_logit.c \
+	$(top_builddir)/eg/f_test.c $(top_builddir)/eg/faithful.c \
+	$(top_builddir)/eg/fake_logit.c \
 	$(top_builddir)/eg/fix_params.c $(top_builddir)/eg/hills2.c \
 	$(top_builddir)/eg/iv.c $(top_builddir)/eg/jack.c \
 	$(top_builddir)/eg/jacobian.c $(top_builddir)/eg/ks_tests.c \
@@ -800,6 +806,7 @@ top_srcdir = @top_srcdir@
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/cross_models \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/dconstrain \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/entropy_model \
+@EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/faithful \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/f_test \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/fix_params \
 @EXTENDED_TESTS_TRUE@	$(top_builddir)/eg/hills2 \
@@ -956,6 +963,10 @@ $(top_builddir)/eg/entropy_vector$(EXEEXT): $(__top_builddir__eg_entropy_vector_
 $(top_builddir)/eg/f_test$(EXEEXT): $(__top_builddir__eg_f_test_OBJECTS) $(__top_builddir__eg_f_test_DEPENDENCIES) $(EXTRA___top_builddir__eg_f_test_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/f_test$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_f_test_OBJECTS) $(__top_builddir__eg_f_test_LDADD) $(LIBS)
+
+$(top_builddir)/eg/faithful$(EXEEXT): $(__top_builddir__eg_faithful_OBJECTS) $(__top_builddir__eg_faithful_DEPENDENCIES) $(EXTRA___top_builddir__eg_faithful_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
+	@rm -f $(top_builddir)/eg/faithful$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(__top_builddir__eg_faithful_OBJECTS) $(__top_builddir__eg_faithful_LDADD) $(LIBS)
 
 $(top_builddir)/eg/fake_logit$(EXEEXT): $(__top_builddir__eg_fake_logit_OBJECTS) $(__top_builddir__eg_fake_logit_DEPENDENCIES) $(EXTRA___top_builddir__eg_fake_logit_DEPENDENCIES) $(top_builddir)/eg/$(am__dirstamp)
 	@rm -f $(top_builddir)/eg/fake_logit$(EXEEXT)
@@ -1127,6 +1138,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/error_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/f_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/factors.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/faithful.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fake_logit.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fix_params.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hills2.Po@am__quote@
@@ -1349,6 +1361,20 @@ f_test.obj: $(top_builddir)/eg/f_test.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/f_test.c' object='f_test.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o f_test.obj `if test -f '$(top_builddir)/eg/f_test.c'; then $(CYGPATH_W) '$(top_builddir)/eg/f_test.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/f_test.c'; fi`
+
+faithful.o: $(top_builddir)/eg/faithful.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT faithful.o -MD -MP -MF $(DEPDIR)/faithful.Tpo -c -o faithful.o `test -f '$(top_builddir)/eg/faithful.c' || echo '$(srcdir)/'`$(top_builddir)/eg/faithful.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/faithful.Tpo $(DEPDIR)/faithful.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/faithful.c' object='faithful.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o faithful.o `test -f '$(top_builddir)/eg/faithful.c' || echo '$(srcdir)/'`$(top_builddir)/eg/faithful.c
+
+faithful.obj: $(top_builddir)/eg/faithful.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT faithful.obj -MD -MP -MF $(DEPDIR)/faithful.Tpo -c -o faithful.obj `if test -f '$(top_builddir)/eg/faithful.c'; then $(CYGPATH_W) '$(top_builddir)/eg/faithful.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/faithful.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/faithful.Tpo $(DEPDIR)/faithful.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/eg/faithful.c' object='faithful.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o faithful.obj `if test -f '$(top_builddir)/eg/faithful.c'; then $(CYGPATH_W) '$(top_builddir)/eg/faithful.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/eg/faithful.c'; fi`
 
 fake_logit.o: $(top_builddir)/eg/fake_logit.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fake_logit.o -MD -MP -MF $(DEPDIR)/fake_logit.Tpo -c -o fake_logit.o `test -f '$(top_builddir)/eg/fake_logit.c' || echo '$(srcdir)/'`$(top_builddir)/eg/fake_logit.c
@@ -2176,6 +2202,13 @@ $(top_builddir)/eg/dconstrain.log: $(top_builddir)/eg/dconstrain$(EXEEXT)
 $(top_builddir)/eg/entropy_model.log: $(top_builddir)/eg/entropy_model$(EXEEXT)
 	@p='$(top_builddir)/eg/entropy_model$(EXEEXT)'; \
 	b='$(top_builddir)/eg/entropy_model'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+$(top_builddir)/eg/faithful.log: $(top_builddir)/eg/faithful$(EXEEXT)
+	@p='$(top_builddir)/eg/faithful$(EXEEXT)'; \
+	b='$(top_builddir)/eg/faithful'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

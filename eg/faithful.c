@@ -17,10 +17,11 @@ int main(){
     apop_text_to_db("faith.data", "ff");
     apop_data *dd = apop_query_to_data("select waiting from ff");
     apop_model *mf = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_normal));
+    Apop_settings_set(mf, apop_mixture, find_weights, 'y');//Use the EM algorithm to search for optimal weights.
 
     /* The process is famously sensitive to starting points. Try many random points, or
        eyeball the distribution's plot and guess at the starting values. */
-    Apop_model_add_group(mf, apop_mle, .starting_pt=(double[]){50, 5, 80, 5}, 
+    Apop_model_add_group(mf, apop_mle, .starting_pt=(double[]){.5, .5, 50, 5, 80, 5},
                                        .step_size=3, .tolerance=1e-6);
     apop_model *mfe = apop_estimate(dd, mf);
     apop_model_print(mfe, stdout);

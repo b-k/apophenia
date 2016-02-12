@@ -1553,7 +1553,7 @@ attaching to and the settings group name) are mandatory, and then you
 can use the \ref designated syntax to specify default values (if any).
 \return A pointer to the newly-prepped group.
 
-See \ref modelsettings or \ref maxipage for examples.
+See \ref modelsettings, \ref maxipage, or \ref Apop_settting_set for examples.
 
 \li If a settings group of the given type is already attached to the model, 
 the previous version is removed. Use \ref Apop_settings_get to check whether a group
@@ -1601,6 +1601,21 @@ for many model transformations, including \ref apop_dconstrain and \ref apop_cro
     (((type ## _settings *) apop_settings_get_grp(model, #type, 'f'))->setting)
 
 /** Modifies a single element of a settings group to the given value. 
+
+For example,
+\code
+//set up a mixture of two Normals. This function initializes an apop_mixture_settings group
+apop_model *mix = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_normal));
+
+//Add an apop_mle_settings group to specify the search strategy
+Apop_settings_add_group(mix, apop_mle, .starting_pt=(double[]){.5, .5, 50, 5, 80, 5},
+                                           .step_size=3, .tolerance=1e-6);
+
+//The mix model now has apop_mle and apop_mixture settings groups attached. Modify them:
+Apop_settings_set(mix, apop_mixture, find_weights, 'y');  //Search for optimal mixture weights
+Apop_settings_set(mix, apop_mle, method, "NM simplex");   //Nelder-Mead simplex algorithm
+apop_model *optimal_mix = apop_estimate(input_data, mix); //Everything is set up, so do the search.
+\endcode
 
 \li If <tt>model==NULL</tt>, fails silently. 
 \li If <tt>model!=NULL</tt> but the given settings group is not found attached to the model, set <tt>model->error='s'</tt>.
@@ -2138,12 +2153,18 @@ typedef struct {
 weights as private and subject to change. See the examples for use of these elements.  
 */
 typedef struct {
-    gsl_vector *weights;     /**< The likelihood of a draw from each component. */
+    gsl_vector *weights;     /**< The likelihood of a draw from each component. Default is equal likelihood
+                              for each mixture element. Or set this to a weight vector of your choosing, or set
+                              <tt>find_weights='y'</tt> and have <tt>apop_estimate</tt> find optimal weights. */
     apop_model **model_list; /**< A \c NULL-terminated list of component models. */
     int model_count;
     int *param_sizes;  /**< The number of parameters for each model. Useful for unpacking the params. */
     apop_model *cmf;   /**< For internal use by the draw method. */
     int *cmf_refct;    /**< For internal use, so I can garbage-collect the CMF when needed. */
+    char find_weights; /**< By default, weights are fixed. Set this b \c 'y' to allow \ref apop_estimate to
+                            use an EM algorithm to find the optimal weights.
+                            See the documentation for \ref apop_mixture for details. */
+    gsl_vector *next_weights; /**< For internal use.*/
 } apop_mixture_settings;
 
     //Models built via call to apop_model_copy_set.
