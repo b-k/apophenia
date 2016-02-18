@@ -34,14 +34,13 @@ int main(){
     printf("mu=%g\n", apop_mean(second));
     assert(fabs(apop_mean(second)- 1) < 5e-2);
 
-/*  Abuse the ML imputation routine to search for the input value with the highest
+/*  Use the ML imputation routine to search for the input value with the highest
     log likelihood. Do the search via simulated annealing. */
 
     apop_data *x = apop_data_alloc(1,2);
     gsl_matrix_set_all(x->matrix, NAN);
 
     apop_opts.stop_on_warning='v';
-    Apop_settings_add_group(many_humps, apop_mle, .n_tries=20, .iters_fixed_T=10, .k=3,  .method="annealing");
     apop_ml_impute(x, many_humps);
 
     printf("Optimum found at:\n");

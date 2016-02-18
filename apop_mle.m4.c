@@ -319,7 +319,7 @@ static double negshell (const gsl_vector *beta, void * in){
         if(gsl_isnan(this_ll)){
             Apop_stopif(!i->model->log_likelihood && penalty > f_val, i->want_info='n',
                             1, "Model's p=%g, penalty=%g, for a negative adjusted p=%g. "
-                               "Continuing, but can not report covariance or other "
+                               "Continuing, but can not report covariance or "
                                "log likelihood-based statistics.", f_val, penalty, f_val-penalty);
             Apop_stopif(1, apop_data_show(i->model->parameters); i->want_info='n',
                         1, "NaN resulted from the following value tried by the maximum likelihood system.");
