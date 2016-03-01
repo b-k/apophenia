@@ -24,6 +24,6 @@ int main(){
     pmf->p = fake_p;
     double div2= apop_kl_divergence(pmf,expo);
     printf("%g %g\n", div, div2);
-    assert(fabs(div-div2)<5e-3);
+    assert(fabs(div-div2)<9e-3);
     apop_data_free(empirical);
 }
