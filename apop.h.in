@@ -66,6 +66,7 @@ typedef struct{
 	char ** row;
 	char ** text;
 	int colct, rowct, textct;
+    unsigned long *colhash, *rowhash, *texthash;
 } apop_name;
 
 /** The \ref apop_data structure represents a data set. See \ref dataoverview.*/
@@ -481,8 +482,20 @@ examples in the \ref apop_mixture documentation.
 apop_model *apop_model_mixture_base(apop_model **inlist);
 
 //transform/apop_cross.c.
-apop_model *apop_model_cross_base(apop_model *mlist[]);
+
+/** Generate a model consisting of the cross product of several independent models. The output \ref apop_model
+is a copy of \ref apop_cross; see that model's documentation for details.
+
+\li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 2</tt>.
+
+\exception error=='n' First model input is \c NULL.
+
+Examples:
+
+\include cross_models.c
+*/
 #define apop_model_cross(...) apop_model_cross_base((apop_model *[]){__VA_ARGS__, NULL})
+apop_model *apop_model_cross_base(apop_model *mlist[]);
 
         ////More functions
 
@@ -1357,6 +1370,9 @@ The view is automatically allocated, and disappears as soon as the program leave
                 .vector = (d)->names->vector,                                    \
                 .col = (d)->names->col,                                          \
                 .row = ((d)->names->row && (d)->names->rowct > (rownum)) ? &((d)->names->row[rownum]) : NULL,  \
+                .texthash = (d)->names->texthash,                                \
+                .rowhash = ((d)->names->rowhash && (d)->names->rowct > (rownum)) ? &((d)->names->rowhash[rownum]) : NULL,  \
+                .colhash = (d)->names->colhash,                                  \
                 .text = (d)->names->text,                                        \
                 .colct = (d)->names->colct,                                      \
                 .rowct = (d)->names->row ? (GSL_MIN(1, GSL_MAX((d)->names->rowct - (int)(rownum), 0)))      \
@@ -1393,6 +1409,9 @@ The view is automatically allocated, and disappears as soon as the program leave
                     .row = (d)->names->row,                                          \
                     .col = ((d)->names->col && (d)->names->colct > colnum) ? &((d)->names->col[colnum]) : NULL,  \
                     .text = NULL,                                                    \
+                    .texthash = NULL,                                                \
+                    .rowhash = (d)->names->rowhash,                                  \
+                    .colhash = ((d)->names->colhash && (d)->names->colct > (colnum)) ? &((d)->names->colhash[colnum]) : NULL,  \
                     .rowct = (d)->names->rowct,                                      \
                     .colct = (d)->names->col ? (GSL_MIN(len, GSL_MAX((d)->names->colct - colnum, 0)))      \
                                               : 0,                                   \

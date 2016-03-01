@@ -150,16 +150,3 @@ apop_model *apop_model_cross_base(apop_model *mlist[]){
     if (mlist[0]->dsize >=0 && m2->dsize >=0) out->dsize = mlist[0]->dsize + m2->dsize;
     return out;
 }
-
-/** \def apop_model_cross
-Generate a model consisting of the cross product of several independent models. The output \ref apop_model
-is a copy of \ref apop_cross; see that model's documentation for details.
-
-\li If you input only one model, return a copy of that model; print a warning iff <tt>apop_opts.verbose >= 2</tt>.
-
-\exception error=='n' First model input is \c NULL.
-
-Examples:
-
-\include cross_models.c
-*/

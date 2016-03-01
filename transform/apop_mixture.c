@@ -105,6 +105,7 @@ Apop_settings_free(apop_mixture,
     if (!(--in->cmf_refct)) {
         apop_model_free(in->cmf);
         free(in->cmf_refct);
+        free(in->model_list);
     }
     free(in->param_sizes);
     gsl_vector_free(in->next_weights);
@@ -118,9 +119,15 @@ Apop_settings_init(apop_mixture,
 //see apop_model_mixture in types.h
 apop_model *apop_model_mixture_base(apop_model **inlist){
     apop_model *out = apop_model_copy(apop_mixture);
-    int count=0;
+    int count=0, ctr=0;
     for (apop_model **m = inlist; *m; m++) count++;
-    apop_mixture_settings *ms =Apop_settings_add_group(out, apop_mixture, .model_list=inlist, 
+
+    //inlist is stack-allocated; may disappear at any moment.
+    apop_model **inlist_copy = malloc((count+1) *sizeof(inlist));
+    for (apop_model **m = inlist; *m; m++) inlist_copy[ctr++] = *m;
+    inlist_copy[ctr] = NULL;
+
+    apop_mixture_settings *ms =Apop_settings_add_group(out, apop_mixture, .model_list=inlist_copy,
             .model_count=count, .param_sizes=malloc(sizeof(int)*count));
     int dsize = inlist[0]->dsize;
     for (int i=1; i< count && dsize > -99; i++) if (inlist[i]->dsize != dsize) dsize = -100;

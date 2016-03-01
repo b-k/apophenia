@@ -28,6 +28,14 @@ apop_name * apop_name_alloc(void){
 	return init_me;
 }
 
+//Currently identical to apop_settings_hash (see notes there).
+static unsigned long apop_name_hash(char const *str){
+    unsigned long int hash = 5381;
+    char c;
+    while ((c = *str++)) hash = hash*33 + c;
+    return hash;
+}
+
 /** Adds a name to the \ref apop_name structure. Puts it at the end of the given list.
 
 \param n 	An existing, allocated \ref apop_name structure.
@@ -57,6 +65,8 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		n->row	= realloc(n->row, sizeof(char*) * n->rowct);
 		n->row[n->rowct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->row[n->rowct -1], add_me);
+		n->rowhash = realloc(n->rowhash, n->rowct * sizeof(unsigned long));
+        n->rowhash[n->rowct-1] = apop_name_hash(add_me);
 		return n->rowct;
 	} 
 	if (type == 't'){
@@ -64,6 +74,8 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		n->text	= realloc(n->text, sizeof(char*) * n->textct);
 		n->text[n->textct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->text[n->textct -1], add_me);
+		n->texthash = realloc(n->texthash, n->textct * sizeof(unsigned long));
+        n->texthash[n->textct-1] = apop_name_hash(add_me);
 		return n->textct;
 	}
 	//else assume (type == 'c')
@@ -74,6 +86,8 @@ int apop_name_add(apop_name * n, char const *add_me, char type){
 		n->col = realloc(n->col, sizeof(char*) * n->colct);
 		n->col[n->colct -1]	= malloc(strlen(add_me) + 1);
 		strcpy(n->col[n->colct -1], add_me);
+		n->colhash = realloc(n->colhash, n->colct * sizeof(unsigned long));
+        n->colhash[n->colct-1] = apop_name_hash(add_me);
 		return n->colct;
 }
 
@@ -118,9 +132,9 @@ void  apop_name_free(apop_name * free_me){
 	for (size_t i=0; i < free_me->textct; i++) free(free_me->text[i]);
 	for (size_t i=0; i < free_me->rowct; i++)  free(free_me->row[i]);
     if (free_me->vector) free(free_me->vector);
-	free(free_me->col);
-	free(free_me->text);
-	free(free_me->row);
+	free(free_me->col);  free(free_me->colhash);
+	free(free_me->text); free(free_me->texthash);
+	free(free_me->row);  free(free_me->rowhash);
 	free(free_me);
 }
 
@@ -203,19 +217,32 @@ The function uses POSIX's \c strcasecmp, and so does case-insensitive search the
 int apop_name_find(const apop_name *n, const char *name, const char type){
     Apop_stopif(!name, return -2, 0, "You asked me to search for NULL.");
     char **list;
+    unsigned long *listh;
     int listct;
     if (type == 'r' || type == 'R'){
         list = n->row;
+        listh = n->rowhash;
         listct = n->rowct;
     }
     else if (type == 't' || type == 'T'){
         list = n->text;
+        listh = n->texthash;
         listct = n->textct;
     }
     else { // default type == 'c'
         list = n->col;
+        listh = n->colhash;
         listct = n->colct;
     }
+
+    if (listh) {
+        unsigned long hash = apop_name_hash(name);
+        for (int i = 0; i < listct; i++)
+            if (hash==listh[i] && !strcasecmp(name, list[i]))
+                return i;
+    }
+
+    //Hashes may be broken, so try again with plain string comparisons.
     for (int i = 0; i < listct; i++)
         if (!strcasecmp(name, list[i])) return i;
 

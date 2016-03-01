@@ -223,7 +223,7 @@ apop_varad_head(apop_data *, apop_data_sort){
             last_val = this_val;
         }
     } else {
-        char *last_val =  is_name ? out->names->row[0] : out->text[0][(int)(*col_order-0.5)];
+        char *last_val =  strdup(is_name ? out->names->row[0] : out->text[0][(int)(*col_order-0.5)]);
         for (int i=1; i< height+1; i++){
             char *this_val = i==height ? NULL : is_name ? out->names->row[i] : out->text[i][(int)(*col_order-0.5)];
             if ((i==height || strcasecmp(this_val, last_val)) 
@@ -231,8 +231,10 @@ apop_varad_head(apop_data *, apop_data_sort){
                 apop_data_sort_base(Apop_rs(out, bottom, i-bottom), sort_order, 'a', 'y', col_order+1);
             }
             if (this_val && strcmp(last_val, this_val)) bottom = i;
-            last_val = this_val;
+            free(last_val);
+            last_val = this_val ? strdup(this_val) : NULL;
         }
+        free(last_val);
     }
     return out;
 }
