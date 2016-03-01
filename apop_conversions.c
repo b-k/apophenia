@@ -1121,9 +1121,12 @@ int apop_prepare_prepared_statements(char const *tabname, size_t col_ct, sqlite3
     #endif
 }
 
-char *cut_at_dot(char const *infile){
-    char *out = strdup(basename(infile));
-    for (char *c = out; *c; c++) if (*c=='.') {*c='\0'; return out;}
+static char *cut_at_dot(char const *infile){
+    char *incopy = strdup(infile); //basename reserves the right to modify its input.
+    char *out = strdup(basename(incopy));
+    free(incopy);
+    char *dot = strchr(out, '.');
+    if (dot) *dot='\0';
     return out;
 }
 

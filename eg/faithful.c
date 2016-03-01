@@ -1,3 +1,10 @@
+
+#ifdef Datadir
+#define DATADIR Datadir
+#else
+#define DATADIR "."
+#endif
+
 #include <apop.h>
 
 /* This replacement for apop_model_print(in) demonstrates retrieval of the useful
@@ -14,7 +21,7 @@ void show_mix(apop_model *in){
 }
 
 int main(){
-    apop_text_to_db("faith.data", "ff");
+    apop_text_to_db( DATADIR "/" "faith.data", "ff");
     apop_data *dd = apop_query_to_data("select waiting from ff");
     apop_model *mf = apop_model_mixture(apop_model_copy(apop_normal), apop_model_copy(apop_normal));
     Apop_settings_set(mf, apop_mixture, find_weights, 'y');//Use the EM algorithm to search for optimal weights.

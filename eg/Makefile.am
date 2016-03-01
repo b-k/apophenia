@@ -9,7 +9,6 @@ EXTRA_DIST = \
 	dot_products.c \
 	draw_some_normals.c \
 	draw_to_db.c \
-	faithful.c \
 	fake_logit.c \
 	fix_params.c \
 	hills2.c \
