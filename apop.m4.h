@@ -1632,7 +1632,11 @@ typedef struct {
     double (*scaling)(apop_model *); /**< Optional. Return the percent of the model density inside the constraint. */
     gsl_rng *rng; /**< If you don't provide a \c scaling function, I calculate the in-constraint model density via random draws.
                        If no \c rng is provided, I use a default RNG; see \ref apop_rng_get_thread. */
+    double scale; /**< After the scaling has been calculated, store it here. If you change the parameters of your base model,
+                       set this to zero to have the scaling recalculated. */
+    gsl_vector *last_params; /**< The parameters used to calculate \c scale. If these change, recalculate. */
     int draw_ct; /**< How many draws to make for calculating the in-constraint model density via random draws. Current default: 1e4. */
+    int refct; /**< For internal use. */
 } apop_dconstrain_settings;
 
 typedef struct {

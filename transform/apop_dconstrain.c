@@ -1,4 +1,5 @@
 #include "apop_internal.h"
+#include <stdbool.h>
 
 /* \amodel apop_dconstrain A model that constrains the base model to within some
 data constraint. E.g., truncate \f$P(d)\f$ to zero for all \f$d\f$ outside of a given
@@ -9,8 +10,17 @@ it based on the part of the base model's density that is within the constraint. 
 have an easy means of specifying what that density is, please do, as in the example. If
 you do not, the log likelihood will calculate it by making \c draw_ct random draws from
 the base model and checking whether they are in or out of the constraint. Because this
-default method is stochastic, there is some loss of precision, and conjugate gradient
-methods may get confused.
+default method is stochastic, there is some loss of precision.
+
+The previous scaling is stored in the \ref apop_dconstrain settings group. Get/set via:
+\code
+double scale = Apop_settings_get(your_model, apop_dconstrain, scale);
+Apop_settings_set(your_model, apop_dconstrain, scale, 0);
+\endcode
+If \c scale is zero, because that is the default or because you set it as above, then
+I recalculate the scale.  If the value of the \c parameters changed since \c scale
+was last calculated, I recalculate. If you made other relevant changes to the scale,
+then you may need to manually zero out \c scale so it can be recalculated.
 
 Here is an example that makes a few draws and estimations from data-constrained
 models. Note the use of \ref apop_model_set_settings to prepare the constrained models.
@@ -49,8 +59,10 @@ Apop_settings_init(apop_dconstrain,
     if (!in.scaling) out->scaling = get_scaling;
 )
 
-Apop_settings_copy(apop_dconstrain,)
-Apop_settings_free(apop_dconstrain,)
+Apop_settings_copy(apop_dconstrain, in->refct++;)
+Apop_settings_free(apop_dconstrain, in->refct--;
+        if(!in->refct) gsl_vector_free(in->last_params);
+)
 
 static void dc_prep(apop_data *d, apop_model *m){
     apop_dconstrain_settings *cs = Apop_settings_get_group(m, apop_dconstrain); 
@@ -81,15 +93,38 @@ static double constr(apop_data *d, void *csin){
     return !cs->constraint(d, cs->base_model);
 }
 
+static bool is_stale(apop_dconstrain_settings *cs, apop_model *m){ //do I need to recalculate the scale?
+    bool stale = false;
+    if (!cs->last_params && !m->parameters)
+        stale=false;
+    else {
+        gsl_vector *params = apop_data_pack(m->parameters);
+        if (!cs->last_params){
+            cs->last_params = apop_vector_copy(params);
+            stale = true;
+        } else if (cs->last_params->size != params->size){
+            apop_vector_realloc(cs->last_params, params->size);
+            gsl_vector_memcpy(cs->last_params, params);
+            stale = true;
+        } else if (apop_vector_distance(cs->last_params, params)){
+            gsl_vector_memcpy(cs->last_params, params);
+            stale=true;
+        }
+        gsl_vector_free(params);
+    }
+    if (!cs->scale) stale = true; //but at this point, last_params is prepped.
+    return stale;
+}
+
 static long double dc_ll(apop_data *indata, apop_model* m){
     Get_set(m, GSL_NAN)
     Apop_stopif(!cs->base_model, return GSL_NAN, 0, "No base model.");
     double any_outside = apop_map_sum(indata, .fn_rp=constr, .param=cs);
     if (any_outside) return -INFINITY;
 
-    double scaling = cs->scaling((cs->scaling == get_scaling) ? m : cs->base_model);
+    if (is_stale(cs, m)) cs->scale = cs->scaling((cs->scaling == get_scaling) ? m : cs->base_model);
     Get_vmsizes(indata); //maxsize
-    return apop_log_likelihood(indata, cs->base_model) - log(scaling)*maxsize;
+    return apop_log_likelihood(indata, cs->base_model) - log(cs->scale)*maxsize;
 }
 
 apop_model *apop_dconstrain = &(apop_model){"Data-constrained model", .log_likelihood=dc_ll, .draw=dc_rng, .prep=dc_prep};
