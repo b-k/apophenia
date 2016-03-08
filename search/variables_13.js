@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['xinit',['xinit',['../structapop__arms__settings.html#ac75adcea3cfe99ddc3408fffaa1dbfa6',1,'apop_arms_settings']]],
-  ['xl',['xl',['../structapop__arms__settings.html#a0677eaab084f07f5f5ecc690124980be',1,'apop_arms_settings']]],
-  ['xprev',['xprev',['../structapop__arms__settings.html#a040d22cb543f58ce882c2d9a7cdd4d80',1,'apop_arms_settings']]],
-  ['xr',['xr',['../structapop__arms__settings.html#a845179acca7b0bdcb730cacc232bc4d0',1,'apop_arms_settings']]]
+  ['want_5fcov',['want_cov',['../structapop__lm__settings.html#a2f62fede3aec4c7fe461e8ee39c1bcff',1,'apop_lm_settings']]],
+  ['want_5fexpected_5fvalue',['want_expected_value',['../structapop__lm__settings.html#ae6b8c6ca335b895ee91c182c8b9ed6e1',1,'apop_lm_settings']]],
+  ['want_5fpredict_5fci',['want_predict_ci',['../structapop__loess__settings.html#a0c8cc70a4be852404cc7cf1bd54e6008',1,'apop_loess_settings']]],
+  ['weights',['weights',['../structapop__mixture__settings.html#af06728d5618bb4c903e6f871b504d4e3',1,'apop_mixture_settings']]]
 ];

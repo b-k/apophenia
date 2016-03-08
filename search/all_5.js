@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['gibbs_5fchunks',['gibbs_chunks',['../structapop__mcmc__settings.html#a3b1ce772db565366881f6dadcfc79e4b',1,'apop_mcmc_settings']]],
-  ['getting_20started',['Getting started',['../preliminaries.html',1,'']]]
+  ['find_5fweights',['find_weights',['../structapop__mixture__settings.html#aacc1ffc2b3e1385019a82b19abedc716',1,'apop_mixture_settings']]]
 ];

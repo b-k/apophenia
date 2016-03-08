@@ -130,6 +130,7 @@ var searchData=
   ['apop_5fvector_5fbounded',['apop_vector_bounded',['../group__all__public.html#ga136ded2b6d190739deca064701cf5ca1',1,'apop_vector_bounded(const gsl_vector *in, long double max):&#160;apop_linear_algebra.c']]],
   ['apop_5fvector_5fcopy',['apop_vector_copy',['../group__all__public.html#gad93c8a0dfa1848c27bb17ecbb6b638f6',1,'apop_vector_copy(const gsl_vector *in):&#160;apop_conversions.c']]],
   ['apop_5fvector_5fcorrelation',['apop_vector_correlation',['../group__all__public.html#ga105323d45e054e608d284e7efb9c0950',1,'apop_vector_correlation(const gsl_vector *ina, const gsl_vector *inb, const gsl_vector *weights):&#160;apop_stats.c']]],
+  ['apop_5fvector_5fcov',['apop_vector_cov',['../group__all__public.html#ga7c0881e9b640f6c6448014f44f5ac1f5',1,'apop_vector_cov(gsl_vector const *v1, gsl_vector const *v2, gsl_vector const *weights):&#160;apop_stats.c']]],
   ['apop_5fvector_5fdistance',['apop_vector_distance',['../group__all__public.html#ga44a77f5e6867c627fd313f3f6e252ff8',1,'apop_vector_distance(const gsl_vector *ina, const gsl_vector *inb, const char metric, const double norm):&#160;apop_stats.c']]],
   ['apop_5fvector_5fentropy',['apop_vector_entropy',['../group__all__public.html#gabd5c77978dc6972e4ba52f77fb8dfef0',1,'apop_vector_entropy(gsl_vector *in):&#160;apop_stats.c']]],
   ['apop_5fvector_5fexp',['apop_vector_exp',['../group__all__public.html#ga032dcecb67155c527c884dd2c1cc6a6e',1,'apop_vector_exp(gsl_vector *v):&#160;apop_linear_algebra.c']]],
