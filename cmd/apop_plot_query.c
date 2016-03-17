@@ -18,7 +18,7 @@ void plot_histogram(gsl_vector *data, FILE *f, size_t bin_count, char *with){
     if (!with) with="impulses";
     apop_data vector_as_data = (apop_data){.vector=data};
     apop_data *histodata = apop_data_to_bins(&vector_as_data, .bin_count=bin_count, .close_top_bin='y');
-    apop_data_sort(histodata);
+    apop_data_sort(apop_data_pmf_compress(histodata));
     apop_data_free(histodata->more); //the binspec.
 
     fprintf(f, "set key off	;\n"
