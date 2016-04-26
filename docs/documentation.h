@@ -34,10 +34,8 @@ For the full list of macros, functions, and prebuilt models, check the <a href="
 
 <em><a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.</em>
 
-Most users will want to download the latest packaged version linked from the <a
-href="https://github.com/b-k/apophenia/archive/pkg.zip">Download
-Apophenia here</a> header. See the \ref setup page for detailed setup instructions,
-including how to use your package manager to install the Debian package.
+Or, see the \ref setup page for detailed setup instructions,
+including how to use your package manager to install the Debian or Homebrew package.
 
 <em>The documentation</em>
 
@@ -61,7 +59,7 @@ functions, tips, and so on.
 
 <em>Notable features</em> 
 Much of what Apophenia does can be done in any typical statistics package. The \ref
-apop_data element is much like an R data frame, for example, and there is nothing special
+apop_data structure is much like an R data frame, for example, and there is nothing special
 about being able to invert a matrix or take the product of two matrices with a single
 function call (\ref apop_matrix_inverse and \ref apop_dot, respectively). 
 Even more advanced features like Loess smoothing (\ref apop_loess) and the Fisher Exact
@@ -192,9 +190,16 @@ sudo apt-get install apophenia-bin apophenia-doc libapophenia2 libapophenia2-dev
 sudo sed -i -e '$d' -e '$d' /etc/apt/sources.list
 \endcode
 
-Thanks to Jerome Benoit for getting the library packaged and adjusted to Debian standards.
+Thanks to Jerome Benoit for building the package and bringing the library up to Debian standards.
 
-\li If the Debian package is not for you, <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.
+\li Mac users with <a href="http://brew.sh">Homebrew</a>, try
+\code 
+brew install homebrew/science/apophenia
+\endcode
+
+Thanks to <a href="https://github.com/bdobyns">bdobyns</a> for the Brew script.
+
+\li Or, <a href="https://github.com/b-k/apophenia/archive/pkg.zip">Download Apophenia here</a>.
 Once you have the library downloaded, compile it using
 
 \code
