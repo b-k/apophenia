@@ -17,5 +17,6 @@ var dataoverview =
     [ "Text data", "dataoverview.html#textsec", [
       [ "Generating factors", "dataoverview.html#fact", null ]
     ] ],
+    [ "Input text file formatting", "text_format.html", null ],
     [ "Input text file formatting", "text_format.html", null ]
 ];

@@ -6,5 +6,6 @@ var c =
     [ "Legible output", "c.html#Legi", null ],
     [ "About SQL, the syntax for querying databases", "c.html#sqlsec", null ],
     [ "Threading", "c.html#threads", null ],
+    [ "Designated initializers", "designated.html", null ],
     [ "Designated initializers", "designated.html", null ]
 ];

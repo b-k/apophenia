@@ -136,7 +136,7 @@ PRE.fragment,div.fragment {
 	padding-top: 4px;
 	padding-bottom: 4px;
     white-space: pre;
-    line-height:125%;
+    line-height:80%;
 }
 DIV.ah { background-color: black; font-weight: bold; color: #ffffff; margin-bottom: 3px; margin-top: 3px }
 TD.md { background-color: #F4F4FB; font-weight: bold; }

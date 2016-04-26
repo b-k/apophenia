@@ -184,10 +184,10 @@ Threading</h1>
 <div class="fragment"><div class="line">export OMP_NUM_THREADS N</div></div><!-- fragment --><p>or the C function</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;omp.h&gt;</span></div><div class="line">omp_set_num_threads(N);</div></div><!-- fragment --><p>Use one of these methods with <code>N=1</code> if you want a single-threaded program. You can return later to using all available threads via <code>omp_set_num_threads(omp_get_num_procs())</code>.</p>
 <ul>
-<li><a class="el" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a> and friends distribute their <code>for</code> loop over the input <a class="el" href="gentle.html#apop_data">apop_data</a> set across multiple threads. Therefore, be careful to send thread-unsafe functions to it only after calling <code>omp_set_num_threads(1)</code>.</li>
+<li><a class="el" href="group__all__public.html#ga6a140600e7604610ee5a290e659a3800">apop_map</a> and friends distribute their <code>for</code> loop over the input <a class="el" href="gentle.html#apop_data">apop_data</a> set across multiple threads. Therefore, be careful to send thread-unsafe functions to it only after calling <code>omp_set_num_threads(1)</code>.</li>
 </ul>
 <ul>
-<li>There are a few functions, like <a class="el" href="group__all__public.html#gaa8d1687ac5d77dfaefe2222b44829cdd">apop_model_draws</a>, that rely on <a class="el" href="group__all__public.html#gaacff3707e418a067104c77c410b43f69">apop_map</a>, and therefore also thread by default.</li>
+<li>There are a few functions, like <a class="el" href="group__all__public.html#gaa8d1687ac5d77dfaefe2222b44829cdd">apop_model_draws</a>, that rely on <a class="el" href="group__all__public.html#ga6a140600e7604610ee5a290e659a3800">apop_map</a>, and therefore also thread by default.</li>
 </ul>
 <ul>
 <li>The function apop_rng_get_thread retrieves a statically-stored RNG specific to a given thread. Therefore, if you use that function in the place of a <code>gsl_rng</code>, you can parallelize functions that make random draws.</li>

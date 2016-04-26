@@ -138,52 +138,52 @@
 \form#137:$n/K$
 \form#138:$<$
 \form#139:$\geq 0$
-\form#140:$Z(a) = {1\over \zeta(a) * i^a} $
-\form#141:$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $
-\form#142:$P(x) = 1$
-\form#143:$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $
-\form#144:$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $
-\form#145:$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $
-\form#146:$j$
-\form#147:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
-\form#148:$x\beta_j - ln(\sum_i{e^{x\beta_i}})$
-\form#149:$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$
-\form#150:$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$
-\form#151:$df$
-\form#152:$P(d)$
-\form#153:$d$
-\form#154:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
-\form#155:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
-\form#156:$d ln G/ da = -\psi(a) - ln b + ln(x) $
-\form#157:$d ln \gamma = \psi$
-\form#158:$d ln G/ db = -a/b + x/(b^2) $
-\form#159:$p(k) = {\mu^k \over k!} \exp(-\mu). $
-\form#160:$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$
-\form#161:$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $
-\form#162:$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $
-\form#163:$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $
-\form#164:$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $
-\form#165:$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $
-\form#166:$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $
-\form#167:$Z(C,k) = \ln C C^{-k}. $
-\form#168:$\mu = {1\over \ln C}$
-\form#169:$C=\exp(1/\mu)$
-\form#170:$p_0$
-\form#171:$p_0=1-\sum_{i=1}^{k-1} p_i$
-\form#172:$k \times k$
-\form#173:$1\times 1$
-\form#174:$ Y = \beta X + \epsilon$
-\form#175:$\beta X$
-\form#176:$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$
-\form#177:$P(X)=1$
-\form#178:$P(Y, X) = P(Y|X)P(X) = P(Y|X)$
-\form#179:$X\beta+\epsilon$
-\form#180:$\times$
-\form#181:$\in[0,1]$
-\form#182:$p_1$
-\form#183:$v[1]>1$
-\form#184:$a$
-\form#185:$b$
-\form#186:$p(1-p)$
-\form#187:$X'\beta$
-\form#188:$n=30$
+\form#140:$X'\beta$
+\form#141:$n=30$
+\form#142:$p_1$
+\form#143:$Z(a) = {1\over \zeta(a) * i^a} $
+\form#144:$lnZ(a) = -(\log(\zeta(a)) + a \log(i)) $
+\form#145:$P(x) = 1$
+\form#146:$ Y(x, b) = (b-1) \gamma(b) \gamma(k) / \gamma(k+b) $
+\form#147:$ \ln Y(x, b) = \ln(b-1) + ln\gamma(b) + \ln\gamma(k) - \ln\gamma(k+b) $
+\form#148:$ d\ln Y/db = 1/(b-1) + \psi(b) - \psi(k+b) $
+\form#149:$j$
+\form#150:$e^{x\beta_j}/ (\sum_i{e^{x\beta_i}})$
+\form#151:$x\beta_j - ln(\sum_i{e^{x\beta_i}})$
+\form#152:$f = exp(-(ln(x)-\mu)^2/(2\sigma^2))/ (x\sigma\sqrt{2\pi})$
+\form#153:$ln f = -(ln(x)-\mu)^2/(2\sigma^2) - ln(x) - ln(\sigma\sqrt{2\pi})$
+\form#154:$df$
+\form#155:$P(d)$
+\form#156:$d$
+\form#157:$G(x, a, b) = {1\over (\Gamma(a) b^a)} x^{a-1} e^{-x/b}$
+\form#158:$ln G(x, a, b)= -ln \Gamma(a) - a ln b + (a-1)ln(x) + -x/b$
+\form#159:$d ln G/ da = -\psi(a) - ln b + ln(x) $
+\form#160:$d ln \gamma = \psi$
+\form#161:$d ln G/ db = -a/b + x/(b^2) $
+\form#162:$p(k) = {\mu^k \over k!} \exp(-\mu). $
+\form#163:$N(\mu,\sigma^2) = {1 \over \sqrt{2 \pi \sigma^2}} \exp (-x^2 / 2\sigma^2)$
+\form#164:$\ln N(\mu,\sigma^2) = (-(x-\mu)^2 / 2\sigma^2) - \ln (2 \pi \sigma^2)/2 $
+\form#165:$d\ln N(\mu,\sigma^2)/d\mu = (x-\mu) / \sigma^2 $
+\form#166:$d\ln N(\mu,\sigma^2)/d\sigma^2 = ((x-\mu)^2 / 2(\sigma^2)^2) - 1/2\sigma^2 $
+\form#167:$Z(\mu,k) = \sum_k 1/\mu e^{-k/\mu} $
+\form#168:$ln Z(\mu,k) = \sum_k -\ln(\mu) - k/\mu $
+\form#169:$dln Z(\mu,k)/d\mu = \sum_k -1/\mu + k/(\mu^2) $
+\form#170:$Z(C,k) = \ln C C^{-k}. $
+\form#171:$\mu = {1\over \ln C}$
+\form#172:$C=\exp(1/\mu)$
+\form#173:$p_0$
+\form#174:$p_0=1-\sum_{i=1}^{k-1} p_i$
+\form#175:$k \times k$
+\form#176:$1\times 1$
+\form#177:$ Y = \beta X + \epsilon$
+\form#178:$\beta X$
+\form#179:$P(Y|X\beta) \sim {\cal N}(X\beta, \sigma)$
+\form#180:$P(X)=1$
+\form#181:$P(Y, X) = P(Y|X)P(X) = P(Y|X)$
+\form#182:$X\beta+\epsilon$
+\form#183:$\times$
+\form#184:$\in[0,1]$
+\form#185:$v[1]>1$
+\form#186:$a$
+\form#187:$b$
+\form#188:$p(1-p)$
