@@ -345,8 +345,8 @@ APOP_VAR_ENDHEAD
         } else {
             gsl_vector *abin = Apop_cv(bs, j);
             max = gsl_vector_max(datacol);
-            offset = abin->data[1] = gsl_vector_min(datacol);
-            binwidth = abin->data[0] = (max - offset)/(bin_count ? bin_count : sqrt(datacol->size));
+            gsl_vector_set(abin, 1, offset = gsl_vector_min(datacol));
+            gsl_vector_set(abin, 0, binwidth = (max - offset)/(bin_count ? bin_count : sqrt(datacol->size)));
         }
         for (int i=0; i< onecol->size; i++){
             double val = gsl_vector_get(datacol, i);

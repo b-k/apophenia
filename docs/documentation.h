@@ -464,7 +464,7 @@ structure like the \ref apop_data struct.
 Section \ref modelsec covers statistical models, in the form of the \ref apop_model structure.
 This part of the system is built upon the \ref apop_data set to hold parameters, statistics, data sets, and so on.
 
-\ref Histosec covers probability mass functions, which are statistical models
+\ref histosec covers probability mass functions, which are statistical models
 built directly around a data set, where the chance of drawing a given observation is
 proportional to how often that observation appears in the source data. There are many
 situations where one would want to treat a data set as a probability distribution,
@@ -485,7 +485,7 @@ some additional notes on optimization and how it can be used in non-statistical 
 
 \subpage modelsec
 
-\subpage Histosec
+\subpage histosec
 
 \subpage testpage
 
