@@ -31,7 +31,7 @@ If \c apop_opts.verbose is >=1, then display some information to stdout, like th
 
 \param a one column of data
 \param b another column of data
-\return an \ref apop_data set with the following elements:
+\return an \ref apop_data set with the following elements: <br>
     <tt>mean left - right</tt>:    the difference in means; if positive, first vector has larger mean, and one-tailed test is testing \f$L > R\f$, else reverse if negative.<br>
     <tt>t statistic</tt>:    used for the test<br>
     <tt>df</tt>:             degrees of freedom<br>
