@@ -181,6 +181,8 @@ data, and fail if the copy would write more elements than there are bins.
   \li If both \c in and \c out have a \c more pointer, also copy subsequent page(s).
   \li You can use the subsetting macros, \ref Apop_r, \ref Apop_rs, \ref Apop_c,
       and so on, to copy within a data set:
+  \li Copying a \c NULL to a \c NULL is valid but does nothing. Other attempt to write
+      to a \c NULL fail with an error printed to stdout if <tt>apop_opts.verbose >= 1</tt>.
 
 \code
 //Copy the contents of row i of mydata to row j.
@@ -199,6 +201,7 @@ apop_data_memcpy(Apop_r(mydata, i), Apop_r(mydata, j));
 \exception out.error='p'  Part missing; e.g., in->matrix exists but out->matrix doesn't.
 */
 void apop_data_memcpy(apop_data *out, const apop_data *in){
+    if (!out && !in) return;
     Apop_stopif(!out, return, 0, "you are copying to a NULL matrix. Do you mean to use apop_data_copy instead?");
     Apop_stopif(out==in, return, 1, "out==in. Doing nothing.");
     if (in->matrix){

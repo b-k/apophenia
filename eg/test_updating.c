@@ -29,7 +29,7 @@ int main(){
     apop_model *out_beta = apop_estimate(out_h->data, apop_beta);
 
     //Finally, we can compare the conjugate and Gibbs results:
-    distances(updated->parameters->vector, out_beta->parameters->vector, 0.01);
+    distances(updated->parameters->vector, out_beta->parameters->vector, 0.02);
 
     //The apop_update function used apop_model_metropolis to generate
     //a batch of draws, so the draw method for out_h is apop_model_metropolis_draw.
