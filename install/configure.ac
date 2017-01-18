@@ -11,6 +11,7 @@ AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
+AM_INIT_AUTOMAKE([subdir-objects])
 
 # The normal /usr/local default confused too many people
 ##AC_PREFIX_DEFAULT([/usr])
