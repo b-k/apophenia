@@ -137,9 +137,12 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
   gsl_vector *errors;
 
     apop_data *pred = apop_data_get_page(p->info, "<Predicted>");
-    if (pred && d==p->data) //use already-stored errors for this data set.
-        errors = Apop_cv(pred, 2);
-    else {
+    if (pred && d==p->data){ //use already-stored errors for this data set.
+        gsl_vector *as_errors = Apop_cv(pred, 2);
+				errors = gsl_vector_calloc(data->size1);
+				for (size_t i=0;i< GSL_MIN(as_errors->size,data->size1); i++)
+					gsl_vector_set(errors, i, gsl_vector_get(as_errors, i));
+    } else {
         errors = gsl_vector_alloc(data->size1);
         for (size_t i=0;i< data->size1; i++){
             gsl_blas_ddot(p->parameters->vector, Apop_rv(d, i), &expected);
@@ -165,7 +168,6 @@ static long double ols_log_likelihood (apop_data *d, apop_model *p){
         weight = d->weights ? gsl_vector_get(d->weights, i) : 1; 
         ll += logl(gsl_ran_gaussian_pdf(gsl_vector_get(errors, i), sigma)* weight * x_prob);
     }
-    if (!pred) gsl_vector_free(errors);
     return ll;
 }
 
