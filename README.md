@@ -3,51 +3,66 @@ Apophenia is an open statistical library for working with data sets and statisti
 http://apophenia.info/gentle.html provides an overview of the basics of using the library. If you want to know more about the package, see the web site, http://apophenia.info, or have a look at the textbook from Princeton University Press that coevolved with Apophenia, downloadable from http://modelingwithdata.org .
 
 
-The quick summary for installation:
+### The quick summary for installation:
 
 ∙ The library depends on the GNU Scientific Library and SQLite3. If you are using a system with a package manager of some sort, there is certainly a package for them. Be sure to include both the main package and the lib-, -dev, or -devel package. Sample package manager calls:
 
-    sudo apt-get install make gcc libgsl0-dev libsqlite3-dev 
+```bash
+    
+sudo apt-get install make gcc libgsl0-dev libsqlite3-dev
+    
+```
 or 
-    sudo yum install make gcc gsl-devel libsqlite3x-devel
-or 
-    sudo pacman -S make gcc gsl sqlite 
+```bash
+sudo yum install make gcc gsl-devel libsqlite3x-devel
+```
+or
+```bash
+sudo pacman -S make gcc gsl sqlite 
+```
 
-∙ The prebuilt package, that has only basic prerequisites (no Autotools or m4) can be downloaded from another Git branch:
+The prebuilt package, that has only basic prerequisites (no Autotools or m4) can be downloaded from another Git branch:
 
-    #Download the zip file, via wget or your preferred downloading method:
-    wget https://github.com/b-k/Apophenia/archive/pkg.zip
+### Download the zip file, via wget or your preferred downloading method:
 
-    #unzip and build
-    unzip pkg.zip
-    cd Apophenia-pkg
-    ./configure
-    make
-    sudo make install
+```bash
+wget https://github.com/b-k/Apophenia/archive/pkg.zip
+unzip and build
+unzip pkg.zip
+cd Apophenia-pkg
+./configure
+make
+sudo make install
+```
 
 Or check out the branch via git:
 
-    git clone https://github.com/b-k/Apophenia.git
-    cd Apophenia
-    git checkout pkg
-    ./configure
-    make
-    sudo make install
+```bash
+git clone https://github.com/b-k/Apophenia.git
+cd Apophenia
+git checkout pkg
+./configure
+make
+sudo make install
+```
 
-∙ This master branch of the git repository requires Autotools, so it can build the
+This master branch of the git repository requires Autotools, so it can build the
 package. Try (apt-get || yum install) autoconf automake libtool. If you have Autotools installed, then from this branch you can run:
 
-    ./configure
-    cd apophenia-1.0
-    make 
-    sudo make install
+```bash
+./configure
+cd apophenia-1.0
+make 
+sudo make install
+```
 
-∙ Find detailed setup instructions and some troubleshooting notes at
-http://apophenia.info/setup.html .
+Find detailed setup instructions and some troubleshooting notes at [http://apophenia.info/setup.html](http://apophenia.info/setup.html)
 
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 
 --BK
 
-PS: Lawyers, please note that a file named COPYING in the install/ directory describes how this package is licensed under GPLv2.
+### Notes
+
+PS: Lawyers, please note that a file named COPYING in the install/ directory describes how this package is licensed under [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
