@@ -1,6 +1,10 @@
-Apophenia is an open statistical library for working with data sets and statistical or simulation models. It provides functions on the same level as those of the typical stats package (such as OLS, probit, or singular value decomposition) but gives the user more flexibility to be creative in model-building. Being in C, it is often an order of magnitude faster when searching for optima or running MCMC chains. The core functions are written in C, but experience has shown them to be easy to bind to Python/Julia/Perl/Ruby/&c.
+# :chart_with_upwards_trend: Apophenia
 
-http://apophenia.info/gentle.html provides an overview of the basics of using the library. If you want to know more about the package, see the web site, http://apophenia.info, or have a look at the textbook from Princeton University Press that coevolved with Apophenia, downloadable from http://modelingwithdata.org .
+**Apophenia is an open statistical library for working with data sets and statistical or simulation models**. 
+
+It provides functions on the same level as those of the typical stats package (such as OLS, probit, or singular value decomposition) but gives the user more flexibility to be creative in model-building. Being in C, it is often an order of magnitude faster when searching for optima or running MCMC chains. The core functions are written in C, but experience has shown them to be easy to bind to Python/Julia/Perl/Ruby/&c.
+
+[The official website](http://apophenia.info/gentle.html) provides an overview of the basics of using the library. If you want to know more about the package, see the web site, http://apophenia.info, or have a look at the textbook from Princeton University Press that coevolved with Apophenia, downloadable from http://modelingwithdata.org .
 
 
 ### The quick summary for installation:
@@ -8,9 +12,7 @@ http://apophenia.info/gentle.html provides an overview of the basics of using th
 ∙ The library depends on the GNU Scientific Library and SQLite3. If you are using a system with a package manager of some sort, there is certainly a package for them. Be sure to include both the main package and the lib-, -dev, or -devel package. Sample package manager calls:
 
 ```bash
-    
 sudo apt-get install make gcc libgsl0-dev libsqlite3-dev
-    
 ```
 or 
 ```bash
@@ -35,7 +37,7 @@ make
 sudo make install
 ```
 
-Or check out the branch via git:
+### Or check out the branch via git:
 
 ```bash
 git clone https://github.com/b-k/Apophenia.git
@@ -46,8 +48,7 @@ make
 sudo make install
 ```
 
-This master branch of the git repository requires Autotools, so it can build the
-package. Try (apt-get || yum install) autoconf automake libtool. If you have Autotools installed, then from this branch you can run:
+This master branch of the git repository requires Autotools, so it can build the package. Try **(apt-get || yum install)** autoconf automake libtool. If you have Autotools installed, then from this branch you can run:
 
 ```bash
 ./configure
@@ -61,7 +62,7 @@ Find detailed setup instructions and some troubleshooting notes at [http://apoph
 
 Thanks for your interest. I do hope that Apophenia helps you learn more from your data.
 
---BK
+Regards, [BK](https://github.com/b-k)
 
 ### Notes
 
