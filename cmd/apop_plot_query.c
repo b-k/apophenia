@@ -54,7 +54,7 @@ char *read_query(char *infile){
     char *q = malloc(10);
     q[0] = '\0';
     FILE *inf = fopen(infile, "r");
-    Apop_stopif(!inf, exit(0), 0, "Trouble opening %s. Look into that.\n", infile);
+    Apop_stopif(!inf, exit(0), 0, "Trouble opening %s.\n", infile);
     while(fgets(in, 1000, inf)){
         q = realloc(q, strlen(q) + strlen(in) + 4);
         sprintf(q, "%s%s", q, in);
@@ -68,7 +68,7 @@ gsl_matrix *query(char *d, char *q, int no_plot){
 	apop_db_open(d);
     apop_data *result = apop_query_to_data("%s", q);
 	apop_db_close(0);
-    Apop_stopif(!result && !no_plot, exit(2), 0, "Your query returned a blank table. Quitting.");
+    Apop_stopif(!result, exit(2), 0, "Your query returned a blank table. Quitting.");
     Apop_stopif(result->error, exit(2), 0, "Error running your query. Quitting.");
     if (no_plot){
         apop_data_show(result);
