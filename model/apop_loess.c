@@ -1216,7 +1216,7 @@ static void ehg127_(double *q, integer *n, integer *d__, integer *nf, double *f,
 
     ++execnt;
     if (execnt == 1)
-        machep = DBL_EPSILON;
+        machep = GSL_DBL_EPSILON;
     /*     sort by distance */
     for (i3 = 1; i3 <= *n; ++i3)
         dist[i3] = 0.;

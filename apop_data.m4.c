@@ -156,7 +156,7 @@ char apop_data_free_base(apop_data *freeme){
                                "This is not healthy. Not freeing; marking your data set with error='c'.");
         if (apop_data_free_base(freeme->more)) 
             Apop_stopif(freeme->more->error == 'c', freeme->error='c'; return 'c', 
-                                1, "Propogating error code to parent data set");
+                                1, "Propagating error code to parent data set");
     } 
     if (freeme->vector)  
         gsl_vector_free(freeme->vector);
