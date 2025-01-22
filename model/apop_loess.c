@@ -3383,7 +3383,7 @@ double invigauss_quick(double p) {
  */
 
 static double invibeta_quick(double p, double a, double b) {
-  double x, m, s, invigauss_quick();
+  double x, m, s;
     x = a + b;
     m = a / x;
     s = sqrt((a*b) / (x*x*(x+1)));

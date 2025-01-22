@@ -365,7 +365,7 @@ static void fdf_shell(const gsl_vector *beta, void *i, double *f, gsl_vector *df
 }
 
 static int ctrl_c;
-static void mle_sigint(){ ctrl_c ++; }
+static void mle_sigint(int){ ctrl_c ++; }
 
 static int setup_starting_point(apop_mle_settings *mp, gsl_vector *x){
     Apop_stopif(!x, return -1, 0, "The vector I'm trying to optimize over is NULL.");
@@ -827,7 +827,7 @@ static void annealing_free(void *xp){
 static double set_start(double in){ return in ? in : 1; }
 
 jmp_buf anneal_jump;
-static void anneal_sigint(){ longjmp(anneal_jump,1); }
+static void anneal_sigint(int){ longjmp(anneal_jump,1); }
 
 static void apop_annealing(infostruct *i){
     apop_model *ep = i->model;
